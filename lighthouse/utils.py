@@ -1,10 +1,10 @@
 import os
 from logging import Handler
 
-from slack import WebClient
-from slack.errors import SlackApiError
+from slack import WebClient  # type: ignore
+from slack.errors import SlackApiError  # type: ignore
 
-client = WebClient(token=os.environ["SLACK_API_TOKEN"])
+client = WebClient(token=os.getenv("SLACK_API_TOKEN"))
 
 
 class SlackHandler(Handler):
@@ -15,7 +15,7 @@ class SlackHandler(Handler):
     def send_message(self, sent_str):
         try:
             response = client.chat_postMessage(
-                channel="CUM0L62R0",
+                channel=os.getenv("SLACK_CHANNEL_ID"),
                 blocks=[
                     {
                         "type": "section",
@@ -24,10 +24,10 @@ class SlackHandler(Handler):
                             "text": "Danny Torrence left the following review for your property:",
                         },
                     },
-                    {"type": "section", "text": {"type": "mrkdwn", "text": sent_str,},},
+                    {"type": "section", "text": {"type": "mrkdwn", "text": sent_str}},
                 ],
             )
-            assert response["message"]["text"] == sent_str
+            # assert response["message"]["text"] == sent_str
         except SlackApiError as e:
             # You will get a SlackApiError if "ok" is False
             assert e.response["ok"] is False

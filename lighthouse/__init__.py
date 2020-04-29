@@ -1,17 +1,17 @@
 import logging
 import logging.config
 
-from eve import Eve
+from eve import Eve  # type: ignore
 
 from lighthouse.config.logging import LOGGING_CONF
-from lighthouse.slack import send_message
+from lighthouse.config.settings import SETTINGS
 
 logging.config.dictConfig(LOGGING_CONF)
 logger = logging.getLogger(__name__)
 
 
 def create_app(test_config=None):
-    app = Eve(__name__, instance_relative_config=False)
+    app = Eve(__name__, settings=SETTINGS, instance_relative_config=False)
 
     if test_config is None:
         # load the config, if it exists, when not testing
@@ -23,15 +23,5 @@ def create_app(test_config=None):
     from lighthouse import plates
 
     app.register_blueprint(plates.bp)
-
-    @app.route("/hello")
-    def hello():
-        logger.debug("hello")
-        logger.error("hello")
-        try:
-            raise Exception("testing")
-        except Exception as e:
-            pass
-        return "hello world"
 
     return app

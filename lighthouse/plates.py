@@ -1,21 +1,18 @@
 import logging
 from http import HTTPStatus
+from typing import Any, Dict, Tuple
 
-from flask import Blueprint
-from flask import current_app as app
-from flask import request
+from flask import Blueprint, request
 
-from lighthouse.helpers import confirm_cente, get_cog_barcodes, get_samples
+from lighthouse.helpers import add_cog_barcodes, create_post_body, get_samples, send_to_ss
 
 logger = logging.getLogger(__name__)
-# from .exceptions import BarcodeNotFoundError, BarcodesMismatchError, TubesCountError
-# from .helper import handle_error, parse_tube_rack_csv, send_request_to_sequencescape, wrangle_tubes
 
 bp = Blueprint("plates", __name__)
 
 
 @bp.route("/plates/new", methods=["POST"])
-def create_plate_from_barcode():
+def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     logger.debug("create_plate_from_barcode()")
 
     try:
@@ -23,22 +20,24 @@ def create_plate_from_barcode():
         logger.info(f"Looking for samples for plate with barcode: {plate_barcode}")
     except KeyError as e:
         logger.exception(e)
-        return ""
+        return {"errors": ["POST request needs 'plate_barcode' in body"]}, HTTPStatus.BAD_REQUEST
 
     try:
         # get samples for barcode
         samples = get_samples(plate_barcode)
 
-        if len(samples) == 0:
+        if not samples:
             # do something cleverer here
-            return "No samples for this barcode"
+            return {"errors": ["No samples for this barcode"]}, HTTPStatus.OK
 
-        # get COG barcodes for samples
-        samples_with_cog = get_cog_barcodes(samples)
-        # create body for POST to SS
-        # send POST request to SS
+        # add COG barcodes to samples
+        add_cog_barcodes(samples)
 
+        body = create_post_body(plate_barcode, samples)
+
+        response = send_to_ss(body)
+
+        return response.json(), response.status_code
     except Exception as e:
         logger.exception(e)
-
-    return f""
+        return {"errors": [e]}, HTTPStatus.INTERNAL_SERVER_ERROR
