@@ -59,6 +59,7 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
         return prefix
     except Exception as e:
         logger.exception(e)
+        return None
     except AssertionError as e:
         logger.exception(e)
         raise DataError("Multiple centres with the same name")
