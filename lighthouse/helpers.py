@@ -5,7 +5,12 @@ from typing import Any, Dict, List, Optional
 import requests
 from flask import current_app as app
 
-from lighthouse.exceptions import MissingCentreError, MissingSourceError, MultipleCentresError
+from lighthouse.exceptions import (
+    DataError,
+    MissingCentreError,
+    MissingSourceError,
+    MultipleCentresError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,80 +33,47 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
                 sample["cog_barcode"] = response.json()["barcode"]
             else:
                 raise Exception("Unable to create COG barcodes")
-    except Exception as e:
-        logger.exception(e)
-        raise e
+    except requests.ConnectionError:
+        raise requests.ConnectionError("Unable to access baracoda")
 
     return samples
 
 
-def get_centre_prefix(centre_name: str) -> str:
+def get_centre_prefix(centre_name: str) -> Optional[str]:
+    logger.debug(f"Getting the prefix for '{centre_name}'")
     try:
-        logger.debug(f"/centres?where=name=='{centre_name}'")
-        response = app.test_client().get(f"/centres?where=name=='{centre_name}'")
-    except Exception:
-        pass
-    else:
-        logger.debug(response.json)
-        response_dict = response.json
+        #  get the centre collection
+        centres = app.data.driver.db["centres"]
 
-    assert response_dict["_meta"]["total"] == 1
+        # use a case insensitive search for the centre name
+        filter = {"name": {"$regex": f"^(?i){centre_name}$"}}
 
-    try:
-        return response_dict["_items"][0]["prefix"]
+        assert centres.count_documents(filter) == 1
+
+        centre = centres.find_one(filter)
+
+        prefix = centre["prefix"]
+
+        logger.debug(f"Prefix for '{centre_name}' is '{prefix}")
+
+        return prefix
     except Exception as e:
         logger.exception(e)
-        return ""
+    except AssertionError as e:
+        logger.exception(e)
+        raise DataError("Multiple centres with the same name")
 
 
-def get_samples(plate_barcode: str) -> Optional[List[Dict[str, str]]]:
+def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     logger.info(f"Getting all samples for {plate_barcode}")
 
-    samples = get_all_samples(f"/samples?where=plate_barcode=='{plate_barcode}'")
+    samples = app.data.driver.db["samples"]
 
-    logger.info(f"Found {len(samples)} samples for {plate_barcode}")
+    samples_for_barcode = list(samples.find({"plate_barcode": plate_barcode}))
 
-    return samples
+    logger.info(f"Found {len(samples_for_barcode)} samples for {plate_barcode}")
 
-
-def get_all_samples(url: str, samples: List[Dict[str, str]] = None) -> List[Dict[str, str]]:
-    """[summary]
-
-    Arguments:
-        url {str} -- [description]
-
-    Keyword Arguments:
-        samples {List} -- [description] (default: {None})
-
-    Returns:
-        List[Dict] -- [description]
-    """
-    logger.info(f"Requesting samples at {url}")
-
-    if samples is None:
-        samples = []
-
-    try:
-        response = app.test_client().get(url)
-    except Exception as e:
-        logger.exception(e)
-        return []
-    else:
-        response_data_dict = response.get_json()
-
-    try:
-        if response_data_dict["_meta"]["total"] > 0:
-            samples.extend(response_data_dict["_items"])
-
-            if "next" in list(response_data_dict["_links"].keys()):
-                return get_all_samples(response_data_dict["_links"]["next"]["href"], samples)
-            else:
-                return samples
-        else:
-            return []
-    except KeyError as e:
-        logger.exception(e)
-        return []
+    return samples_for_barcode
 
 
 def confirm_cente(samples: List[Dict[str, str]]) -> str:
@@ -125,7 +97,6 @@ def confirm_cente(samples: List[Dict[str, str]]) -> str:
         # create a set from the 'source' field to check we only have 1 unique centre for these
         #   samples
         centre_set = {sample["source"] for sample in samples}
-        logger.debug(centre_set)
     except KeyError:
         raise MissingSourceError()
     else:
@@ -136,16 +107,23 @@ def confirm_cente(samples: List[Dict[str, str]]) -> str:
 
 
 def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    logger.debug("Creating POST body to send to SS")
-    wells = []
+    logger.debug(f"Creating POST body to send to SS for barcode '{barcode}'")
+
+    wells_content = {}
     for sample in samples:
-        well = {"coordinate": sample["coordinate"]}
-        wells.append(well)
-    body = {"plate_barcode": barcode, "wells": wells}
+        well = {"phenotype": sample["phenotype"]}
+        wells_content[sample["coordinate"]] = well
+
+    body = {
+        "barcode": barcode,
+        "plate_purpose_uuid": "11111",
+        "study_uuid": "11111",
+        "wells_content": wells_content,
+    }
 
     logger.debug(body)
 
-    return body
+    return {"data": {"type": "plates", "attributes": body}}
 
 
 def send_to_ss(body: Dict[str, Any]) -> requests.Response:
@@ -153,8 +131,10 @@ def send_to_ss(body: Dict[str, Any]) -> requests.Response:
 
     logger.info(f"Sending {body} to {ss_url}")
 
-    response = requests.post(ss_url, json=body)
-
-    logger.debug(response.status_code)
+    try:
+        response = requests.post(ss_url, json=body)
+        logger.debug(response.status_code)
+    except requests.ConnectionError:
+        raise requests.ConnectionError("Unable to access SS")
 
     return response

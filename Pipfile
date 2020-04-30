@@ -12,6 +12,7 @@ coverage = {extras = ["toml"],version = "*"}
 pytest = "*"
 pytest-cov = "*"
 black = "*"
+responses = "*"
 
 [packages]
 eve = "*"

@@ -35,7 +35,7 @@ class MissingCentreError(Error):
 
 
 class MissingSourceError(Error):
-    """Raised when a a sample is missing the source field."""
+    """Raised when a sample is missing the source field."""
 
     def __init__(self, message=None):
         self.message = message
@@ -47,3 +47,18 @@ class MissingSourceError(Error):
             return f"MissingSourceError: {self.message}"
         else:
             return f"MissingSourceError: {default_message}"
+
+
+class DataError(Error):
+    """Raised when a generic error occured with data."""
+
+    def __init__(self, message=None):
+        self.message = message
+
+    def __str__(self):
+        default_message = f"Error with data"
+
+        if self.message:
+            return f"DataError: {self.message}"
+        else:
+            return f"DataError: {default_message}"

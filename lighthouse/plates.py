@@ -16,15 +16,15 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     logger.debug("create_plate_from_barcode()")
 
     try:
-        plate_barcode = request.get_json()["plate_barcode"]
-        logger.info(f"Looking for samples for plate with barcode: {plate_barcode}")
-    except KeyError as e:
+        barcode = request.get_json()["barcode"]
+        logger.info(f"Looking for samples for labware with barcode: {barcode}")
+    except (KeyError, TypeError) as e:
         logger.exception(e)
-        return {"errors": ["POST request needs 'plate_barcode' in body"]}, HTTPStatus.BAD_REQUEST
+        return {"errors": ["POST request needs 'barcode' in body"]}, HTTPStatus.BAD_REQUEST
 
     try:
         # get samples for barcode
-        samples = get_samples(plate_barcode)
+        samples = get_samples(barcode)
 
         if not samples:
             # do something cleverer here
@@ -33,11 +33,11 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         # add COG barcodes to samples
         add_cog_barcodes(samples)
 
-        body = create_post_body(plate_barcode, samples)
+        body = create_post_body(barcode, samples)
 
         response = send_to_ss(body)
 
         return response.json(), response.status_code
     except Exception as e:
         logger.exception(e)
-        return {"errors": [e]}, HTTPStatus.INTERNAL_SERVER_ERROR
+        return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
