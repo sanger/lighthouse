@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_app(test_config: Dict[str, str] = None, test_settings: Dict[str, str] = None) -> Eve:
-    settings = test_settings if test_settings else SETTINGS
+    settings = SETTINGS if test_settings is None else test_settings
 
     app = Eve(__name__, settings=settings, instance_relative_config=False)
 
