@@ -6,14 +6,20 @@ from typing import Dict
 from eve import Eve  # type: ignore
 
 from lighthouse.config.logging import LOGGING_CONF
-from lighthouse.config.settings import SETTINGS
 
 logging.config.dictConfig(LOGGING_CONF)
 logger = logging.getLogger(__name__)
 
 
 def create_app(test_config: Dict[str, str] = None, test_settings: Dict[str, str] = None) -> Eve:
-    settings = SETTINGS if test_settings is None else test_settings
+    if test_settings is None:
+        from lighthouse.config.settings import SETTINGS
+
+        settings = SETTINGS
+    else:
+        logger.info("Using test settings")
+
+        settings = test_settings
 
     app = Eve(__name__, settings=settings, instance_relative_config=False)
 
