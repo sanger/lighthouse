@@ -1,7 +1,7 @@
 import logging
 import logging.config
 from http import HTTPStatus
-from typing import Dict
+from typing import Any, Dict
 
 from eve import Eve  # type: ignore
 
@@ -11,7 +11,7 @@ logging.config.dictConfig(LOGGING_CONF)
 logger = logging.getLogger(__name__)
 
 
-def create_app(test_config: Dict[str, str] = None, test_settings: Dict[str, str] = None) -> Eve:
+def create_app(test_config: Dict[str, Any] = None, test_settings: Dict[str, Any] = None) -> Eve:
     if test_settings is None:
         from lighthouse.config.settings import SETTINGS
 
