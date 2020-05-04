@@ -52,8 +52,8 @@ def test_create_post_body(app, samples):
                 "type": "plates",
                 "attributes": {
                     "barcode": "12345",
-                    "plate_purpose_uuid": current_app.config["UUID_PLATE_PURPOSE"],
-                    "study_uuid": current_app.config["UUID_STUDY"],
+                    "plate_purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE"],
+                    "study_uuid": current_app.config["SS_UUID_STUDY"],
                     "wells_content": {
                         "A01": {
                             "phenotype": "positive",

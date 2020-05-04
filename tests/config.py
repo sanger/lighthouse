@@ -22,6 +22,8 @@ TEST_CONFIG_FLASK = {
     "TESTING": True,
     "BARACODA_HOST": "127.0.0.1",
     "BARACODA_PORT": 5001,
-    "UUID_PLATE_PURPOSE": "be98e1ce-799c-11ea-8526-acde48001122",
-    "UUID_STUDY": "d4bebaa0-799c-11ea-8526-acde48001122",
+    "SS_API_KEY": "develop",
+    "SS_HOST": "localhost:3000",
+    "SS_UUID_PLATE_PURPOSE": "be98e1ce-799c-11ea-8526-acde48001122",
+    "SS_UUID_STUDY": "d4bebaa0-799c-11ea-8526-acde48001122",
 }

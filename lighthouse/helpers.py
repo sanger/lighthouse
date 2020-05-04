@@ -135,8 +135,8 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
 
     body = {
         "barcode": barcode,
-        "plate_purpose_uuid": app.config["UUID_PLATE_PURPOSE"],
-        "study_uuid": app.config["UUID_STUDY"],
+        "plate_purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE"],
+        "study_uuid": app.config["SS_UUID_STUDY"],
         "wells_content": wells_content,
     }
 
@@ -148,9 +148,7 @@ def send_to_ss(body: Dict[str, Any]) -> requests.Response:
 
     logger.info(f"Sending {body} to {ss_url}")
 
-    headers = {
-        "X-Sequencescape-Client-Id": app.config["SS_API_KEY"]
-    }
+    headers = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
 
     try:
         response = requests.post(ss_url, json=body, headers=headers)
