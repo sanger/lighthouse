@@ -1,0 +1,36 @@
+from typing import Dict, List
+
+from lighthouse.constants import FIELD_COG_BARCODE
+
+CENTRES: List[Dict[str, str]] = [
+    {"name": "test1", "prefix": "TS1"},
+    {"name": "test2", "prefix": "TS2"},
+    {"name": "test3", "prefix": "TS3"},
+]
+
+SAMPLES: List[Dict[str, str]] = [
+    {
+        "coordinate": "A01",
+        "source": "test1",
+        "Result": "Positive",
+        "plate_barcode": "123",
+        FIELD_COG_BARCODE: "abc",
+        "Root Sample ID": "MCM001",
+    },
+    {
+        "coordinate": "B01",
+        "source": "test1",
+        "Result": "Negative",
+        "plate_barcode": "123",
+        FIELD_COG_BARCODE: "def",
+        "Root Sample ID": "MCM002",
+    },
+    {
+        "coordinate": "C01",
+        "source": "test1",
+        "Result": "Void",
+        "plate_barcode": "123",
+        FIELD_COG_BARCODE: "hij",
+        "Root Sample ID": "MCM003",
+    },
+]
