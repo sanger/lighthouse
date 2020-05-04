@@ -148,8 +148,12 @@ def send_to_ss(body: Dict[str, Any]) -> requests.Response:
 
     logger.info(f"Sending {body} to {ss_url}")
 
+    headers = {
+        "X-Sequencescape-Client-Id": app.config["SS_API_KEY"]
+    }
+
     try:
-        response = requests.post(ss_url, json=body)
+        response = requests.post(ss_url, json=body, headers=headers)
         logger.debug(response.status_code)
     except requests.ConnectionError:
         raise requests.ConnectionError("Unable to access SS")
