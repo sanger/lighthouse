@@ -1,7 +1,7 @@
 import copy
 
-import pytest
-import responses
+import pytest  # type: ignore
+import responses  # type: ignore
 
 from lighthouse import create_app
 

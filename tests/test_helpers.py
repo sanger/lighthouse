@@ -1,11 +1,10 @@
 from http import HTTPStatus
 
-import responses
+import responses  # type: ignore
 from flask import current_app
 
 from lighthouse.constants import FIELD_COG_BARCODE
-from lighthouse.helpers import (add_cog_barcodes, create_post_body,
-                                get_centre_prefix, get_samples)
+from lighthouse.helpers import add_cog_barcodes, create_post_body, get_centre_prefix, get_samples
 
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
