@@ -11,7 +11,7 @@ class MultipleCentresError(Error):
         self.message = message
 
     def __str__(self):
-        default_message = f"Different centres for these samples"
+        default_message = "Different centres for these samples"
 
         if self.message:
             return f"MultipleCentresError: {self.message}"
@@ -26,7 +26,7 @@ class MissingCentreError(Error):
         self.message = message
 
     def __str__(self):
-        default_message = f"No centre for this sample"
+        default_message = "No centre for this sample"
 
         if self.message:
             return f"MissingCentreError: {self.message}"
@@ -41,7 +41,7 @@ class MissingSourceError(Error):
         self.message = message
 
     def __str__(self):
-        default_message = f"No centre for this sample"
+        default_message = "No centre for this sample"
 
         if self.message:
             return f"MissingSourceError: {self.message}"
@@ -56,7 +56,7 @@ class DataError(Error):
         self.message = message
 
     def __str__(self):
-        default_message = f"Error with data"
+        default_message = "Error with data"
 
         if self.message:
             return f"DataError: {self.message}"

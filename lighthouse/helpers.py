@@ -1,10 +1,12 @@
 import logging
+import re
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
 
 import requests
 from flask import current_app as app
 
+from lighthouse.constants import FIELD_COG_BARCODE
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -30,7 +32,7 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
             response = requests.post(baracoda_url)
 
             if response.status_code == HTTPStatus.CREATED:
-                sample["cog_barcode"] = response.json()["barcode"]
+                sample[FIELD_COG_BARCODE] = response.json()["barcode"]
             else:
                 raise Exception("Unable to create COG barcodes")
     except requests.ConnectionError:
@@ -110,25 +112,39 @@ def confirm_cente(samples: List[Dict[str, str]]) -> str:
 def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
     logger.debug(f"Creating POST body to send to SS for barcode '{barcode}'")
 
+    phenotype_pattern = re.compile(r"^Result$", re.I)
+    description_pattern = re.compile(r"^Root Sample ID$", re.I)
     wells_content = {}
     for sample in samples:
-        well = {"phenotype": sample["phenotype"]}
+        for key, value in sample.items():
+            if phenotype_pattern.match(key.strip()):
+                phenotype = value
+
+            if description_pattern.match(key.strip()):
+                description = value
+
+        assert phenotype is not None
+        assert sample[FIELD_COG_BARCODE] is not None
+
+        well = {
+            "phenotype": phenotype.strip().lower(),
+            "supplier_name": sample[FIELD_COG_BARCODE],
+            "sample_description": description,
+        }
         wells_content[sample["coordinate"]] = well
 
     body = {
         "barcode": barcode,
-        "plate_purpose_uuid": "11111",
-        "study_uuid": "11111",
+        "plate_purpose_uuid": app.config["UUID_PLATE_PURPOSE"],
+        "study_uuid": app.config["UUID_STUDY"],
         "wells_content": wells_content,
     }
-
-    logger.debug(body)
 
     return {"data": {"type": "plates", "attributes": body}}
 
 
 def send_to_ss(body: Dict[str, Any]) -> requests.Response:
-    ss_url = f"http://{app.config['SS_HOST']}/plates/new/"
+    ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
     logger.info(f"Sending {body} to {ss_url}")
 
