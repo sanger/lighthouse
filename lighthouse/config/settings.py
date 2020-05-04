@@ -10,9 +10,8 @@ SETTINGS = {
     # out as they already default to a bare bones local 'mongod' instance.
     "MONGO_HOST": os.environ["MONGO_HOST"],
     "MONGO_PORT": int(os.environ["MONGO_PORT"]),
-    # Skip this block if your db has no auth. But it really should.
-    # MONGO_USERNAME = '<your username>'
-    # MONGO_PASSWORD = '<your password>'
+    "MONGO_USERNAME": os.environ["MONGO_USERNAME"],
+    "MONGO_PASSWORD": os.environ["MONGO_PASSWORD"],
     # Name of the database on which the user can be authenticated,
     # needed if --auth mode is enabled.
     # MONGO_AUTH_SOURCE = '<dbname>'
