@@ -18,3 +18,6 @@ SETTINGS = {
     "MONGO_DBNAME": os.environ["MONGO_DBNAME"],
     "MONGO_QUERY_BLACKLIST": ["$where"],
 }
+
+if "MONGO_URI" in os.environ:
+    SETTINGS["MONGO_URI"] = os.environ["MONGO_URI"]
