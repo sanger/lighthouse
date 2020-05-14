@@ -5,13 +5,14 @@ from flask import current_app
 
 from lighthouse.constants import FIELD_COG_BARCODE
 from lighthouse.helpers import add_cog_barcodes, create_post_body, get_centre_prefix, get_samples
+import json
 
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
     with app.app_context():
         baracoda_url = (
             f"http://{current_app.config['BARACODA_HOST']}:{current_app.config['BARACODA_PORT']}"
-            "/barcodes/TS1/new"
+            "/barcodes_group/TS1/new?count=3"
         )
 
         # remove the cog_barcode key and value from the samples fixture before testing
@@ -22,13 +23,12 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
 
-        for cog_barcode in cog_barcodes:
-            mocked_responses.add(
-                responses.POST,
-                baracoda_url,
-                body=f'{{"barcode": "{cog_barcode}"}}',
-                status=HTTPStatus.CREATED,
-            )
+        mocked_responses.add(
+            responses.POST,
+            baracoda_url,
+            body=json.dumps({"barcodes_group": {"barcodes": cog_barcodes}}),
+            status=HTTPStatus.CREATED,
+        )
 
         add_cog_barcodes(samples)
 

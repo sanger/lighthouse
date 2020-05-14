@@ -18,23 +18,25 @@ logger = logging.getLogger(__name__)
 
 
 def add_cog_barcodes(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    logger.info(f"Getting COG-UK barcodes for {len(samples)} samples")
 
     centre_name = confirm_cente(samples)
     centre_prefix = get_centre_prefix(centre_name)
+    num_samples = len(samples)
+
+    logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
 
     baracoda_url = (
         f"http://{app.config['BARACODA_HOST']}:{app.config['BARACODA_PORT']}"
-        f"/barcodes/{centre_prefix}/new"
+        f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
     )
     try:
-        for sample in samples:
-            response = requests.post(baracoda_url)
-
-            if response.status_code == HTTPStatus.CREATED:
-                sample[FIELD_COG_BARCODE] = response.json()["barcode"]
-            else:
-                raise Exception("Unable to create COG barcodes")
+        response = requests.post(baracoda_url)
+        if response.status_code == HTTPStatus.CREATED:
+            barcodes = response.json()["barcodes_group"]["barcodes"]
+            for (sample, barcode) in zip(samples, barcodes):
+                sample[FIELD_COG_BARCODE] = barcode
+        else:
+            raise Exception("Unable to create COG barcodes")
     except requests.ConnectionError:
         raise requests.ConnectionError("Unable to access baracoda")
 
