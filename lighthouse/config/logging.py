@@ -6,7 +6,7 @@ LOGGING_CONF = {
             "()": "colorlog.ColoredFormatter",
             "format": "%(asctime)-15s %(name)-18s:%(lineno)s %(log_color)s%(levelname)-5s %(message)s",
         },
-        "verbose": {"format": "%(asctime)-15s %(name)-18s:%(lineno)s %(levelname)-5s %(message)s",},
+        "verbose": {"format": "%(asctime)-15s %(name)-18s:%(lineno)s %(levelname)-5s %(message)s"},
     },
     "handlers": {
         "colored_stream": {
