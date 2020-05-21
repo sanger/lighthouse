@@ -1,9 +1,9 @@
-name: Docker CI
+name: CI python
 
-on: push
-
-env:
-  IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
+on:
+  push:
+    paths-ignore:
+      - "README.md"
 
 jobs:
   build_and_test_job:

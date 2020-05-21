@@ -1,7 +1,12 @@
-name: Docker CI
+name: CI docker
 
-on: push
-
+on:
+  push:
+    branches:
+      - develop
+      - master
+    paths-ignore:
+      - "README.md"
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
 
