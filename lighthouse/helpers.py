@@ -129,17 +129,19 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
         assert sample[FIELD_COG_BARCODE] is not None
 
         well = {
-            "phenotype": phenotype.strip().lower(),
-            "supplier_name": sample[FIELD_COG_BARCODE],
-            "sample_description": description,
+            "contents": {
+                "phenotype": phenotype.strip().lower(),
+                "supplier_name": sample[FIELD_COG_BARCODE],
+                "sample_description": description,
+            }
         }
         wells_content[sample["coordinate"]] = well
 
     body = {
         "barcode": barcode,
-        "plate_purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE"],
+        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE"],
         "study_uuid": app.config["SS_UUID_STUDY"],
-        "wells_content": wells_content,
+        "wells": wells_content,
     }
 
     return {"data": {"type": "plates", "attributes": body}}
