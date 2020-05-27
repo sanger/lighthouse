@@ -56,21 +56,21 @@ def test_create_post_body(app, samples):
                     "study_uuid": current_app.config["SS_UUID_STUDY"],
                     "wells": {
                         "A01": {
-                            "contents": {
+                            "content": {
                                 "phenotype": "positive",
                                 "supplier_name": "abc",
                                 "sample_description": "MCM001",
                             }
                         },
                         "B01": {
-                            "contents": {
+                            "content": {
                                 "phenotype": "negative",
                                 "supplier_name": "def",
                                 "sample_description": "MCM002",
                             }
                         },
                         "C01": {
-                            "contents": {
+                            "content": {
                                 "phenotype": "void",
                                 "supplier_name": "hij",
                                 "sample_description": "MCM003",

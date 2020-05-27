@@ -129,7 +129,7 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
         assert sample[FIELD_COG_BARCODE] is not None
 
         well = {
-            "contents": {
+            "content": {
                 "phenotype": phenotype.strip().lower(),
                 "supplier_name": sample[FIELD_COG_BARCODE],
                 "sample_description": description,
