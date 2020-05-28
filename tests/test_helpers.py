@@ -52,23 +52,29 @@ def test_create_post_body(app, samples):
                 "type": "plates",
                 "attributes": {
                     "barcode": "12345",
-                    "plate_purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE"],
+                    "purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE"],
                     "study_uuid": current_app.config["SS_UUID_STUDY"],
-                    "wells_content": {
+                    "wells": {
                         "A01": {
-                            "phenotype": "positive",
-                            "supplier_name": "abc",
-                            "sample_description": "MCM001",
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "abc",
+                                "sample_description": "MCM001",
+                            }
                         },
                         "B01": {
-                            "phenotype": "negative",
-                            "supplier_name": "def",
-                            "sample_description": "MCM002",
+                            "content": {
+                                "phenotype": "negative",
+                                "supplier_name": "def",
+                                "sample_description": "MCM002",
+                            }
                         },
                         "C01": {
-                            "phenotype": "void",
-                            "supplier_name": "hij",
-                            "sample_description": "MCM003",
+                            "content": {
+                                "phenotype": "void",
+                                "supplier_name": "hij",
+                                "sample_description": "MCM003",
+                            }
                         },
                     },
                 },
