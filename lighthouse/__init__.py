@@ -8,14 +8,8 @@ from flask_apscheduler import APScheduler  # type: ignore
 scheduler = APScheduler()
 
 
-def create_app(test_config_path: str = None) -> Eve:
-
-    if test_config_path is None:
-        # load the config from the environmental variable 'EVE_SETTINGS'
-        app = Eve(__name__)
-    else:
-        # load the test config passed in
-        app = Eve(__name__, settings=test_config_path)
+def create_app() -> Eve:
+    app = Eve(__name__)
 
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])

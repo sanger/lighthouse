@@ -1,4 +1,5 @@
 import copy
+import os
 
 import pytest  # type: ignore
 import responses  # type: ignore
@@ -10,7 +11,11 @@ from .data.fixture_data import CENTRES, SAMPLES
 
 @pytest.fixture
 def app():
-    app = create_app(test_config_path="config/test.py")
+    # set the 'EVE_SETTINGS' env variable to easily switch to the testing environment when creating
+    #   an app
+    os.environ["EVE_SETTINGS"] = "test.py"
+
+    app = create_app()
 
     yield app
 
