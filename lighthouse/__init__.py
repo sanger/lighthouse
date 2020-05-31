@@ -1,38 +1,34 @@
 import logging
 import logging.config
 from http import HTTPStatus
-from typing import Any, Dict
 
 from eve import Eve  # type: ignore
+from flask_apscheduler import APScheduler  # type: ignore
 
-from lighthouse.config.logging import LOGGING_CONF
-
-logging.config.dictConfig(LOGGING_CONF)
-logger = logging.getLogger(__name__)
+scheduler = APScheduler()
 
 
-def create_app(test_config: Dict[str, Any] = None, test_settings: Dict[str, Any] = None) -> Eve:
-    if test_settings is None:
-        from lighthouse.config.settings import SETTINGS
+def create_app(test_config_path: str = None) -> Eve:
 
-        settings = SETTINGS
+    if test_config_path is None:
+        # load the config from the environmental variable 'EVE_SETTINGS'
+        app = Eve(__name__)
     else:
-        logger.info("Using test settings")
+        # load the test config passed in
+        app = Eve(__name__, settings=test_config_path)
 
-        settings = test_settings
+    # setup logging
+    logging.config.dictConfig(app.config["LOGGING"])
 
-    app = Eve(__name__, settings=settings, instance_relative_config=False)
-
-    if test_config is None:
-        # load the config, if it exists, when not testing
-        app.config.from_pyfile("config/config.py", silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
-
-    from lighthouse import plates
+    from lighthouse.blueprints import plates
+    from lighthouse.blueprints import reports
 
     app.register_blueprint(plates.bp)
+    app.register_blueprint(reports.bp)
+
+    if app.config.get("SCHEDULER_RUN", False):
+        scheduler.init_app(app)
+        scheduler.start()
 
     @app.route("/health")
     def health_check():

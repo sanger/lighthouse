@@ -26,7 +26,7 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
     logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
 
     baracoda_url = (
-        f"http://{app.config['BARACODA_HOST']}:{app.config['BARACODA_PORT']}"
+        f"http://{app.config['BARACODA_URL']}"
         f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
     )
     try:
@@ -47,7 +47,7 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
     logger.debug(f"Getting the prefix for '{centre_name}'")
     try:
         #  get the centre collection
-        centres = app.data.driver.db["centres"]
+        centres = app.data.driver.db.centres
 
         # use a case insensitive search for the centre name
         filter = {"name": {"$regex": f"^(?i){centre_name}$"}}
@@ -72,7 +72,7 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
 def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     logger.info(f"Getting all samples for {plate_barcode}")
 
-    samples = app.data.driver.db["samples"]
+    samples = app.data.driver.db.samples
 
     samples_for_barcode = list(samples.find({"plate_barcode": plate_barcode}))
 

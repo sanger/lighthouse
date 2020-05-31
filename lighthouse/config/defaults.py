@@ -1,4 +1,40 @@
-LOGGING_CONF = {
+from typing import Dict
+
+BARACODA_URL = "localhost:5000"
+SS_API_KEY = "develop"
+SS_URL = "localhost:3000"
+LABWHERE_URL = "labwhere.psd.sanger.ac.uk"
+SS_PLATE_PURPOSE = ""
+SS_STUDY = ""
+REPORTS_DIR = "data/reports"
+DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
+
+# APScheduler
+SCHEDULER_RUN = True
+JOBS = [
+    {
+        "id": "job1",
+        "func": "lighthouse.jobs.reports:create_report_job",
+        "trigger": "cron",
+        "day": "*",
+        "hour": 1,
+    }
+]
+SCHEDULER_API_ENABLED = False
+
+# Eve
+ALLOW_UNKNOWN = True
+DEBUG = True
+HATEOAS = True
+DOMAIN: Dict = {"samples": {}, "imports": {}, "centres": {}, "schema": {}}
+MONGO_HOST = "localhost"
+MONGO_PORT = 27017
+MONGO_USERNAME = ""
+MONGO_PASSWORD = ""
+MONGO_DBNAME = ""
+MONGO_QUERY_BLACKLIST = ["$where"]
+
+LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {

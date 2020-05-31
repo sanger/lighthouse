@@ -5,13 +5,12 @@ import responses  # type: ignore
 
 from lighthouse import create_app
 
-from .config import TEST_CONFIG_FLASK, TEST_SETTINGS_EVE
 from .data.fixture_data import CENTRES, SAMPLES
 
 
 @pytest.fixture
 def app():
-    app = create_app(test_config=TEST_CONFIG_FLASK, test_settings=TEST_SETTINGS_EVE)
+    app = create_app(test_config_path="config/test.py")
 
     yield app
 
@@ -24,12 +23,13 @@ def client(app):
 @pytest.fixture
 def centres(app):
     with app.app_context():
-        centres_collection = app.data.driver.db["centres"]
+        centres_collection = app.data.driver.db.centres
         _ = centres_collection.insert_many(CENTRES)
 
     #  yield a copy so that the test change it however it wants
     yield copy.deepcopy(CENTRES)
 
+    # clear up after the fixture is used
     with app.app_context():
         centres_collection.delete_many({})
 
@@ -37,12 +37,13 @@ def centres(app):
 @pytest.fixture
 def samples(app):
     with app.app_context():
-        samples_collection = app.data.driver.db["samples"]
+        samples_collection = app.data.driver.db.samples
         _ = samples_collection.insert_many(SAMPLES)
 
     #  yield a copy of that the test change it however it wants
     yield copy.deepcopy(SAMPLES)
 
+    # clear up after the fixture is used
     with app.app_context():
         samples_collection.delete_many({})
 
