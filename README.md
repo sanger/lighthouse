@@ -20,6 +20,8 @@ The services has the following routes:
     imports|resource                  GET      /imports
     media                             GET      /media/<regex("[a-f0-9]{24}"):_id>
     plates.create_plate_from_barcode  POST     /plates/new
+    reports.create_report             POST     /reports/new
+    reports.get_reports               GET      /reports
     samples|item_lookup               GET      /samples/<regex("[a-f0-9]{24}"):_id>
     samples|resource                  GET      /samples
     schema|item_lookup                GET      /schema/<regex("[a-f0-9]{24}"):_id>
@@ -28,37 +30,26 @@ The services has the following routes:
 
 ## Requirements
 
-* [pyenv](https://github.com/pyenv/pyenv)
-* [pipenv](https://pipenv.pypa.io/en/latest/)
-* mongodb
+- [pyenv](https://github.com/pyenv/pyenv)
+- [pipenv](https://pipenv.pypa.io/en/latest/)
+- mongodb
 
 ## Setup
 
-* Use pyenv or something similar to install the version of python
-defined in the `Pipfile`:
+- Use pyenv or something similar to install the version of python
+  defined in the `Pipfile`:
   1. `brew install pyenv`
   2. `pyenv install <python_version>`
-* Use pipenv to install python packages: `brew install pipenv`
-* To install the required packages (and dev packages) run: `pipenv install --dev`
+- Use pipenv to install python packages: `brew install pipenv`
+- To install the required packages (and dev packages) run: `pipenv install --dev`
 
 ## Running
 
 1. Create a `.env` file with the following contents (or use `.env.example` - rename to `.env`):
-    * `BARACODA_HOST=127.0.0.1`
-    * `BARACODA_PORT=5001`
-    * `FLASK_APP=lighthouse`
-    * `FLASK_ENV=development`
-    * `MONGO_DBNAME=crawlerDevelopmentDB`
-    * `MONGO_HOST=127.0.0.1`
-    * `MONGO_PASSWORD=`
-    * `MONGO_PORT=27017`
-    * `MONGO_USERNAME=`
-    * `SLACK_API_TOKEN=xoxb`
-    * `SLACK_CHANNEL_ID=C`
-    * `SS_API_KEY=development`
-    * `SS_HOST=localhost:3000`
-    * `SS_UUID_PLATE_PURPOSE=11111111`
-    * `SS_UUID_STUDY=12345`
+
+    - `FLASK_APP=lighthouse`
+    - `FLASK_ENV=development`
+    - `EVE_SETTINGS=development.py`
 
 1. Enter the python virtual environment using:
 
@@ -68,7 +59,7 @@ defined in the `Pipfile`:
 
         flask run
 
-__NB:__ When adding or changing environmental variables, remember to exit and re-enter the virtual
+**NB:** When adding or changing environmental variables, remember to exit and re-enter the virtual
 environment.
 
 ## Testing
@@ -78,7 +69,7 @@ environment.
 
         python -m pytest -vsx
 
-__NB__: Make sure to be in the virtual environment (`pipenv shell`) before running the tests:
+**NB**: Make sure to be in the virtual environment (`pipenv shell`) before running the tests:
 
 ## Type checking
 

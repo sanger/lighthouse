@@ -1,19 +1,21 @@
+import json
 from http import HTTPStatus
 
 import responses  # type: ignore
 from flask import current_app
 
 from lighthouse.constants import FIELD_COG_BARCODE
-from lighthouse.helpers import add_cog_barcodes, create_post_body, get_centre_prefix, get_samples
-import json
+from lighthouse.helpers.plates import (
+    add_cog_barcodes,
+    create_post_body,
+    get_centre_prefix,
+    get_samples,
+)
 
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
     with app.app_context():
-        baracoda_url = (
-            f"http://{current_app.config['BARACODA_HOST']}:{current_app.config['BARACODA_PORT']}"
-            "/barcodes_group/TS1/new?count=3"
-        )
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TS1/new?count=3"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
