@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Any, Dict
 
 # lighthouse config
 BARACODA_URL = "localhost:5000"
@@ -36,7 +36,7 @@ MONGO_DBNAME = ""
 MONGO_QUERY_BLACKLIST = ["$where"]
 
 # logging config
-LOGGING = {
+LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
