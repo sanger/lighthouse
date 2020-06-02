@@ -38,6 +38,5 @@ def test_create_report(client, mocked_responses, app, tmp_path, samples):
                 "lighthouse.blueprints.reports.get_reports_details",
                 return_value="Some details of a report",
             ):
-                # mocked_response.add("http://{app.config['LABWHERE_URL']}/api/labwares/searches"
                 response = client.post("/reports/new")
                 assert response.json == {"reports": "Some details of a report"}
