@@ -62,3 +62,18 @@ class DataError(Error):
             return f"DataError: {self.message}"
         else:
             return f"DataError: {default_message}"
+
+
+class ReportCreationError(Error):
+    """Raised when an error occured while trying to generate the positive samples report."""
+
+    def __init__(self, message=None):
+        self.message = message
+
+    def __str__(self):
+        default_message = "Error while creating report"
+
+        if self.message:
+            return f"ReportCreationError: {self.message}"
+        else:
+            return f"ReportCreationError: {default_message}"

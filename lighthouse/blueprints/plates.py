@@ -4,7 +4,7 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 
-from lighthouse.helpers import add_cog_barcodes, create_post_body, get_samples, send_to_ss
+from lighthouse.helpers.plates import add_cog_barcodes, create_post_body, get_samples, send_to_ss
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +13,9 @@ bp = Blueprint("plates", __name__)
 
 @bp.route("/plates/new", methods=["POST"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
-    logger.debug("create_plate_from_barcode()")
-
     try:
         barcode = request.get_json()["barcode"]
-        logger.info(f"Looking for samples for labware with barcode: {barcode}")
+        logger.info(f"Attempting to create a plate in SS from barcode: {barcode}")
     except (KeyError, TypeError) as e:
         logger.exception(e)
         return {"errors": ["POST request needs 'barcode' in body"]}, HTTPStatus.BAD_REQUEST
@@ -27,8 +25,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         samples = get_samples(barcode)
 
         if not samples:
-            # do something cleverer here
-            return {"errors": ["No samples for this barcode"]}, HTTPStatus.OK
+            return {"errors": ["No samples for this barcode"]}, HTTPStatus.BAD_REQUEST
 
         # add COG barcodes to samples
         add_cog_barcodes(samples)
@@ -37,6 +34,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
         response = send_to_ss(body)
 
+        # return the JSON and status code directly from SS (act as a proxy)
         return response.json(), response.status_code
     except Exception as e:
         logger.exception(e)
