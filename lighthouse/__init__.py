@@ -12,7 +12,7 @@ def create_app() -> Eve:
     app = Eve(__name__)
 
     # setup logging
-    # logging.config.dictConfig(app.config["LOGGING"])
+    logging.config.dictConfig(app.config["LOGGING"])
 
     from lighthouse.blueprints import plates
     from lighthouse.blueprints import reports
