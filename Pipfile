@@ -13,6 +13,7 @@ pytest = "*"
 pytest-cov = "*"
 black = "*"
 responses = "*"
+pytest-freezegun = "*"
 
 [packages]
 eve = "~=1.1"

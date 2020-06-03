@@ -1,5 +1,6 @@
-from typing import Dict
+from typing import Any, Dict
 
+# lighthouse config
 BARACODA_URL = "localhost:5000"
 SS_API_KEY = "develop"
 SS_URL = "localhost:3000"
@@ -9,7 +10,7 @@ SS_UUID_STUDY = ""
 REPORTS_DIR = "data/reports"
 DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
 
-# APScheduler
+# APScheduler config
 SCHEDULER_RUN = True
 JOBS = [
     {
@@ -22,7 +23,7 @@ JOBS = [
 ]
 SCHEDULER_API_ENABLED = False
 
-# Eve
+# Eve config
 ALLOW_UNKNOWN = True
 DEBUG = True
 HATEOAS = True
@@ -34,7 +35,8 @@ MONGO_PASSWORD = ""
 MONGO_DBNAME = ""
 MONGO_QUERY_BLACKLIST = ["$where"]
 
-LOGGING = {
+# logging config
+LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
@@ -50,17 +52,16 @@ LOGGING = {
             "class": "colorlog.StreamHandler",
             "formatter": "colored",
         },
+        "console": {"level": "INFO", "class": "logging.StreamHandler", "formatter": "verbose"},
         "slack": {
             "level": "ERROR",
             "class": "lighthouse.utils.SlackHandler",
             "formatter": "verbose",
+            "token": "",
+            "channel_id": "",
         },
     },
     "loggers": {
-        "lighthouse": {
-            "handlers": ["colored_stream", "slack"],
-            "level": "DEBUG",
-            "propagate": True,
-        },
+        "lighthouse": {"handlers": ["console", "slack"], "level": "INFO", "propagate": True}
     },
 }
