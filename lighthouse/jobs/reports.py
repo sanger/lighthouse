@@ -108,12 +108,14 @@ def create_report() -> str:
         # Create a Pandas Excel writer using XlsxWriter as the engine
         writer = pd.ExcelWriter(report_path, engine="xlsxwriter")
 
+        # Sheet2 contains all positive samples WITH location barcodes
+        merged[merged.location_barcode.notnull()].to_excel(
+            writer, sheet_name="POSITIVES SAMPLES WITH LOCATION", index=False
+        )
+
         # Convert the dataframe to an XlsxWriter Excel object
         #  Sheet1 contains all positive samples with AND without location barcodes
-        merged.to_excel(writer, sheet_name="Sheet1")
-
-        # Sheet2 contains all positive samples WITH location barcodes
-        merged[merged.location_barcode.notnull()].to_excel(writer, sheet_name="Sheet2")
+        merged.to_excel(writer, sheet_name="ALL POSITIVE SAMPLES", index=False)
 
         # Close the Pandas Excel writer and output the Excel file
         writer.save()
