@@ -110,7 +110,7 @@ def create_report() -> str:
 
         # Sheet2 contains all positive samples WITH location barcodes
         merged[merged.location_barcode.notnull()].to_excel(
-            writer, sheet_name="POSITIVES SAMPLES WITH LOCATION", index=False
+            writer, sheet_name="POSITIVE SAMPLES WITH LOCATION", index=False
         )
 
         # Convert the dataframe to an XlsxWriter Excel object
