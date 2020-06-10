@@ -27,7 +27,35 @@ SCHEDULER_API_ENABLED = False
 ALLOW_UNKNOWN = True
 DEBUG = True
 HATEOAS = True
-DOMAIN: Dict = {"samples": {}, "imports": {}, "centres": {}, "schema": {}}
+
+SAMPLES_DECLARATIONS_SCHEMA: Dict = {
+    "root_sample_id": {"unique": True},
+    "value_in_sequencing": {
+        "type": "string",
+        "allowed": ["Yes", "No", "Unknown"],
+        "required": False,
+    },
+    "declared_at": {"type": "datetime"},
+}
+# DATE_FORMAT = r"%Y-%b-%d %H:%M:%S"
+# https://stackoverflow.com/questions/56481508/eve-date-time-format-for-for-a-field
+# SOLVED - update
+DATE_FORMAT = r"%Y-%m-%dT%H:%M:%S"
+
+# By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
+# RFC-1123 formatted strings, such as "Tue, 02 Apr 2013 10:29:13 GMT".
+
+DOMAIN: Dict = {
+    "samples": {"resource_methods": ["GET", "POST"], "bulk_enabled": True,},
+    "imports": {},
+    "centres": {},
+    "samples_declarations": {
+        "resource_methods": ["GET", "POST"],
+        "bulk_enabled": True,
+        "schema": SAMPLES_DECLARATIONS_SCHEMA,
+    },
+    "schema": {},
+}
 MONGO_HOST = "localhost"
 MONGO_PORT = 27017
 MONGO_USERNAME = ""
