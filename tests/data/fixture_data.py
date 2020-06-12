@@ -8,6 +8,22 @@ CENTRES: List[Dict[str, str]] = [
     {"name": "test3", "prefix": "TS3"},
 ]
 
+SAMPLES_DECLARATIONS: List[Dict[str, str]] = [
+    {
+        "root_sample_id": "MCM001",
+        "value_in_sequencing": "Yes",
+        "declared_at": "2013-04-04T10:29:13",
+    },
+    {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": "2013-04-04T10:29:13"},
+    {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": "2013-04-05T10:29:13"},
+    {
+        "root_sample_id": "MCM003",
+        "value_in_sequencing": "Yes",
+        "declared_at": "2013-04-06T10:29:13",
+    },
+]
+
+
 SAMPLES: List[Dict[str, str]] = [
     {
         "coordinate": "A01",

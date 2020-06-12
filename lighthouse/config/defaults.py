@@ -29,7 +29,7 @@ DEBUG = True
 HATEOAS = True
 
 SAMPLES_DECLARATIONS_SCHEMA: Dict = {
-    "root_sample_id": {"unique": True},
+    "root_sample_id": {"type": "string"},
     "value_in_sequencing": {
         "type": "string",
         "allowed": ["Yes", "No", "Unknown"],
@@ -51,6 +51,7 @@ DOMAIN: Dict = {
     "centres": {},
     "samples_declarations": {
         "resource_methods": ["GET", "POST"],
+        "item_methods": ["GET", "PUT", "DELETE"],
         "bulk_enabled": True,
         "schema": SAMPLES_DECLARATIONS_SCHEMA,
     },
