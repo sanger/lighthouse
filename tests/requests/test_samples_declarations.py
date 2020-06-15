@@ -39,6 +39,7 @@ def test_post_new_sample_declaration_for_existing_samples(client, samples_declar
         content_type="application/json",
     )
     assert response.status_code == HTTPStatus.CREATED, response.json
+    assert response.json["_status"] == "OK"
     assert len(response.json["_items"]) == 2
     assert response.json["_items"][0]["_status"] == "OK"
 
@@ -72,3 +73,164 @@ def test_create_lots_of_samples(client, lots_of_samples):
     )
     assert len(response.json["_items"]) == 1000
     assert response.json["_items"][0]["_status"] == "OK"
+
+
+def test_wrong_value_for_value_in_sequencing(client, samples_declarations):
+    response = client.post(
+        "/samples_declarations",
+        data=json.dumps(
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "wrong answer!!",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM003",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ]
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+    assert len(response.json["_items"]) == 2
+    assert response.json["_status"] == "ERR"
+    assert response.json["_items"][0]["_status"] == "ERR"
+    assert response.json["_items"][0]["_issues"] == {
+        "value_in_sequencing": "unallowed value wrong answer!!"
+    }
+    assert response.json["_items"][1]["_status"] == "OK"
+
+
+def test_wrong_value_for_declared_at(client, samples_declarations):
+    response = client.post(
+        "/samples_declarations",
+        data=json.dumps(
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM003",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": "wrong time mate!!",
+                },
+            ]
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+    assert len(response.json["_items"]) == 2
+    assert response.json["_status"] == "ERR"
+    assert response.json["_items"][0]["_status"] == "OK"
+    assert response.json["_items"][1]["_status"] == "ERR"
+    assert response.json["_items"][1]["_issues"] == {"declared_at": "must be of datetime type"}
+
+
+def test_wrong_value_for_root_sample_id(client, samples_declarations):
+    response = client.post(
+        "/samples_declarations",
+        data=json.dumps(
+            [
+                {
+                    "root_sample_id": True,
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM003",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ]
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+    assert len(response.json["_items"]) == 2
+    assert response.json["_status"] == "ERR"
+    assert response.json["_items"][0]["_status"] == "ERR"
+    assert response.json["_items"][0]["_issues"] == {"root_sample_id": "must be of string type"}
+    assert response.json["_items"][1]["_status"] == "OK"
+
+
+def test_validate_sample_exist_in_samples_table(client, samples_declarations):
+    response = client.post(
+        "/samples_declarations",
+        data=json.dumps(
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM_WRONG_VALUE",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ]
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+    assert len(response.json["_items"]) == 2
+    assert response.json["_status"] == "ERR"
+    assert response.json["_items"][0]["_status"] == "OK"
+    assert response.json["_items"][1]["_status"] == "ERR"
+
+
+def test_validate_sample_exist_in_samples_table(client, samples_declarations):
+    response = client.post(
+        "/samples_declarations",
+        data=json.dumps(
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM_WRONG_VALUE",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ]
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+    assert len(response.json["_items"]) == 2
+    assert response.json["_status"] == "ERR"
+    assert response.json["_items"][0]["_status"] == "OK"
+    assert response.json["_items"][1]["_status"] == "ERR"
+
+
+def test_validate_sample_not_defined_twice(client, samples_declarations):
+    response = client.post(
+        "/samples_declarations",
+        data=json.dumps(
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ]
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+    assert len(response.json["_items"]) == 2
+    assert response.json["_status"] == "ERR"
+    assert response.json["_items"][0]["_status"] == "OK"
+    assert response.json["_items"][1]["_status"] == "ERR"
