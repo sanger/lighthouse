@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 from eve import Eve  # type: ignore
 from flask_apscheduler import APScheduler  # type: ignore
+from lighthouse.authorization import APIKeyAuth
 
 scheduler = APScheduler()
 
@@ -112,8 +113,9 @@ def pre_samples_declarations_post_callback(request):
     
 
 def create_app() -> Eve:
-    app = Eve(__name__)
+    app = Eve(__name__, auth=APIKeyAuth)
     app.on_pre_POST_samples_declarations += pre_samples_declarations_post_callback
+
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])
 

@@ -3,6 +3,7 @@ from typing import Any, Dict
 # lighthouse config
 BARACODA_URL = "localhost:5000"
 SS_API_KEY = "develop"
+LIGHTHOUSE_API_KEY = "develop"
 SS_URL = "localhost:3000"
 LABWHERE_URL = "labwhere.psd.sanger.ac.uk"
 SS_UUID_PLATE_PURPOSE = ""
@@ -30,17 +31,17 @@ HATEOAS = True
 
 SAMPLES_DECLARATIONS_SCHEMA: Dict = {
     "root_sample_id": {
-        # "unique": True,
-        "required": True,
+        "type": "string", 
+        "required": True
     },
     "value_in_sequencing": {
         "type": "string",
         "allowed": ["Yes", "No", "Unknown"],
-        "required": False,
+        "required": True,
     },
     "declared_at": {
         "type": "datetime",
-        "required": True, #required?
+        "required": True,
     },
 }
 # DATE_FORMAT = r"%Y-%b-%d %H:%M:%S"
@@ -57,6 +58,7 @@ DOMAIN: Dict = {
     "centres": {},
     "samples_declarations": {
         "resource_methods": ["GET", "POST"],
+        "item_methods": ["GET", "PUT", "DELETE"],
         "bulk_enabled": True,
         "schema": SAMPLES_DECLARATIONS_SCHEMA,
     },
