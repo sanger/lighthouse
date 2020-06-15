@@ -4,12 +4,13 @@ from http import HTTPStatus
 
 from eve import Eve  # type: ignore
 from flask_apscheduler import APScheduler  # type: ignore
+from lighthouse.authorization import APIKeyAuth
 
 scheduler = APScheduler()
 
 
 def create_app() -> Eve:
-    app = Eve(__name__)
+    app = Eve(__name__, auth=APIKeyAuth)
 
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])

@@ -3,6 +3,7 @@ from typing import Any, Dict
 # lighthouse config
 BARACODA_URL = "localhost:5000"
 SS_API_KEY = "develop"
+LIGHTHOUSE_API_KEY = "develop"
 SS_URL = "localhost:3000"
 LABWHERE_URL = "labwhere.psd.sanger.ac.uk"
 SS_UUID_PLATE_PURPOSE = ""
