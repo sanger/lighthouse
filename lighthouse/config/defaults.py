@@ -32,7 +32,8 @@ HATEOAS = True
 SAMPLES_DECLARATIONS_SCHEMA: Dict = {
     "root_sample_id": {
         "type": "string", 
-        "required": True
+        "required": True,
+        "validation_errors" : True
     },
     "value_in_sequencing": {
         "type": "string",
@@ -44,13 +45,11 @@ SAMPLES_DECLARATIONS_SCHEMA: Dict = {
         "required": True,
     },
 }
-# DATE_FORMAT = r"%Y-%b-%d %H:%M:%S"
-# https://stackoverflow.com/questions/56481508/eve-date-time-format-for-for-a-field
-# SOLVED - update
+# We are overwriting the date format. 
+# By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
+
 DATE_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 # eg "2013-04-04T10:29:13"
-
-# By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
 
 DOMAIN: Dict = {
     "samples": {"resource_methods": ["GET", "POST"], "bulk_enabled": True},

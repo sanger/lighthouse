@@ -6,7 +6,7 @@ import responses  # type: ignore
 
 from lighthouse import create_app
 
-from .data.fixture_data import CENTRES, SAMPLES, SAMPLES_DECLARATIONS
+from .data.fixture_data import CENTRES, SAMPLES, SAMPLES_DECLARATIONS, LOTS_OF_SAMPLES, LOTS_OF_SAMPLES_DECLARATIONS
 
 
 @pytest.fixture
@@ -53,28 +53,28 @@ def samples_declarations(app):
 
 
 @pytest.fixture
-def lots_of_samples(app):
-    num_samples = 1000
-    samples = []
-    i = 0
-    while i < num_samples:
-        samples.append(
-            {
-                "root_sample_id": f"MCM{i}",
-                "value_in_sequencing": "Yes",
-                "declared_at": "2013-04-06T10:29:13",
-            }
-        )
-        i = i + 1
-
+def lots_of_samples_declarations(app):
     with app.app_context():
         samples_declarations_collections = app.data.driver.db.samples_declarations
+        _ = samples_declarations_collections.insert_many(LOTS_OF_SAMPLES_DECLARATIONS)
 
-    yield copy.deepcopy(samples)
+    yield copy.deepcopy(LOTS_OF_SAMPLES_DECLARATIONS)
 
     # clear up after the fixture is used
     with app.app_context():
         samples_declarations_collections.delete_many({})
+
+@pytest.fixture
+def lots_of_samples(app):
+    with app.app_context():
+        samples_collections = app.data.driver.db.samples
+        _ = samples_collections.insert_many(LOTS_OF_SAMPLES)
+
+    yield copy.deepcopy(LOTS_OF_SAMPLES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collections.delete_many({})
 
 
 @pytest.fixture
