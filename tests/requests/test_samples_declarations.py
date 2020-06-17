@@ -72,9 +72,74 @@ def test_post_new_sample_declaration_for_existing_samples(client, samples, sampl
     assert response.status_code == HTTPStatus.OK
     assert response.json["_items"] == items
 
-def test_create_lots_of_samples(client, lots_of_samples):
-    response = post_authorized_create_samples_declaration(client, LOTS_OF_SAMPLES_DECLARATIONS)
-    assert len(response.json["_items"]) == 100000
+# def test_generate_new_data(client):
+    # i=0
+    # samples=[]
+    # while(i < 100000):
+    #     samples.append({
+    #         "coordinate": "A01",
+    #         "source": "test1",
+    #         "Result": "Positive",
+    #         "plate_barcode": "123",
+    #         "test": "abc",
+    #         "Root Sample ID": "MCM001",
+    #     })
+    #     i=i+1
+
+
+def test_create_testing_files():
+    i=0
+    lots_declarations=[]
+    samples_declarations=[]
+    while(i < 100000):
+        lots_declarations.append({
+            "root_sample_id": f"MCM00{i}",
+            "value_in_sequencing": "Yes",
+            "declared_at": "2013-04-04T10:29:13",
+        })
+        samples_declarations.append({
+            "coordinate": "A01",
+            "source": "test1",
+            "Result": "Positive",
+            "plate_barcode": "123",
+            "barcode": "abc",
+            "Root Sample ID": f"MCM00{i}"
+        })
+        i=i+1
+
+    with open('declarations.txt', 'w') as outfile:
+        json.dump(lots_declarations, outfile)
+        
+    with open('samples.txt', 'w') as outfile:
+        json.dump(samples_declarations, outfile)
+
+
+def test_create_lots_of_samples(client):
+    #lots_declarations = [{
+    #       "root_sample_id": f"MCM00{i}",
+    #       "value_in_sequencing": "Yes",
+    #       "declared_at": "2013-04-04T10:29:13",
+    #} for i in range(0, 10000)]
+
+    i=0
+    lots_declarations=[]
+    while(i < 100000):
+        lots_declarations.append({
+            "root_sample_id": f"MCM00{i}",
+            "value_in_sequencing": "Yes",
+            "declared_at": "2013-04-04T10:29:13",
+        })
+        i=i+1
+
+    with open('data.txt', 'w') as outfile:
+        json.dump(lots_declarations, outfile)
+
+    #response = post_authorized_create_samples_declaration(client, lots_declarations)
+    #response = post_authorized_create_samples_declaration(client, lots_declarations)
+    return
+    response = None
+    #response = post_authorized_create_samples_declaration(client, lots_declarations)
+    assert len(response.json["_items"]) == len(lots_declarations)
     assert response.json["_status"] == "OK"
     assert response.json["_items"][0]["_status"] == "OK"
 
