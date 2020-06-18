@@ -30,34 +30,26 @@ DEBUG = True
 HATEOAS = True
 
 SAMPLES_DECLARATIONS_SCHEMA: Dict = {
-    "root_sample_id": {
-        "type": "string", 
-        "required": True,
-        "validation_errors" : True
-    },
+    "root_sample_id": {"type": "string", "required": True, "validation_errors": True},
     "value_in_sequencing": {
         "type": "string",
         "allowed": ["Yes", "No", "Unknown"],
         "required": True,
     },
-    "declared_at": {
-        "type": "datetime",
-        "required": True,
-    },
+    "declared_at": {"type": "datetime", "required": True,},
 }
-# We are overwriting the date format. 
+# We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
 
 DATE_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 # eg "2013-04-04T10:29:13"
 
 DOMAIN: Dict = {
-    "samples": {"resource_methods": ["GET", "POST"], "bulk_enabled": True},
+    "samples": {},
     "imports": {},
     "centres": {},
     "samples_declarations": {
         "resource_methods": ["GET", "POST"],
-        "item_methods": ["GET", "PUT", "DELETE"],
         "bulk_enabled": True,
         "schema": SAMPLES_DECLARATIONS_SCHEMA,
     },
