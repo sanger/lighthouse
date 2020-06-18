@@ -122,9 +122,12 @@ def create_report() -> str:
         merged = positive_samples_df.merge(
             labware_to_location_barcode_df, how="left", on="plate_barcode"
         )
-        logger.debug("Joining declarations")
-        declarations = pd.DataFrame.from_records([record for record in declarations])
-        merged = merged.merge(declarations, how="left", on="Root Sample ID")
+
+        declarations_records = [record for record in declarations]
+        if len(declarations_records) > 0:
+            logger.debug("Joining declarations")
+            declarations_frame = pd.DataFrame.from_records(declarations_records)
+            merged = merged.merge(declarations_frame, how="left", on="Root Sample ID")
 
         pretty(logger, merged)
 
