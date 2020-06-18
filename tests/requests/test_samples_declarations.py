@@ -166,7 +166,7 @@ def test_validate_sample_exist_in_samples_table(client, samples, samples_declara
     )
 
 
-def test_validate_sample_not_defined_twice_v1(client, samples, samples_declarations):
+def test_validate_samples_are_defined_twice_v1(client, samples, samples_declarations):
     response = post_authorized_create_samples_declaration(
         client,
         [
@@ -185,7 +185,7 @@ def test_validate_sample_not_defined_twice_v1(client, samples, samples_declarati
     asset_has_error(response.json["_items"][1], "root_sample_id", "Sample is a duplicate")
 
 
-def test_validate_sample_not_defined_twice_v2(client, samples, samples_declarations):
+def test_validate_samples_are_defined_twice_v2(client, samples, samples_declarations):
     response = post_authorized_create_samples_declaration(
         client,
         [
