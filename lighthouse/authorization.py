@@ -1,6 +1,5 @@
-
 from flask import request, current_app
-from eve.auth import BasicAuth
+from eve.auth import BasicAuth  # type: ignore
 
 
 class APIKeyAuth(BasicAuth):
@@ -12,7 +11,7 @@ class APIKeyAuth(BasicAuth):
         return False
 
     def authorized(self, allowed_roles, resource, method):
-        if (resource == 'samples_declarations') and (method=='POST'):
-          return self.check_auth(request.headers)
+        if (resource == "samples_declarations") and (method == "POST"):
+            return self.check_auth(request.headers)
         else:
-          return True
+            return True
