@@ -1,11 +1,12 @@
 from http import HTTPStatus
-from unittest.mock import patch
-
-import responses
 import json
-from tests.data.fixture_data import LOTS_OF_SAMPLES_DECLARATIONS
 
 TIMESTAMP = "2013-04-04T10:29:13"
+
+
+def asset_has_error(record, key, error_message):
+    assert record["_status"] == "ERR"
+    assert record["_issues"][key] == error_message
 
 
 def test_get_empty_samples_declarations(client):
@@ -96,10 +97,9 @@ def test_wrong_value_for_value_in_sequencing(client, samples, samples_declaratio
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
     assert len(response.json["_items"]) == 2
     assert response.json["_status"] == "ERR"
-    assert response.json["_items"][0]["_status"] == "ERR"
-    assert response.json["_items"][0]["_issues"] == {
-        "value_in_sequencing": "unallowed value wrong answer!!"
-    }
+    asset_has_error(
+        response.json["_items"][0], "value_in_sequencing", "unallowed value wrong answer!!"
+    )
     assert response.json["_items"][1]["_status"] == "OK"
 
 
@@ -123,8 +123,7 @@ def test_wrong_value_for_declared_at(client, samples, samples_declarations):
     assert len(response.json["_items"]) == 2
     assert response.json["_status"] == "ERR"
     assert response.json["_items"][0]["_status"] == "OK"
-    assert response.json["_items"][1]["_status"] == "ERR"
-    assert response.json["_items"][1]["_issues"] == {"declared_at": "must be of datetime type"}
+    asset_has_error(response.json["_items"][1], "declared_at", "must be of datetime type")
 
 
 def test_wrong_value_for_root_sample_id(client, samples, samples_declarations):
@@ -138,8 +137,7 @@ def test_wrong_value_for_root_sample_id(client, samples, samples_declarations):
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
     assert len(response.json["_items"]) == 2
     assert response.json["_status"] == "ERR"
-    assert response.json["_items"][0]["_status"] == "ERR"
-    assert response.json["_items"][0]["_issues"] == {"root_sample_id": "must be of string type"}
+    asset_has_error(response.json["_items"][0], "root_sample_id", "must be of string type")
     assert response.json["_items"][1]["_status"] == "OK"
 
 
@@ -160,11 +158,12 @@ def test_validate_sample_exist_in_samples_table(client, samples, samples_declara
         ],
     )
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
-    assert len(response.json["_items"]) == 2
     assert response.json["_status"] == "ERR"
+    assert len(response.json["_items"]) == 2
     assert response.json["_items"][0]["_status"] == "OK"
-    assert response.json["_items"][1]["_status"] == "ERR"
-    # TODO: check error message
+    asset_has_error(
+        response.json["_items"][1], "root_sample_id", "Sample does not exist in database"
+    )
 
 
 def test_validate_sample_not_defined_twice_v1(client, samples, samples_declarations):
@@ -182,9 +181,8 @@ def test_validate_sample_not_defined_twice_v1(client, samples, samples_declarati
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
     assert len(response.json["_items"]) == 2
     assert response.json["_status"] == "ERR"
-    assert response.json["_items"][0]["_status"] == "ERR"
-    assert response.json["_items"][1]["_status"] == "ERR"
-    # TODO: check error message
+    asset_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate")
+    asset_has_error(response.json["_items"][1], "root_sample_id", "Sample is a duplicate")
 
 
 def test_validate_sample_not_defined_twice_v2(client, samples, samples_declarations):
@@ -221,12 +219,11 @@ def test_validate_sample_not_defined_twice_v2(client, samples, samples_declarati
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
     assert len(response.json["_items"]) == 5
     assert response.json["_status"] == "ERR"
-    assert response.json["_items"][0]["_status"] == "ERR"
+    asset_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate")
     assert response.json["_items"][1]["_status"] == "OK"
-    assert response.json["_items"][2]["_status"] == "ERR"
-    assert response.json["_items"][3]["_status"] == "ERR"
-    assert response.json["_items"][4]["_status"] == "ERR"
-    # TODO: check error message
+    asset_has_error(response.json["_items"][2], "root_sample_id", "Sample is a duplicate")
+    asset_has_error(response.json["_items"][3], "root_sample_id", "Sample is a duplicate")
+    asset_has_error(response.json["_items"][4], "root_sample_id", "Sample is a duplicate")
 
 
 def test_filter_by_root_sample_id(client, samples_declarations):
