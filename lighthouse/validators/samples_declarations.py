@@ -68,9 +68,8 @@ def pre_samples_declarations_post_callback(request):
     duplicate_sample_ids = find_duplicates(sample_ids)
     non_exist_samples = find_non_exist_samples(sample_ids)
 
-    # TODO: check
-    # if len(duplicate_sample_ids) == 0 and len(non_exist_samples):
-    #     return request
+    if (len(duplicate_sample_ids) == 0) and (len(non_exist_samples) == 0):
+        return request
 
     index = 0
     while index < len(request.json):
