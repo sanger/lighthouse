@@ -6,7 +6,13 @@ import responses  # type: ignore
 
 from lighthouse import create_app
 
-from .data.fixture_data import CENTRES, SAMPLES
+from .data.fixture_data import (
+    CENTRES,
+    SAMPLES,
+    SAMPLES_DECLARATIONS,
+    LOTS_OF_SAMPLES,
+    LOTS_OF_SAMPLES_DECLARATIONS,
+)
 
 
 @pytest.fixture
@@ -37,6 +43,37 @@ def centres(app):
     # clear up after the fixture is used
     with app.app_context():
         centres_collection.delete_many({})
+
+
+@pytest.fixture
+def samples_declarations(app):
+    with app.app_context():
+        samples_declarations_collections = app.data.driver.db.samples_declarations
+        _ = samples_declarations_collections.insert_many(SAMPLES_DECLARATIONS)
+
+    yield copy.deepcopy(SAMPLES_DECLARATIONS)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_declarations_collections.delete_many({})
+
+
+@pytest.fixture
+def lots_of_samples_declarations_payload(app):
+    yield copy.deepcopy(LOTS_OF_SAMPLES_DECLARATIONS)
+
+
+@pytest.fixture
+def lots_of_samples(app):
+    with app.app_context():
+        samples_collections = app.data.driver.db.samples
+        _ = samples_collections.insert_many(LOTS_OF_SAMPLES)
+
+    yield copy.deepcopy(LOTS_OF_SAMPLES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collections.delete_many({})
 
 
 @pytest.fixture
