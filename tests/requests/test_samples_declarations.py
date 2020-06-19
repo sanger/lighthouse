@@ -51,7 +51,7 @@ def post_authorized_create_samples_declaration(client, payload):
         "/samples_declarations",
         data=json.dumps(payload),
         content_type="application/json",
-        headers={"LIGHTHOUSE_API_KEY": "develop"},
+        headers={"x-lighthouse-client": "develop"},
     )
 
 
