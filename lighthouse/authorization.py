@@ -4,7 +4,7 @@ from eve.auth import BasicAuth  # type: ignore
 
 class APIKeyAuth(BasicAuth):
     def check_auth(self, headers):
-        api_key = headers.get("LIGHTHOUSE_API_KEY")
+        api_key = headers.get("x-lighthouse-client")
 
         if api_key:
             return api_key == current_app.config["LIGHTHOUSE_API_KEY"]
