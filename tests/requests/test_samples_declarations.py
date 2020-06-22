@@ -74,6 +74,21 @@ def post_authorized_create_samples_declaration(client, payload):
     )
 
 
+def test_post_new_single_sample_declaration_for_existing_sample(
+    app, client, samples, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        items = {
+            "root_sample_id": "MCM001",
+            "value_in_sequencing": "Yes",
+            "declared_at": TIMESTAMP,
+        }
+
+        response = post_authorized_create_samples_declaration(client, items)
+        assert response.status_code == HTTPStatus.CREATED, response.json
+        assert response.json["_status"] == "OK"
+
+
 def test_post_new_sample_declaration_for_existing_samples(
     app, client, samples, empty_data_when_finish
 ):
