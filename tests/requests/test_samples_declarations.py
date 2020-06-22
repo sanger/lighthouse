@@ -4,7 +4,24 @@ import json
 TIMESTAMP = "2013-04-04T10:29:13"
 
 
-def asset_has_error(record, key, error_message):
+class CheckNumInstancesChangeBy:
+    def __init__(self, app, model_name, num):
+        with app.app_context():
+            self.__num = num
+            self.__model_name = model_name
+            self.__model = app.data.driver.db[model_name]
+            self.__app = app
+
+    def __enter__(self):
+        with self.__app.app_context():
+            self.__size = self.__model.count()
+
+    def __exit__(self, type, value, tb):
+        with self.__app.app_context():
+            assert self.__model.count() == self.__size + self.__num
+
+
+def assert_has_error(record, key, error_message):
     assert record["_status"] == "ERR"
     assert record["_issues"][key] == error_message
 
@@ -22,15 +39,123 @@ def test_get_samples_declarations_with_content(client, samples_declarations):
 
 
 def test_post_new_sample_declaration_for_existing_samples_unauthorized(
-    client, samples_declarations
+    app, client, samples_declarations
 ):
-    response = client.post(
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
+        response = client.post(
+            "/samples_declarations",
+            data=json.dumps(
+                [
+                    {
+                        "root_sample_id": "MCM001",
+                        "value_in_sequencing": "Yes",
+                        "declared_at": TIMESTAMP,
+                    },
+                    {
+                        "root_sample_id": "MCM003",
+                        "value_in_sequencing": "Yes",
+                        "declared_at": TIMESTAMP,
+                    },
+                ],
+            ),
+            content_type="application/json",
+            headers={"LIGHTHOUSE_API_KEY": "wronk key!!!"},
+        )
+
+        assert response.status_code == HTTPStatus.UNAUTHORIZED, response.json
+
+
+def post_authorized_create_samples_declaration(client, payload):
+    return client.post(
         "/samples_declarations",
-        data=json.dumps(
+        data=json.dumps(payload),
+        content_type="application/json",
+        headers={"LIGHTHOUSE_API_KEY": "develop"},
+    )
+
+
+def test_post_new_single_sample_declaration_for_existing_sample(
+    app, client, samples, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        items = {
+            "root_sample_id": "MCM001",
+            "value_in_sequencing": "Yes",
+            "declared_at": TIMESTAMP,
+        }
+
+        response = post_authorized_create_samples_declaration(client, items)
+        assert response.status_code == HTTPStatus.CREATED, response.json
+        assert response.json["_status"] == "OK"
+
+
+def test_post_new_sample_declaration_for_existing_samples(
+    app, client, samples, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 2):
+        items = [
+            {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP,},
+            {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP,},
+        ]
+
+        response = post_authorized_create_samples_declaration(client, items)
+        assert response.status_code == HTTPStatus.CREATED, response.json
+        assert response.json["_status"] == "OK"
+        assert len(response.json["_items"]) == 2
+        assert response.json["_items"][0]["_status"] == "OK"
+        assert response.json["_items"][1]["_status"] == "OK"
+
+
+def test_create_lots_of_samples_declarations(
+    app, client, lots_of_samples, lots_of_samples_declarations_payload, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(
+        app, "samples_declarations", len(lots_of_samples_declarations_payload)
+    ):
+        response = post_authorized_create_samples_declaration(
+            client, lots_of_samples_declarations_payload
+        )
+        assert len(response.json["_items"]) == len(lots_of_samples_declarations_payload)
+        assert response.json["_status"] == "OK"
+
+        for item in response.json["_items"]:
+            assert item["_status"] == "OK"
+
+
+def test_inserts_new_declarations_even_when_other_declarations_are_wrong(
+    app, client, samples, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        stamp = "2013-04-10T09:00:00"
+        post_authorized_create_samples_declaration(
+            client,
             [
                 {
                     "root_sample_id": "MCM001",
-                    "value_in_sequencing": "Yes",
+                    "value_in_sequencing": "wrong answer!!",
+                    "declared_at": stamp,
+                },
+                {"root_sample_id": "MCM002", "value_in_sequencing": "Yes", "declared_at": stamp},
+            ],
+        )
+        with app.app_context():
+            li = [
+                x
+                for x in app.data.driver.db.samples_declarations.find({"root_sample_id": "MCM002"})
+            ]
+            assert len(li) == 1
+
+
+def test_wrong_value_for_value_in_sequencing(
+    app, client, samples, samples_declarations, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        response = post_authorized_create_samples_declaration(
+            client,
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "wrong answer!!",
                     "declared_at": TIMESTAMP,
                 },
                 {
@@ -39,191 +164,164 @@ def test_post_new_sample_declaration_for_existing_samples_unauthorized(
                     "declared_at": TIMESTAMP,
                 },
             ],
-        ),
-        content_type="application/json",
-        headers={"LIGHTHOUSE_API_KEY": "wronk key!!!"},
-    )
-    assert response.status_code == HTTPStatus.UNAUTHORIZED, response.json
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert len(response.json["_items"]) == 2
+        assert response.json["_status"] == "ERR"
+        assert_has_error(
+            response.json["_items"][0], "value_in_sequencing", "unallowed value wrong answer!!"
+        )
+        assert response.json["_items"][1]["_status"] == "OK"
 
 
-def post_authorized_create_samples_declaration(client, payload):
-    return client.post(
-        "/samples_declarations",
-        data=json.dumps(payload),
-        content_type="application/json",
-        headers={"x-lighthouse-client": "develop"},
-    )
-
-
-def test_post_new_sample_declaration_for_existing_samples(client, samples):
-    items = [
-        {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP,},
-        {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP,},
-    ]
-
-    response = post_authorized_create_samples_declaration(client, items)
-    assert response.status_code == HTTPStatus.CREATED, response.json
-    assert response.json["_status"] == "OK"
-    assert len(response.json["_items"]) == 2
-    assert response.json["_items"][0]["_status"] == "OK"
-    assert response.json["_items"][1]["_status"] == "OK"
-
-
-def test_create_lots_of_samples_declarations(
-    client, lots_of_samples, lots_of_samples_declarations_payload
+def test_wrong_value_for_declared_at(
+    app, client, samples, samples_declarations, empty_data_when_finish
 ):
-    response = post_authorized_create_samples_declaration(
-        client, lots_of_samples_declarations_payload
-    )
-    assert len(response.json["_items"]) == len(lots_of_samples_declarations_payload)
-    assert response.json["_status"] == "OK"
-
-    for item in response.json["_items"]:
-        assert item["_status"] == "OK"
-
-
-def test_wrong_value_for_value_in_sequencing(client, samples, samples_declarations):
-    response = post_authorized_create_samples_declaration(
-        client,
-        [
-            {
-                "root_sample_id": "MCM001",
-                "value_in_sequencing": "wrong answer!!",
-                "declared_at": TIMESTAMP,
-            },
-            {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP,},
-        ],
-    )
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
-    assert len(response.json["_items"]) == 2
-    assert response.json["_status"] == "ERR"
-    asset_has_error(
-        response.json["_items"][0], "value_in_sequencing", "unallowed value wrong answer!!"
-    )
-    assert response.json["_items"][1]["_status"] == "OK"
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        response = post_authorized_create_samples_declaration(
+            client,
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM003",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": "wrong time mate!!",
+                },
+            ],
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert len(response.json["_items"]) == 2
+        assert response.json["_status"] == "ERR"
+        assert response.json["_items"][0]["_status"] == "OK"
+        assert_has_error(response.json["_items"][1], "declared_at", "must be of datetime type")
 
 
-def test_wrong_value_for_declared_at(client, samples, samples_declarations):
-    response = post_authorized_create_samples_declaration(
-        client,
-        [
-            {
-                "root_sample_id": "MCM001",
-                "value_in_sequencing": "Unknown",
-                "declared_at": TIMESTAMP,
-            },
-            {
-                "root_sample_id": "MCM003",
-                "value_in_sequencing": "Yes",
-                "declared_at": "wrong time mate!!",
-            },
-        ],
-    )
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
-    assert len(response.json["_items"]) == 2
-    assert response.json["_status"] == "ERR"
-    assert response.json["_items"][0]["_status"] == "OK"
-    asset_has_error(response.json["_items"][1], "declared_at", "must be of datetime type")
+def test_wrong_value_for_root_sample_id(
+    app, client, samples, samples_declarations, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        response = post_authorized_create_samples_declaration(
+            client,
+            [
+                {
+                    "root_sample_id": True,
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM003",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ],
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert len(response.json["_items"]) == 2
+        assert response.json["_status"] == "ERR"
+        assert_has_error(response.json["_items"][0], "root_sample_id", "must be of string type")
+        assert response.json["_items"][1]["_status"] == "OK"
 
 
-def test_wrong_value_for_root_sample_id(client, samples, samples_declarations):
-    response = post_authorized_create_samples_declaration(
-        client,
-        [
-            {"root_sample_id": True, "value_in_sequencing": "Unknown", "declared_at": TIMESTAMP,},
-            {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP,},
-        ],
-    )
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
-    assert len(response.json["_items"]) == 2
-    assert response.json["_status"] == "ERR"
-    asset_has_error(response.json["_items"][0], "root_sample_id", "must be of string type")
-    assert response.json["_items"][1]["_status"] == "OK"
+def test_validate_sample_exist_in_samples_table(
+    app, client, samples, samples_declarations, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        response = post_authorized_create_samples_declaration(
+            client,
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM_WRONG_VALUE",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ],
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert response.json["_status"] == "ERR"
+        assert len(response.json["_items"]) == 2
+        assert response.json["_items"][0]["_status"] == "OK"
+        assert_has_error(
+            response.json["_items"][1], "root_sample_id", "Sample does not exist in database"
+        )
 
 
-def test_validate_sample_exist_in_samples_table(client, samples, samples_declarations):
-    response = post_authorized_create_samples_declaration(
-        client,
-        [
-            {
-                "root_sample_id": "MCM001",
-                "value_in_sequencing": "Unknown",
-                "declared_at": TIMESTAMP,
-            },
-            {
-                "root_sample_id": "MCM_WRONG_VALUE",
-                "value_in_sequencing": "Yes",
-                "declared_at": TIMESTAMP,
-            },
-        ],
-    )
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
-    assert response.json["_status"] == "ERR"
-    assert len(response.json["_items"]) == 2
-    assert response.json["_items"][0]["_status"] == "OK"
-    asset_has_error(
-        response.json["_items"][1], "root_sample_id", "Sample does not exist in database"
-    )
+def test_validate_samples_are_defined_twice_v1(
+    app, client, samples, samples_declarations, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
+        response = post_authorized_create_samples_declaration(
+            client,
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ],
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert len(response.json["_items"]) == 2
+        assert response.json["_status"] == "ERR"
+        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate")
+        assert_has_error(response.json["_items"][1], "root_sample_id", "Sample is a duplicate")
 
 
-def test_validate_samples_are_defined_twice_v1(client, samples, samples_declarations):
-    response = post_authorized_create_samples_declaration(
-        client,
-        [
-            {
-                "root_sample_id": "MCM001",
-                "value_in_sequencing": "Unknown",
-                "declared_at": TIMESTAMP,
-            },
-            {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP,},
-        ],
-    )
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
-    assert len(response.json["_items"]) == 2
-    assert response.json["_status"] == "ERR"
-    asset_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate")
-    asset_has_error(response.json["_items"][1], "root_sample_id", "Sample is a duplicate")
-
-
-def test_validate_samples_are_defined_twice_v2(client, samples, samples_declarations):
-    response = post_authorized_create_samples_declaration(
-        client,
-        [
-            {
-                "root_sample_id": "MCM001",
-                "value_in_sequencing": "Unknown",
-                "declared_at": "2013-04-04T10:29:13",
-            },
-            {
-                "root_sample_id": "MCM002",
-                "value_in_sequencing": "Unknown",
-                "declared_at": "2013-04-04T10:29:13",
-            },
-            {
-                "root_sample_id": "MCM001",
-                "value_in_sequencing": "Unknown",
-                "declared_at": "2013-04-04T10:29:13",
-            },
-            {
-                "root_sample_id": "MCM003",
-                "value_in_sequencing": "Unknown",
-                "declared_at": "2013-04-04T10:29:13",
-            },
-            {
-                "root_sample_id": "MCM003",
-                "value_in_sequencing": "Unknown",
-                "declared_at": "2013-04-04T10:29:13",
-            },
-        ],
-    )
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
-    assert len(response.json["_items"]) == 5
-    assert response.json["_status"] == "ERR"
-    asset_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate")
-    assert response.json["_items"][1]["_status"] == "OK"
-    asset_has_error(response.json["_items"][2], "root_sample_id", "Sample is a duplicate")
-    asset_has_error(response.json["_items"][3], "root_sample_id", "Sample is a duplicate")
-    asset_has_error(response.json["_items"][4], "root_sample_id", "Sample is a duplicate")
+def test_validate_samples_are_defined_twice_v2(
+    app, client, samples, samples_declarations, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        response = post_authorized_create_samples_declaration(
+            client,
+            [
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": "2013-04-04T10:29:13",
+                },
+                {
+                    "root_sample_id": "MCM002",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": "2013-04-04T10:29:13",
+                },
+                {
+                    "root_sample_id": "MCM001",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": "2013-04-04T10:29:13",
+                },
+                {
+                    "root_sample_id": "MCM003",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": "2013-04-04T10:29:13",
+                },
+                {
+                    "root_sample_id": "MCM003",
+                    "value_in_sequencing": "Unknown",
+                    "declared_at": "2013-04-04T10:29:13",
+                },
+            ],
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert len(response.json["_items"]) == 5
+        assert response.json["_status"] == "ERR"
+        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate")
+        assert response.json["_items"][1]["_status"] == "OK"
+        assert_has_error(response.json["_items"][2], "root_sample_id", "Sample is a duplicate")
+        assert_has_error(response.json["_items"][3], "root_sample_id", "Sample is a duplicate")
+        assert_has_error(response.json["_items"][4], "root_sample_id", "Sample is a duplicate")
 
 
 def test_filter_by_root_sample_id(client, samples_declarations):
