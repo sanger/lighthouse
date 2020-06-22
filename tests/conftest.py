@@ -46,6 +46,17 @@ def centres(app):
 
 
 @pytest.fixture
+def empty_data_when_finish(app):
+    yield
+
+    with app.app_context():
+        mydb = app.data.driver.db
+        mydb.samples.delete_many({})
+        mydb.samples_declarations.delete_many({})
+        mydb.centres.delete_many({})
+
+
+@pytest.fixture
 def samples_declarations(app):
     with app.app_context():
         samples_declarations_collections = app.data.driver.db.samples_declarations

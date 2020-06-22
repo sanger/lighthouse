@@ -7,6 +7,7 @@ from flask_apscheduler import APScheduler  # type: ignore
 from lighthouse.authorization import APIKeyAuth
 from lighthouse.validators.samples_declarations import (
     pre_samples_declarations_post_callback,
+    post_samples_declarations_post_callback,
     SamplesDeclarationsValidator,
 )
 
@@ -16,6 +17,7 @@ scheduler = APScheduler()
 def create_app() -> Eve:
     app = Eve(__name__, validator=SamplesDeclarationsValidator, auth=APIKeyAuth)
     app.on_pre_POST_samples_declarations += pre_samples_declarations_post_callback
+    app.on_post_POST_samples_declarations += post_samples_declarations_post_callback
 
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])

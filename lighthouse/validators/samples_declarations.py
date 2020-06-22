@@ -1,7 +1,9 @@
 from flask import current_app as app
 
 from eve.io.mongo import Validator  # type: ignore
+from eve.methods.post import post_internal  # type: ignore
 from lighthouse.constants import DUPLICATE_SAMPLES, NON_EXISTING_SAMPLE
+
 
 # fail in validator -> returns correct response
 
@@ -87,4 +89,49 @@ def pre_samples_declarations_post_callback(request):
         index = index + 1
 
     return request
+
+
+def build_clean_elems_object(items, request):
+    i = 0
+    clean_elems = {}
+    while i < len(items):
+        if items[i]["_status"] == "OK":
+            clean_elems[i] = request.json[i]
+        i = i + 1
+    return clean_elems
+
+
+def merge_response_into_payload(payload, response, clean_elems):
+    pos = 0
+    keys = list(clean_elems.keys())
+
+    if len(keys) == 1:
+        payload.json["_items"][keys[0]] = response
+    else:
+        while pos < len(keys):
+            key = keys[pos]
+            payload.json["_items"][key] = response["_items"][pos]
+            pos = pos + 1
+
+    return payload
+
+
+def post_samples_declarations_post_callback(request, payload):
+    if payload.json["_status"] == "OK":
+        return payload
+
+    items = payload.json["_items"]
+
+    clean_elems = build_clean_elems_object(items, request)
+    if clean_elems:
+        clean_payload = clean_elems.values()
+
+        new_response = post_internal(
+            "samples_declarations", payl=clean_payload, skip_validation=True
+        )
+
+        merged_payload = merge_response_into_payload(payload, new_response[0], clean_elems)
+
+        return merged_payload
+    return None
 
