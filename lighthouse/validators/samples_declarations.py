@@ -1,5 +1,4 @@
 from flask import current_app as app
-
 from eve.io.mongo import Validator  # type: ignore
 from eve.methods.post import post_internal  # type: ignore
 from lighthouse.constants import DUPLICATE_SAMPLES, NON_EXISTING_SAMPLE
@@ -33,14 +32,12 @@ def get_samples(request):
 
 def find_duplicates(sample_ids):
     duplicate_sample_ids = []
-    index = 0
 
-    while index < len(sample_ids):
+    for index in range(len(sample_ids)):
         sample_id = sample_ids[index]
 
         if (sample_ids.count(sample_id) > 1) and not (sample_id in duplicate_sample_ids):
             duplicate_sample_ids.append(sample_id)
-        index = index + 1
 
     return duplicate_sample_ids
 
@@ -73,8 +70,7 @@ def pre_samples_declarations_post_callback(request):
     if (len(duplicate_sample_ids) == 0) and (len(non_exist_samples) == 0):
         return request
 
-    index = 0
-    while index < len(request.json):
+    for index in range(len(request.json)):
         sample = request.json[index]
 
         add_flags(
@@ -86,32 +82,27 @@ def pre_samples_declarations_post_callback(request):
         add_flags(
             request.json[index], get_root_sample_id(sample), non_exist_samples, NON_EXISTING_SAMPLE,
         )
-        index = index + 1
 
     return request
 
 
 def build_clean_elems_object(items, request):
-    i = 0
     clean_elems = {}
-    while i < len(items):
+    for i in range(len(items)):
         if items[i]["_status"] == "OK":
             clean_elems[i] = request.json[i]
-        i = i + 1
     return clean_elems
 
 
 def merge_response_into_payload(payload, response, clean_elems):
-    pos = 0
     keys = list(clean_elems.keys())
 
     if len(keys) == 1:
         payload.json["_items"][keys[0]] = response
     else:
-        while pos < len(keys):
+        for pos in range(len(keys)):
             key = keys[pos]
             payload.json["_items"][key] = response["_items"][pos]
-            pos = pos + 1
 
     return payload
 
