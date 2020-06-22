@@ -86,6 +86,11 @@ def pre_samples_declarations_post_callback(request):
     return request
 
 
+# Filters a selection of items that have been validated successfully (OK status)
+# although rejected because of the presence of wrong items in the payload. This
+# selection will allow us to generate the new clean payload and also to be able
+# to map the answer back into the position of items in the original
+# response
 def build_clean_elems_object(items, request):
     clean_elems = {}
     for i in range(len(items)):
@@ -94,10 +99,16 @@ def build_clean_elems_object(items, request):
     return clean_elems
 
 
+# From the new response, we merge the answer from the elements into the original
+# response
 def merge_response_into_payload(payload, response, clean_elems):
     keys = list(clean_elems.keys())
 
     if len(keys) == 1:
+        # When the new clean payload request thaw we have just performed earlier
+        # in post_samples_declarations_pos_callback) only modifies one element,
+        # the response will not have an items attribute, but it will contain the
+        # attributes of the element in root.
         payload.json["_items"][keys[0]] = response
     else:
         for pos in range(len(keys)):
@@ -107,20 +118,27 @@ def merge_response_into_payload(payload, response, clean_elems):
     return payload
 
 
+# Performs a partial update of OK items when they are in a payload when there are
+# some ERR items so the OK items won't be rejected
 def post_samples_declarations_post_callback(request, payload):
     if payload.json["_status"] == "OK":
         return payload
 
     items = payload.json["_items"]
 
+    # Extract only the OK items that have been rejected just because the group
+    # contained ERR items too
     clean_elems = build_clean_elems_object(items, request)
     if clean_elems:
         clean_payload = clean_elems.values()
 
+        # We re-perform the request again with the OK items without performing
+        # the validation again, so they will go to the database
         new_response = post_internal(
             "samples_declarations", payl=clean_payload, skip_validation=True
         )
 
+        # We re-generate the response by merging new response with the original response
         merged_payload = merge_response_into_payload(payload, new_response[0], clean_elems)
 
         return merged_payload
