@@ -59,7 +59,7 @@ def test_post_new_sample_declaration_for_existing_samples_unauthorized(
                 ],
             ),
             content_type="application/json",
-            headers={"LIGHTHOUSE_API_KEY": "wronk key!!!"},
+            headers={"x-lighthouse-client": "wronk key!!!"},
         )
 
         assert response.status_code == HTTPStatus.UNAUTHORIZED, response.json
@@ -70,7 +70,7 @@ def post_authorized_create_samples_declaration(client, payload):
         "/samples_declarations",
         data=json.dumps(payload),
         content_type="application/json",
-        headers={"LIGHTHOUSE_API_KEY": "develop"},
+        headers={"x-lighthouse-client": "develop"},
     )
 
 
