@@ -1,8 +1,11 @@
 import copy
 import os
+import json
 
 import pytest  # type: ignore
 import responses  # type: ignore
+from http import HTTPStatus
+
 
 from lighthouse import create_app
 
@@ -11,7 +14,7 @@ from .data.fixture_data import (
     SAMPLES,
     SAMPLES_DECLARATIONS,
     LOTS_OF_SAMPLES,
-    LOTS_OF_SAMPLES_DECLARATIONS,
+    LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
 )
 
 
@@ -71,7 +74,7 @@ def samples_declarations(app):
 
 @pytest.fixture
 def lots_of_samples_declarations_payload(app):
-    yield copy.deepcopy(LOTS_OF_SAMPLES_DECLARATIONS)
+    yield copy.deepcopy(LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD)
 
 
 @pytest.fixture
@@ -105,3 +108,15 @@ def samples(app):
 def mocked_responses():
     with responses.RequestsMock() as rsps:
         yield rsps
+
+
+@pytest.fixture
+def labwhere_samples(app, mocked_responses):
+    # Mock of labwhere
+    labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares/searches"
+
+    body = json.dumps([{"barcode": "123", "location": {"barcode": "4567"}}])
+    mocked_responses.add(
+        responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+    )
+

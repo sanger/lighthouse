@@ -1,9 +1,6 @@
 from http import HTTPStatus
 from unittest.mock import patch
 
-import responses
-import json
-
 
 def test_get_reports_endpoint(client):
     with patch(
@@ -21,15 +18,8 @@ def test_get_reports_list(client):
         assert response.json == {"reports": []}
 
 
-def test_create_report(client, mocked_responses, app, tmp_path, samples):
+def test_create_report(client, app, tmp_path, samples, labwhere_samples):
     with app.app_context():
-        # Mock of labwhere
-        labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares/searches"
-        body = json.dumps([{"barcode": "123", "location": {"barcode": "4567"}}])
-        mocked_responses.add(
-            responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
-        )
-
         with patch(
             "lighthouse.jobs.reports.get_new_report_name_and_path",
             return_value=["test.xlsx", f"{tmp_path}/test.xlsx"],

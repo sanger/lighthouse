@@ -1,5 +1,5 @@
-from typing import Dict, List
-
+from typing import Dict, List, Any
+from datetime import datetime
 from lighthouse.constants import FIELD_COG_BARCODE
 
 CENTRES: List[Dict[str, str]] = [
@@ -8,19 +8,16 @@ CENTRES: List[Dict[str, str]] = [
     {"name": "test3", "prefix": "TS3"},
 ]
 
-SAMPLES_DECLARATIONS: List[Dict[str, str]] = [
-    {
-        "root_sample_id": "MCM001",
-        "value_in_sequencing": "Yes",
-        "declared_at": "2013-04-04T10:29:13",
-    },
-    {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": "2013-04-04T10:29:13"},
-    {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": "2013-04-05T10:29:13"},
-    {
-        "root_sample_id": "MCM003",
-        "value_in_sequencing": "Yes",
-        "declared_at": "2013-04-06T10:29:13",
-    },
+FIRST_TIMESTAMP = datetime(2013, 4, 4, 10, 29, 13)
+SECOND_TIMESTAMP = datetime(2013, 4, 5, 10, 29, 13)
+THIRD_TIMESTAMP = datetime(2013, 4, 6, 10, 29, 13)
+
+
+SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
+    {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": FIRST_TIMESTAMP,},
+    {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": FIRST_TIMESTAMP},
+    {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": SECOND_TIMESTAMP},
+    {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": THIRD_TIMESTAMP,},
 ]
 
 MAX_SAMPLES = 1000
@@ -37,7 +34,7 @@ LOTS_OF_SAMPLES: List[Dict[str, str]] = [
     for i in range(0, MAX_SAMPLES)
 ]
 
-LOTS_OF_SAMPLES_DECLARATIONS: List[Dict[str, str]] = [
+LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
     {
         "root_sample_id": f"MCM00{i}",
         "value_in_sequencing": "Yes",

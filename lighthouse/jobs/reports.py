@@ -52,12 +52,12 @@ def create_report() -> str:
                 "$group": {
                     "_id": "$root_sample_id",
                     "Root Sample ID": {"$first": "$root_sample_id"},
+                    "Value In Sequencing": {"$first": "$value_in_sequencing"},
                     "Declared At": {
                         "$first": {
                             "$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}
                         }
                     },
-                    "Value In Sequencing": {"$first": "$value_in_sequencing"},
                 }
             },
             {"$unset": "_id"},
@@ -128,6 +128,10 @@ def create_report() -> str:
             logger.debug("Joining declarations")
             declarations_frame = pd.DataFrame.from_records(declarations_records)
             merged = merged.merge(declarations_frame, how="left", on="Root Sample ID")
+
+            # Give a default value of Unknown to any entry that does not have a
+            # sample declaration
+            merged = merged.fillna({"Value In Sequencing": "Unknown"})
 
         pretty(logger, merged)
 
