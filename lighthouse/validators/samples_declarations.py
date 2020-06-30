@@ -21,10 +21,7 @@ def get_root_sample_id(obj):
     return obj["root_sample_id"]
 
 def root_sample_id_present(obj):
-    if 'root_sample_id' in obj:
-        return True
-    else:
-        return False
+    return ('root_sample_id' in obj)
 
 def get_samples(request):
     json = request.get_json()
