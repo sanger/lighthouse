@@ -135,7 +135,11 @@ def test_inserts_new_declarations_even_when_other_declarations_are_wrong(
                     "value_in_sequencing": "wrong answer!!",
                     "declared_at": stamp,
                 },
-                {"root_sample_id": "MCM002", "value_in_sequencing": "Yes", "declared_at": stamp},
+                {   
+                    "root_sample_id": "MCM002",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": stamp
+                },
             ],
         )
         with app.app_context():
@@ -224,6 +228,62 @@ def test_wrong_value_for_root_sample_id(
         assert response.json["_status"] == "ERR"
         assert_has_error(response.json["_items"][0], "root_sample_id", "must be of string type")
         assert response.json["_items"][1]["_status"] == "OK"
+
+
+def test_unknown_sample_for_root_sample_id(
+    app, client, samples, samples_declarations, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
+        response = post_authorized_create_samples_declaration(
+            client,     
+            {
+                "root_sample_id": "nonsense",
+                "value_in_sequencing": "Yes",
+                "declared_at": TIMESTAMP,
+            }
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert response.json["_status"] == "ERR"
+        assert_has_error(response.json, "root_sample_id", "Sample does not exist in database")
+
+def test_missing_value_for_root_sample_id_multiple(
+    app, client, samples, samples_declarations, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
+        response = post_authorized_create_samples_declaration(
+            client,
+            [
+                {
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+                {
+                    "root_sample_id": "MCM003",
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
+            ],
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert len(response.json["_items"]) == 2
+        assert response.json["_status"] == "ERR"
+        assert_has_error(response.json["_items"][0], "root_sample_id", "required field")
+        assert response.json["_items"][1]["_status"] == "OK"
+
+def test_missing_value_for_root_sample_id_single(
+    app, client, samples, samples_declarations, empty_data_when_finish
+):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
+        response = post_authorized_create_samples_declaration(
+            client,     
+            {
+                "value_in_sequencing": "Yes",
+                "declared_at": TIMESTAMP,
+            },
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert response.json["_status"] == "ERR"
+        assert_has_error(response.json, "root_sample_id", "required field")
 
 
 def test_validate_sample_exist_in_samples_table(

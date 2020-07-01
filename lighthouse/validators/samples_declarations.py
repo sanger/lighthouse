@@ -20,14 +20,20 @@ class SamplesDeclarationsValidator(Validator):
 def get_root_sample_id(obj):
     return obj["root_sample_id"]
 
+def root_sample_id_present(obj):
+    return ('root_sample_id' in obj)
 
 def get_samples(request):
     json = request.get_json()
 
     if isinstance(json, list):
-        return list(map(get_root_sample_id, json))
+        valid_samples = list(filter(root_sample_id_present, json))
+        return list(map(get_root_sample_id, valid_samples))
     else:
-        return [get_root_sample_id(json)]
+        if root_sample_id_present(json):
+            return [get_root_sample_id(json)]
+        else: 
+            return []
 
 
 def find_duplicates(sample_ids):
@@ -61,8 +67,22 @@ def add_flags(request_element, sample_id, sample_ids, flag):
             request_element["validation_flags"] = [flag]
 
 
+def add_validation_flags(sample, duplicate_sample_ids, non_exist_samples):
+    add_flags(
+        sample,
+        get_root_sample_id(sample),
+        duplicate_sample_ids,
+        DUPLICATE_SAMPLES,
+    )
+    add_flags(
+        sample, get_root_sample_id(sample), non_exist_samples, NON_EXISTING_SAMPLE,
+    )
+
 def pre_samples_declarations_post_callback(request):
     sample_ids = get_samples(request)
+
+    if len(sample_ids) == 0:
+        return request
 
     duplicate_sample_ids = find_duplicates(sample_ids)
     non_exist_samples = find_non_exist_samples(sample_ids)
@@ -70,18 +90,11 @@ def pre_samples_declarations_post_callback(request):
     if (len(duplicate_sample_ids) == 0) and (len(non_exist_samples) == 0):
         return request
 
-    for index in range(len(request.json)):
-        sample = request.json[index]
-
-        add_flags(
-            request.json[index],
-            get_root_sample_id(sample),
-            duplicate_sample_ids,
-            DUPLICATE_SAMPLES,
-        )
-        add_flags(
-            request.json[index], get_root_sample_id(sample), non_exist_samples, NON_EXISTING_SAMPLE,
-        )
+    if isinstance(request.json, list):
+        for index in range(len(request.json)):
+            add_validation_flags(request.json[index], duplicate_sample_ids, non_exist_samples)
+    else:
+        add_validation_flags(request.json, duplicate_sample_ids, non_exist_samples)
 
     return request
 
@@ -124,23 +137,24 @@ def post_samples_declarations_post_callback(request, payload):
     if payload.json["_status"] == "OK":
         return payload
 
-    items = payload.json["_items"]
+    if "_items" in payload.json:
+        items = payload.json["_items"]
+  
+        # Extract only the OK items that have been rejected just because the group
+        # contained ERR items too
+        clean_elems = build_clean_elems_object(items, request)
+        if clean_elems:
+            clean_payload = clean_elems.values()
 
-    # Extract only the OK items that have been rejected just because the group
-    # contained ERR items too
-    clean_elems = build_clean_elems_object(items, request)
-    if clean_elems:
-        clean_payload = clean_elems.values()
+            # We re-perform the request again with the OK items without performing
+            # the validation again, so they will go to the database
+            new_response = post_internal(
+                "samples_declarations", payl=clean_payload, skip_validation=True
+            )
 
-        # We re-perform the request again with the OK items without performing
-        # the validation again, so they will go to the database
-        new_response = post_internal(
-            "samples_declarations", payl=clean_payload, skip_validation=True
-        )
+            # We re-generate the response by merging new response with the original response
+            merged_payload = merge_response_into_payload(payload, new_response[0], clean_elems)
 
-        # We re-generate the response by merging new response with the original response
-        merged_payload = merge_response_into_payload(payload, new_response[0], clean_elems)
-
-        return merged_payload
+            return merged_payload
     return None
 

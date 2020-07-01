@@ -10,6 +10,7 @@ SS_UUID_PLATE_PURPOSE = ""
 SS_UUID_STUDY = ""
 REPORTS_DIR = "data/reports"
 DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
+SS_HOST = "localhost:3000"
 
 # APScheduler config
 SCHEDULER_RUN = True
