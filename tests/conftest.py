@@ -15,6 +15,7 @@ from .data.fixture_data import (
     SAMPLES_DECLARATIONS,
     LOTS_OF_SAMPLES,
     LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
+    MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
 )
 
 
@@ -76,6 +77,9 @@ def samples_declarations(app):
 def lots_of_samples_declarations_payload(app):
     yield copy.deepcopy(LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD)
 
+@pytest.fixture
+def multiple_errors_samples_declarations_payload(app):
+    yield copy.deepcopy(MULTIPLE_ERRORS_SAMPLES_DECLARATIONS)
 
 @pytest.fixture
 def lots_of_samples(app):

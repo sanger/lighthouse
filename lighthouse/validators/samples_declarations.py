@@ -92,7 +92,8 @@ def pre_samples_declarations_post_callback(request):
 
     if isinstance(request.json, list):
         for index in range(len(request.json)):
-            add_validation_flags(request.json[index], duplicate_sample_ids, non_exist_samples)
+            if (root_sample_id_present(request.json[index])):
+                add_validation_flags(request.json[index], duplicate_sample_ids, non_exist_samples)
     else:
         add_validation_flags(request.json, duplicate_sample_ids, non_exist_samples)
 
