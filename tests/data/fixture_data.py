@@ -20,6 +20,17 @@ SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
     {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": THIRD_TIMESTAMP,},
 ]
 
+MULTIPLE_ERRORS_SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
+    { "declared_at": "2020-06-26T11:37:45", "root_sample_id": "YOR10020466", "value_in_sequencing": "No" },
+    { "declared_at": "2020-06-26T11:37:45", "value_in_sequencing": "No" },
+    { "declared_at": "2020-14-500", "root_sample_id": "YOR10020379", "value_in_sequencing": "No" },
+    { "declared_at": "2020-06-26T11:37:45", "root_sample_id": "YOR10020240", "value_in_sequencing": "Yes" },
+    { "declared_at": "2020-06-26T11:37:45", "root_sample_id": "YOR10020379", "value_in_sequencing": "Yes" },
+    { "declared_at": "2020-06-26T11:37:45", "root_sample_id": "YOR10020224", "value_in_sequencing": "Yes" },
+    { "declared_at": "2020-06-26T11:37:45", "root_sample_id": "YOR10020217", "othertag": "othervalue" },
+    { "declared_at": "2020-06-26T11:37:45", "root_sample_id": "YOR10020195", "value_in_sequencing": "maybelater" },
+]
+
 MAX_SAMPLES = 1000
 
 LOTS_OF_SAMPLES: List[Dict[str, str]] = [

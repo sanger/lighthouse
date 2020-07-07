@@ -383,6 +383,26 @@ def test_validate_samples_are_defined_twice_v2(
         assert_has_error(response.json["_items"][3], "root_sample_id", "Sample is a duplicate")
         assert_has_error(response.json["_items"][4], "root_sample_id", "Sample is a duplicate")
 
+def test_multiple_errors_on_samples_declaration(app, client, multiple_errors_samples_declarations_payload):
+    with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
+        response = post_authorized_create_samples_declaration(
+            client,
+            multiple_errors_samples_declarations_payload
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
+        assert len(response.json["_items"]) == 8
+        assert response.json["_status"] == "ERR"
+        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample does not exist in database")
+        assert_has_error(response.json["_items"][1], "root_sample_id", "required field")
+        assert_has_error(response.json["_items"][2], "root_sample_id", ["Sample does not exist in database","Sample is a duplicate"])
+        assert_has_error(response.json["_items"][2], "declared_at",  "must be of datetime type")
+        assert_has_error(response.json["_items"][3], "root_sample_id",  "Sample does not exist in database")
+        assert_has_error(response.json["_items"][4], "root_sample_id",  ["Sample does not exist in database","Sample is a duplicate"])
+        assert_has_error(response.json["_items"][5], "root_sample_id",  "Sample does not exist in database")
+        assert_has_error(response.json["_items"][6], "root_sample_id",  "Sample does not exist in database")
+        assert_has_error(response.json["_items"][6], "value_in_sequencing",  "required field")
+        assert_has_error(response.json["_items"][7], "value_in_sequencing",  "unallowed value maybelater")
+        
 
 def test_filter_by_root_sample_id(client, samples_declarations):
     response = client.get(
