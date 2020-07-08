@@ -16,4 +16,4 @@ RUN pipenv install --dev --ignore-pipfile --system --deploy
 
 ADD . /code/
 
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "-t", "120","lighthouse:create_app()"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "--worker-class", "gthread", "lighthouse:create_app()"]
