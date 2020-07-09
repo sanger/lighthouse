@@ -18,18 +18,20 @@ def test_find_non_exist_samples(app, samples):
         assert find_non_exist_samples(["MCM001", "MCM003"]) == []
         assert find_non_exist_samples(["MCM004"]) == ["MCM004"]
         assert find_non_exist_samples(["MCM004", "MCM003"]) == ["MCM004"]
-        assert find_non_exist_samples(["a", "b", "c"]) == ["a", "b", "c"]
+        assert sorted(find_non_exist_samples(["a", "b", "c"])) == sorted(["a", "b", "c"])
 
 
 def test_add_flags(app):
-    obj = {}
-    add_flags(obj, "1234", ["1234"], "TESTING_FLAG")
+    obj = { "root_sample_id": "1234" }
+    add_flags(obj, ["1234"], "TESTING_FLAG")
     assert obj["validation_flags"] == ["TESTING_FLAG"]
-    obj = {"validation_flags": ["ANOTHER_VALUE"]}
-    add_flags(obj, "1234", ["1234"], "TESTING_FLAG")
+ 
+    obj = { "validation_flags": ["ANOTHER_VALUE"], "root_sample_id": "1234" }
+    add_flags(obj, "1234", "TESTING_FLAG")
     assert obj["validation_flags"] == ["ANOTHER_VALUE", "TESTING_FLAG"]
-    obj = {}
-    add_flags(obj, "1234", ["4567"], "TESTING_FLAG")
+    
+    obj = { "root_sample_id": "1234" }
+    add_flags(obj, ["4567"], "TESTING_FLAG")
     assert not ("validation_flags" in obj)
 
 
