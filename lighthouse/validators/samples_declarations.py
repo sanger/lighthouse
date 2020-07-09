@@ -52,6 +52,24 @@ def find_non_exist_samples(sample_ids):
     return list(set(sample_ids) ^ set(existing_sample_ids))
 
 
+def add_flags(sample, sample_ids, flag):
+    sample_id = get_root_sample_id(sample)
+
+    if sample_id in sample_ids:
+        if "validation_flags" in sample:
+            sample["validation_flags"].append(flag)
+        else:
+            sample["validation_flags"] = [flag]
+
+
+def add_validation_flags(sample, duplicate_sample_ids, non_exist_samples):
+    if len(duplicate_sample_ids) > 0:
+        add_flags(sample, duplicate_sample_ids, DUPLICATE_SAMPLES)
+
+    if len(non_exist_samples) > 0:
+        add_flags(sample, non_exist_samples, NON_EXISTING_SAMPLE)
+
+
 def pre_samples_declarations_post_callback(request):
     sample_ids = get_samples(request)
 
@@ -75,52 +93,6 @@ def add_errors(request, duplicate_sample_ids, non_exist_samples):
                 add_validation_flags(request.json[index], duplicate_sample_ids, non_exist_samples)
     else:
         add_validation_flags(request.json, duplicate_sample_ids, non_exist_samples)
-
-
-def add_validation_flags(sample, duplicate_sample_ids, non_exist_samples):
-    if len(duplicate_sample_ids) > 0: 
-        add_flags(sample, duplicate_sample_ids, DUPLICATE_SAMPLES)
-
-    if len(non_exist_samples) > 0:
-        add_flags(sample, non_exist_samples, NON_EXISTING_SAMPLE)
-
-
-def add_flags(sample, sample_ids, flag):
-    sample_id = get_root_sample_id(sample)
-
-    if sample_id in sample_ids:
-        if "validation_flags" in sample:
-            sample["validation_flags"].append(flag)
-        else:
-            sample["validation_flags"] = [flag]
-
-
-# Performs a partial update of OK items when they are in a payload when there are
-# some ERR items so the OK items won't be rejected
-def post_samples_declarations_post_callback(request, payload):
-    if payload.json["_status"] == "OK":
-        return payload
-
-    if "_items" in payload.json:
-        items = payload.json["_items"]
-  
-        # Extract only the OK items that have been rejected just because the group
-        # contained ERR items too
-        clean_elems = build_clean_elems_object(items, request)
-        if clean_elems:
-            clean_payload = clean_elems.values()
-
-            # We re-perform the request again with the OK items without performing
-            # the validation again, so they will go to the database
-            new_response = post_internal(
-                "samples_declarations", payl=clean_payload, skip_validation=True
-            )
-
-            # We re-generate the response by merging new response with the original response
-            merged_payload = merge_response_into_payload(payload, new_response[0], clean_elems)
-
-            return merged_payload
-    return None
 
 
 # Filters a selection of items that have been validated successfully (OK status)
@@ -153,3 +125,31 @@ def merge_response_into_payload(payload, response, clean_elems):
             payload.json["_items"][key] = response["_items"][pos]
 
     return payload
+
+
+# Performs a partial update of OK items when they are in a payload when there are
+# some ERR items so the OK items won't be rejected
+def post_samples_declarations_post_callback(request, payload):
+    if payload.json["_status"] == "OK":
+        return payload
+
+    if "_items" in payload.json:
+        items = payload.json["_items"]
+  
+        # Extract only the OK items that have been rejected just because the group
+        # contained ERR items too
+        clean_elems = build_clean_elems_object(items, request)
+        if clean_elems:
+            clean_payload = clean_elems.values()
+
+            # We re-perform the request again with the OK items without performing
+            # the validation again, so they will go to the database
+            new_response = post_internal(
+                "samples_declarations", payl=clean_payload, skip_validation=True
+            )
+
+            # We re-generate the response by merging new response with the original response
+            merged_payload = merge_response_into_payload(payload, new_response[0], clean_elems)
+
+            return merged_payload
+    return None
