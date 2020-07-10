@@ -107,8 +107,12 @@ def create_report() -> str:
     logger.debug(response)
     if response.status_code == HTTPStatus.OK:
         # create a plate_barcode to location_barcode mapping to join with samples
+        # return none for samples where location barcode is not present
         labware_to_location_barcode = [
-            {"plate_barcode": record["barcode"], "location_barcode": record["location"]["barcode"]}
+            {
+                "plate_barcode": record["barcode"],
+                "location_barcode": record["location"].get("barcode", ""),
+            }
             for record in response.json()
         ]
 
