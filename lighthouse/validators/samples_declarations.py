@@ -2,7 +2,7 @@ from flask import current_app as app
 from eve.io.mongo import Validator  # type: ignore
 from eve.methods.post import post_internal  # type: ignore
 from lighthouse.constants import DUPLICATE_SAMPLES, NON_EXISTING_SAMPLE
-
+from collections import Counter
 
 # fail in validator -> returns correct response
 
@@ -24,6 +24,7 @@ def root_sample_id_present(obj):
     return ('root_sample_id' in obj)
 
 def get_samples(request):
+
     json = request.get_json()
 
     if isinstance(json, list):
@@ -35,48 +36,39 @@ def get_samples(request):
         else: 
             return []
 
-
+# https://stackoverflow.com/questions/46554866/efficiently-finding-duplicates-in-a-list
 def find_duplicates(sample_ids):
-    duplicate_sample_ids = []
-
-    for index in range(len(sample_ids)):
-        sample_id = sample_ids[index]
-
-        if (sample_ids.count(sample_id) > 1) and not (sample_id in duplicate_sample_ids):
-            duplicate_sample_ids.append(sample_id)
-
-    return duplicate_sample_ids
+    c = Counter(sample_ids)
+    return [k for k in c if c[k] > 1]
 
 
+# https://stackoverflow.com/questions/3462143/get-difference-between-two-lists
 def find_non_exist_samples(sample_ids):
     cursor = app.data.driver.db.samples.find(
         {"Root Sample ID": {"$in": sample_ids}}, {"Root Sample ID": 1}
     )
 
     existing_sample_ids = [val["Root Sample ID"] for val in cursor]
-    not_exist_sample_ids = [val for val in sample_ids if not (val in existing_sample_ids)]
-
-    return not_exist_sample_ids
+    return list(set(sample_ids) - set(existing_sample_ids))
 
 
-def add_flags(request_element, sample_id, sample_ids, flag):
+def add_flags(sample, sample_ids, flag):
+    sample_id = get_root_sample_id(sample)
+
     if sample_id in sample_ids:
-        if "validation_flags" in request_element:
-            request_element["validation_flags"].append(flag)
+        if "validation_flags" in sample:
+            sample["validation_flags"].append(flag)
         else:
-            request_element["validation_flags"] = [flag]
+            sample["validation_flags"] = [flag]
 
 
 def add_validation_flags(sample, duplicate_sample_ids, non_exist_samples):
-    add_flags(
-        sample,
-        get_root_sample_id(sample),
-        duplicate_sample_ids,
-        DUPLICATE_SAMPLES,
-    )
-    add_flags(
-        sample, get_root_sample_id(sample), non_exist_samples, NON_EXISTING_SAMPLE,
-    )
+    if len(duplicate_sample_ids) > 0:
+        add_flags(sample, duplicate_sample_ids, DUPLICATE_SAMPLES)
+
+    if len(non_exist_samples) > 0:
+        add_flags(sample, non_exist_samples, NON_EXISTING_SAMPLE)
+
 
 def pre_samples_declarations_post_callback(request):
     sample_ids = get_samples(request)
@@ -90,14 +82,17 @@ def pre_samples_declarations_post_callback(request):
     if (len(duplicate_sample_ids) == 0) and (len(non_exist_samples) == 0):
         return request
 
+    add_errors(request, duplicate_sample_ids, non_exist_samples)
+    return request
+
+
+def add_errors(request, duplicate_sample_ids, non_exist_samples):
     if isinstance(request.json, list):
         for index in range(len(request.json)):
             if (root_sample_id_present(request.json[index])):
                 add_validation_flags(request.json[index], duplicate_sample_ids, non_exist_samples)
     else:
         add_validation_flags(request.json, duplicate_sample_ids, non_exist_samples)
-
-    return request
 
 
 # Filters a selection of items that have been validated successfully (OK status)
@@ -158,4 +153,3 @@ def post_samples_declarations_post_callback(request, payload):
 
             return merged_payload
     return None
-
