@@ -88,7 +88,7 @@ def create_report() -> str:
         labware_to_location_barcode = [
             {
                 "plate_barcode": record["barcode"],
-                "location_barcode": record["location"].get("barcode"),
+                "location_barcode": record["location"].get("barcode", ""),
             }
             for record in response.json()
         ]
