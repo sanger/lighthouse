@@ -49,7 +49,7 @@ def find_non_exist_samples(sample_ids):
     )
 
     existing_sample_ids = [val["Root Sample ID"] for val in cursor]
-    return list(set(sample_ids) ^ set(existing_sample_ids))
+    return list(set(sample_ids) - set(existing_sample_ids))
 
 
 def add_flags(sample, sample_ids, flag):
