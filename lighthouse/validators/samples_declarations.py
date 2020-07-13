@@ -12,9 +12,9 @@ class SamplesDeclarationsValidator(Validator):
         if validation_errors and ("validation_flags" in self.document):
             for flag in self.document["validation_flags"]:
                 if flag == DUPLICATE_SAMPLES:
-                    self._error(field, "Sample is a duplicate")
+                    self._error(field, f"Sample is a duplicate: {value}")
                 if flag == NON_EXISTING_SAMPLE:
-                    self._error(field, "Sample does not exist in database")
+                    self._error(field, f"Sample does not exist in database: {value}")
 
 
 def get_root_sample_id(obj):

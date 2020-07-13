@@ -244,7 +244,7 @@ def test_unknown_sample_for_root_sample_id(
         )
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert response.json["_status"] == "ERR"
-        assert_has_error(response.json, "root_sample_id", "Sample does not exist in database")
+        assert_has_error(response.json, "root_sample_id", "Sample does not exist in database: nonsense")
 
 def test_missing_value_for_root_sample_id_multiple(
     app, client, samples, samples_declarations, empty_data_when_finish
@@ -310,7 +310,7 @@ def test_validate_sample_exist_in_samples_table(
         assert len(response.json["_items"]) == 2
         assert response.json["_items"][0]["_status"] == "OK"
         assert_has_error(
-            response.json["_items"][1], "root_sample_id", "Sample does not exist in database"
+            response.json["_items"][1], "root_sample_id", "Sample does not exist in database: MCM_WRONG_VALUE"
         )
 
 
@@ -336,8 +336,8 @@ def test_validate_samples_are_defined_twice_v1(
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert len(response.json["_items"]) == 2
         assert response.json["_status"] == "ERR"
-        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate")
-        assert_has_error(response.json["_items"][1], "root_sample_id", "Sample is a duplicate")
+        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate: MCM001")
+        assert_has_error(response.json["_items"][1], "root_sample_id", "Sample is a duplicate: MCM001")
 
 
 def test_validate_samples_are_defined_twice_v2(
@@ -377,11 +377,11 @@ def test_validate_samples_are_defined_twice_v2(
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert len(response.json["_items"]) == 5
         assert response.json["_status"] == "ERR"
-        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate")
+        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate: MCM001")
         assert response.json["_items"][1]["_status"] == "OK"
-        assert_has_error(response.json["_items"][2], "root_sample_id", "Sample is a duplicate")
-        assert_has_error(response.json["_items"][3], "root_sample_id", "Sample is a duplicate")
-        assert_has_error(response.json["_items"][4], "root_sample_id", "Sample is a duplicate")
+        assert_has_error(response.json["_items"][2], "root_sample_id", "Sample is a duplicate: MCM001")
+        assert_has_error(response.json["_items"][3], "root_sample_id", "Sample is a duplicate: MCM003")
+        assert_has_error(response.json["_items"][4], "root_sample_id", "Sample is a duplicate: MCM003")
 
 def test_multiple_errors_on_samples_declaration(app, client, multiple_errors_samples_declarations_payload):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
@@ -392,14 +392,14 @@ def test_multiple_errors_on_samples_declaration(app, client, multiple_errors_sam
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert len(response.json["_items"]) == 8
         assert response.json["_status"] == "ERR"
-        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample does not exist in database")
+        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample does not exist in database: YOR10020466")
         assert_has_error(response.json["_items"][1], "root_sample_id", "required field")
-        assert_has_error(response.json["_items"][2], "root_sample_id", ["Sample does not exist in database","Sample is a duplicate"])
+        assert_has_error(response.json["_items"][2], "root_sample_id", ["Sample does not exist in database: YOR10020379","Sample is a duplicate: YOR10020379"])
         assert_has_error(response.json["_items"][2], "declared_at",  "must be of datetime type")
-        assert_has_error(response.json["_items"][3], "root_sample_id",  "Sample does not exist in database")
-        assert_has_error(response.json["_items"][4], "root_sample_id",  ["Sample does not exist in database","Sample is a duplicate"])
-        assert_has_error(response.json["_items"][5], "root_sample_id",  "Sample does not exist in database")
-        assert_has_error(response.json["_items"][6], "root_sample_id",  "Sample does not exist in database")
+        assert_has_error(response.json["_items"][3], "root_sample_id",  "Sample does not exist in database: YOR10020240")
+        assert_has_error(response.json["_items"][4], "root_sample_id",  ["Sample does not exist in database: YOR10020379","Sample is a duplicate: YOR10020379"])
+        assert_has_error(response.json["_items"][5], "root_sample_id",  "Sample does not exist in database: YOR10020224")
+        assert_has_error(response.json["_items"][6], "root_sample_id",  "Sample does not exist in database: YOR10020217")
         assert_has_error(response.json["_items"][6], "value_in_sequencing",  "required field")
         assert_has_error(response.json["_items"][7], "value_in_sequencing",  "unallowed value maybelater")
         
