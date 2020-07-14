@@ -26,6 +26,7 @@ def create_report() -> str:
 
     # get samples collection
     samples = app.data.driver.db.samples
+    samples_declarations = app.data.driver.db.samples_declarations
 
     logger.debug("Getting all positive samples")
     # filtering using case insensitive regex to catch "Positive" and "positive"
@@ -39,6 +40,28 @@ def create_report() -> str:
             "Result": True,
             "Date Tested": True,
         },
+    )
+
+    # Latest declarations group by root_sample_id
+    # Id is needed to control the group aggregation
+    # Excel formatter required date without timezone
+    declarations = samples_declarations.aggregate(
+        [
+            {"$sort": {"declared_at": -1}},
+            {
+                "$group": {
+                    "_id": "$root_sample_id",
+                    "Root Sample ID": {"$first": "$root_sample_id"},
+                    "Value In Sequencing": {"$first": "$value_in_sequencing"},
+                    "Declared At": {
+                        "$first": {
+                            "$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}
+                        }
+                    },
+                }
+            },
+            {"$unset": "_id"},
+        ]
     )
 
     # converting to a dataframe to make it easy to join with data from labwhere
@@ -103,6 +126,17 @@ def create_report() -> str:
         merged = positive_samples_df.merge(
             labware_to_location_barcode_df, how="left", on="plate_barcode"
         )
+
+        declarations_records = [record for record in declarations]
+        if len(declarations_records) > 0:
+            logger.debug("Joining declarations")
+            declarations_frame = pd.DataFrame.from_records(declarations_records)
+            merged = merged.merge(declarations_frame, how="left", on="Root Sample ID")
+
+            # Give a default value of Unknown to any entry that does not have a
+            # sample declaration
+            merged = merged.fillna({"Value In Sequencing": "Unknown"})
+
         pretty(logger, merged)
 
         report_name, report_path = get_new_report_name_and_path()
