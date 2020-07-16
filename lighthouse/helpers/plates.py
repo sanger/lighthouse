@@ -68,7 +68,7 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
         logger.exception(e)
         raise DataError("Multiple centres with the same name")
 
-def find_samples(query: List[Dict[str, str]]) -> Optional[List[Dict[str, Any]]]:
+def find_samples(query: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
     samples = app.data.driver.db.samples
 
     samples_for_barcode = list(samples.find(query))
