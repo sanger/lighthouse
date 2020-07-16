@@ -4,7 +4,7 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 
-from lighthouse.helpers.plates import add_cog_barcodes, create_post_body, get_samples, send_to_ss
+from lighthouse.helpers.plates import add_cog_barcodes, create_post_body, get_samples, send_to_ss, get_positive_samples
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
     try:
         # get samples for barcode
-        samples = get_samples(barcode)
+        samples = get_positive_samples(barcode)
 
         if not samples:
             return {"errors": ["No samples for this barcode"]}, HTTPStatus.BAD_REQUEST

@@ -68,18 +68,47 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
         logger.exception(e)
         raise DataError("Multiple centres with the same name")
 
-
-def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
-    logger.info(f"Getting all samples for {plate_barcode}")
-
+def find_samples(query: List[Dict[str, str]]) -> Optional[List[Dict[str, Any]]]:
     samples = app.data.driver.db.samples
 
-    samples_for_barcode = list(samples.find({"plate_barcode": plate_barcode}))
+    samples_for_barcode = list(samples.find(query))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples for {plate_barcode}")
+    logger.info(f"Found {len(samples_for_barcode)} samples for {query['plate_barcode']}")
 
     return samples_for_barcode
 
+
+def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
+
+    samples_for_barcode = find_samples({"plate_barcode": plate_barcode})
+
+    return samples_for_barcode
+
+    # logger.info(f"Getting all samples for {plate_barcode}")
+
+    # samples = app.data.driver.db.samples
+
+    # samples_for_barcode = list(samples.find({"plate_barcode": plate_barcode}))
+
+    # logger.info(f"Found {len(samples_for_barcode)} samples for {plate_barcode}")
+
+    # return samples_for_barcode
+
+def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
+
+    samples_for_barcode = find_samples({"plate_barcode": plate_barcode, "Result": "Positive"})
+
+    return samples_for_barcode
+
+    # logger.info(f"Getting all positive samples for {plate_barcode}")
+
+    # samples = app.data.driver.db.samples
+
+    # samples_for_barcode = list(samples.find({"plate_barcode": plate_barcode, "Result": "Positive"}))
+
+    # logger.info(f"Found {len(samples_for_barcode)} samples for {plate_barcode}")
+
+    # return samples_for_barcode
 
 def confirm_cente(samples: List[Dict[str, str]]) -> str:
     """Confirm that the centre for all the samples is populated and the same and return the centre

@@ -10,6 +10,7 @@ from lighthouse.helpers.plates import (
     create_post_body,
     get_centre_prefix,
     get_samples,
+    get_positive_samples
 )
 
 
@@ -89,3 +90,7 @@ def test_create_post_body(app, samples):
 def test_get_samples(app, samples):
     with app.app_context():
         assert len(get_samples("123")) == 3
+
+def test_get_positive_samples(app, samples):
+    with app.app_context():
+        assert len(get_positive_samples("123")) == 1
