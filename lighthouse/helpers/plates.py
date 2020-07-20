@@ -79,7 +79,7 @@ def find_samples(query: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
 
     return samples_for_barcode
 
-
+# TODO: remove once we are sure that we dont need anything other than positives
 def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
     samples_for_barcode = find_samples({"plate_barcode": plate_barcode})
