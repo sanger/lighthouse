@@ -43,7 +43,6 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         }
 
         # return the JSON and status code directly from SS (act as a proxy)
-        # return response.json(), response.status_code
         return response_json, response.status_code
     except Exception as e:
         logger.exception(e)
