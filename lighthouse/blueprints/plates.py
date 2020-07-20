@@ -3,13 +3,14 @@ from http import HTTPStatus
 from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
+from flask_cors import CORS  # type: ignore
 
 from lighthouse.helpers.plates import add_cog_barcodes, create_post_body, get_samples, send_to_ss, get_positive_samples
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("plates", __name__)
-
+CORS(bp)
 
 @bp.route("/plates/new", methods=["POST"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
