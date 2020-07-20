@@ -17,7 +17,7 @@ from lighthouse.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-def add_cog_barcodes(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
+def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
 
     centre_name = confirm_cente(samples)
     centre_prefix = get_centre_prefix(centre_name)
@@ -40,7 +40,9 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
     except requests.ConnectionError:
         raise requests.ConnectionError("Unable to access baracoda")
 
-    return samples
+    # return centre prefix
+    # TODO: I didn't know how else to get centre prefix?
+    return centre_prefix
 
 
 def get_centre_prefix(centre_name: str) -> Optional[str]:
