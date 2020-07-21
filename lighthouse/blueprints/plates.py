@@ -26,7 +26,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         samples = get_positive_samples(barcode)
 
         if not samples:
-            return {"errors": ["No samples for this barcode"]}, HTTPStatus.BAD_REQUEST
+            return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
 
         # add COG barcodes to samples
         centre_prefix = add_cog_barcodes(samples)
