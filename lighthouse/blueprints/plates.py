@@ -29,7 +29,11 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
 
         # add COG barcodes to samples
-        centre_prefix = add_cog_barcodes(samples)
+        try:
+            centre_prefix = add_cog_barcodes(samples)
+        except (Exception) as e:
+            logger.exception(e)
+            return {"errors": ["Failed to add COG barcodes to plate: " + barcode]}, HTTPStatus.BAD_REQUEST
 
         body = create_post_body(barcode, samples)
 
