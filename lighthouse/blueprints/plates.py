@@ -39,13 +39,16 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
         response = send_to_ss(body)
 
-        response_json = {
-            "data": {
-                "plate_barcode": samples[0]["plate_barcode"],
-                "centre": centre_prefix,
-                "number_of_positives": len(samples)
+        if response.ok:
+            response_json = {
+                "data": {
+                    "plate_barcode": samples[0]["plate_barcode"],
+                    "centre": centre_prefix,
+                    "number_of_positives": len(samples)
+                }
             }
-        }
+        else:
+            response_json = response.json()
 
         # return the JSON and status code directly from SS (act as a proxy)
         return response_json, response.status_code
