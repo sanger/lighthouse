@@ -11,6 +11,8 @@ from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.reports import get_new_report_name_and_path
 from lighthouse.utils import pretty
 
+import re
+
 logger = logging.getLogger(__name__)
 
 
@@ -39,6 +41,7 @@ def create_report() -> str:
             "Root Sample ID": True,
             "Result": True,
             "Date Tested": True,
+            "coordinate": True
         },
     )
 
@@ -68,6 +71,8 @@ def create_report() -> str:
     positive_samples_df = pd.DataFrame.from_records(results)
     logger.info(f"{len(positive_samples_df.index)} positive samples")
     pretty(logger, positive_samples_df)
+
+    positive_samples_df['coordinate'] = positive_samples_df['coordinate'].map(lambda coord: unpad_coordinate(coord))
 
     logger.debug("Getting list of distinct plate barcodes")
     # for some reason we have some records (documents in mongo language) where the plate_barcode
@@ -174,3 +179,8 @@ def create_report_job():
     logger.info("Starting create_report job")
     with scheduler.app.app_context():
         create_report()
+
+# Stip any leading zeros from the coordinate
+  # eg. A01 => A1
+def unpad_coordinate(coordinate):
+    return re.sub(r'0(\d)$', r'\1', coordinate) if (coordinate and isinstance(coordinate, str)) else coordinate
