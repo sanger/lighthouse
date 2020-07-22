@@ -45,7 +45,7 @@ def test_post_plates_endpoint_no_positive_samples(app, client):
       assert response.status_code == HTTPStatus.BAD_REQUEST
       assert response.json == { "errors": ["No samples for this barcode: 123"] }
 
-def test_post_plates_endpoint_add_cog_barcodes_failed(app, client, samples, centres, mocked_responses):
+def test_post_plates_endpoint_add_cog_barcodes_failed(app, client, samples, mocked_responses):
       baracoda_url = f"http://localhost:5100/barcodes_group/TS1/new?count=1"
 
       mocked_responses.add(
