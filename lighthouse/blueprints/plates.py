@@ -42,7 +42,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         if response.ok:
             response_json = {
                 "data": {
-                    "plate_barcode": samples[0]["plate_barcode"],
+                    "plate_barcode": barcode,
                     "centre": centre_prefix,
                     "number_of_positives": len(samples)
                 }
