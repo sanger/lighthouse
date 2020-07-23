@@ -8,10 +8,8 @@ from flask import current_app as app
 
 from lighthouse import scheduler
 from lighthouse.exceptions import ReportCreationError
-from lighthouse.helpers.reports import get_new_report_name_and_path
+from lighthouse.helpers.reports import get_new_report_name_and_path, unpad_coordinate
 from lighthouse.utils import pretty
-
-import re
 
 logger = logging.getLogger(__name__)
 
@@ -182,8 +180,3 @@ def create_report_job():
     logger.info("Starting create_report job")
     with scheduler.app.app_context():
         create_report()
-
-# Stip any leading zeros from the coordinate
-  # eg. A01 => A1
-def unpad_coordinate(coordinate):
-    return re.sub(r'0(\d)$', r'\1', coordinate) if (coordinate and isinstance(coordinate, str)) else coordinate
