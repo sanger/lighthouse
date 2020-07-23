@@ -26,22 +26,29 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         samples = get_positive_samples(barcode)
 
         if not samples:
-            return {"errors": ["No samples for this barcode"]}, HTTPStatus.BAD_REQUEST
+            return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
 
         # add COG barcodes to samples
-        centre_prefix = add_cog_barcodes(samples)
+        try:
+            centre_prefix = add_cog_barcodes(samples)
+        except (Exception) as e:
+            logger.exception(e)
+            return {"errors": ["Failed to add COG barcodes to plate: " + barcode]}, HTTPStatus.BAD_REQUEST
 
         body = create_post_body(barcode, samples)
 
         response = send_to_ss(body)
 
-        response_json = {
-            "data": {
-                "plate_barcode": samples[0]["plate_barcode"],
-                "centre": centre_prefix,
-                "number_of_positives": len(samples)
+        if response.ok:
+            response_json = {
+                "data": {
+                    "plate_barcode": samples[0]["plate_barcode"],
+                    "centre": centre_prefix,
+                    "number_of_positives": len(samples)
+                }
             }
-        }
+        else:
+            response_json = response.json()
 
         # return the JSON and status code directly from SS (act as a proxy)
         return response_json, response.status_code
