@@ -47,6 +47,8 @@ SAMPLES_DECLARATIONS_SCHEMA: Dict = {
 DATE_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 # eg "2013-04-04T10:29:13"
 
+PAGINATION_LIMIT = 10000
+
 DOMAIN: Dict = {
     "samples": {},
     "imports": {},
