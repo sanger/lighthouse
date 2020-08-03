@@ -12,6 +12,8 @@ REPORTS_DIR = "data/reports"
 DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
 SS_HOST = "localhost:3000"
 
+X_DOMAINS='*'
+
 # APScheduler config
 SCHEDULER_RUN = True
 JOBS = [

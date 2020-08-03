@@ -99,3 +99,8 @@ def get_new_report_name_and_path() -> Tuple[str, pathlib.PurePath]:
     report_path = REPORTS_PATH.joinpath(report_name)
 
     return report_name, report_path
+
+# Stip any leading zeros from the coordinate
+# eg. A01 => A1
+def unpad_coordinate(coordinate):
+    return re.sub(r'0(\d+)$', r'\1', coordinate) if (coordinate and isinstance(coordinate, str)) else coordinate

@@ -17,7 +17,7 @@ from lighthouse.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-def add_cog_barcodes(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
+def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
 
     centre_name = confirm_cente(samples)
     centre_prefix = get_centre_prefix(centre_name)
@@ -40,7 +40,9 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
     except requests.ConnectionError:
         raise requests.ConnectionError("Unable to access baracoda")
 
-    return samples
+    # return centre prefix
+    # TODO: I didn't know how else to get centre prefix?
+    return centre_prefix
 
 
 def get_centre_prefix(centre_name: str) -> Optional[str]:
@@ -68,18 +70,27 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
         logger.exception(e)
         raise DataError("Multiple centres with the same name")
 
-
-def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
-    logger.info(f"Getting all samples for {plate_barcode}")
-
+def find_samples(query: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
     samples = app.data.driver.db.samples
 
-    samples_for_barcode = list(samples.find({"plate_barcode": plate_barcode}))
+    samples_for_barcode = list(samples.find(query))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples for {plate_barcode}")
+    logger.info(f"Found {len(samples_for_barcode)} samples for {query['plate_barcode']}")
 
     return samples_for_barcode
 
+# TODO: remove once we are sure that we dont need anything other than positives
+def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
+
+    samples_for_barcode = find_samples({"plate_barcode": plate_barcode})
+
+    return samples_for_barcode
+
+def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
+
+    samples_for_barcode = find_samples({"plate_barcode": plate_barcode, "Result": "Positive"})
+
+    return samples_for_barcode
 
 def confirm_cente(samples: List[Dict[str, str]]) -> str:
     """Confirm that the centre for all the samples is populated and the same and return the centre

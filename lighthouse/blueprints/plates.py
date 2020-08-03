@@ -3,13 +3,14 @@ from http import HTTPStatus
 from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
+from flask_cors import CORS  # type: ignore
 
-from lighthouse.helpers.plates import add_cog_barcodes, create_post_body, get_samples, send_to_ss
+from lighthouse.helpers.plates import add_cog_barcodes, create_post_body, get_samples, send_to_ss, get_positive_samples
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("plates", __name__)
-
+CORS(bp)
 
 @bp.route("/plates/new", methods=["POST"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
@@ -22,20 +23,35 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
     try:
         # get samples for barcode
-        samples = get_samples(barcode)
+        samples = get_positive_samples(barcode)
 
         if not samples:
-            return {"errors": ["No samples for this barcode"]}, HTTPStatus.BAD_REQUEST
+            return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
 
         # add COG barcodes to samples
-        add_cog_barcodes(samples)
+        try:
+            centre_prefix = add_cog_barcodes(samples)
+        except (Exception) as e:
+            logger.exception(e)
+            return {"errors": ["Failed to add COG barcodes to plate: " + barcode]}, HTTPStatus.BAD_REQUEST
 
         body = create_post_body(barcode, samples)
 
         response = send_to_ss(body)
 
+        if response.ok:
+            response_json = {
+                "data": {
+                    "plate_barcode": samples[0]["plate_barcode"],
+                    "centre": centre_prefix,
+                    "number_of_positives": len(samples)
+                }
+            }
+        else:
+            response_json = response.json()
+
         # return the JSON and status code directly from SS (act as a proxy)
-        return response.json(), response.status_code
+        return response_json, response.status_code
     except Exception as e:
         logger.exception(e)
         return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
