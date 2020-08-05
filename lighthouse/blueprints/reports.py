@@ -2,11 +2,13 @@ import logging
 from http import HTTPStatus
 from typing import Any, Dict, Tuple
 
-from flask import Blueprint
+from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
 
-from lighthouse.helpers.reports import get_reports_details
+from lighthouse.helpers.reports import get_reports_details, delete_reports
 from lighthouse.jobs.reports import create_report
+
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -33,4 +35,26 @@ def create_report_endpoint():
     except Exception as e:
         logger.exception(e)
 
+        return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@bp.route("/delete_reports", methods=["POST"])
+def delete_reports_endpoint():
+    """A Flask route which accepts a list of report filenames and then deletes them
+    from the reports path. 
+    This endpoint should be json and the body should be in
+    the format {"data":"filenames":["file1.xlsx","file2.xlsx", ...]}
+    This is a POST request but is a destructive action but this does not need to be
+    delete as it is not a REST resource.
+    Arguments:
+        None
+    Returns:
+        {}, HTTPStatus
+    """
+    try:
+        content = json.loads(request.json)
+        delete_reports(content["data"]["filenames"])
+        return {}, HTTPStatus.OK
+    except Exception as e:
+        logger.exception(e)
         return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR

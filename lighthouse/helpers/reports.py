@@ -100,7 +100,24 @@ def get_new_report_name_and_path() -> Tuple[str, pathlib.PurePath]:
 
     return report_name, report_path
 
+
 # Stip any leading zeros from the coordinate
 # eg. A01 => A1
 def unpad_coordinate(coordinate):
-    return re.sub(r'0(\d+)$', r'\1', coordinate) if (coordinate and isinstance(coordinate, str)) else coordinate
+    return (
+        re.sub(r"0(\d+)$", r"\1", coordinate)
+        if (coordinate and isinstance(coordinate, str))
+        else coordinate
+    )
+
+
+def delete_reports(filenames):
+    """delete reports from the standard reports folder if they exist.
+
+    Returns:
+        Nothing.
+    """
+    for filename in filenames:
+        full_path = f"{app.config['REPORTS_DIR']}/{filename}"
+        if os.path.isfile(full_path):
+            os.remove(full_path)

@@ -5,12 +5,19 @@ from typing import Any, Dict, Tuple
 from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
 
-from lighthouse.helpers.plates import add_cog_barcodes, create_post_body, get_samples, send_to_ss, get_positive_samples
+from lighthouse.helpers.plates import (
+    add_cog_barcodes,
+    create_post_body,
+    get_samples,
+    send_to_ss,
+    get_positive_samples,
+)
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("plates", __name__)
 CORS(bp)
+
 
 @bp.route("/plates/new", methods=["POST"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
@@ -33,7 +40,10 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             centre_prefix = add_cog_barcodes(samples)
         except (Exception) as e:
             logger.exception(e)
-            return {"errors": ["Failed to add COG barcodes to plate: " + barcode]}, HTTPStatus.BAD_REQUEST
+            return (
+                {"errors": ["Failed to add COG barcodes to plate: " + barcode]},
+                HTTPStatus.BAD_REQUEST,
+            )
 
         body = create_post_body(barcode, samples)
 
@@ -44,7 +54,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 "data": {
                     "plate_barcode": samples[0]["plate_barcode"],
                     "centre": centre_prefix,
-                    "number_of_positives": len(samples)
+                    "number_of_positives": len(samples),
                 }
             }
         else:
