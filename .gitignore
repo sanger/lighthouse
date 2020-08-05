@@ -131,4 +131,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+tests/data/reports/*
+
 data/.DS_Store
