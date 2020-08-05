@@ -36,7 +36,7 @@ def test_unpad_coordinate_B01010(app, freezer):
 
 def test_delete_reports(app, freezer):
 
-    reports_folder = "data/reports"
+    copies_of_reports_folder = "tests/data/reports_copies"
 
     filenames = [
         "200716_1345_positives_with_locations.xlsx",
@@ -47,7 +47,7 @@ def test_delete_reports(app, freezer):
     ]
 
     for filename in filenames:
-        copy(f"{reports_folder}/{filename}", f"{app.config['REPORTS_DIR']}/{filename}")
+        copy(f"{copies_of_reports_folder}/{filename}", f"{app.config['REPORTS_DIR']}/{filename}")
 
     with app.app_context():
         delete_reports(filenames)
