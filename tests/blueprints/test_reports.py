@@ -52,3 +52,12 @@ def test_delete_reports_endpoint(client):
         response = client.post("delete_reports", json=json.dumps(json_body))
 
         assert response.status_code == HTTPStatus.OK
+
+def test_delete_reports_endpoint_fails(client):
+    with patch(
+        "lighthouse.blueprints.reports.delete_reports", return_value=None,
+    ):
+
+        response = client.post("delete_reports", json="{}")
+
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
