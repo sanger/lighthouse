@@ -49,7 +49,7 @@ def test_delete_reports_endpoint(client):
             }
         }
 
-        response = client.post("delete_reports", json=json.dumps(json_body))
+        response = client.post("delete_reports", json=json_body)
 
         assert response.status_code == HTTPStatus.OK
 

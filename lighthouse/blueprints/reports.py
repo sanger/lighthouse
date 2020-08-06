@@ -52,8 +52,7 @@ def delete_reports_endpoint():
         {}, HTTPStatus
     """
     try:
-        content = json.loads(request.json)
-        delete_reports(content["data"]["filenames"])
+        delete_reports(request.json["data"]["filenames"])
         return {}, HTTPStatus.OK
     except Exception as e:
         logger.exception(e)
