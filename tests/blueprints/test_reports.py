@@ -1,7 +1,5 @@
 from http import HTTPStatus
 from unittest.mock import patch
-import json
-
 
 def test_get_reports_endpoint(client):
     with patch(
