@@ -16,3 +16,5 @@ MONGO_QUERY_BLACKLIST = ["$where"]  # not sure why this was required...
 # logging config
 LOGGING["loggers"]["lighthouse"]["level"] = "DEBUG"  # noqa: F405
 LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream"]  # noqa: F405
+
+REPORTS_DIR = "tests/data/reports"

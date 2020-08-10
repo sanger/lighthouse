@@ -77,9 +77,11 @@ def samples_declarations(app):
 def lots_of_samples_declarations_payload(app):
     yield copy.deepcopy(LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD)
 
+
 @pytest.fixture
 def multiple_errors_samples_declarations_payload(app):
     yield copy.deepcopy(MULTIPLE_ERRORS_SAMPLES_DECLARATIONS)
+
 
 @pytest.fixture
 def lots_of_samples(app):
@@ -123,4 +125,3 @@ def labwhere_samples(app, mocked_responses):
     mocked_responses.add(
         responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
     )
-

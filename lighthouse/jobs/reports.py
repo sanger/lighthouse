@@ -39,7 +39,7 @@ def create_report() -> str:
             "Root Sample ID": True,
             "Result": True,
             "Date Tested": True,
-            "coordinate": True
+            "coordinate": True,
         },
     )
 
@@ -71,9 +71,13 @@ def create_report() -> str:
     pretty(logger, positive_samples_df)
 
     # strip zeros out of the well coordinates
-    positive_samples_df['coordinate'] = positive_samples_df['coordinate'].map(lambda coord: unpad_coordinate(coord))
+    positive_samples_df["coordinate"] = positive_samples_df["coordinate"].map(
+        lambda coord: unpad_coordinate(coord)
+    )
     # create 'plate and well' column for copy-pasting into Sequencescape submission, e.g. DN1234:A1
-    positive_samples_df['plate and well'] = positive_samples_df['plate_barcode'] + ':' + positive_samples_df['coordinate']
+    positive_samples_df["plate and well"] = (
+        positive_samples_df["plate_barcode"] + ":" + positive_samples_df["coordinate"]
+    )
 
     logger.debug("Getting list of distinct plate barcodes")
     # for some reason we have some records (documents in mongo language) where the plate_barcode
