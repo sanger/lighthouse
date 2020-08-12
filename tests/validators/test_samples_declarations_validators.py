@@ -22,15 +22,15 @@ def test_find_non_exist_samples(app, samples):
 
 
 def test_add_flags(app):
-    obj = { "root_sample_id": "1234" }
+    obj = {"root_sample_id": "1234"}
     add_flags(obj, ["1234"], "TESTING_FLAG")
     assert obj["validation_flags"] == ["TESTING_FLAG"]
- 
-    obj = { "validation_flags": ["ANOTHER_VALUE"], "root_sample_id": "1234" }
+
+    obj = {"validation_flags": ["ANOTHER_VALUE"], "root_sample_id": "1234"}
     add_flags(obj, "1234", "TESTING_FLAG")
     assert obj["validation_flags"] == ["ANOTHER_VALUE", "TESTING_FLAG"]
-    
-    obj = { "root_sample_id": "1234" }
+
+    obj = {"root_sample_id": "1234"}
     add_flags(obj, ["4567"], "TESTING_FLAG")
     assert not ("validation_flags" in obj)
 

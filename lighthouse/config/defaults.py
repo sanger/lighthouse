@@ -12,7 +12,7 @@ REPORTS_DIR = "data/reports"
 DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
 SS_HOST = "localhost:3000"
 
-X_DOMAINS='*'
+X_DOMAINS = "*"
 
 # APScheduler config
 SCHEDULER_RUN = True
@@ -46,6 +46,10 @@ SAMPLES_DECLARATIONS_SCHEMA: Dict = {
 
 DATE_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 # eg "2013-04-04T10:29:13"
+
+PAGINATION_LIMIT = 10000
+# allow requests to set ?max_results= to more than the default
+#  added for lighthouse-ui Imports page, to display all Imports in a table
 
 DOMAIN: Dict = {
     "samples": {},

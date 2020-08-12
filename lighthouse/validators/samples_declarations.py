@@ -20,8 +20,10 @@ class SamplesDeclarationsValidator(Validator):
 def get_root_sample_id(obj):
     return obj["root_sample_id"]
 
+
 def root_sample_id_present(obj):
-    return ('root_sample_id' in obj)
+    return "root_sample_id" in obj
+
 
 def get_samples(request):
 
@@ -33,8 +35,9 @@ def get_samples(request):
     else:
         if root_sample_id_present(json):
             return [get_root_sample_id(json)]
-        else: 
+        else:
             return []
+
 
 # https://stackoverflow.com/questions/46554866/efficiently-finding-duplicates-in-a-list
 def find_duplicates(sample_ids):
@@ -89,7 +92,7 @@ def pre_samples_declarations_post_callback(request):
 def add_errors(request, duplicate_sample_ids, non_exist_samples):
     if isinstance(request.json, list):
         for index in range(len(request.json)):
-            if (root_sample_id_present(request.json[index])):
+            if root_sample_id_present(request.json[index]):
                 add_validation_flags(request.json[index], duplicate_sample_ids, non_exist_samples)
     else:
         add_validation_flags(request.json, duplicate_sample_ids, non_exist_samples)
@@ -135,7 +138,7 @@ def post_samples_declarations_post_callback(request, payload):
 
     if "_items" in payload.json:
         items = payload.json["_items"]
-  
+
         # Extract only the OK items that have been rejected just because the group
         # contained ERR items too
         clean_elems = build_clean_elems_object(items, request)
