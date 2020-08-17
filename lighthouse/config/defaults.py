@@ -99,3 +99,5 @@ LOGGING: Dict[str, Any] = {
         "lighthouse": {"handlers": ["console", "slack"], "level": "INFO", "propagate": True}
     },
 }
+
+MLWH_CONN_STRING = "root:root@localhost:3320"
