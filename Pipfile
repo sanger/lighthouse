@@ -25,8 +25,8 @@ flask-cors = "~=3.0"
 pandas = "~=1.0"
 xlsxwriter = "~=1.2"
 flask-apscheduler = "~=1.11"
-PyMySQL = "*"
-SQLAlchemy = "*"
+pymysql = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.8"
