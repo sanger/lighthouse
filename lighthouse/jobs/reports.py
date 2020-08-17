@@ -3,7 +3,7 @@ import time
 from http import HTTPStatus
 
 import pymysql
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine # type: ignore
 
 import pandas as pd  # type: ignore
 import requests
