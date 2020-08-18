@@ -6,6 +6,13 @@ import re
 import requests
 import pandas as pd  # type: ignore
 
+import pymysql
+# we only need the create_engine method
+# but that can't be mocked
+# can't seem to mock it at the top because
+# it is outside the app context
+import sqlalchemy # type: ignore
+
 from datetime import datetime
 from typing import Dict, List, Tuple
 from http import HTTPStatus
@@ -179,3 +186,26 @@ def map_labware_to_location(labware_barcodes):
     pretty(logger, labware_to_location_barcode_df)
 
     return labware_to_location_barcode_df
+
+def get_cherrypicked_samples(root_sample_ids):
+
+    sql = ("select mlwh_sample.description as description"
+                " FROM mlwarehouse.sample as mlwh_sample"
+                " JOIN mlwh_events.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
+                " JOIN mlwh_events.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
+                " JOIN mlwh_events.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
+                " JOIN mlwh_events.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+                f" WHERE mlwh_sample.description IN ('{root_sample_ids}')"
+                " AND mlwh_events_event_types.key = 'slf_cherrypicking'"
+                " GROUP BY mlwh_sample.description")
+
+    try:
+        sql_engine = sqlalchemy.create_engine(f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600)
+        db_connection = sql_engine.connect()
+        frame = pd.read_sql(sql, db_connection)
+        return frame
+    except Exception as e:
+        print("Error while connecting to MySQL", e)
+        return None
+    finally:
+        db_connection.close()
