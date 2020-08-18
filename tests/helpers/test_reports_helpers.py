@@ -93,7 +93,7 @@ def test_map_labware_to_location_labwhere_error(app, freezer, labwhere_samples_e
 
 
 def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_samples_multiple):
-    # mocks response from get_locations_from_labwhere() wtih labwhere_samples_multiple
+    # mocks response from get_locations_from_labwhere() with labwhere_samples_multiple
     with app.app_context():
         labware_to_location_barcode_df = map_labware_to_location(['123', '456', '789']) # '789' returns no location, in the mock
 
