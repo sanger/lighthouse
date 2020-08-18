@@ -192,8 +192,10 @@ def get_locations_from_labwhere(labware_barcodes):
 
 
 def get_cherrypicked_samples(root_sample_ids):
+    # Find which samples have been cherrypicked using MLWH & Events warehouse
+    # Returns dataframe with 1 column, 'description', containing Root Sample ID of those that have been cherrypicked
 
-    sql = ("select mlwh_sample.description as description"
+    sql = ("select mlwh_sample.description as `Root Sample ID`"
                 " FROM mlwarehouse.sample as mlwh_sample"
                 " JOIN mlwh_events.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
                 " JOIN mlwh_events.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
@@ -271,3 +273,13 @@ def get_all_positive_samples():
     # )
     return True
 
+def add_cherrypicked_column(existing_dataframe):
+    root_sample_ids = existing_dataframe['Root Sample ID'].to_list()
+
+    cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids)
+    cherrypicked_samples_df['Cherrypicked'] = 'Yes'
+
+    existing_dataframe = existing_dataframe.merge(cherrypicked_samples_df, how="left", on="Root Sample ID")
+    existing_dataframe = existing_dataframe.fillna({'Cherrypicked': 'No'})
+
+    return existing_dataframe

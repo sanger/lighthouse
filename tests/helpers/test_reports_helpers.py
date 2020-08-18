@@ -3,6 +3,7 @@ from shutil import copy
 import os
 
 import pandas as pd
+import numpy as np
 from unittest.mock import patch, Mock
 
 from lighthouse.helpers.reports import (
@@ -11,7 +12,8 @@ from lighthouse.helpers.reports import (
     delete_reports,
     get_cherrypicked_samples,
     get_all_positive_samples,
-    map_labware_to_location
+    map_labware_to_location,
+    add_cherrypicked_column
 )
 from lighthouse.exceptions import ReportCreationError
 
@@ -115,3 +117,40 @@ def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_sample
     assert labware_to_location_barcode_df.loc[0].location_barcode == '4567'
     assert labware_to_location_barcode_df.loc[1].location_barcode == '1234'
     assert labware_to_location_barcode_df.loc[2].location_barcode == ''
+
+def test_add_cherrypicked_column(app, freezer):
+    # mocks response from pandas read_sql, as proxy for response from get_cherrypicked_samples()
+    existing_dataframe = pd.DataFrame(
+        [
+            ['MCM001', 'TEST'],
+            ['MCM002', 'TEST'],
+            ['MCM003', 'TEST'],
+            ['MCM004', 'TEST'],
+            ['MCM005', 'TEST']
+        ],
+        columns=['Root Sample ID', 'Lab ID']
+    )
+
+    mock_get_cherrypicked_samples = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['Root Sample ID'])
+
+    expected_columns = ['Root Sample ID', 'Lab ID', 'Cherrypicked']
+    expected = [
+        ['MCM001', 'TEST', 'Yes'],
+        ['MCM002', 'TEST', 'No'],
+        ['MCM003', 'TEST', 'Yes'],
+        ['MCM004', 'TEST', 'No'],
+        ['MCM005', 'TEST', 'Yes']
+    ]
+
+    with app.app_context():
+        with patch(
+        "sqlalchemy.create_engine", return_value=Mock()
+        ):
+            with patch(
+                "pandas.read_sql", return_value=mock_get_cherrypicked_samples,
+                ):
+
+                new_dataframe = add_cherrypicked_column(existing_dataframe)
+
+    assert new_dataframe.columns.to_list() == expected_columns
+    assert np.array_equal(new_dataframe.to_numpy(), expected)

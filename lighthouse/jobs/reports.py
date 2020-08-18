@@ -9,7 +9,7 @@ from flask import current_app as app
 from lighthouse import scheduler
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.reports import (
-    get_new_report_name_and_path, unpad_coordinate, map_labware_to_location, get_cherrypicked_samples
+    get_new_report_name_and_path, unpad_coordinate, map_labware_to_location, add_cherrypicked_column
 )
 from lighthouse.utils import pretty
 
@@ -107,6 +107,8 @@ def create_report() -> str:
         merged = merged.fillna({"Value In Sequencing": "Unknown"})
 
     pretty(logger, merged)
+
+    merged = add_cherrypicked_column(merged)
 
     report_name, report_path = get_new_report_name_and_path()
 
