@@ -138,10 +138,31 @@ def delete_reports(filenames):
 
 
 def map_labware_to_location(labware_barcodes):
-    response = requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/labwares/searches",
-        json={"barcodes": labware_barcodes},
+    response = get_locations_from_labwhere(labware_barcodes)
+
+    if response.status_code != HTTPStatus.OK:
+        raise ReportCreationError("Response from LabWhere is not OK")
+
+    # create a plate_barcode to location_barcode mapping to join with samples
+    # return none for samples where location barcode is not present
+    labware_to_location_barcode = [
+        {
+            "plate_barcode": record["barcode"],
+            "location_barcode": record["location"].get("barcode", ""),
+        }
+        for record in response.json()
+    ]
+
+    labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
+    logger.info(
+        f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found"
     )
+    pretty(logger, labware_to_location_barcode_df)
+
+    return labware_to_location_barcode_df
+
+
+def get_locations_from_labwhere(labware_barcodes):
     """
     Example record from labwhere:
     {'audits': '/api/labwares/GLA001024R/audits',
@@ -164,28 +185,11 @@ def map_labware_to_location(labware_barcodes):
                 'updated_at': 'Thursday May  7 2020 11:29'},
     'updated_at': 'Tuesday May 26 2020 16:13'}
     """
-    logger.debug(response)
-
-    if response.status_code != HTTPStatus.OK:
-        raise ReportCreationError("Response from labwhere is not OK")
-
-    # create a plate_barcode to location_barcode mapping to join with samples
-    # return none for samples where location barcode is not present
-    labware_to_location_barcode = [
-        {
-            "plate_barcode": record["barcode"],
-            "location_barcode": record["location"].get("barcode", ""),
-        }
-        for record in response.json()
-    ]
-
-    labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
-    logger.info(
-        f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found"
+    return requests.post(
+        f"http://{app.config['LABWHERE_URL']}/api/labwares/searches",
+        json={"barcodes": labware_barcodes},
     )
-    pretty(logger, labware_to_location_barcode_df)
 
-    return labware_to_location_barcode_df
 
 def get_cherrypicked_samples(root_sample_ids):
 
