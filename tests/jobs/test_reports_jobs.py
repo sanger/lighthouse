@@ -7,6 +7,8 @@ def test_get_cherrypicked_samples(app, freezer):
   expected = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['description'], index=[0, 1, 2])
   samples = "MCM001,MCM002,MCM003,MCM004,MCM005"
 
+  patch("sqlalchemy.create_engine", return_value=None)
+
   with patch(
         "pandas.read_sql", return_value=expected,
     ):
