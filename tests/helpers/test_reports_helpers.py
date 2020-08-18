@@ -10,11 +10,8 @@ from lighthouse.helpers.reports import (
     unpad_coordinate,
     delete_reports,
     get_cherrypicked_samples,
-<<<<<<< HEAD
-    get_all_positive_samples
-=======
+    get_all_positive_samples,
     map_labware_to_location
->>>>>>> 07ea07fe5e279c2a4cbf51cfd3d3fee7e5acca72
 )
 from lighthouse.exceptions import ReportCreationError
 
@@ -91,7 +88,7 @@ def test_get_all_positive_samples(app, freezer, samples):
 #     Root Sample ID	Result	Date Tested	source	plate_barcode	coordinate	plate and well	location_barcode
 # LEI00009968	Positive	2020-05-10 18:53:47 UTC	Alderley	AP-rna-00111417	H8	AP-rna-00111417:H8	lw-uk-bio--19-14576
     assert get_all_positive_samples() == True
-    
+
 def test_map_labware_to_location_labwhere_error(app, freezer, labwhere_samples_error):
     # mocks response from get_locations_from_labwhere() with labwhere_samples_error
 
@@ -104,7 +101,6 @@ def test_map_labware_to_location_labwhere_error(app, freezer, labwhere_samples_e
         raised_exception = True
 
     assert raised_exception
-
 
 def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_samples_multiple):
     # mocks response from get_locations_from_labwhere() with labwhere_samples_multiple

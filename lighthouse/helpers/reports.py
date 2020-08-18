@@ -138,31 +138,10 @@ def delete_reports(filenames):
 
 
 def map_labware_to_location(labware_barcodes):
-    response = get_locations_from_labwhere(labware_barcodes)
-
-    if response.status_code != HTTPStatus.OK:
-        raise ReportCreationError("Response from LabWhere is not OK")
-
-    # create a plate_barcode to location_barcode mapping to join with samples
-    # return none for samples where location barcode is not present
-    labware_to_location_barcode = [
-        {
-            "plate_barcode": record["barcode"],
-            "location_barcode": record["location"].get("barcode", ""),
-        }
-        for record in response.json()
-    ]
-
-    labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
-    logger.info(
-        f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found"
+    response = requests.post(
+        f"http://{app.config['LABWHERE_URL']}/api/labwares/searches",
+        json={"barcodes": labware_barcodes},
     )
-    pretty(logger, labware_to_location_barcode_df)
-
-    return labware_to_location_barcode_df
-
-
-def get_locations_from_labwhere(labware_barcodes):
     """
     Example record from labwhere:
     {'audits': '/api/labwares/GLA001024R/audits',
@@ -185,11 +164,28 @@ def get_locations_from_labwhere(labware_barcodes):
                 'updated_at': 'Thursday May  7 2020 11:29'},
     'updated_at': 'Tuesday May 26 2020 16:13'}
     """
-    return requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/labwares/searches",
-        json={"barcodes": labware_barcodes},
-    )
+    logger.debug(response)
 
+    if response.status_code != HTTPStatus.OK:
+        raise ReportCreationError("Response from labwhere is not OK")
+
+    # create a plate_barcode to location_barcode mapping to join with samples
+    # return none for samples where location barcode is not present
+    labware_to_location_barcode = [
+        {
+            "plate_barcode": record["barcode"],
+            "location_barcode": record["location"].get("barcode", ""),
+        }
+        for record in response.json()
+    ]
+
+    labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
+    logger.info(
+        f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found"
+    )
+    pretty(logger, labware_to_location_barcode_df)
+
+    return labware_to_location_barcode_df
 
 def get_cherrypicked_samples(root_sample_ids):
 
@@ -215,5 +211,59 @@ def get_cherrypicked_samples(root_sample_ids):
         db_connection.close()
 
 def get_all_positive_samples():
+    # get samples collection
+    # samples = app.data.driver.db.samples
+    # samples_declarations = app.data.driver.db.samples_declarations
+
+    # logger.debug("Getting all positive samples")
+    # # filtering using case insensitive regex to catch "Positive" and "positive"
+    # results = samples.find(
+    #     filter={"Result": {"$regex": "^positive", "$options": "i"}},
+    #     projection={
+    #         "_id": False,
+    #         "source": True,
+    #         "plate_barcode": True,
+    #         "Root Sample ID": True,
+    #         "Result": True,
+    #         "Date Tested": True,
+    #         "coordinate": True,
+    #     },
+    # )
+
+    # # Latest declarations group by root_sample_id
+    # # Id is needed to control the group aggregation
+    # # Excel formatter required date without timezone
+    # declarations = samples_declarations.aggregate(
+    #     [
+    #         {"$sort": {"declared_at": -1}},
+    #         {
+    #             "$group": {
+    #                 "_id": "$root_sample_id",
+    #                 "Root Sample ID": {"$first": "$root_sample_id"},
+    #                 "Value In Sequencing": {"$first": "$value_in_sequencing"},
+    #                 "Declared At": {
+    #                     "$first": {
+    #                         "$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}
+    #                     }
+    #                 },
+    #             }
+    #         },
+    #         {"$unset": "_id"},
+    #     ]
+    # )
+
+    # # converting to a dataframe to make it easy to join with data from labwhere
+    # positive_samples_df = pd.DataFrame.from_records(results)
+    # logger.info(f"{len(positive_samples_df.index)} positive samples")
+    # pretty(logger, positive_samples_df)
+
+    # # strip zeros out of the well coordinates
+    # positive_samples_df["coordinate"] = positive_samples_df["coordinate"].map(
+    #     lambda coord: unpad_coordinate(coord)
+    # )
+    # # create 'plate and well' column for copy-pasting into Sequencescape submission, e.g. DN1234:A1
+    # positive_samples_df["plate and well"] = (
+    #     positive_samples_df["plate_barcode"] + ":" + positive_samples_df["coordinate"]
+    # )
     return True
 
