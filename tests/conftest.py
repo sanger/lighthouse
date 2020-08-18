@@ -117,11 +117,32 @@ def mocked_responses():
 
 
 @pytest.fixture
-def labwhere_samples(app, mocked_responses):
-    # Mock of labwhere
+def labwhere_samples_simple(app, mocked_responses):
     labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares/searches"
 
     body = json.dumps([{"barcode": "123", "location": {"barcode": "4567"}}])
     mocked_responses.add(
         responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+    )
+
+@pytest.fixture
+def labwhere_samples_multiple(app, mocked_responses):
+    labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares/searches"
+
+    body = json.dumps([
+        {"barcode": "123", "location": {"barcode": "4567"}},
+        {"barcode": "456", "location": {"barcode": "1234"}},
+        {"barcode": "789", "location": {}}
+    ])
+    mocked_responses.add(
+        responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+    )
+
+@pytest.fixture
+def labwhere_samples_error(app, mocked_responses):
+    labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares/searches"
+
+    body = json.dumps([])
+    mocked_responses.add(
+        responses.POST, labwhere_url, body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR,
     )

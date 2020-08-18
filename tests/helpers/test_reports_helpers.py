@@ -9,8 +9,10 @@ from lighthouse.helpers.reports import (
     get_new_report_name_and_path,
     unpad_coordinate,
     delete_reports,
-    get_cherrypicked_samples
+    get_cherrypicked_samples,
+    map_labware_to_location
 )
+from lighthouse.exceptions import ReportCreationError
 
 
 def test_get_new_report_name_and_path(app, freezer):
@@ -75,3 +77,31 @@ def test_get_cherrypicked_samples(app, freezer):
         assert returned_samples.at[0, 'description'] == "MCM001"
         assert returned_samples.at[1, 'description'] == "MCM003"
         assert returned_samples.at[2, 'description'] == "MCM005"
+
+def test_map_labware_to_location_labwhere_error(app, freezer, labwhere_samples_error):
+    # mocks response from get_locations_from_labwhere() with labwhere_samples_error
+
+    raised_exception = False
+
+    try:
+        with app.app_context():
+            map_labware_to_location(['test'])
+    except ReportCreationError:
+        raised_exception = True
+
+    assert raised_exception
+
+
+def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_samples_multiple):
+    # mocks response from get_locations_from_labwhere() wtih labwhere_samples_multiple
+    with app.app_context():
+        labware_to_location_barcode_df = map_labware_to_location(['123', '456', '789']) # '789' returns no location, in the mock
+
+    assert labware_to_location_barcode_df.shape[0] == 3 # num rows
+    assert labware_to_location_barcode_df.shape[1] == 2 # num columns
+    assert labware_to_location_barcode_df.loc[0].plate_barcode == '123'
+    assert labware_to_location_barcode_df.loc[1].plate_barcode == '456'
+    assert labware_to_location_barcode_df.loc[2].plate_barcode == '789'
+    assert labware_to_location_barcode_df.loc[0].location_barcode == '4567'
+    assert labware_to_location_barcode_df.loc[1].location_barcode == '1234'
+    assert labware_to_location_barcode_df.loc[2].location_barcode == ''
