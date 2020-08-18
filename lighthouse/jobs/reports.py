@@ -3,7 +3,11 @@ import time
 from http import HTTPStatus
 
 import pymysql
-from sqlalchemy import create_engine # type: ignore
+# we only need the create_engine method
+# but that can't be mocked
+# can't seem to mock it at the top because
+# it is outside the app context
+import sqlalchemy # type: ignore
 
 import pandas as pd  # type: ignore
 import requests
@@ -200,7 +204,7 @@ def get_cherrypicked_samples(root_sample_ids):
                 " GROUP BY mlwh_sample.description")
 
     try:
-        sql_engine = create_engine(f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600)        
+        sql_engine = sqlalchemy.create_engine(f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600)
         db_connection = sql_engine.connect()
         frame = pd.read_sql(sql, db_connection)
         return frame

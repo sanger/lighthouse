@@ -121,3 +121,4 @@ def delete_reports(filenames):
         full_path = f"{app.config['REPORTS_DIR']}/{filename}"
         if os.path.isfile(full_path):
             os.remove(full_path)
+
