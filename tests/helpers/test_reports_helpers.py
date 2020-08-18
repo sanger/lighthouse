@@ -66,7 +66,7 @@ def test_delete_reports(app, freezer):
 
 def test_get_cherrypicked_samples(app, freezer):
 
-  expected = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['description'], index=[0, 1, 2])
+  expected = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['Root Sample ID'], index=[0, 1, 2])
   samples = "MCM001,MCM002,MCM003,MCM004,MCM005"
 
   with app.app_context():
@@ -77,9 +77,9 @@ def test_get_cherrypicked_samples(app, freezer):
           "pandas.read_sql", return_value=expected,
         ):
         returned_samples = get_cherrypicked_samples(samples)
-        assert returned_samples.at[0, 'description'] == "MCM001"
-        assert returned_samples.at[1, 'description'] == "MCM003"
-        assert returned_samples.at[2, 'description'] == "MCM005"
+        assert returned_samples.at[0, 'Root Sample ID'] == "MCM001"
+        assert returned_samples.at[1, 'Root Sample ID'] == "MCM003"
+        assert returned_samples.at[2, 'Root Sample ID'] == "MCM005"
 
 def test_get_all_positive_samples(app, freezer, samples):
 
