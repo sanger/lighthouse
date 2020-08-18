@@ -209,3 +209,7 @@ def get_cherrypicked_samples(root_sample_ids):
         return None
     finally:
         db_connection.close()
+
+def get_all_positive_samples():
+    return True
+

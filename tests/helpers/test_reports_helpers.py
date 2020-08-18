@@ -9,7 +9,8 @@ from lighthouse.helpers.reports import (
     get_new_report_name_and_path,
     unpad_coordinate,
     delete_reports,
-    get_cherrypicked_samples
+    get_cherrypicked_samples,
+    get_all_positive_samples
 )
 
 
@@ -75,3 +76,13 @@ def test_get_cherrypicked_samples(app, freezer):
         assert returned_samples.at[0, 'description'] == "MCM001"
         assert returned_samples.at[1, 'description'] == "MCM003"
         assert returned_samples.at[2, 'description'] == "MCM005"
+
+def test_get_all_positive_samples(app, freezer, samples):
+
+    # sample = samples[0]
+    # sample = { 'Root Sample ID'	'Result'	'Date Tested'	'source'	'plate_barcode'	'coordinate'	'plate and well'}
+    # expected = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['description'], index=[0, 1, 2])
+
+#     Root Sample ID	Result	Date Tested	source	plate_barcode	coordinate	plate and well	location_barcode
+# LEI00009968	Positive	2020-05-10 18:53:47 UTC	Alderley	AP-rna-00111417	H8	AP-rna-00111417:H8	lw-uk-bio--19-14576
+    assert get_all_positive_samples() == True
