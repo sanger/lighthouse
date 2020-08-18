@@ -3,8 +3,15 @@ import math
 import os
 import pathlib
 import re
+import requests
+import pandas as pd  # type: ignore
+
 from datetime import datetime
 from typing import Dict, List, Tuple
+from http import HTTPStatus
+
+from lighthouse.exceptions import ReportCreationError
+from lighthouse.utils import pretty
 
 from flask import current_app as app
 
@@ -121,3 +128,54 @@ def delete_reports(filenames):
         full_path = f"{app.config['REPORTS_DIR']}/{filename}"
         if os.path.isfile(full_path):
             os.remove(full_path)
+
+
+def map_labware_to_location(labware_barcodes):
+    response = requests.post(
+        f"http://{app.config['LABWHERE_URL']}/api/labwares/searches",
+        json={"barcodes": labware_barcodes},
+    )
+    """
+    Example record from labwhere:
+    {'audits': '/api/labwares/GLA001024R/audits',
+    'barcode': 'GLA001024R',
+    'created_at': 'Tuesday May 26 2020 16:13',
+    'location': {'audits': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/audits',
+                'barcode': 'lw-uk-biocentre-box-gsw--98-14813',
+                'children': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/children',
+                'columns': 0,
+                'container': True,
+                'created_at': 'Thursday May  7 2020 11:29',
+                'id': 14813,
+                'labwares': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/labwares',
+                'location_type_id': 7,
+                'name': 'UK Biocentre box GSW  98',
+                'parent': '/api/locations/lw-glasgow-barcodes-14715',
+                'parentage': 'Sanger / Ogilvie / Glasgow Barcodes',
+                'rows': 0,
+                'status': 'active',
+                'updated_at': 'Thursday May  7 2020 11:29'},
+    'updated_at': 'Tuesday May 26 2020 16:13'}
+    """
+    logger.debug(response)
+
+    if response.status_code != HTTPStatus.OK:
+        raise ReportCreationError("Response from labwhere is not OK")
+
+    # create a plate_barcode to location_barcode mapping to join with samples
+    # return none for samples where location barcode is not present
+    labware_to_location_barcode = [
+        {
+            "plate_barcode": record["barcode"],
+            "location_barcode": record["location"].get("barcode", ""),
+        }
+        for record in response.json()
+    ]
+
+    labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
+    logger.info(
+        f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found"
+    )
+    pretty(logger, labware_to_location_barcode_df)
+
+    return labware_to_location_barcode_df

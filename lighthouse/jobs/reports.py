@@ -11,7 +11,9 @@ from flask import current_app as app
 
 from lighthouse import scheduler
 from lighthouse.exceptions import ReportCreationError
-from lighthouse.helpers.reports import get_new_report_name_and_path, unpad_coordinate
+from lighthouse.helpers.reports import (
+    get_new_report_name_and_path, unpad_coordinate, map_labware_to_location
+)
 from lighthouse.utils import pretty
 
 logger = logging.getLogger(__name__)
@@ -90,91 +92,47 @@ def create_report() -> str:
     logger.info(f"{len(distinct_plate_barcodes)} distinct barcodes")
 
     logger.debug("Getting location barcodes from labwhere")
-    response = requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/labwares/searches",
-        json={"barcodes": distinct_plate_barcodes},
+    labware_to_location_barcode_df = map_labware_to_location(distinct_plate_barcodes)
+
+    logger.debug("Joining location data from labwhere")
+    merged = positive_samples_df.merge(
+        labware_to_location_barcode_df, how="left", on="plate_barcode"
     )
-    """
-    Example record from labwhere:
-    {'audits': '/api/labwares/GLA001024R/audits',
-    'barcode': 'GLA001024R',
-    'created_at': 'Tuesday May 26 2020 16:13',
-    'location': {'audits': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/audits',
-                'barcode': 'lw-uk-biocentre-box-gsw--98-14813',
-                'children': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/children',
-                'columns': 0,
-                'container': True,
-                'created_at': 'Thursday May  7 2020 11:29',
-                'id': 14813,
-                'labwares': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/labwares',
-                'location_type_id': 7,
-                'name': 'UK Biocentre box GSW  98',
-                'parent': '/api/locations/lw-glasgow-barcodes-14715',
-                'parentage': 'Sanger / Ogilvie / Glasgow Barcodes',
-                'rows': 0,
-                'status': 'active',
-                'updated_at': 'Thursday May  7 2020 11:29'},
-    'updated_at': 'Tuesday May 26 2020 16:13'}
-    """
-    logger.debug(response)
-    if response.status_code == HTTPStatus.OK:
-        # create a plate_barcode to location_barcode mapping to join with samples
-        # return none for samples where location barcode is not present
-        labware_to_location_barcode = [
-            {
-                "plate_barcode": record["barcode"],
-                "location_barcode": record["location"].get("barcode", ""),
-            }
-            for record in response.json()
-        ]
 
-        labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
-        logger.info(
-            f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found"
-        )
-        pretty(logger, labware_to_location_barcode_df)
+    declarations_records = [record for record in declarations]
+    if len(declarations_records) > 0:
+        logger.debug("Joining declarations")
+        declarations_frame = pd.DataFrame.from_records(declarations_records)
+        merged = merged.merge(declarations_frame, how="left", on="Root Sample ID")
 
-        logger.debug("Joining location data from labwhere")
-        merged = positive_samples_df.merge(
-            labware_to_location_barcode_df, how="left", on="plate_barcode"
-        )
+        # Give a default value of Unknown to any entry that does not have a
+        # sample declaration
+        merged = merged.fillna({"Value In Sequencing": "Unknown"})
 
-        declarations_records = [record for record in declarations]
-        if len(declarations_records) > 0:
-            logger.debug("Joining declarations")
-            declarations_frame = pd.DataFrame.from_records(declarations_records)
-            merged = merged.merge(declarations_frame, how="left", on="Root Sample ID")
+    pretty(logger, merged)
 
-            # Give a default value of Unknown to any entry that does not have a
-            # sample declaration
-            merged = merged.fillna({"Value In Sequencing": "Unknown"})
+    report_name, report_path = get_new_report_name_and_path()
 
-        pretty(logger, merged)
+    logger.info(f"Writing results to {report_path}")
 
-        report_name, report_path = get_new_report_name_and_path()
+    # Create a Pandas Excel writer using XlsxWriter as the engine
+    writer = pd.ExcelWriter(report_path, engine="xlsxwriter")
 
-        logger.info(f"Writing results to {report_path}")
+    # Sheet2 contains all positive samples WITH location barcodes
+    merged[merged.location_barcode.notnull()].to_excel(
+        writer, sheet_name="POSITIVE SAMPLES WITH LOCATION", index=False
+    )
 
-        # Create a Pandas Excel writer using XlsxWriter as the engine
-        writer = pd.ExcelWriter(report_path, engine="xlsxwriter")
+    # Convert the dataframe to an XlsxWriter Excel object
+    #  Sheet1 contains all positive samples with AND without location barcodes
+    merged.to_excel(writer, sheet_name="ALL POSITIVE SAMPLES", index=False)
 
-        # Sheet2 contains all positive samples WITH location barcodes
-        merged[merged.location_barcode.notnull()].to_excel(
-            writer, sheet_name="POSITIVE SAMPLES WITH LOCATION", index=False
-        )
+    # Close the Pandas Excel writer and output the Excel file
+    writer.save()
 
-        # Convert the dataframe to an XlsxWriter Excel object
-        #  Sheet1 contains all positive samples with AND without location barcodes
-        merged.to_excel(writer, sheet_name="ALL POSITIVE SAMPLES", index=False)
+    logger.info(f"Report creation complete in {round(time.time() - start, 2)}s")
 
-        # Close the Pandas Excel writer and output the Excel file
-        writer.save()
-
-        logger.info(f"Report creation complete in {round(time.time() - start, 2)}s")
-
-        return report_name
-    else:
-        raise ReportCreationError("Response from labwhere is not OK")
+    return report_name
 
 
 def create_report_job():
