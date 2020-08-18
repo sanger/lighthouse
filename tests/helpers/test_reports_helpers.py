@@ -67,7 +67,7 @@ def test_delete_reports(app, freezer):
 def test_get_cherrypicked_samples(app, freezer):
 
   expected = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['Root Sample ID'], index=[0, 1, 2])
-  samples = "MCM001,MCM002,MCM003,MCM004,MCM005"
+  samples = ['MCM001','MCM002','MCM003','MCM004','MCM005']
 
   with app.app_context():
     with patch(
