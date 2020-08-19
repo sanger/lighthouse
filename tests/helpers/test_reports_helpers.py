@@ -128,22 +128,50 @@ def test_add_cherrypicked_column(app, freezer):
         [
             ['MCM001', 'TEST'],
             ['MCM002', 'TEST'],
-            ['MCM003', 'TEST'],
-            ['MCM004', 'TEST'],
-            ['MCM005', 'TEST']
+            ['MCM003', 'TEST']
         ],
         columns=['Root Sample ID', 'Lab ID']
     )
 
-    mock_get_cherrypicked_samples = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['Root Sample ID'])
+    mock_get_cherrypicked_samples = pd.DataFrame(['MCM001', 'MCM003'], columns=['Root Sample ID'])
 
     expected_columns = ['Root Sample ID', 'Lab ID', 'Cherrypicked']
     expected_data = [
         ['MCM001', 'TEST', 'Yes'],
         ['MCM002', 'TEST', 'No'],
-        ['MCM003', 'TEST', 'Yes'],
-        ['MCM004', 'TEST', 'No'],
-        ['MCM005', 'TEST', 'Yes']
+        ['MCM003', 'TEST', 'Yes']
+    ]
+
+    with app.app_context():
+        with patch(
+        "sqlalchemy.create_engine", return_value=Mock()
+        ):
+            with patch(
+                "lighthouse.helpers.reports.get_cherrypicked_samples", return_value=mock_get_cherrypicked_samples,
+                ):
+
+                new_dataframe = add_cherrypicked_column(existing_dataframe)
+
+    assert new_dataframe.columns.to_list() == expected_columns
+    assert np.array_equal(new_dataframe.to_numpy(), expected_data)
+
+def test_add_cherrypicked_column_no_rows(app, freezer):
+    # mocks response from get_cherrypicked_samples()
+    existing_dataframe = pd.DataFrame(
+        [
+            ['MCM001', 'TEST'],
+            ['MCM002', 'TEST'],
+        ],
+        columns=['Root Sample ID', 'Lab ID']
+    )
+
+    # Not sure if this is an accurate mock - haven't tried it with a real db connection
+    mock_get_cherrypicked_samples = pd.DataFrame([], columns=['Root Sample ID'])
+
+    expected_columns = ['Root Sample ID', 'Lab ID', 'Cherrypicked']
+    expected_data = [
+        ['MCM001', 'TEST', 'No'],
+        ['MCM002', 'TEST', 'No']
     ]
 
     with app.app_context():
