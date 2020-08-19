@@ -192,7 +192,6 @@ def test_get_distinct_plate_barcodes(app, freezer, samples):
 
     with app.app_context():
         assert get_distinct_plate_barcodes()[0] == '123'
-<<<<<<< HEAD
 
 def test_join_samples_declarations(app, freezer, samples_declarations, samples_no_declaration):
 
@@ -204,5 +203,3 @@ def test_join_samples_declarations(app, freezer, samples_declarations, samples_n
         assert joined.at[1, 'Value In Sequencing'] == 'Unknown'
   
     
-=======
->>>>>>> 230af2c2623bfcf41a9927d8b85996ef6553535e
