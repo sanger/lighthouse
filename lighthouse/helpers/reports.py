@@ -215,59 +215,39 @@ def get_cherrypicked_samples(root_sample_ids):
         db_connection.close()
 
 def get_all_positive_samples():
+
     # get samples collection
-    # samples = app.data.driver.db.samples
-    # samples_declarations = app.data.driver.db.samples_declarations
+    samples = app.data.driver.db.samples
 
-    # logger.debug("Getting all positive samples")
-    # # filtering using case insensitive regex to catch "Positive" and "positive"
-    # results = samples.find(
-    #     filter={"Result": {"$regex": "^positive", "$options": "i"}},
-    #     projection={
-    #         "_id": False,
-    #         "source": True,
-    #         "plate_barcode": True,
-    #         "Root Sample ID": True,
-    #         "Result": True,
-    #         "Date Tested": True,
-    #         "coordinate": True,
-    #     },
-    # )
+    logger.debug("Getting all positive samples")
+    # filtering using case insensitive regex to catch "Positive" and "positive"
+    results = samples.find(
+        filter={"Result": {"$regex": "^positive", "$options": "i"}},
+        projection={
+            "_id": False,
+            "source": True,
+            "plate_barcode": True,
+            "Root Sample ID": True,
+            "Result": True,
+            "Date Tested": True,
+            "coordinate": True,
+        },
+    )
 
-    # # Latest declarations group by root_sample_id
-    # # Id is needed to control the group aggregation
-    # # Excel formatter required date without timezone
-    # declarations = samples_declarations.aggregate(
-    #     [
-    #         {"$sort": {"declared_at": -1}},
-    #         {
-    #             "$group": {
-    #                 "_id": "$root_sample_id",
-    #                 "Root Sample ID": {"$first": "$root_sample_id"},
-    #                 "Value In Sequencing": {"$first": "$value_in_sequencing"},
-    #                 "Declared At": {
-    #                     "$first": {
-    #                         "$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}
-    #                     }
-    #                 },
-    #             }
-    #         },
-    #         {"$unset": "_id"},
-    #     ]
-    # )
+    # converting to a dataframe to make it easy to join with data from labwhere
+    positive_samples_df = pd.DataFrame.from_records(results)
+    logger.info(f"{len(positive_samples_df.index)} positive samples")
+    pretty(logger, positive_samples_df)
 
-    # # converting to a dataframe to make it easy to join with data from labwhere
-    # positive_samples_df = pd.DataFrame.from_records(results)
-    # logger.info(f"{len(positive_samples_df.index)} positive samples")
-    # pretty(logger, positive_samples_df)
+    # strip zeros out of the well coordinates
+    positive_samples_df["coordinate"] = positive_samples_df["coordinate"].map(
+        lambda coord: unpad_coordinate(coord)
+    )
+    
+    # create 'plate and well' column for copy-pasting into Sequencescape submission, e.g. DN1234:A1
+    positive_samples_df["plate and well"] = (
+        positive_samples_df["plate_barcode"] + ":" + positive_samples_df["coordinate"]
+    )
 
-    # # strip zeros out of the well coordinates
-    # positive_samples_df["coordinate"] = positive_samples_df["coordinate"].map(
-    #     lambda coord: unpad_coordinate(coord)
-    # )
-    # # create 'plate and well' column for copy-pasting into Sequencescape submission, e.g. DN1234:A1
-    # positive_samples_df["plate and well"] = (
-    #     positive_samples_df["plate_barcode"] + ":" + positive_samples_df["coordinate"]
-    # )
-    return True
+    return positive_samples_df
 

@@ -9,7 +9,11 @@ from flask import current_app as app
 from lighthouse import scheduler
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.reports import (
-    get_new_report_name_and_path, unpad_coordinate, map_labware_to_location, get_cherrypicked_samples
+    get_new_report_name_and_path, 
+    unpad_coordinate, 
+    map_labware_to_location, 
+    get_cherrypicked_samples,
+    get_all_positive_samples
 )
 from lighthouse.utils import pretty
 
@@ -26,23 +30,12 @@ def create_report() -> str:
     start = time.time()
 
     # get samples collection
+    # TODO: abstract into new methods
     samples = app.data.driver.db.samples
     samples_declarations = app.data.driver.db.samples_declarations
 
     logger.debug("Getting all positive samples")
-    # filtering using case insensitive regex to catch "Positive" and "positive"
-    results = samples.find(
-        filter={"Result": {"$regex": "^positive", "$options": "i"}},
-        projection={
-            "_id": False,
-            "source": True,
-            "plate_barcode": True,
-            "Root Sample ID": True,
-            "Result": True,
-            "Date Tested": True,
-            "coordinate": True,
-        },
-    )
+    positive_samples_df = get_all_positive_samples()
 
     # Latest declarations group by root_sample_id
     # Id is needed to control the group aggregation
@@ -66,23 +59,10 @@ def create_report() -> str:
         ]
     )
 
-    # converting to a dataframe to make it easy to join with data from labwhere
-    positive_samples_df = pd.DataFrame.from_records(results)
-    logger.info(f"{len(positive_samples_df.index)} positive samples")
-    pretty(logger, positive_samples_df)
-
-    # strip zeros out of the well coordinates
-    positive_samples_df["coordinate"] = positive_samples_df["coordinate"].map(
-        lambda coord: unpad_coordinate(coord)
-    )
-    # create 'plate and well' column for copy-pasting into Sequencescape submission, e.g. DN1234:A1
-    positive_samples_df["plate and well"] = (
-        positive_samples_df["plate_barcode"] + ":" + positive_samples_df["coordinate"]
-    )
-
-    logger.debug("Getting list of distinct plate barcodes")
+    # logger.debug("Getting list of distinct plate barcodes")
     # for some reason we have some records (documents in mongo language) where the plate_barcode
     #   is empty so ignore those
+    # TODO: abstract into new method
     distinct_plate_barcodes = samples.distinct(
         "plate_barcode", {"plate_barcode": {"$nin": ["", None]}}
     )
@@ -96,6 +76,7 @@ def create_report() -> str:
         labware_to_location_barcode_df, how="left", on="plate_barcode"
     )
 
+    # TODO: abstract into new method
     declarations_records = [record for record in declarations]
     if len(declarations_records) > 0:
         logger.debug("Joining declarations")

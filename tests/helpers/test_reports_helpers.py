@@ -81,13 +81,17 @@ def test_get_cherrypicked_samples(app, freezer):
 
 def test_get_all_positive_samples(app, freezer, samples):
 
-    # sample = samples[0]
-    # sample = { 'Root Sample ID'	'Result'	'Date Tested'	'source'	'plate_barcode'	'coordinate'	'plate and well'}
-    # expected = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['description'], index=[0, 1, 2])
+    with app.app_context():
+        positive_samples = get_all_positive_samples()
+        print(positive_samples)
 
-#     Root Sample ID	Result	Date Tested	source	plate_barcode	coordinate	plate and well	location_barcode
-# LEI00009968	Positive	2020-05-10 18:53:47 UTC	Alderley	AP-rna-00111417	H8	AP-rna-00111417:H8	lw-uk-bio--19-14576
-    assert get_all_positive_samples() == True
+        assert len(positive_samples) == 1
+        assert positive_samples.at[0,'Root Sample ID'] == 'MCM001'
+        assert positive_samples.at[0,'Result'] == 'Positive'
+        assert positive_samples.at[0,'source'] == 'test1'
+        assert positive_samples.at[0,'plate_barcode'] == '123'
+        assert positive_samples.at[0,'coordinate'] == 'A1'
+        assert positive_samples.at[0,'plate and well'] == '123:A1'
 
 def test_map_labware_to_location_labwhere_error(app, freezer, labwhere_samples_error):
     # mocks response from get_locations_from_labwhere() with labwhere_samples_error
