@@ -82,7 +82,7 @@ def create_report() -> str:
 
     pretty(logger, merged)
 
-    # merged = add_cherrypicked_column(merged)
+    merged = add_cherrypicked_column(merged)
 
     report_name, report_path = get_new_report_name_and_path()
 
