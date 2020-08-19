@@ -104,3 +104,38 @@ SAMPLES: List[Dict[str, str]] = [
         "Root Sample ID": "MCM003",
     },
 ]
+
+SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
+    {
+        "coordinate": "A01",
+        "source": "test1",
+        "Result": "Positive",
+        "plate_barcode": "123",
+        FIELD_COG_BARCODE: "abc",
+        "Root Sample ID": "MCM001",
+    },
+    {
+        "coordinate": "B01",
+        "source": "test1",
+        "Result": "Negative",
+        "plate_barcode": "123",
+        FIELD_COG_BARCODE: "def",
+        "Root Sample ID": "MCM002",
+    },
+    {
+        "coordinate": "C01",
+        "source": "test1",
+        "Result": "Void",
+        "plate_barcode": "123",
+        FIELD_COG_BARCODE: "hij",
+        "Root Sample ID": "MCM003",
+    },
+    {
+        "coordinate": "D01",
+        "source": "test1",
+        "Result": "Positive",
+        "plate_barcode": "123",
+        FIELD_COG_BARCODE: "hij",
+        "Root Sample ID": "MCM010",
+    },
+]

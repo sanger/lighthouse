@@ -16,6 +16,7 @@ from .data.fixture_data import (
     LOTS_OF_SAMPLES,
     LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
     MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
+    SAMPLES_NO_DECLARATION
 )
 
 
@@ -109,6 +110,18 @@ def samples(app):
     with app.app_context():
         samples_collection.delete_many({})
 
+@pytest.fixture
+def samples_no_declaration(app):
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        _ = samples_collection.insert_many(SAMPLES_NO_DECLARATION)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SAMPLES_NO_DECLARATION)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
 
 @pytest.fixture
 def mocked_responses():
@@ -117,11 +130,32 @@ def mocked_responses():
 
 
 @pytest.fixture
-def labwhere_samples(app, mocked_responses):
-    # Mock of labwhere
+def labwhere_samples_simple(app, mocked_responses):
     labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares/searches"
 
     body = json.dumps([{"barcode": "123", "location": {"barcode": "4567"}}])
     mocked_responses.add(
         responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+    )
+
+@pytest.fixture
+def labwhere_samples_multiple(app, mocked_responses):
+    labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares/searches"
+
+    body = json.dumps([
+        {"barcode": "123", "location": {"barcode": "4567"}},
+        {"barcode": "456", "location": {"barcode": "1234"}},
+        {"barcode": "789", "location": {}}
+    ])
+    mocked_responses.add(
+        responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+    )
+
+@pytest.fixture
+def labwhere_samples_error(app, mocked_responses):
+    labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares/searches"
+
+    body = json.dumps([])
+    mocked_responses.add(
+        responses.POST, labwhere_url, body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR,
     )

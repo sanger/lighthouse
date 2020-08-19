@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from unittest.mock import patch
+import pandas as pd
 
 def test_get_reports_endpoint(client):
     with patch(
@@ -17,7 +18,7 @@ def test_get_reports_list(client):
         assert response.json == {"reports": []}
 
 
-def test_create_report(client, app, tmp_path, samples, labwhere_samples):
+def test_create_report(client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations):
     with app.app_context():
         with patch(
             "lighthouse.jobs.reports.get_new_report_name_and_path",
@@ -27,8 +28,12 @@ def test_create_report(client, app, tmp_path, samples, labwhere_samples):
                 "lighthouse.blueprints.reports.get_reports_details",
                 return_value="Some details of a report",
             ):
-                response = client.post("/reports/new")
-                assert response.json == {"reports": "Some details of a report"}
+                with patch(
+                    "lighthouse.helpers.reports.get_cherrypicked_samples",
+                    return_value=pd.DataFrame(['MCM001'], columns=['Root Sample ID'])
+                ):
+                    response = client.post("/reports/new")
+                    assert response.json == {"reports": "Some details of a report"}
 
 
 def test_delete_reports_endpoint(client):
