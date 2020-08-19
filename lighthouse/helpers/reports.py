@@ -206,7 +206,7 @@ def get_cherrypicked_samples(root_sample_ids):
                 f" JOIN {app.config['EVENTS_WH_DB']}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
                 f" JOIN {app.config['EVENTS_WH_DB']}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
                 f" WHERE mlwh_sample.description IN ({root_sample_id_string})"
-                " AND mlwh_events_event_types.key = 'slf_cherrypicking'"
+                " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
                 " GROUP BY mlwh_sample.description")
 
     try:
