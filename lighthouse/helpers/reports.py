@@ -217,10 +217,7 @@ def get_cherrypicked_samples(root_sample_ids):
     finally:
         db_connection.close()
 
-def get_all_positive_samples():
-
-    # get samples collection
-    samples = app.data.driver.db.samples
+def get_all_positive_samples(samples):
 
     logger.debug("Getting all positive samples")
     # filtering using case insensitive regex to catch "Positive" and "positive"
@@ -265,10 +262,7 @@ def add_cherrypicked_column(existing_dataframe):
 
     return existing_dataframe
 
-def get_distinct_plate_barcodes():
-
-    # get samples collection
-    samples = app.data.driver.db.samples
+def get_distinct_plate_barcodes(samples):
 
     logger.debug("Getting list of distinct plate barcodes")
     # for some reason we have some records (documents in mongo language) where the plate_barcode

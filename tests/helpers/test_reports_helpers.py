@@ -86,7 +86,8 @@ def test_get_cherrypicked_samples(app, freezer):
 def test_get_all_positive_samples(app, freezer, samples):
 
     with app.app_context():
-        positive_samples = get_all_positive_samples()
+        samples = app.data.driver.db.samples
+        positive_samples = get_all_positive_samples(samples)
 
         assert len(positive_samples) == 1
         assert positive_samples.at[0,'Root Sample ID'] == 'MCM001'
@@ -191,12 +192,15 @@ def test_add_cherrypicked_column_no_rows(app, freezer):
 def test_get_distinct_plate_barcodes(app, freezer, samples):
 
     with app.app_context():
-        assert get_distinct_plate_barcodes()[0] == '123'
+        samples = app.data.driver.db.samples
+
+        assert get_distinct_plate_barcodes(samples)[0] == '123'
 
 def test_join_samples_declarations(app, freezer, samples_declarations, samples_no_declaration):
 
     with app.app_context():
-        positive_samples = get_all_positive_samples()
+        samples = app.data.driver.db.samples
+        positive_samples = get_all_positive_samples(samples)
         joined = join_samples_declarations(positive_samples)
 
         assert joined.at[1, 'Root Sample ID'] == 'MCM010'

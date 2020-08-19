@@ -30,10 +30,11 @@ def create_report() -> str:
 
     # get samples collection
     logger.debug("Getting all positive samples")
-    positive_samples_df = get_all_positive_samples()
+    samples = app.data.driver.db.samples
+    positive_samples_df = get_all_positive_samples(samples)
 
     logger.debug("Getting location barcodes from labwhere")
-    labware_to_location_barcode_df = map_labware_to_location(get_distinct_plate_barcodes())
+    labware_to_location_barcode_df = map_labware_to_location(get_distinct_plate_barcodes(samples))
 
     logger.debug("Joining location data from labwhere")
     merged = positive_samples_df.merge(
