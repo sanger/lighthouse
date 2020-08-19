@@ -14,7 +14,8 @@ from lighthouse.helpers.reports import (
     map_labware_to_location, 
     get_cherrypicked_samples,
     get_all_positive_samples,
-    add_cherrypicked_column
+    add_cherrypicked_column,
+    get_distinct_plate_barcodes
 )
 from lighthouse.utils import pretty
 
@@ -60,17 +61,8 @@ def create_report() -> str:
         ]
     )
 
-    # logger.debug("Getting list of distinct plate barcodes")
-    # for some reason we have some records (documents in mongo language) where the plate_barcode
-    #   is empty so ignore those
-    # TODO: abstract into new method
-    distinct_plate_barcodes = samples.distinct(
-        "plate_barcode", {"plate_barcode": {"$nin": ["", None]}}
-    )
-    logger.info(f"{len(distinct_plate_barcodes)} distinct barcodes")
-
     logger.debug("Getting location barcodes from labwhere")
-    labware_to_location_barcode_df = map_labware_to_location(distinct_plate_barcodes)
+    labware_to_location_barcode_df = map_labware_to_location(get_distinct_plate_barcodes())
 
     logger.debug("Joining location data from labwhere")
     merged = positive_samples_df.merge(

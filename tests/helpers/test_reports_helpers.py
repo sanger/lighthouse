@@ -13,7 +13,8 @@ from lighthouse.helpers.reports import (
     get_cherrypicked_samples,
     get_all_positive_samples,
     map_labware_to_location,
-    add_cherrypicked_column
+    add_cherrypicked_column,
+    get_distinct_plate_barcodes
 )
 from lighthouse.exceptions import ReportCreationError
 
@@ -85,7 +86,6 @@ def test_get_all_positive_samples(app, freezer, samples):
 
     with app.app_context():
         positive_samples = get_all_positive_samples()
-        print(positive_samples)
 
         assert len(positive_samples) == 1
         assert positive_samples.at[0,'Root Sample ID'] == 'MCM001'
@@ -158,3 +158,9 @@ def test_add_cherrypicked_column(app, freezer):
 
     assert new_dataframe.columns.to_list() == expected_columns
     assert np.array_equal(new_dataframe.to_numpy(), expected)
+
+def test_get_distinct_plate_barcodes(app, freezer, samples):
+    
+    with app.app_context():
+        assert get_distinct_plate_barcodes()[0] == '123'
+    

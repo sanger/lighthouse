@@ -264,3 +264,20 @@ def add_cherrypicked_column(existing_dataframe):
     existing_dataframe = existing_dataframe.fillna({'Cherrypicked': 'No'})
 
     return existing_dataframe
+
+def get_distinct_plate_barcodes():
+
+    # get samples collection
+    samples = app.data.driver.db.samples
+
+    logger.debug("Getting list of distinct plate barcodes")
+    # for some reason we have some records (documents in mongo language) where the plate_barcode
+    #   is empty so ignore those
+    # TODO: abstract into new method
+    distinct_plate_barcodes = samples.distinct(
+        "plate_barcode", {"plate_barcode": {"$nin": ["", None]}}
+    )
+    logger.info(f"{len(distinct_plate_barcodes)} distinct barcodes")
+
+    return distinct_plate_barcodes
+
