@@ -151,7 +151,7 @@ def test_add_cherrypicked_column(app, freezer):
         "sqlalchemy.create_engine", return_value=Mock()
         ):
             with patch(
-                "pandas.read_sql", return_value=mock_get_cherrypicked_samples,
+                "lighthouse.helpers.reports.get_cherrypicked_samples", return_value=mock_get_cherrypicked_samples,
                 ):
 
                 new_dataframe = add_cherrypicked_column(existing_dataframe)
@@ -160,7 +160,6 @@ def test_add_cherrypicked_column(app, freezer):
     assert np.array_equal(new_dataframe.to_numpy(), expected)
 
 def test_get_distinct_plate_barcodes(app, freezer, samples):
-    
+
     with app.app_context():
         assert get_distinct_plate_barcodes()[0] == '123'
-    
