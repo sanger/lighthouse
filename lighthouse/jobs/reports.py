@@ -1,18 +1,14 @@
 import logging
 import time
-from http import HTTPStatus
 
 import pandas as pd  # type: ignore
-import requests
 from flask import current_app as app
 
 from lighthouse import scheduler
-from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.reports import (
-    get_new_report_name_and_path, 
-    unpad_coordinate, 
-    map_labware_to_location, 
-    get_cherrypicked_samples,
+    get_new_report_name_and_path,
+    unpad_coordinate,
+    map_labware_to_location,
     get_all_positive_samples,
     add_cherrypicked_column,
     get_distinct_plate_barcodes,
@@ -46,7 +42,7 @@ def create_report() -> str:
 
     merged = join_samples_declarations(merged)
 
-    # merged = add_cherrypicked_column(merged)
+    merged = add_cherrypicked_column(merged)
 
     report_name, report_path = get_new_report_name_and_path()
 

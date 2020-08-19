@@ -193,7 +193,7 @@ def get_locations_from_labwhere(labware_barcodes):
 
 def get_cherrypicked_samples(root_sample_ids):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
-    # Returns dataframe with 1 column, 'description', containing Root Sample ID of those that have been cherrypicked
+    # Returns dataframe with 1 column, 'Root Sample ID', containing Root Sample ID of those that have been cherrypicked
     root_sample_id_string = "'" + "','".join(root_sample_ids) + "'"
 
     sql = ("select mlwh_sample.description as `Root Sample ID`"
@@ -246,7 +246,7 @@ def get_all_positive_samples():
     positive_samples_df["coordinate"] = positive_samples_df["coordinate"].map(
         lambda coord: unpad_coordinate(coord)
     )
-    
+
     # create 'plate and well' column for copy-pasting into Sequencescape submission, e.g. DN1234:A1
     positive_samples_df["plate and well"] = (
         positive_samples_df["plate_barcode"] + ":" + positive_samples_df["coordinate"]

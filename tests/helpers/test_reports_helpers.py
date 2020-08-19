@@ -112,39 +112,35 @@ def test_map_labware_to_location_labwhere_error(app, freezer, labwhere_samples_e
 def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_samples_multiple):
     # mocks response from get_locations_from_labwhere() with labwhere_samples_multiple
     with app.app_context():
-        labware_to_location_barcode_df = map_labware_to_location(['123', '456', '789']) # '789' returns no location, in the mock
+        result = map_labware_to_location(['123', '456', '789']) # '789' returns no location, in the mock
 
-    assert labware_to_location_barcode_df.shape[0] == 3 # num rows
-    assert labware_to_location_barcode_df.shape[1] == 2 # num columns
-    assert labware_to_location_barcode_df.loc[0].plate_barcode == '123'
-    assert labware_to_location_barcode_df.loc[1].plate_barcode == '456'
-    assert labware_to_location_barcode_df.loc[2].plate_barcode == '789'
-    assert labware_to_location_barcode_df.loc[0].location_barcode == '4567'
-    assert labware_to_location_barcode_df.loc[1].location_barcode == '1234'
-    assert labware_to_location_barcode_df.loc[2].location_barcode == ''
+    expected_columns = ['plate_barcode', 'location_barcode']
+    expected_data = [
+        ['123', '4567'],
+        ['456', '1234'],
+        ['789', '']
+    ]
+    assert result.columns.to_list() == expected_columns
+    assert np.array_equal(result.to_numpy(), expected_data)
 
 def test_add_cherrypicked_column(app, freezer):
-    # mocks response from pandas read_sql, as proxy for response from get_cherrypicked_samples()
+    # mocks response from get_cherrypicked_samples()
     existing_dataframe = pd.DataFrame(
         [
             ['MCM001', 'TEST'],
             ['MCM002', 'TEST'],
-            ['MCM003', 'TEST'],
-            ['MCM004', 'TEST'],
-            ['MCM005', 'TEST']
+            ['MCM003', 'TEST']
         ],
         columns=['Root Sample ID', 'Lab ID']
     )
 
-    mock_get_cherrypicked_samples = pd.DataFrame(['MCM001', 'MCM003', 'MCM005'], columns=['Root Sample ID'])
+    mock_get_cherrypicked_samples = pd.DataFrame(['MCM001', 'MCM003'], columns=['Root Sample ID'])
 
     expected_columns = ['Root Sample ID', 'Lab ID', 'Cherrypicked']
-    expected = [
+    expected_data = [
         ['MCM001', 'TEST', 'Yes'],
         ['MCM002', 'TEST', 'No'],
-        ['MCM003', 'TEST', 'Yes'],
-        ['MCM004', 'TEST', 'No'],
-        ['MCM005', 'TEST', 'Yes']
+        ['MCM003', 'TEST', 'Yes']
     ]
 
     with app.app_context():
@@ -152,18 +148,51 @@ def test_add_cherrypicked_column(app, freezer):
         "sqlalchemy.create_engine", return_value=Mock()
         ):
             with patch(
-                "pandas.read_sql", return_value=mock_get_cherrypicked_samples,
+                "lighthouse.helpers.reports.get_cherrypicked_samples", return_value=mock_get_cherrypicked_samples,
                 ):
 
                 new_dataframe = add_cherrypicked_column(existing_dataframe)
 
     assert new_dataframe.columns.to_list() == expected_columns
-    assert np.array_equal(new_dataframe.to_numpy(), expected)
+    assert np.array_equal(new_dataframe.to_numpy(), expected_data)
+
+def test_add_cherrypicked_column_no_rows(app, freezer):
+    # mocks response from get_cherrypicked_samples()
+    existing_dataframe = pd.DataFrame(
+        [
+            ['MCM001', 'TEST'],
+            ['MCM002', 'TEST'],
+        ],
+        columns=['Root Sample ID', 'Lab ID']
+    )
+
+    # Not sure if this is an accurate mock - haven't tried it with a real db connection
+    mock_get_cherrypicked_samples = pd.DataFrame([], columns=['Root Sample ID'])
+
+    expected_columns = ['Root Sample ID', 'Lab ID', 'Cherrypicked']
+    expected_data = [
+        ['MCM001', 'TEST', 'No'],
+        ['MCM002', 'TEST', 'No']
+    ]
+
+    with app.app_context():
+        with patch(
+        "sqlalchemy.create_engine", return_value=Mock()
+        ):
+            with patch(
+                "lighthouse.helpers.reports.get_cherrypicked_samples", return_value=mock_get_cherrypicked_samples,
+                ):
+
+                new_dataframe = add_cherrypicked_column(existing_dataframe)
+
+    assert new_dataframe.columns.to_list() == expected_columns
+    assert np.array_equal(new_dataframe.to_numpy(), expected_data)
 
 def test_get_distinct_plate_barcodes(app, freezer, samples):
-    
+
     with app.app_context():
         assert get_distinct_plate_barcodes()[0] == '123'
+<<<<<<< HEAD
 
 def test_join_samples_declarations(app, freezer, samples_declarations, samples_no_declaration):
 
@@ -175,3 +204,5 @@ def test_join_samples_declarations(app, freezer, samples_declarations, samples_n
         assert joined.at[1, 'Value In Sequencing'] == 'Unknown'
   
     
+=======
+>>>>>>> 230af2c2623bfcf41a9927d8b85996ef6553535e
