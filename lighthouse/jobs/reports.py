@@ -15,7 +15,8 @@ from lighthouse.helpers.reports import (
     get_cherrypicked_samples,
     get_all_positive_samples,
     add_cherrypicked_column,
-    get_distinct_plate_barcodes
+    get_distinct_plate_barcodes,
+    join_samples_declarations
 )
 from lighthouse.utils import pretty
 
@@ -32,34 +33,8 @@ def create_report() -> str:
     start = time.time()
 
     # get samples collection
-    # TODO: abstract into new methods
-    samples = app.data.driver.db.samples
-    samples_declarations = app.data.driver.db.samples_declarations
-
     logger.debug("Getting all positive samples")
     positive_samples_df = get_all_positive_samples()
-
-    # Latest declarations group by root_sample_id
-    # Id is needed to control the group aggregation
-    # Excel formatter required date without timezone
-    declarations = samples_declarations.aggregate(
-        [
-            {"$sort": {"declared_at": -1}},
-            {
-                "$group": {
-                    "_id": "$root_sample_id",
-                    "Root Sample ID": {"$first": "$root_sample_id"},
-                    "Value In Sequencing": {"$first": "$value_in_sequencing"},
-                    "Declared At": {
-                        "$first": {
-                            "$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}
-                        }
-                    },
-                }
-            },
-            {"$unset": "_id"},
-        ]
-    )
 
     logger.debug("Getting location barcodes from labwhere")
     labware_to_location_barcode_df = map_labware_to_location(get_distinct_plate_barcodes())
@@ -69,18 +44,7 @@ def create_report() -> str:
         labware_to_location_barcode_df, how="left", on="plate_barcode"
     )
 
-    # TODO: abstract into new method
-    declarations_records = [record for record in declarations]
-    if len(declarations_records) > 0:
-        logger.debug("Joining declarations")
-        declarations_frame = pd.DataFrame.from_records(declarations_records)
-        merged = merged.merge(declarations_frame, how="left", on="Root Sample ID")
-
-        # Give a default value of Unknown to any entry that does not have a
-        # sample declaration
-        merged = merged.fillna({"Value In Sequencing": "Unknown"})
-
-    pretty(logger, merged)
+    merged = join_samples_declarations(merged)
 
     # merged = add_cherrypicked_column(merged)
 

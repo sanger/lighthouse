@@ -281,3 +281,41 @@ def get_distinct_plate_barcodes():
 
     return distinct_plate_barcodes
 
+def join_samples_declarations(positive_samples):
+
+    samples_declarations = app.data.driver.db.samples_declarations
+
+     # Latest declarations group by root_sample_id
+    # Id is needed to control the group aggregation
+    # Excel formatter required date without timezone
+    declarations = samples_declarations.aggregate(
+        [
+            {"$sort": {"declared_at": -1}},
+            {
+                "$group": {
+                    "_id": "$root_sample_id",
+                    "Root Sample ID": {"$first": "$root_sample_id"},
+                    "Value In Sequencing": {"$first": "$value_in_sequencing"},
+                    "Declared At": {
+                        "$first": {
+                            "$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}
+                        }
+                    },
+                }
+            },
+            {"$unset": "_id"},
+        ]
+    )
+
+    declarations_records = [record for record in declarations]
+    if len(declarations_records) > 0:
+        logger.debug("Joining declarations")
+        declarations_frame = pd.DataFrame.from_records(declarations_records)
+        merged = positive_samples.merge(declarations_frame, how="left", on="Root Sample ID")
+
+        # Give a default value of Unknown to any entry that does not have a
+        # sample declaration
+        merged = merged.fillna({"Value In Sequencing": "Unknown"})
+    
+    return merged
+

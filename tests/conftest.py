@@ -16,6 +16,7 @@ from .data.fixture_data import (
     LOTS_OF_SAMPLES,
     LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
     MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
+    SAMPLES_NO_DECLARATION
 )
 
 
@@ -109,6 +110,18 @@ def samples(app):
     with app.app_context():
         samples_collection.delete_many({})
 
+@pytest.fixture
+def samples_no_declaration(app):
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        _ = samples_collection.insert_many(SAMPLES_NO_DECLARATION)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SAMPLES_NO_DECLARATION)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
 
 @pytest.fixture
 def mocked_responses():

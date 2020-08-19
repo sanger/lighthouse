@@ -17,7 +17,7 @@ def test_get_reports_list(client):
         assert response.json == {"reports": []}
 
 
-def test_create_report(client, app, tmp_path, samples, labwhere_samples_simple):
+def test_create_report(client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations):
     with app.app_context():
         with patch(
             "lighthouse.jobs.reports.get_new_report_name_and_path",
