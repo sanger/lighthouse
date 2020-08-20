@@ -18,3 +18,5 @@ LOGGING["loggers"]["lighthouse"]["level"] = "DEBUG"  # noqa: F405
 LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream"]  # noqa: F405
 
 REPORTS_DIR = "tests/data/reports"
+
+MLWH_CONN_STRING = "root@localhost"
