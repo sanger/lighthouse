@@ -205,5 +205,15 @@ def test_join_samples_declarations(app, freezer, samples_declarations, samples_n
 
         assert joined.at[1, 'Root Sample ID'] == 'MCM010'
         assert joined.at[1, 'Value In Sequencing'] == 'Unknown'
-  
-    
+
+def test_join_samples_declarations_empty_collection(app, freezer, samples_no_declaration):
+    # samples_declaration collection is empty because we are not passing in the fixture
+
+    with app.app_context():
+        samples = app.data.driver.db.samples
+        positive_samples = get_all_positive_samples(samples)
+        joined = join_samples_declarations(positive_samples)
+
+        assert np.array_equal(positive_samples.to_numpy(), joined.to_numpy())
+
+

@@ -305,14 +305,16 @@ def join_samples_declarations(positive_samples):
     )
 
     declarations_records = [record for record in declarations]
+
     if len(declarations_records) > 0:
         logger.debug("Joining declarations")
         declarations_frame = pd.DataFrame.from_records(declarations_records)
-        merged = positive_samples.merge(declarations_frame, how="left", on="Root Sample ID")
+        result = positive_samples.merge(declarations_frame, how="left", on="Root Sample ID")
 
         # Give a default value of Unknown to any entry that does not have a
         # sample declaration
-        merged = merged.fillna({"Value In Sequencing": "Unknown"})
-    
-    return merged
+        result = result.fillna({"Value In Sequencing": "Unknown"})
+        return result
+
+    return positive_samples
 
