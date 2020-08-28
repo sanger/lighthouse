@@ -258,10 +258,10 @@ def add_cherrypicked_column(existing_dataframe):
     root_sample_ids = existing_dataframe['Root Sample ID'].to_list()
 
     cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids)
-    cherrypicked_samples_df['Cherrypicked'] = 'Yes'
+    cherrypicked_samples_df['LIMS submission'] = 'Yes'
 
     existing_dataframe = existing_dataframe.merge(cherrypicked_samples_df, how="left", on="Root Sample ID")
-    existing_dataframe = existing_dataframe.fillna({'Cherrypicked': 'No'})
+    existing_dataframe = existing_dataframe.fillna({'LIMS submission': 'No'})
 
     return existing_dataframe
 

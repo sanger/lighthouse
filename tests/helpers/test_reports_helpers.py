@@ -137,7 +137,7 @@ def test_add_cherrypicked_column(app, freezer):
 
     mock_get_cherrypicked_samples = pd.DataFrame(['MCM001', 'MCM003'], columns=['Root Sample ID'])
 
-    expected_columns = ['Root Sample ID', 'Lab ID', 'Cherrypicked']
+    expected_columns = ['Root Sample ID', 'Lab ID', 'LIMS submission']
     expected_data = [
         ['MCM001', 'TEST', 'Yes'],
         ['MCM002', 'TEST', 'No'],
@@ -170,7 +170,7 @@ def test_add_cherrypicked_column_no_rows(app, freezer):
     # Not sure if this is an accurate mock - haven't tried it with a real db connection
     mock_get_cherrypicked_samples = pd.DataFrame([], columns=['Root Sample ID'])
 
-    expected_columns = ['Root Sample ID', 'Lab ID', 'Cherrypicked']
+    expected_columns = ['Root Sample ID', 'Lab ID', 'LIMS submission']
     expected_data = [
         ['MCM001', 'TEST', 'No'],
         ['MCM002', 'TEST', 'No']
