@@ -11,6 +11,7 @@ from lighthouse.helpers.plates import (
     get_samples,
     send_to_ss,
     get_positive_samples,
+    update_mlwh_lh_samples_with_cog_uk_barcodes,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,8 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                     "number_of_positives": len(samples),
                 }
             }
+
+            update_mlwh_lh_samples_with_cog_uk_barcodes(samples)
         else:
             response_json = response.json()
 

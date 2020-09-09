@@ -6,13 +6,21 @@ from typing import Any, Dict, List, Optional
 import requests
 from flask import current_app as app
 
-from lighthouse.constants import FIELD_COG_BARCODE
+from lighthouse.constants import (
+    FIELD_COG_BARCODE,
+    FIELD_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_COG_UK_ID,
+)
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
     MissingSourceError,
     MultipleCentresError,
 )
+import sqlalchemy # type: ignore
+from sqlalchemy import MetaData
+from sqlalchemy.sql.expression import bindparam
 
 logger = logging.getLogger(__name__)
 
@@ -176,3 +184,39 @@ def send_to_ss(body: Dict[str, Any]) -> requests.Response:
         raise requests.ConnectionError("Unable to access SS")
 
     return response
+
+def update_mlwh_lh_samples_with_cog_uk_barcodes(samples: List[Dict[str, str]]) -> None:
+    """Update the MLWH to write the COG UK barcode for each sample.
+
+    Arguments:
+        samples {List[Dict[str, str]]} -- list of samples to be updated
+    """
+    # sql = (f"UPDATE {app.config['ML_WH_DB']}.{app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} as lh_sample"
+    #            f" SET lh_sample.{MLWH_LH_SAMPLE_COG_UK_ID} = %(cog_bc)s"
+    #            f" WHERE lh_sample.{MLWH_LH_SAMPLE_ROOT_SAMPLE_ID} = %(sample_id)s;")
+    if len(samples) == 0:
+        return
+
+    data = []
+    for sample in samples:
+        sample_id = sample[FIELD_ROOT_SAMPLE_ID]
+        cog_bc = sample[FIELD_COG_BARCODE]
+        data.append({MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: sample_id, MLWH_LH_SAMPLE_COG_UK_ID: cog_bc})
+
+    try:
+        sql_engine = sqlalchemy.create_engine(f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}", pool_recycle=3600)
+        sql_engine.execute(f"USE {app.config['ML_WH_DB']}") # set the correct database
+        metadata = MetaData(sql_engine)
+        table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
+        stmt = table.update().where(table.c.root_sample_id == bindparam(MLWH_LH_SAMPLE_ROOT_SAMPLE_ID)).\
+           values({
+               MLWH_LH_SAMPLE_COG_UK_ID: bindparam(MLWH_LH_SAMPLE_COG_UK_ID),
+           })
+        db_connection = sql_engine.connect()
+        result = db_connection.execute(stmt, data)
+        print(f"result = {result}")
+    except Exception as e:
+        logger.error(f"Error while connecting to MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table for COG UK barcode updates: ", e)
+    finally:
+        db_connection.close()
+        return None
