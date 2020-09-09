@@ -40,8 +40,11 @@ The services has the following routes:
   defined in the `Pipfile`:
   1. `brew install pyenv`
   2. `pyenv install <python_version>`
-- Use pipenv to install python packages: `brew install pipenv`
-- To install the required packages (and dev packages) run: `pipenv install --dev`
+- Use pipenv to install python packages:
+  1. `brew install pipenv`
+- To install the required packages (and dev packages) run the following:
+  1. `pipenv shell`
+  2. `pipenv install --dev` (without the --dev you don't get pytest, mypy etc.)
 
 ## Running
 
