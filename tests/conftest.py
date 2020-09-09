@@ -2,7 +2,7 @@ import copy
 import os
 import json
 
-import pytest  # type: ignore
+import pytest
 import responses  # type: ignore
 from http import HTTPStatus
 
