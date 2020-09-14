@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
 
-    centre_name = confirm_cente(samples)
+    centre_name = confirm_centre(samples)
     centre_prefix = get_centre_prefix(centre_name)
     num_samples = len(samples)
 
@@ -104,7 +104,7 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
-def confirm_cente(samples: List[Dict[str, str]]) -> str:
+def confirm_centre(samples: List[Dict[str, str]]) -> str:
     """Confirm that the centre for all the samples is populated and the same and return the centre
     name
 
@@ -114,7 +114,7 @@ def confirm_cente(samples: List[Dict[str, str]]) -> str:
     Returns:
         str -- the name of the centre for these samples
     """
-    logger.debug("confirm_cente()")
+    logger.debug("confirm_centre()")
 
     try:
         # check that the 'source' field has a valid name
@@ -185,7 +185,7 @@ def send_to_ss(body: Dict[str, Any]) -> requests.Response:
 
     return response
 
-def update_mlwh_lh_samples_with_cog_uk_barcodes(samples: List[Dict[str, str]]) -> None:
+def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     """Update the MLWH to write the COG UK barcode for each sample.
 
     Arguments:
@@ -195,7 +195,7 @@ def update_mlwh_lh_samples_with_cog_uk_barcodes(samples: List[Dict[str, str]]) -
     #            f" SET lh_sample.{MLWH_LH_SAMPLE_COG_UK_ID} = %(cog_bc)s"
     #            f" WHERE lh_sample.{MLWH_LH_SAMPLE_ROOT_SAMPLE_ID} = %(sample_id)s;")
     if len(samples) == 0:
-        return
+        return None
 
     data = []
     for sample in samples:
