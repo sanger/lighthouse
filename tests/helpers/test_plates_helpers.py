@@ -4,13 +4,17 @@ from http import HTTPStatus
 import responses  # type: ignore
 from flask import current_app
 
-from lighthouse.constants import FIELD_COG_BARCODE
+from lighthouse.constants import (
+    FIELD_COG_BARCODE,
+    FIELD_ROOT_SAMPLE_ID
+)
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_post_body,
     get_centre_prefix,
     get_samples,
     get_positive_samples,
+    update_mlwh_with_cog_uk_ids
 )
 
 
@@ -86,12 +90,24 @@ def test_create_post_body(app, samples):
 
         assert create_post_body(barcode, samples) == correct_body
 
-
 def test_get_samples(app, samples):
     with app.app_context():
         assert len(get_samples("123")) == 3
 
-
 def test_get_positive_samples(app, samples):
     with app.app_context():
         assert len(get_positive_samples("123")) == 1
+
+def test_update_mlwh_with_cog_uk_ids(app):
+    with app.app_context():
+        samples = [
+            {
+                FIELD_ROOT_SAMPLE_ID: 'test1',
+                FIELD_COG_BARCODE: 'test2'
+            },
+            {
+                FIELD_ROOT_SAMPLE_ID: 'test3',
+                FIELD_COG_BARCODE: 'test4'
+            }
+        ]
+        update_mlwh_with_cog_uk_ids(samples)

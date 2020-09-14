@@ -205,18 +205,31 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
 
     try:
         sql_engine = sqlalchemy.create_engine(f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}", pool_recycle=3600)
+        print('DEBUG: sql_engine', sql_engine)
+        print('DEBUG: database', app.config['ML_WH_DB'])
+
         sql_engine.execute(f"USE {app.config['ML_WH_DB']}") # set the correct database
         metadata = MetaData(sql_engine)
-        table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
+        print('DEBUG: metadata', metadata)
+        print('DEBUG: metadata.tables', metadata.tables)
+        print('DEBUG: len(metadata.tables)', len(metadata.tables))
+
+        table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']] # currently throwing KeyError: 'lighthouse_sample' in test test_update_mlwh_with_cog_uk_ids
+
         stmt = table.update().where(table.c.root_sample_id == bindparam(MLWH_LH_SAMPLE_ROOT_SAMPLE_ID)).\
-           values({
-               MLWH_LH_SAMPLE_COG_UK_ID: bindparam(MLWH_LH_SAMPLE_COG_UK_ID),
-           })
+            values({
+                MLWH_LH_SAMPLE_COG_UK_ID: bindparam(MLWH_LH_SAMPLE_COG_UK_ID),
+            })
         db_connection = sql_engine.connect()
+    except Exception as e:
+        logger.error(f"Error while connecting to MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table for COG UK barcode updates: ", e)
+        raise e
+
+    try:
         result = db_connection.execute(stmt, data)
         print(f"result = {result}")
     except Exception as e:
-        logger.error(f"Error while connecting to MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table for COG UK barcode updates: ", e)
+        logger.error(f"Error while inserting records into MLWH: ", e)
     finally:
         db_connection.close()
         return None
