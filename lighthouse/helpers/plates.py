@@ -205,16 +205,11 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
 
     try:
         create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
-        # print('create_engine_string', create_engine_string)
 
         sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
-        # print('DEBUG: sql_engine', sql_engine)
 
         metadata = MetaData(sql_engine)
         metadata.reflect()
-        # print('DEBUG: metadata', metadata)
-        # print('DEBUG: metadata.tables', metadata.tables)
-        # print('DEBUG: len(metadata.tables)', len(metadata.tables))
 
         table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
 

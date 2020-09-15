@@ -4,9 +4,15 @@ from http import HTTPStatus
 import responses  # type: ignore
 from flask import current_app
 
+import sqlalchemy # type: ignore
+from sqlalchemy import MetaData
+
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
-    FIELD_ROOT_SAMPLE_ID
+    FIELD_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_RNA_ID,
+    MLWH_LH_SAMPLE_RESULT
 )
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
@@ -103,11 +109,58 @@ def test_update_mlwh_with_cog_uk_ids(app):
         samples = [
             {
                 FIELD_ROOT_SAMPLE_ID: 'test1',
-                FIELD_COG_BARCODE: 'test2'
+                FIELD_COG_BARCODE: 'test1z'
             },
             {
-                FIELD_ROOT_SAMPLE_ID: 'test3',
-                FIELD_COG_BARCODE: 'test4'
+                FIELD_ROOT_SAMPLE_ID: 'test2',
+                FIELD_COG_BARCODE: 'test2z'
             }
         ]
+
+        reset_test_data(app.config)
+
+        assert count_samples(app.config) == 2
+
+        # check that the samples already exist in the MLWH db but do not have cog uk ids
         update_mlwh_with_cog_uk_ids(samples)
+        # check that the samples in the MLWH now have cog uk ids
+
+        assert count_samples(app.config) == 2
+
+def count_samples(config):
+    create_engine_string = f"mysql+pymysql://{config['MLWH_RW_CONN_STRING']}/{config['ML_WH_DB']}"
+    sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
+    count_samples = 0
+
+    with sql_engine.connect() as connection:
+        result = connection.execute("SELECT * from lighthouse_sample")
+        for row in result:
+            count_samples += 1
+
+    return count_samples
+
+
+def reset_test_data(config):
+    samples = [
+        {
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'test1',
+            MLWH_LH_SAMPLE_RNA_ID: 'test1a',
+            MLWH_LH_SAMPLE_RESULT: 'test1b'
+        },
+        {
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'test2',
+            MLWH_LH_SAMPLE_RNA_ID: 'test2a',
+            MLWH_LH_SAMPLE_RESULT: 'test2b'
+        }
+    ]
+
+    create_engine_string = f"mysql+pymysql://{config['MLWH_RW_CONN_STRING']}/{config['ML_WH_DB']}"
+    sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
+
+    metadata = MetaData(sql_engine)
+    metadata.reflect()
+    table = metadata.tables[config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
+
+    with sql_engine.begin() as connection:
+        connection.execute(table.delete()) # delete all rows from table first
+        connection.execute(table.insert(), samples)
