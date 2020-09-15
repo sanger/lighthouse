@@ -100,7 +100,7 @@ LOGGING: Dict[str, Any] = {
     },
 }
 
-MLWH_CONN_STRING = "root@localhost"
+MLWH_CONN_STRING = "root:root@localhost"
 EVENTS_WH_DB = "events_wh_db"
 
 MLWH_RW_CONN_STRING = "root@localhost"
