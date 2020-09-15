@@ -215,15 +215,15 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                 MLWH_LH_SAMPLE_COG_UK_ID: bindparam(MLWH_LH_SAMPLE_COG_UK_ID),
             })
         db_connection = sql_engine.connect()
-    except Exception as e:
-        logger.error(f"Error while connecting to MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table for COG UK barcode updates: ", e)
-        raise e
+    except:
+        logger.error(f"Error while connecting to MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table for COG UK barcode updates")
+        raise
 
     try:
         result = db_connection.execute(stmt, data)
         print(f"result = {result}")
-    except Exception as e:
-        logger.error(f"Error while inserting records into MLWH: ", e)
+    except:
+        logger.error(f"Error while inserting records into MLWH: ")
+        raise
     finally:
         db_connection.close()
-        return None

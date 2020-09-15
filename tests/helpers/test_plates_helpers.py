@@ -119,23 +119,37 @@ def test_update_mlwh_with_cog_uk_ids(app):
 
         reset_test_data(app.config)
 
-        assert count_samples(app.config) == 2
-
         # check that the samples already exist in the MLWH db but do not have cog uk ids
+        before = retrieve_samples(app.config)
+        assert count_samples(before) == 2
+        for row in before:
+            print('DEBUG: before row', row)
+            assert row[app.config['MLWH_LH_SAMPLE_COG_UK_ID']] is None
+
         update_mlwh_with_cog_uk_ids(samples)
+
         # check that the samples in the MLWH now have cog uk ids
+        after = retrieve_samples(app.config)
+        assert count_samples(after) == 2
+        for row in after:
+            print('DEBUG: after row', row)
+            assert row[app.config['MLWH_LH_SAMPLE_COG_UK_ID']] in ['test1z','test2z']
 
-        assert count_samples(app.config) == 2
 
-def count_samples(config):
+def retrieve_samples(config):
     create_engine_string = f"mysql+pymysql://{config['MLWH_RW_CONN_STRING']}/{config['ML_WH_DB']}"
     sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
-    count_samples = 0
 
     with sql_engine.connect() as connection:
         result = connection.execute("SELECT * from lighthouse_sample")
-        for row in result:
-            count_samples += 1
+
+    return result
+
+
+def count_samples(query_result):
+    count_samples = 0
+    for row in query_result:
+        count_samples += 1
 
     return count_samples
 
