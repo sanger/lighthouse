@@ -2,10 +2,12 @@ import copy
 import os
 import json
 
-import pytest
+import pytest # type: ignore
 import responses  # type: ignore
 from http import HTTPStatus
 
+import sqlalchemy # type: ignore
+from sqlalchemy import MetaData
 
 from lighthouse import create_app
 
@@ -17,6 +19,17 @@ from .data.fixture_data import (
     LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
     MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
     SAMPLES_NO_DECLARATION
+)
+
+from lighthouse.constants import (
+    FIELD_COG_BARCODE,
+    FIELD_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_RNA_ID,
+    MLWH_LH_SAMPLE_RESULT,
+    MLWH_LH_SAMPLE_COG_UK_ID,
+    FIELD_RNA_ID,
+    FIELD_RESULT
 )
 
 
@@ -159,3 +172,35 @@ def labwhere_samples_error(app, mocked_responses):
     mocked_responses.add(
         responses.POST, labwhere_url, body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR,
     )
+
+@pytest.fixture
+def mlwh_lh_samples(app):
+    samples = [
+        {
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
+            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+            MLWH_LH_SAMPLE_RESULT: 'positive'
+        },
+        {
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_2',
+            MLWH_LH_SAMPLE_RNA_ID: 'rna_2',
+            MLWH_LH_SAMPLE_RESULT: 'negative'
+        },
+        {
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
+            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+            MLWH_LH_SAMPLE_RESULT: 'negative'
+        }
+    ]
+
+    create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
+    sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
+
+    metadata = MetaData(sql_engine)
+    metadata.reflect()
+    table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
+
+    with sql_engine.begin() as connection:
+        connection.execute(table.delete()) # delete all rows from table first
+        print('Inserting MLWH test data')
+        connection.execute(table.insert(), samples)

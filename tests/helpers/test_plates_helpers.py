@@ -107,7 +107,7 @@ def test_get_positive_samples(app, samples):
     with app.app_context():
         assert len(get_positive_samples("123")) == 1
 
-def test_update_mlwh_with_cog_uk_ids(app):
+def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples):
     with app.app_context():
         cog_uk_ids = ['cog_1', 'cog_2', 'cog_3']
         samples = [
@@ -130,8 +130,6 @@ def test_update_mlwh_with_cog_uk_ids(app):
                 FIELD_COG_BARCODE: cog_uk_ids[2]
             }
         ]
-
-        reset_test_data(app.config)
 
         # check that the samples already exist in the MLWH db but do not have cog uk ids
         before = retrieve_samples_cursor(app.config)
@@ -165,35 +163,3 @@ def retrieve_samples_cursor(config):
         result = connection.execute(f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} from lighthouse_sample")
 
     return result
-
-def reset_test_data(config):
-    samples = [
-        {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
-            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-            MLWH_LH_SAMPLE_RESULT: 'positive'
-        },
-        {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_2',
-            MLWH_LH_SAMPLE_RNA_ID: 'rna_2',
-            MLWH_LH_SAMPLE_RESULT: 'negative'
-        },
-        {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
-            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-            MLWH_LH_SAMPLE_RESULT: 'negative'
-        }
-    ]
-
-    create_engine_string = f"mysql+pymysql://{config['MLWH_RW_CONN_STRING']}/{config['ML_WH_DB']}"
-    sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
-
-    metadata = MetaData(sql_engine)
-    metadata.reflect()
-    table = metadata.tables[config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
-
-    with sql_engine.begin() as connection:
-        connection.execute(table.delete()) # delete all rows from table first
-        print('inserting data')
-        result = connection.execute(table.insert(), samples)
-        print(result)

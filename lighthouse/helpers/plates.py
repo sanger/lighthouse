@@ -21,9 +21,9 @@ from lighthouse.exceptions import (
     MultipleCentresError,
 )
 import sqlalchemy # type: ignore
-from sqlalchemy import MetaData
-from sqlalchemy.sql.expression import bindparam
-from sqlalchemy.sql.expression import and_
+from sqlalchemy import MetaData # type: ignore
+from sqlalchemy.sql.expression import bindparam # type: ignore
+from sqlalchemy.sql.expression import and_ # type: ignore
 
 logger = logging.getLogger(__name__)
 
