@@ -6,12 +6,16 @@ import sqlalchemy # type: ignore
 print("Initialising the test MySQL warehouse database")
 # config, _settings_module = get_config('crawler.config.development')
 
-create_engine_string = f"mysql+pymysql://root:root@localhost/unified_warehouse_test"
+create_engine_string = f"mysql+pymysql://root@localhost/unified_warehouse_test"
 sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
 
-sql_string = """
+sql_string_1 = """
 CREATE DATABASE IF NOT EXISTS `unified_warehouse_test` /*!40100 DEFAULT CHARACTER SET latin1 */;
+"""
+sql_string_2 = """
 DROP TABLE IF EXISTS `unified_warehouse_test`.`lighthouse_sample`;
+"""
+sql_string_3 = """
 CREATE TABLE `unified_warehouse_test`.`lighthouse_sample` (
 `id` int NOT NULL AUTO_INCREMENT,
 `mongodb_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Auto-generated id from MongoDB',
@@ -37,6 +41,8 @@ KEY `index_lighthouse_sample_on_date_tested` (`date_tested`)
 """
 
 with sql_engine.connect() as connection:
-  result = connection.execute(sql_string)
+  connection.execute(sql_string_1)
+  connection.execute(sql_string_2)
+  connection.execute(sql_string_3)
 
 print("Done")
