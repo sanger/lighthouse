@@ -204,17 +204,19 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         data.append({MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: sample_id, MLWH_LH_SAMPLE_COG_UK_ID: cog_bc})
 
     try:
-        sql_engine = sqlalchemy.create_engine(f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}", pool_recycle=3600)
-        print('DEBUG: sql_engine', sql_engine)
-        print('DEBUG: database', app.config['ML_WH_DB'])
+        create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
+        # print('create_engine_string', create_engine_string)
 
-        sql_engine.execute(f"USE {app.config['ML_WH_DB']}") # set the correct database
+        sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
+        # print('DEBUG: sql_engine', sql_engine)
+
         metadata = MetaData(sql_engine)
-        print('DEBUG: metadata', metadata)
-        print('DEBUG: metadata.tables', metadata.tables)
-        print('DEBUG: len(metadata.tables)', len(metadata.tables))
+        metadata.reflect()
+        # print('DEBUG: metadata', metadata)
+        # print('DEBUG: metadata.tables', metadata.tables)
+        # print('DEBUG: len(metadata.tables)', len(metadata.tables))
 
-        table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']] # currently throwing KeyError: 'lighthouse_sample' in test test_update_mlwh_with_cog_uk_ids
+        table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
 
         stmt = table.update().where(table.c.root_sample_id == bindparam(MLWH_LH_SAMPLE_ROOT_SAMPLE_ID)).\
             values({
