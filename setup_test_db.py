@@ -6,7 +6,7 @@ import sqlalchemy # type: ignore
 print("Initialising the test MySQL warehouse database")
 # config, _settings_module = get_config('crawler.config.development')
 
-create_engine_string = f"mysql+pymysql://root@localhost/unified_warehouse_test"
+create_engine_string = f"mysql+pymysql://root:root@localhost/unified_warehouse_test"
 sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
 
 sql_string_1 = """
