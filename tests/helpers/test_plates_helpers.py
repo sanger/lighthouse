@@ -12,7 +12,8 @@ from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_RNA_ID,
-    MLWH_LH_SAMPLE_RESULT
+    MLWH_LH_SAMPLE_RESULT,
+    MLWH_LH_SAMPLE_COG_UK_ID
 )
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
@@ -106,53 +107,52 @@ def test_get_positive_samples(app, samples):
 
 def test_update_mlwh_with_cog_uk_ids(app):
     with app.app_context():
+        cog_uk_ids = ['test1z', 'test2z']
         samples = [
             {
                 FIELD_ROOT_SAMPLE_ID: 'test1',
-                FIELD_COG_BARCODE: 'test1z'
+                FIELD_COG_BARCODE: cog_uk_ids[0]
             },
             {
                 FIELD_ROOT_SAMPLE_ID: 'test2',
-                FIELD_COG_BARCODE: 'test2z'
+                FIELD_COG_BARCODE: cog_uk_ids[1]
             }
         ]
 
         reset_test_data(app.config)
 
         # check that the samples already exist in the MLWH db but do not have cog uk ids
-        before = retrieve_samples(app.config)
-        assert count_samples(before) == 2
+        before = retrieve_samples_cursor(app.config)
+        before_count = 0
         for row in before:
-            print('DEBUG: before row', row)
-            assert row[app.config['MLWH_LH_SAMPLE_COG_UK_ID']] is None
+            before_count += 1
+            assert row[MLWH_LH_SAMPLE_COG_UK_ID] is None
 
+        assert before_count == 2
+
+        # run the function we're testing
         update_mlwh_with_cog_uk_ids(samples)
 
-        # check that the samples in the MLWH now have cog uk ids
-        after = retrieve_samples(app.config)
-        assert count_samples(after) == 2
+        # check that the same samples in the MLWH now have the correct cog uk ids
+        after = retrieve_samples_cursor(app.config)
+        after_count = 0
+        after_cog_uk_ids = set()
         for row in after:
-            print('DEBUG: after row', row)
-            assert row[app.config['MLWH_LH_SAMPLE_COG_UK_ID']] in ['test1z','test2z']
+            after_count += 1
+            after_cog_uk_ids.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
+
+        assert after_count == 2
+        assert after_cog_uk_ids == set(cog_uk_ids)
 
 
-def retrieve_samples(config):
+def retrieve_samples_cursor(config):
     create_engine_string = f"mysql+pymysql://{config['MLWH_RW_CONN_STRING']}/{config['ML_WH_DB']}"
     sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
 
     with sql_engine.connect() as connection:
-        result = connection.execute("SELECT * from lighthouse_sample")
+        result = connection.execute(f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} from lighthouse_sample")
 
     return result
-
-
-def count_samples(query_result):
-    count_samples = 0
-    for row in query_result:
-        count_samples += 1
-
-    return count_samples
-
 
 def reset_test_data(config):
     samples = [
@@ -177,4 +177,6 @@ def reset_test_data(config):
 
     with sql_engine.begin() as connection:
         connection.execute(table.delete()) # delete all rows from table first
-        connection.execute(table.insert(), samples)
+        print('inserting data')
+        result = connection.execute(table.insert(), samples)
+        print(result)

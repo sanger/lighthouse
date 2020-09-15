@@ -196,9 +196,11 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
 
     data = []
     for sample in samples:
-        sample_id = sample[FIELD_ROOT_SAMPLE_ID]
-        cog_bc = sample[FIELD_COG_BARCODE]
-        data.append({MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: sample_id, MLWH_LH_SAMPLE_COG_UK_ID: cog_bc})
+        # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
+        data.append({
+            'b_root_sample_id': sample[FIELD_ROOT_SAMPLE_ID],
+            'b_cog_uk_id': sample[FIELD_COG_BARCODE]
+        })
 
     try:
         create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
@@ -210,18 +212,18 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
 
         table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
 
-        stmt = table.update().where(table.c.root_sample_id == bindparam(MLWH_LH_SAMPLE_ROOT_SAMPLE_ID)).\
-            values({
-                MLWH_LH_SAMPLE_COG_UK_ID: bindparam(MLWH_LH_SAMPLE_COG_UK_ID),
-            })
+        stmt = table.update().where(
+                table.c.root_sample_id == bindparam('b_root_sample_id')
+            ).values(
+                cog_uk_id=bindparam('b_cog_uk_id')
+            )
         db_connection = sql_engine.connect()
     except:
         logger.error(f"Error while connecting to MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table for COG UK barcode updates")
         raise
 
     try:
-        result = db_connection.execute(stmt, data)
-        print(f"result = {result}")
+        db_connection.execute(stmt, data)
     except:
         logger.error(f"Error while inserting records into MLWH: ")
         raise
