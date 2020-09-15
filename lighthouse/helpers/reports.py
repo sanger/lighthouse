@@ -7,11 +7,12 @@ import requests
 import pandas as pd  # type: ignore
 
 import pymysql
+
 # we only need the create_engine method
 # but that can't be mocked
 # can't seem to mock it at the top because
 # it is outside the app context
-import sqlalchemy # type: ignore
+import sqlalchemy  # type: ignore
 
 from datetime import datetime
 from typing import Dict, List, Tuple
@@ -154,9 +155,7 @@ def map_labware_to_location(labware_barcodes):
     ]
 
     labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
-    logger.info(
-        f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found"
-    )
+    logger.info(f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found")
     pretty(logger, labware_to_location_barcode_df)
 
     return labware_to_location_barcode_df
@@ -191,26 +190,34 @@ def get_locations_from_labwhere(labware_barcodes):
     )
 
 
-def get_cherrypicked_samples(root_sample_ids):
+def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
     # Returns dataframe with 1 column, 'Root Sample ID', containing Root Sample ID of those that have been cherrypicked
+    # TODO: move into external method.
     root_sample_id_string = "'" + "','".join(root_sample_ids) + "'"
+    plate_barcodes_string = "'" + "','".join(plate_barcodes) + "'"
 
-    ml_wh_db = app.config['ML_WH_DB']
-    events_wh_db = app.config['EVENTS_WH_DB']
+    ml_wh_db = app.config["ML_WH_DB"]
+    events_wh_db = app.config["EVENTS_WH_DB"]
 
-    sql = ("select mlwh_sample.description as `Root Sample ID`"
-                f" FROM {app.config['ML_WH_DB']}.sample as mlwh_sample"
-                f" JOIN {app.config['EVENTS_WH_DB']}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
-                f" WHERE mlwh_sample.description IN ({root_sample_id_string})"
-                " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
-                " GROUP BY mlwh_sample.description")
+    sql = (
+        "select mlwh_sample.description as `Root Sample ID`"
+        f" FROM {app.config['ML_WH_DB']}.sample as mlwh_sample"
+        f" JOIN {app.config['ML_WH_DB']}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
+        f" JOIN {app.config['EVENTS_WH_DB']}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
+        f" JOIN {app.config['EVENTS_WH_DB']}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
+        f" JOIN {app.config['EVENTS_WH_DB']}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
+        f" JOIN {app.config['EVENTS_WH_DB']}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+        f" WHERE mlwh_sample.description IN ({root_sample_id_string})"
+        f" AND mlwh_stock_resource.labware_human_barcode IN ({plate_barcodes_string})"
+        " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
+        " GROUP BY mlwh_sample.description"
+    )
 
     try:
-        sql_engine = sqlalchemy.create_engine(f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600)
+        sql_engine = sqlalchemy.create_engine(
+            f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600
+        )
         db_connection = sql_engine.connect()
         frame = pd.read_sql(sql, db_connection)
         return frame
@@ -219,6 +226,7 @@ def get_cherrypicked_samples(root_sample_ids):
         return None
     finally:
         db_connection.close()
+
 
 def get_all_positive_samples(samples):
 
@@ -254,16 +262,22 @@ def get_all_positive_samples(samples):
 
     return positive_samples_df
 
+
 def add_cherrypicked_column(existing_dataframe):
-    root_sample_ids = existing_dataframe['Root Sample ID'].to_list()
 
-    cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids)
-    cherrypicked_samples_df['LIMS submission'] = 'Yes'
+    root_sample_ids = existing_dataframe["Root Sample ID"].to_list()
+    plate_barcodes = existing_dataframe["plate_barcode"].unique()
 
-    existing_dataframe = existing_dataframe.merge(cherrypicked_samples_df, how="left", on="Root Sample ID")
-    existing_dataframe = existing_dataframe.fillna({'LIMS submission': 'No'})
+    cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids, plate_barcodes)
+    cherrypicked_samples_df["LIMS submission"] = "Yes"
+
+    existing_dataframe = existing_dataframe.merge(
+        cherrypicked_samples_df, how="left", on="Root Sample ID"
+    )
+    existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 
     return existing_dataframe
+
 
 def get_distinct_plate_barcodes(samples):
 
@@ -278,11 +292,12 @@ def get_distinct_plate_barcodes(samples):
 
     return distinct_plate_barcodes
 
+
 def join_samples_declarations(positive_samples):
 
     samples_declarations = app.data.driver.db.samples_declarations
 
-     # Latest declarations group by root_sample_id
+    # Latest declarations group by root_sample_id
     # Id is needed to control the group aggregation
     # Excel formatter required date without timezone
     declarations = samples_declarations.aggregate(
@@ -317,4 +332,3 @@ def join_samples_declarations(positive_samples):
         return result
 
     return positive_samples
-
