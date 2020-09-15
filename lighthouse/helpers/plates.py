@@ -191,9 +191,6 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     Arguments:
         samples {List[Dict[str, str]]} -- list of samples to be updated
     """
-    # sql = (f"UPDATE {app.config['ML_WH_DB']}.{app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} as lh_sample"
-    #            f" SET lh_sample.{MLWH_LH_SAMPLE_COG_UK_ID} = %(cog_bc)s"
-    #            f" WHERE lh_sample.{MLWH_LH_SAMPLE_ROOT_SAMPLE_ID} = %(sample_id)s;")
     if len(samples) == 0:
         return None
 
