@@ -13,7 +13,9 @@ from lighthouse.constants import (
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_RESULT,
-    MLWH_LH_SAMPLE_COG_UK_ID
+    MLWH_LH_SAMPLE_COG_UK_ID,
+    FIELD_RNA_ID,
+    FIELD_RESULT
 )
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
@@ -107,15 +109,25 @@ def test_get_positive_samples(app, samples):
 
 def test_update_mlwh_with_cog_uk_ids(app):
     with app.app_context():
-        cog_uk_ids = ['test1z', 'test2z']
+        cog_uk_ids = ['cog_1', 'cog_2', 'cog_3']
         samples = [
             {
-                FIELD_ROOT_SAMPLE_ID: 'test1',
+                FIELD_ROOT_SAMPLE_ID: 'root_1',
+                FIELD_RNA_ID: 'rna_1',
+                FIELD_RESULT: 'positive',
                 FIELD_COG_BARCODE: cog_uk_ids[0]
             },
             {
-                FIELD_ROOT_SAMPLE_ID: 'test2',
+                FIELD_ROOT_SAMPLE_ID: 'root_2',
+                FIELD_RNA_ID: 'rna_2',
+                FIELD_RESULT: 'negative',
                 FIELD_COG_BARCODE: cog_uk_ids[1]
+            },
+            {
+                FIELD_ROOT_SAMPLE_ID: 'root_1',
+                FIELD_RNA_ID: 'rna_1',
+                FIELD_RESULT: 'negative',
+                FIELD_COG_BARCODE: cog_uk_ids[2]
             }
         ]
 
@@ -128,7 +140,7 @@ def test_update_mlwh_with_cog_uk_ids(app):
             before_count += 1
             assert row[MLWH_LH_SAMPLE_COG_UK_ID] is None
 
-        assert before_count == 2
+        assert before_count == 3
 
         # run the function we're testing
         update_mlwh_with_cog_uk_ids(samples)
@@ -141,7 +153,7 @@ def test_update_mlwh_with_cog_uk_ids(app):
             after_count += 1
             after_cog_uk_ids.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
 
-        assert after_count == 2
+        assert after_count == before_count
         assert after_cog_uk_ids == set(cog_uk_ids)
 
 
@@ -157,14 +169,19 @@ def retrieve_samples_cursor(config):
 def reset_test_data(config):
     samples = [
         {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'test1',
-            MLWH_LH_SAMPLE_RNA_ID: 'test1a',
-            MLWH_LH_SAMPLE_RESULT: 'test1b'
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
+            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+            MLWH_LH_SAMPLE_RESULT: 'positive'
         },
         {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'test2',
-            MLWH_LH_SAMPLE_RNA_ID: 'test2a',
-            MLWH_LH_SAMPLE_RESULT: 'test2b'
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_2',
+            MLWH_LH_SAMPLE_RNA_ID: 'rna_2',
+            MLWH_LH_SAMPLE_RESULT: 'negative'
+        },
+        {
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
+            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+            MLWH_LH_SAMPLE_RESULT: 'negative'
         }
     ]
 

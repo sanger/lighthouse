@@ -9,6 +9,8 @@ from flask import current_app as app
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
     FIELD_ROOT_SAMPLE_ID,
+    FIELD_RNA_ID,
+    FIELD_RESULT,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_COG_UK_ID,
 )
@@ -21,6 +23,7 @@ from lighthouse.exceptions import (
 import sqlalchemy # type: ignore
 from sqlalchemy import MetaData
 from sqlalchemy.sql.expression import bindparam
+from sqlalchemy.sql.expression import and_
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +202,9 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
         data.append({
             'b_root_sample_id': sample[FIELD_ROOT_SAMPLE_ID],
-            'b_cog_uk_id': sample[FIELD_COG_BARCODE]
+            'b_rna_id':         sample[FIELD_RNA_ID],
+            'b_result':         sample[FIELD_RESULT],
+            'b_cog_uk_id':      sample[FIELD_COG_BARCODE]
         })
 
     try:
@@ -212,9 +217,11 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
 
         table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
 
-        stmt = table.update().where(
-                table.c.root_sample_id == bindparam('b_root_sample_id')
-            ).values(
+        stmt = table.update().where(and_(
+            table.c.root_sample_id == bindparam('b_root_sample_id'),
+            table.c.rna_id == bindparam('b_rna_id'),
+            table.c.result == bindparam('b_result')
+        )).values(
                 cog_uk_id=bindparam('b_cog_uk_id')
             )
         db_connection = sql_engine.connect()
