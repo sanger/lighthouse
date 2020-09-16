@@ -59,7 +59,14 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 }
             }
 
-            update_mlwh_with_cog_uk_ids(samples)
+            try:
+                update_mlwh_with_cog_uk_ids(samples)
+            except (Exception) as e:
+                logger.exception(e)
+                return (
+                    {"errors": ["Failed to update MLWH with cog uk ids. The samples should have been successfully inserted into Sequencescape."]},
+                    HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
         else:
             response_json = response.json()
 
