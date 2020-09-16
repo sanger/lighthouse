@@ -18,7 +18,11 @@ from .data.fixture_data import (
     LOTS_OF_SAMPLES,
     LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
     MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
-    SAMPLES_NO_DECLARATION
+    SAMPLES_NO_DECLARATION,
+    SAMPLES_FOR_MLWH_UPDATE,
+    COG_UK_IDS,
+    MLWH_SEED_SAMPLES,
+    MLWH_SEED_SAMPLES_MULTIPLE
 )
 
 from lighthouse.constants import (
@@ -175,46 +179,13 @@ def labwhere_samples_error(app, mocked_responses):
 
 @pytest.fixture
 def mlwh_lh_samples(app):
-    samples = [
-        {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
-            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-            MLWH_LH_SAMPLE_RESULT: 'positive'
-        },
-        {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_2',
-            MLWH_LH_SAMPLE_RNA_ID: 'rna_2',
-            MLWH_LH_SAMPLE_RESULT: 'negative'
-        },
-        {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
-            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-            MLWH_LH_SAMPLE_RESULT: 'negative'
-        }
-    ]
-
-    create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
-    sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
-
-    metadata = MetaData(sql_engine)
-    metadata.reflect()
-    table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
-
-    with sql_engine.begin() as connection:
-        connection.execute(table.delete()) # delete all rows from table first
-        print('Inserting MLWH test data')
-        connection.execute(table.insert(), samples)
+    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES)
 
 @pytest.fixture
-def mlwh_lh_samples_temp(app):
-    samples = [
-        {
-            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM001',
-            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-            MLWH_LH_SAMPLE_RESULT: 'Positive'
-        }
-    ]
+def mlwh_lh_samples_multiple(app):
+    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE)
 
+def insert_lh_samples_into_mlwh(app, samples):
     create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
     sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
 
@@ -227,31 +198,10 @@ def mlwh_lh_samples_temp(app):
         print('Inserting MLWH test data')
         connection.execute(table.insert(), samples)
 
-# TODO: move to fixture_data.py
 @pytest.fixture
 def samples_for_mlwh_update(cog_uk_ids):
-    samples = [
-        {
-            FIELD_ROOT_SAMPLE_ID: 'root_1',
-            FIELD_RNA_ID: 'rna_1',
-            FIELD_RESULT: 'Positive',
-            FIELD_COG_BARCODE: cog_uk_ids[0]
-        },
-        {
-            FIELD_ROOT_SAMPLE_ID: 'root_2',
-            FIELD_RNA_ID: 'rna_2',
-            FIELD_RESULT: 'Negative',
-            FIELD_COG_BARCODE: cog_uk_ids[1]
-        },
-        {
-            FIELD_ROOT_SAMPLE_ID: 'root_1',
-            FIELD_RNA_ID: 'rna_1',
-            FIELD_RESULT: 'Negative',
-            FIELD_COG_BARCODE: cog_uk_ids[2]
-        }
-    ]
-    return samples
+    return SAMPLES_FOR_MLWH_UPDATE
 
 @pytest.fixture
 def cog_uk_ids():
-    return ['cog_1', 'cog_2', 'cog_3']
+    return COG_UK_IDS

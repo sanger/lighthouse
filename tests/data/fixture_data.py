@@ -1,6 +1,15 @@
 from typing import Dict, List, Any
 from datetime import datetime
-from lighthouse.constants import FIELD_COG_BARCODE
+from lighthouse.constants import (
+    FIELD_COG_BARCODE,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_RNA_ID,
+    FIELD_RESULT,
+    FIELD_COG_BARCODE,
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_RNA_ID,
+    MLWH_LH_SAMPLE_RESULT
+)
 
 CENTRES: List[Dict[str, str]] = [
     {"name": "test1", "prefix": "TS1"},
@@ -61,10 +70,10 @@ LOTS_OF_SAMPLES: List[Dict[str, str]] = [
     {
         "coordinate": "A01",
         "source": "test1",
-        "Result": "Positive",
+        FIELD_RESULT: "Positive",
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "abc",
-        "Root Sample ID": f"MCM00{i}",
+        FIELD_ROOT_SAMPLE_ID: f"MCM00{i}",
     }
     for i in range(0, MAX_SAMPLES)
 ]
@@ -83,29 +92,29 @@ SAMPLES: List[Dict[str, str]] = [
     {
         "coordinate": "A01",
         "source": "test1",
-        "Result": "Positive",
+        FIELD_RESULT: "Positive",
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "abc",
-        "Root Sample ID": "MCM001",
-        "RNA ID": "rna_1"
+        FIELD_ROOT_SAMPLE_ID: "MCM001",
+        FIELD_RNA_ID: "rna_1"
     },
     {
         "coordinate": "B01",
         "source": "test1",
-        "Result": "Negative",
+        FIELD_RESULT: "Negative",
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "def",
-        "Root Sample ID": "MCM002",
-        "RNA ID": "rna_1"
+        FIELD_ROOT_SAMPLE_ID: "MCM002",
+        FIELD_RNA_ID: "rna_1"
     },
     {
         "coordinate": "C01",
         "source": "test1",
-        "Result": "Void",
+        FIELD_RESULT: "Void",
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "hij",
-        "Root Sample ID": "MCM003",
-        "RNA ID": "rna_1"
+        FIELD_ROOT_SAMPLE_ID: "MCM003",
+        FIELD_RNA_ID: "rna_1"
     },
 ]
 
@@ -113,33 +122,89 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
     {
         "coordinate": "A01",
         "source": "test1",
-        "Result": "Positive",
+        FIELD_RESULT: "Positive",
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "abc",
-        "Root Sample ID": "MCM001",
+        FIELD_ROOT_SAMPLE_ID: "MCM001",
     },
     {
         "coordinate": "B01",
         "source": "test1",
-        "Result": "Negative",
+        FIELD_RESULT: "Negative",
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "def",
-        "Root Sample ID": "MCM002",
+        FIELD_ROOT_SAMPLE_ID: "MCM002",
     },
     {
         "coordinate": "C01",
         "source": "test1",
-        "Result": "Void",
+        FIELD_RESULT: "Void",
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "hij",
-        "Root Sample ID": "MCM003",
+        FIELD_ROOT_SAMPLE_ID: "MCM003",
     },
     {
         "coordinate": "D01",
         "source": "test1",
-        "Result": "Positive",
+        FIELD_RESULT: "Positive",
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "hij",
-        "Root Sample ID": "MCM010",
+        FIELD_ROOT_SAMPLE_ID: "MCM010",
     },
+]
+
+COG_UK_IDS: List[str] = [
+    'cog_1',
+    'cog_2',
+    'cog_3'
+]
+
+SAMPLES_FOR_MLWH_UPDATE: List[Dict[str, str]] = [
+    {
+        FIELD_ROOT_SAMPLE_ID: 'root_1',
+        FIELD_RNA_ID: 'rna_1',
+        FIELD_RESULT: 'Positive',
+        FIELD_COG_BARCODE: COG_UK_IDS[0]
+    },
+    {
+        FIELD_ROOT_SAMPLE_ID: 'root_2',
+        FIELD_RNA_ID: 'rna_2',
+        FIELD_RESULT: 'Negative',
+        FIELD_COG_BARCODE: COG_UK_IDS[1]
+    },
+    {
+        FIELD_ROOT_SAMPLE_ID: 'root_1',
+        FIELD_RNA_ID: 'rna_1',
+        FIELD_RESULT: 'Negative',
+        FIELD_COG_BARCODE: COG_UK_IDS[2]
+    }
+]
+
+# this matches the positive sample in SAMPLES
+MLWH_SEED_SAMPLES: List[Dict[str, str]] = [
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM001',
+        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+        MLWH_LH_SAMPLE_RESULT: 'Positive'
+    }
+]
+
+# more complex scenario for the mlwh-related tests
+# two of the samples share a root sample id
+MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
+        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+        MLWH_LH_SAMPLE_RESULT: 'Positive'
+    },
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_2',
+        MLWH_LH_SAMPLE_RNA_ID: 'rna_2',
+        MLWH_LH_SAMPLE_RESULT: 'Negative'
+    },
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
+        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+        MLWH_LH_SAMPLE_RESULT: 'Negative'
+    }
 ]

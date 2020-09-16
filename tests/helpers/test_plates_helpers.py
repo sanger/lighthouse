@@ -111,7 +111,7 @@ def test_get_positive_samples(app, samples):
     with app.app_context():
         assert len(get_positive_samples("123")) == 1
 
-def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples, samples_for_mlwh_update, cog_uk_ids):
+def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids):
     with app.app_context():
         # check that the samples already exist in the MLWH db but do not have cog uk ids
         before = retrieve_samples_cursor(app.config)
@@ -136,7 +136,7 @@ def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples, samples_for_mlwh_upda
         assert after_count == before_count
         assert after_cog_uk_ids == set(cog_uk_ids)
 
-def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples, samples_for_mlwh_update):
+def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples_multiple, samples_for_mlwh_update):
     with app.app_context():
         # mock this out to cause an exception
         app.config['MLWH_RW_CONN_STRING'] = 'notarealconnectionstring'
@@ -144,7 +144,7 @@ def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples, samp
         with pytest.raises(OperationalError):
             update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
 
-def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples):
+def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples_multiple):
     with app.app_context():
         samples = [{
             FIELD_ROOT_SAMPLE_ID: 'root_1',
@@ -156,7 +156,7 @@ def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples):
         with pytest.raises(KeyError):
             update_mlwh_with_cog_uk_ids(samples)
 
-def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples, samples_for_mlwh_update, cog_uk_ids):
+def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids):
     # Should - update the ones it can, but then log a detailed error, and throw an exception
     with app.app_context():
         # add sample that doesn't match one in the MLWH
