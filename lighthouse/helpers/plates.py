@@ -2,8 +2,6 @@ import logging
 import re
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
-import sys
-import traceback
 
 import requests
 from flask import current_app as app
@@ -12,9 +10,7 @@ from lighthouse.constants import (
     FIELD_COG_BARCODE,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_RNA_ID,
-    FIELD_RESULT,
-    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_COG_UK_ID,
+    FIELD_RESULT
 )
 from lighthouse.exceptions import (
     DataError,
