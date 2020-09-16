@@ -5,7 +5,7 @@ import lighthouse.config.test as config # type: ignore
 """Drop and recreate required tables."""
 print("Initialising the test MySQL warehouse database")
 
-create_engine_string = f"mysql+pymysql://{config.MLWH_CONN_STRING}/{config.ML_WH_DB}"
+create_engine_string = f"mysql+pymysql://{config.MLWH_RW_CONN_STRING}/{config.ML_WH_DB}"
 sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
 
 create_db = """
