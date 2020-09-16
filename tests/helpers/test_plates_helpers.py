@@ -111,10 +111,10 @@ def test_get_positive_samples(app, samples):
     with app.app_context():
         assert len(get_positive_samples("123")) == 1
 
-def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids):
+def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids, sql_engine):
     with app.app_context():
         # check that the samples already exist in the MLWH db but do not have cog uk ids
-        before = retrieve_samples_cursor(app.config)
+        before = retrieve_samples_cursor(app.config, sql_engine)
         before_count = 0
         for row in before:
             before_count += 1
@@ -126,7 +126,7 @@ def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples_multiple, samples_for_
         update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
 
         # check that the same samples in the MLWH now have the correct cog uk ids
-        after = retrieve_samples_cursor(app.config)
+        after = retrieve_samples_cursor(app.config, sql_engine)
         after_count = 0
         after_cog_uk_ids = set()
         for row in after:
@@ -156,7 +156,7 @@ def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples_multiple
         with pytest.raises(KeyError):
             update_mlwh_with_cog_uk_ids(samples)
 
-def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids):
+def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids, sql_engine):
     # Should - update the ones it can, but then log a detailed error, and throw an exception
     with app.app_context():
         # add sample that doesn't match one in the MLWH
@@ -168,7 +168,7 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples_multi
         })
 
         # check that the expected number of samples are in the MLWH db but do not have cog uk ids
-        before = retrieve_samples_cursor(app.config)
+        before = retrieve_samples_cursor(app.config, sql_engine)
         before_count = 0
         for row in before:
             before_count += 1
@@ -181,7 +181,7 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples_multi
             update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
 
         # check that the matched samples in the MLWH now have the correct cog uk ids
-        after = retrieve_samples_cursor(app.config)
+        after = retrieve_samples_cursor(app.config, sql_engine)
         after_count = 0
         after_cog_uk_ids = set()
         for row in after:
@@ -192,10 +192,7 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples_multi
         assert after_cog_uk_ids == set(cog_uk_ids)
 
 
-def retrieve_samples_cursor(config):
-    create_engine_string = f"mysql+pymysql://{config['MLWH_RW_CONN_STRING']}/{config['ML_WH_DB']}"
-    sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
-
+def retrieve_samples_cursor(config, sql_engine):
     with sql_engine.connect() as connection:
         result = connection.execute(f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} from lighthouse_sample")
 

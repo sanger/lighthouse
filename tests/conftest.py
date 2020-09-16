@@ -36,6 +36,10 @@ from lighthouse.constants import (
     FIELD_RESULT
 )
 
+from lighthouse.helpers.mlwh_db import (
+    create_mlwh_connection_engine
+)
+
 
 @pytest.fixture
 def app():
@@ -178,17 +182,14 @@ def labwhere_samples_error(app, mocked_responses):
     )
 
 @pytest.fixture
-def mlwh_lh_samples(app):
-    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES)
+def mlwh_lh_samples(app, sql_engine):
+    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES, sql_engine)
 
 @pytest.fixture
-def mlwh_lh_samples_multiple(app):
-    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE)
+def mlwh_lh_samples_multiple(app, sql_engine):
+    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE, sql_engine)
 
-def insert_lh_samples_into_mlwh(app, samples):
-    create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
-    sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
-
+def insert_lh_samples_into_mlwh(app, samples, sql_engine):
     metadata = MetaData(sql_engine)
     metadata.reflect()
     table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
@@ -205,3 +206,7 @@ def samples_for_mlwh_update(cog_uk_ids):
 @pytest.fixture
 def cog_uk_ids():
     return COG_UK_IDS
+
+@pytest.fixture
+def sql_engine(app):
+    return create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])

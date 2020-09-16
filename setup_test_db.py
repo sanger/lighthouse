@@ -1,12 +1,14 @@
 import sqlalchemy # type: ignore
 import lighthouse.config.test as config # type: ignore
+from lighthouse.helpers.mlwh_db import (
+  create_mlwh_connection_engine
+)
 
 # Set up a basic MLWH db for testing
 """Drop and recreate required tables."""
 print("Initialising the test MySQL warehouse database")
 
-create_engine_string = f"mysql+pymysql://{config.MLWH_RW_CONN_STRING}/{config.ML_WH_DB}"
-sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
+sql_engine = create_mlwh_connection_engine(config.MLWH_RW_CONN_STRING, config.ML_WH_DB)
 
 create_db = """
 CREATE DATABASE IF NOT EXISTS `unified_warehouse_test` /*!40100 DEFAULT CHARACTER SET latin1 */;

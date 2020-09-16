@@ -19,6 +19,11 @@ from lighthouse.exceptions import (
     MultipleCentresError,
 )
 import sqlalchemy # type: ignore
+
+from lighthouse.helpers.mlwh_db import (
+    create_mlwh_connection_engine
+)
+
 from sqlalchemy import MetaData # type: ignore
 from sqlalchemy.sql.expression import bindparam # type: ignore
 from sqlalchemy.sql.expression import and_ # type: ignore
@@ -211,13 +216,10 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                 'b_cog_uk_id':      sample[FIELD_COG_BARCODE]
             })
 
-        create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
-
-        sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
+        sql_engine = create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])
 
         metadata = MetaData(sql_engine)
         metadata.reflect()
-
         table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
 
         stmt = table.update().where(and_(
