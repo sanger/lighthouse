@@ -232,7 +232,17 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                 cog_uk_id=bindparam('b_cog_uk_id')
             )
         db_connection = sql_engine.connect()
-        db_connection.execute(stmt, data)
+
+        result = db_connection.execute(stmt, data)
+
+        rows_matched = result.rowcount
+        if rows_matched != len(samples):
+            msg = f"""
+            Updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids was only partially successful.
+            Only {rows_matched} of the {len(samples)} samples had matches in the MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table.
+            """
+            logger.error(msg)
+            raise UnmatchedSampleError(msg)
     except (Exception) as e:
         msg = f"""
         Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids.
