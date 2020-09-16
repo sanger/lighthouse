@@ -169,13 +169,13 @@ SAMPLES_FOR_MLWH_UPDATE: List[Dict[str, str]] = [
     {
         FIELD_ROOT_SAMPLE_ID: 'root_2',
         FIELD_RNA_ID: 'rna_2',
-        FIELD_RESULT: 'Negative',
+        FIELD_RESULT: 'Positive',
         FIELD_COG_BARCODE: COG_UK_IDS[1]
     },
     {
         FIELD_ROOT_SAMPLE_ID: 'root_1',
-        FIELD_RNA_ID: 'rna_1',
-        FIELD_RESULT: 'Negative',
+        FIELD_RNA_ID: 'rna_3',
+        FIELD_RESULT: 'Positive',
         FIELD_COG_BARCODE: COG_UK_IDS[2]
     }
 ]
@@ -190,7 +190,7 @@ MLWH_SEED_SAMPLES: List[Dict[str, str]] = [
 ]
 
 # more complex scenario for the mlwh-related tests
-# two of the samples share a root sample id
+# two of the samples share a root sample id and result
 MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
@@ -200,11 +200,11 @@ MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_2',
         MLWH_LH_SAMPLE_RNA_ID: 'rna_2',
-        MLWH_LH_SAMPLE_RESULT: 'Negative'
+        MLWH_LH_SAMPLE_RESULT: 'Positive'
     },
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
-        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-        MLWH_LH_SAMPLE_RESULT: 'Negative'
+        MLWH_LH_SAMPLE_RNA_ID: 'rna_3',
+        MLWH_LH_SAMPLE_RESULT: 'Positive'
     }
 ]
