@@ -8,6 +8,7 @@ import pytest
 
 import sqlalchemy # type: ignore
 from sqlalchemy import MetaData
+from sqlalchemy.exc import OperationalError
 
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
@@ -168,7 +169,7 @@ def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples):
         # mock this out to cause an exception
         app.config['MLWH_RW_CONN_STRING'] = 'notarealconnectionstring'
 
-        with pytest.raises(Exception):
+        with pytest.raises(OperationalError):
             update_mlwh_with_cog_uk_ids(samples)
 
 def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples):
@@ -180,9 +181,11 @@ def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples):
             # no cog uk id
         }]
 
-        with pytest.raises(Exception):
+        with pytest.raises(KeyError):
             update_mlwh_with_cog_uk_ids(samples)
 
+# def test_no_matching_sample_in_MLWH(app, mlwh_lh_samples):
+#     # TODO
 
 def retrieve_samples_cursor(config):
     create_engine_string = f"mysql+pymysql://{config['MLWH_RW_CONN_STRING']}/{config['ML_WH_DB']}"

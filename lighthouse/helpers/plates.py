@@ -2,6 +2,8 @@ import logging
 import re
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
+import sys
+import traceback
 
 import requests
 from flask import current_app as app
@@ -197,17 +199,19 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     if len(samples) == 0:
         return None
 
-    data = []
-    for sample in samples:
-        # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
-        data.append({
-            'b_root_sample_id': sample[FIELD_ROOT_SAMPLE_ID],
-            'b_rna_id':         sample[FIELD_RNA_ID],
-            'b_result':         sample[FIELD_RESULT],
-            'b_cog_uk_id':      sample[FIELD_COG_BARCODE]
-        })
-
+    # assign db_connection to avoid UnboundLocalError in finally in case of exception
+    db_connection = None
     try:
+        data = []
+        for sample in samples:
+            # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
+            data.append({
+                'b_root_sample_id': sample[FIELD_ROOT_SAMPLE_ID],
+                'b_rna_id':         sample[FIELD_RNA_ID],
+                'b_result':         sample[FIELD_RESULT],
+                'b_cog_uk_id':      sample[FIELD_COG_BARCODE]
+            })
+
         create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
 
         sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
@@ -226,8 +230,13 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             )
         db_connection = sql_engine.connect()
         db_connection.execute(stmt, data)
-    except:
-        logger.error(f"Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids")
+    except (Exception) as e:
+        msg = f"""
+        Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids.
+        {type(e).__name__}: {str(e)}
+        """
+        logger.error(msg)
         raise
     finally:
-        db_connection.close()
+        if db_connection is not None:
+            db_connection.close()
