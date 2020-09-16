@@ -29,6 +29,9 @@ from sqlalchemy.sql.expression import and_ # type: ignore
 
 logger = logging.getLogger(__name__)
 
+class UnmatchedSampleError(Exception):
+    pass
+
 
 def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
 

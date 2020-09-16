@@ -26,7 +26,8 @@ from lighthouse.helpers.plates import (
     get_centre_prefix,
     get_samples,
     get_positive_samples,
-    update_mlwh_with_cog_uk_ids
+    update_mlwh_with_cog_uk_ids,
+    UnmatchedSampleError
 )
 
 
@@ -110,30 +111,8 @@ def test_get_positive_samples(app, samples):
     with app.app_context():
         assert len(get_positive_samples("123")) == 1
 
-def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples):
+def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples, samples_for_mlwh_update, cog_uk_ids):
     with app.app_context():
-        cog_uk_ids = ['cog_1', 'cog_2', 'cog_3']
-        samples = [
-            {
-                FIELD_ROOT_SAMPLE_ID: 'root_1',
-                FIELD_RNA_ID: 'rna_1',
-                FIELD_RESULT: 'positive',
-                FIELD_COG_BARCODE: cog_uk_ids[0]
-            },
-            {
-                FIELD_ROOT_SAMPLE_ID: 'root_2',
-                FIELD_RNA_ID: 'rna_2',
-                FIELD_RESULT: 'negative',
-                FIELD_COG_BARCODE: cog_uk_ids[1]
-            },
-            {
-                FIELD_ROOT_SAMPLE_ID: 'root_1',
-                FIELD_RNA_ID: 'rna_1',
-                FIELD_RESULT: 'negative',
-                FIELD_COG_BARCODE: cog_uk_ids[2]
-            }
-        ]
-
         # check that the samples already exist in the MLWH db but do not have cog uk ids
         before = retrieve_samples_cursor(app.config)
         before_count = 0
@@ -144,7 +123,7 @@ def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples):
         assert before_count == 3
 
         # run the function we're testing
-        update_mlwh_with_cog_uk_ids(samples)
+        update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
 
         # check that the same samples in the MLWH now have the correct cog uk ids
         after = retrieve_samples_cursor(app.config)
@@ -157,25 +136,18 @@ def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples):
         assert after_count == before_count
         assert after_cog_uk_ids == set(cog_uk_ids)
 
-def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples):
+def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples, samples_for_mlwh_update):
     with app.app_context():
-        samples = [{
-            FIELD_ROOT_SAMPLE_ID: 'root_1',
-            FIELD_RNA_ID: 'rna_1',
-            FIELD_RESULT: 'positive',
-            FIELD_COG_BARCODE: 'cog_1'
-        }]
-
         # mock this out to cause an exception
         app.config['MLWH_RW_CONN_STRING'] = 'notarealconnectionstring'
 
         with pytest.raises(OperationalError):
-            update_mlwh_with_cog_uk_ids(samples)
+            update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
 
 def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples):
     with app.app_context():
         samples = [{
-            FIELD_ROOT_SAMPLE_ID: 'root_14',
+            FIELD_ROOT_SAMPLE_ID: 'root_1',
             FIELD_RNA_ID: 'rna_1',
             FIELD_RESULT: 'positive'
             # no cog uk id
@@ -184,8 +156,41 @@ def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples):
         with pytest.raises(KeyError):
             update_mlwh_with_cog_uk_ids(samples)
 
-# def test_no_matching_sample_in_MLWH(app, mlwh_lh_samples):
-#     # TODO
+def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples, samples_for_mlwh_update, cog_uk_ids):
+    # Should - update the ones it can, but then log a detailed error, and throw an exception
+    with app.app_context():
+        # add sample that doesn't match one in the MLWH
+        samples_for_mlwh_update.append({
+            FIELD_ROOT_SAMPLE_ID: 'root_253',
+            FIELD_RNA_ID: 'rna_253',
+            FIELD_RESULT: 'positive',
+            FIELD_COG_BARCODE: 'cog_253'
+        })
+
+        # check that the expected number of samples are in the MLWH db but do not have cog uk ids
+        before = retrieve_samples_cursor(app.config)
+        before_count = 0
+        for row in before:
+            before_count += 1
+            assert row[MLWH_LH_SAMPLE_COG_UK_ID] is None
+
+        assert before_count == 3
+
+        # check the function raises an exception due to the unmatched sample
+        with pytest.raises(UnmatchedSampleError):
+            update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
+
+        # check that the matched samples in the MLWH now have the correct cog uk ids
+        after = retrieve_samples_cursor(app.config)
+        after_count = 0
+        after_cog_uk_ids = set()
+        for row in after:
+            after_count += 1
+            after_cog_uk_ids.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
+
+        assert after_count == before_count
+        assert after_cog_uk_ids == set(cog_uk_ids)
+
 
 def retrieve_samples_cursor(config):
     create_engine_string = f"mysql+pymysql://{config['MLWH_RW_CONN_STRING']}/{config['ML_WH_DB']}"

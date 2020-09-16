@@ -204,3 +204,31 @@ def mlwh_lh_samples(app):
         connection.execute(table.delete()) # delete all rows from table first
         print('Inserting MLWH test data')
         connection.execute(table.insert(), samples)
+
+@pytest.fixture
+def samples_for_mlwh_update(cog_uk_ids):
+    samples = [
+        {
+            FIELD_ROOT_SAMPLE_ID: 'root_1',
+            FIELD_RNA_ID: 'rna_1',
+            FIELD_RESULT: 'positive',
+            FIELD_COG_BARCODE: cog_uk_ids[0]
+        },
+        {
+            FIELD_ROOT_SAMPLE_ID: 'root_2',
+            FIELD_RNA_ID: 'rna_2',
+            FIELD_RESULT: 'negative',
+            FIELD_COG_BARCODE: cog_uk_ids[1]
+        },
+        {
+            FIELD_ROOT_SAMPLE_ID: 'root_1',
+            FIELD_RNA_ID: 'rna_1',
+            FIELD_RESULT: 'negative',
+            FIELD_COG_BARCODE: cog_uk_ids[2]
+        }
+    ]
+    return samples
+
+@pytest.fixture
+def cog_uk_ids():
+    return ['cog_1', 'cog_2', 'cog_3']
