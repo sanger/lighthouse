@@ -7,7 +7,6 @@ import responses  # type: ignore
 from http import HTTPStatus
 
 import sqlalchemy # type: ignore
-from sqlalchemy import MetaData
 
 from lighthouse import create_app
 
@@ -37,7 +36,8 @@ from lighthouse.constants import (
 )
 
 from lighthouse.helpers.mlwh_db import (
-    create_mlwh_connection_engine
+    create_mlwh_connection_engine,
+    get_table
 )
 
 
@@ -190,9 +190,7 @@ def mlwh_lh_samples_multiple(app, sql_engine):
     insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE, sql_engine)
 
 def insert_lh_samples_into_mlwh(app, samples, sql_engine):
-    metadata = MetaData(sql_engine)
-    metadata.reflect()
-    table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
+    table = get_table(sql_engine, app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE'])
 
     with sql_engine.begin() as connection:
         connection.execute(table.delete()) # delete all rows from table first

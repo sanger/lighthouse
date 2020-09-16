@@ -7,7 +7,6 @@ from flask import current_app
 import pytest
 
 import sqlalchemy # type: ignore
-from sqlalchemy import MetaData
 from sqlalchemy.exc import OperationalError
 
 from lighthouse.constants import (

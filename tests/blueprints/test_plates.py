@@ -90,5 +90,5 @@ def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses)
             )
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert response.json == {
-                "errors": ["Failed to update MLWH with cog uk ids. The samples should have been successfully inserted into Sequencescape."]
+                "errors": ["Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."]
             }

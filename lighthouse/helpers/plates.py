@@ -21,10 +21,10 @@ from lighthouse.exceptions import (
 import sqlalchemy # type: ignore
 
 from lighthouse.helpers.mlwh_db import (
-    create_mlwh_connection_engine
+    create_mlwh_connection_engine,
+    get_table
 )
 
-from sqlalchemy import MetaData # type: ignore
 from sqlalchemy.sql.expression import bindparam # type: ignore
 from sqlalchemy.sql.expression import and_ # type: ignore
 
@@ -217,10 +217,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             })
 
         sql_engine = create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])
-
-        metadata = MetaData(sql_engine)
-        metadata.reflect()
-        table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
+        table = get_table(sql_engine, app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE'])
 
         stmt = table.update().where(and_(
             table.c.root_sample_id == bindparam('b_root_sample_id'),
