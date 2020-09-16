@@ -4,6 +4,8 @@ from http import HTTPStatus
 import responses  # type: ignore
 from flask import current_app
 
+import pytest
+
 import sqlalchemy # type: ignore
 from sqlalchemy import MetaData
 
@@ -153,6 +155,33 @@ def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples):
 
         assert after_count == before_count
         assert after_cog_uk_ids == set(cog_uk_ids)
+
+def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples):
+    with app.app_context():
+        samples = [{
+            FIELD_ROOT_SAMPLE_ID: 'root_1',
+            FIELD_RNA_ID: 'rna_1',
+            FIELD_RESULT: 'positive',
+            FIELD_COG_BARCODE: 'cog_1'
+        }]
+
+        # mock this out to cause an exception
+        app.config['MLWH_RW_CONN_STRING'] = 'notarealconnectionstring'
+
+        with pytest.raises(Exception):
+            update_mlwh_with_cog_uk_ids(samples)
+
+def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples):
+    with app.app_context():
+        samples = [{
+            FIELD_ROOT_SAMPLE_ID: 'root_14',
+            FIELD_RNA_ID: 'rna_1',
+            FIELD_RESULT: 'positive'
+            # no cog uk id
+        }]
+
+        with pytest.raises(Exception):
+            update_mlwh_with_cog_uk_ids(samples)
 
 
 def retrieve_samples_cursor(config):

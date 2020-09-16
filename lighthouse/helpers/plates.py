@@ -225,14 +225,9 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                 cog_uk_id=bindparam('b_cog_uk_id')
             )
         db_connection = sql_engine.connect()
-    except:
-        logger.error(f"Error while connecting to MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table for COG UK barcode updates")
-        raise
-
-    try:
         db_connection.execute(stmt, data)
     except:
-        logger.error(f"Error while inserting records into MLWH: ")
+        logger.error(f"Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids")
         raise
     finally:
         db_connection.close()
