@@ -1,7 +1,6 @@
 from typing import Dict, List, Any
 from datetime import datetime
 from lighthouse.constants import (
-    FIELD_COG_BARCODE,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_RNA_ID,
     FIELD_RESULT,

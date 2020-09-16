@@ -1,8 +1,5 @@
-import sqlalchemy # type: ignore
 import lighthouse.config.test as config # type: ignore
-from lighthouse.helpers.mlwh_db import (
-  create_mlwh_connection_engine
-)
+from lighthouse.helpers.mlwh_db import create_mlwh_connection_engine
 
 # Set up a basic MLWH db for testing
 """Drop and recreate required tables."""

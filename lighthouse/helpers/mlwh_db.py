@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Optional
-from flask import current_app as app
 
 import sqlalchemy # type: ignore
 from sqlalchemy.engine.base import Engine # type: ignore

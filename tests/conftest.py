@@ -6,8 +6,6 @@ import pytest # type: ignore
 import responses  # type: ignore
 from http import HTTPStatus
 
-import sqlalchemy # type: ignore
-
 from lighthouse import create_app
 
 from .data.fixture_data import (
@@ -22,17 +20,6 @@ from .data.fixture_data import (
     COG_UK_IDS,
     MLWH_SEED_SAMPLES,
     MLWH_SEED_SAMPLES_MULTIPLE
-)
-
-from lighthouse.constants import (
-    FIELD_COG_BARCODE,
-    FIELD_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_RNA_ID,
-    MLWH_LH_SAMPLE_RESULT,
-    MLWH_LH_SAMPLE_COG_UK_ID,
-    FIELD_RNA_ID,
-    FIELD_RESULT
 )
 
 from lighthouse.helpers.mlwh_db import (

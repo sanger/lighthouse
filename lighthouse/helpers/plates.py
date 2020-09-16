@@ -18,7 +18,6 @@ from lighthouse.exceptions import (
     MissingSourceError,
     MultipleCentresError,
 )
-import sqlalchemy # type: ignore
 
 from lighthouse.helpers.mlwh_db import (
     create_mlwh_connection_engine,
