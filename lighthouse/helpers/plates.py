@@ -199,7 +199,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     if len(samples) == 0:
         return None
 
-    # assign db_connection to avoid UnboundLocalError in finally in case of exception
+    # assign db_connection to avoid UnboundLocalError in 'finally' block, in case of exception
     db_connection = None
     try:
         data = []
