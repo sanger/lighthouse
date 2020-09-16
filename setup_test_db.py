@@ -1,12 +1,11 @@
 import sqlalchemy # type: ignore
-
+import lighthouse.config.test as config # type: ignore
 
 # Set up a basic MLWH db for testing
 """Drop and recreate required tables."""
 print("Initialising the test MySQL warehouse database")
-# config, _settings_module = get_config('crawler.config.development')
 
-create_engine_string = f"mysql+pymysql://root:root@localhost/unified_warehouse_test"
+create_engine_string = f"mysql+pymysql://{config.MLWH_CONN_STRING}/{config.ML_WH_DB}"
 sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
 
 create_db = """
