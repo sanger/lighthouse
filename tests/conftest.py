@@ -206,24 +206,47 @@ def mlwh_lh_samples(app):
         connection.execute(table.insert(), samples)
 
 @pytest.fixture
+def mlwh_lh_samples_temp(app):
+    samples = [
+        {
+            MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM001',
+            MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+            MLWH_LH_SAMPLE_RESULT: 'Positive'
+        }
+    ]
+
+    create_engine_string = f"mysql+pymysql://{app.config['MLWH_RW_CONN_STRING']}/{app.config['ML_WH_DB']}"
+    sql_engine = sqlalchemy.create_engine(create_engine_string, pool_recycle=3600)
+
+    metadata = MetaData(sql_engine)
+    metadata.reflect()
+    table = metadata.tables[app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']]
+
+    with sql_engine.begin() as connection:
+        connection.execute(table.delete()) # delete all rows from table first
+        print('Inserting MLWH test data')
+        connection.execute(table.insert(), samples)
+
+# TODO: move to fixture_data.py
+@pytest.fixture
 def samples_for_mlwh_update(cog_uk_ids):
     samples = [
         {
             FIELD_ROOT_SAMPLE_ID: 'root_1',
             FIELD_RNA_ID: 'rna_1',
-            FIELD_RESULT: 'positive',
+            FIELD_RESULT: 'Positive',
             FIELD_COG_BARCODE: cog_uk_ids[0]
         },
         {
             FIELD_ROOT_SAMPLE_ID: 'root_2',
             FIELD_RNA_ID: 'rna_2',
-            FIELD_RESULT: 'negative',
+            FIELD_RESULT: 'Negative',
             FIELD_COG_BARCODE: cog_uk_ids[1]
         },
         {
             FIELD_ROOT_SAMPLE_ID: 'root_1',
             FIELD_RNA_ID: 'rna_1',
-            FIELD_RESULT: 'negative',
+            FIELD_RESULT: 'Negative',
             FIELD_COG_BARCODE: cog_uk_ids[2]
         }
     ]

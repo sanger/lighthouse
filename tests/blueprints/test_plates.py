@@ -4,7 +4,7 @@ import json
 import responses  # type: ignore
 
 
-def test_post_plates_endpoint_successful(app, client, samples, mocked_responses):
+def test_post_plates_endpoint_successful(app, client, samples, mocked_responses, mlwh_lh_samples_temp):
     with patch(
         "lighthouse.blueprints.plates.add_cog_barcodes", return_value="TS1",
     ):

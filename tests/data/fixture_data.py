@@ -78,6 +78,7 @@ LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
     for i in range(0, MAX_SAMPLES)
 ]
 
+# TODO: use constants for field names?
 SAMPLES: List[Dict[str, str]] = [
     {
         "coordinate": "A01",
@@ -86,6 +87,7 @@ SAMPLES: List[Dict[str, str]] = [
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "abc",
         "Root Sample ID": "MCM001",
+        "RNA ID": "rna_1"
     },
     {
         "coordinate": "B01",
@@ -94,6 +96,7 @@ SAMPLES: List[Dict[str, str]] = [
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "def",
         "Root Sample ID": "MCM002",
+        "RNA ID": "rna_1"
     },
     {
         "coordinate": "C01",
@@ -102,6 +105,7 @@ SAMPLES: List[Dict[str, str]] = [
         "plate_barcode": "123",
         FIELD_COG_BARCODE: "hij",
         "Root Sample ID": "MCM003",
+        "RNA ID": "rna_1"
     },
 ]
 
