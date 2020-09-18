@@ -14,6 +14,10 @@ from lighthouse.helpers.plates import (
     update_mlwh_with_cog_uk_ids
 )
 
+from lighthouse.constants import (
+    FIELD_PLATE_BARCODE
+)
+
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("plates", __name__)
@@ -53,7 +57,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         if response.ok:
             response_json = {
                 "data": {
-                    "plate_barcode": samples[0]["plate_barcode"],
+                    "plate_barcode": samples[0][FIELD_PLATE_BARCODE],
                     "centre": centre_prefix,
                     "number_of_positives": len(samples),
                 }

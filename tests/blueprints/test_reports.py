@@ -2,6 +2,10 @@ from http import HTTPStatus
 from unittest.mock import patch
 import pandas as pd
 
+from lighthouse.constants import (
+    FIELD_ROOT_SAMPLE_ID
+)
+
 def test_get_reports_endpoint(client):
     with patch(
         "lighthouse.blueprints.reports.get_reports_details", return_value=[],
@@ -30,7 +34,7 @@ def test_create_report(client, app, tmp_path, samples, labwhere_samples_simple, 
             ):
                 with patch(
                     "lighthouse.helpers.reports.get_cherrypicked_samples",
-                    return_value=pd.DataFrame(['MCM001'], columns=['Root Sample ID'])
+                    return_value=pd.DataFrame(['MCM001'], columns=[FIELD_ROOT_SAMPLE_ID])
                 ):
                     response = client.post("/reports/new")
                     assert response.json == {"reports": "Some details of a report"}

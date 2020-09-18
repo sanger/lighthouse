@@ -10,7 +10,10 @@ from lighthouse.constants import (
     FIELD_COG_BARCODE,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_RNA_ID,
-    FIELD_RESULT
+    FIELD_RESULT,
+    FIELD_COORDINATE,
+    FIELD_SOURCE,
+    FIELD_PLATE_BARCODE
 )
 from lighthouse.exceptions import (
     DataError,
@@ -92,7 +95,7 @@ def find_samples(query: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
 
     samples_for_barcode = list(samples.find(query))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples for {query['plate_barcode']}")
+    logger.info(f"Found {len(samples_for_barcode)} samples for {query[FIELD_PLATE_BARCODE]}")
 
     return samples_for_barcode
 
@@ -100,14 +103,14 @@ def find_samples(query: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
 # TODO: remove once we are sure that we dont need anything other than positives
 def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
-    samples_for_barcode = find_samples({"plate_barcode": plate_barcode})
+    samples_for_barcode = find_samples({FIELD_PLATE_BARCODE: plate_barcode})
 
     return samples_for_barcode
 
 
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
-    samples_for_barcode = find_samples({"plate_barcode": plate_barcode, "Result": "Positive"})
+    samples_for_barcode = find_samples({FIELD_PLATE_BARCODE: plate_barcode, FIELD_RESULT: "Positive"})
 
     return samples_for_barcode
 
@@ -127,12 +130,12 @@ def confirm_centre(samples: List[Dict[str, str]]) -> str:
     try:
         # check that the 'source' field has a valid name
         for sample in samples:
-            if not sample["source"]:
+            if not sample[FIELD_SOURCE]:
                 raise MissingCentreError(sample)
 
         # create a set from the 'source' field to check we only have 1 unique centre for these
         #   samples
-        centre_set = {sample["source"] for sample in samples}
+        centre_set = {sample[FIELD_SOURCE] for sample in samples}
     except KeyError:
         raise MissingSourceError()
     else:
@@ -145,15 +148,13 @@ def confirm_centre(samples: List[Dict[str, str]]) -> str:
 def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
     logger.debug(f"Creating POST body to send to SS for barcode '{barcode}'")
 
-    phenotype_pattern = re.compile(r"^Result$", re.I)
-    description_pattern = re.compile(r"^Root Sample ID$", re.I)
     wells_content = {}
     for sample in samples:
         for key, value in sample.items():
-            if phenotype_pattern.match(key.strip()):
+            if key.strip() == FIELD_RESULT:
                 phenotype = value
 
-            if description_pattern.match(key.strip()):
+            if key.strip() == FIELD_ROOT_SAMPLE_ID:
                 description = value
 
         assert phenotype is not None
@@ -166,7 +167,7 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
                 "sample_description": description,
             }
         }
-        wells_content[sample["coordinate"]] = well
+        wells_content[sample[FIELD_COORDINATE]] = well
 
     body = {
         "barcode": barcode,
@@ -227,9 +228,9 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         )
         db_connection = sql_engine.connect()
 
-        result = db_connection.execute(stmt, data)
+        results = db_connection.execute(stmt, data)
 
-        rows_matched = result.rowcount
+        rows_matched = results.rowcount
         if rows_matched != len(samples):
             msg = f"""
             Updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids was only partially successful.

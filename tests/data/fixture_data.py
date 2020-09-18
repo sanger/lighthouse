@@ -5,6 +5,9 @@ from lighthouse.constants import (
     FIELD_RNA_ID,
     FIELD_RESULT,
     FIELD_COG_BARCODE,
+    FIELD_COORDINATE,
+    FIELD_SOURCE,
+    FIELD_PLATE_BARCODE,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_RESULT
@@ -67,10 +70,10 @@ MAX_SAMPLES = 1000
 
 LOTS_OF_SAMPLES: List[Dict[str, str]] = [
     {
-        "coordinate": "A01",
-        "source": "test1",
+        FIELD_COORDINATE: "A01",
+        FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
-        "plate_barcode": "123",
+        FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: f"MCM00{i}",
     }
@@ -89,28 +92,28 @@ LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
 # TODO: use constants for field names?
 SAMPLES: List[Dict[str, str]] = [
     {
-        "coordinate": "A01",
-        "source": "test1",
+        FIELD_COORDINATE: "A01",
+        FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
-        "plate_barcode": "123",
+        FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
         FIELD_RNA_ID: "rna_1"
     },
     {
-        "coordinate": "B01",
-        "source": "test1",
+        FIELD_COORDINATE: "B01",
+        FIELD_SOURCE: "test1",
         FIELD_RESULT: "Negative",
-        "plate_barcode": "123",
+        FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_1"
     },
     {
-        "coordinate": "C01",
-        "source": "test1",
+        FIELD_COORDINATE: "C01",
+        FIELD_SOURCE: "test1",
         FIELD_RESULT: "Void",
-        "plate_barcode": "123",
+        FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
         FIELD_RNA_ID: "rna_1"
@@ -119,34 +122,34 @@ SAMPLES: List[Dict[str, str]] = [
 
 SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
     {
-        "coordinate": "A01",
-        "source": "test1",
+        FIELD_COORDINATE: "A01",
+        FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
-        "plate_barcode": "123",
+        FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
     },
     {
-        "coordinate": "B01",
-        "source": "test1",
+        FIELD_COORDINATE: "B01",
+        FIELD_SOURCE: "test1",
         FIELD_RESULT: "Negative",
-        "plate_barcode": "123",
+        FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
     },
     {
-        "coordinate": "C01",
-        "source": "test1",
+        FIELD_COORDINATE: "C01",
+        FIELD_SOURCE: "test1",
         FIELD_RESULT: "Void",
-        "plate_barcode": "123",
+        FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
     },
     {
-        "coordinate": "D01",
-        "source": "test1",
+        FIELD_COORDINATE: "D01",
+        FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
-        "plate_barcode": "123",
+        FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM010",
     },

@@ -191,6 +191,6 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(app, mlwh_lh_samples_multi
 
 def retrieve_samples_cursor(config, sql_engine):
     with sql_engine.connect() as connection:
-        result = connection.execute(f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} from lighthouse_sample")
+        results = connection.execute(f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} from lighthouse_sample")
 
-    return result
+    return results
