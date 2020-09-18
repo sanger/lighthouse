@@ -223,8 +223,8 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             table.c.rna_id == bindparam('b_rna_id'),
             table.c.result == bindparam('b_result')
         )).values(
-                cog_uk_id=bindparam('b_cog_uk_id')
-            )
+            cog_uk_id=bindparam('b_cog_uk_id')
+        )
         db_connection = sql_engine.connect()
 
         result = db_connection.execute(stmt, data)
