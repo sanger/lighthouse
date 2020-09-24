@@ -89,7 +89,6 @@ LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
     for i in range(0, MAX_SAMPLES)
 ]
 
-# TODO: use constants for field names?
 SAMPLES: List[Dict[str, str]] = [
     {
         FIELD_COORDINATE: "A01",
