@@ -2,10 +2,9 @@ import copy
 import os
 import json
 
-import pytest  # type: ignore
+import pytest # type: ignore
 import responses  # type: ignore
 from http import HTTPStatus
-
 
 from lighthouse import create_app
 
@@ -16,7 +15,16 @@ from .data.fixture_data import (
     LOTS_OF_SAMPLES,
     LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
     MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
-    SAMPLES_NO_DECLARATION
+    SAMPLES_NO_DECLARATION,
+    SAMPLES_FOR_MLWH_UPDATE,
+    COG_UK_IDS,
+    MLWH_SEED_SAMPLES,
+    MLWH_SEED_SAMPLES_MULTIPLE
+)
+
+from lighthouse.helpers.mlwh_db import (
+    create_mlwh_connection_engine,
+    get_table
 )
 
 
@@ -159,3 +167,31 @@ def labwhere_samples_error(app, mocked_responses):
     mocked_responses.add(
         responses.POST, labwhere_url, body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR,
     )
+
+@pytest.fixture
+def mlwh_lh_samples(app, sql_engine):
+    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES, sql_engine)
+
+@pytest.fixture
+def mlwh_lh_samples_multiple(app, sql_engine):
+    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE, sql_engine)
+
+def insert_lh_samples_into_mlwh(app, samples, sql_engine):
+    table = get_table(sql_engine, app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE'])
+
+    with sql_engine.begin() as connection:
+        connection.execute(table.delete()) # delete all rows from table first
+        print('Inserting MLWH test data')
+        connection.execute(table.insert(), samples)
+
+@pytest.fixture
+def samples_for_mlwh_update(cog_uk_ids):
+    return SAMPLES_FOR_MLWH_UPDATE
+
+@pytest.fixture
+def cog_uk_ids():
+    return COG_UK_IDS
+
+@pytest.fixture
+def sql_engine(app):
+    return create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])

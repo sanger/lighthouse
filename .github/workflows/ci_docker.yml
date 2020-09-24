@@ -20,6 +20,13 @@ jobs:
         image: mongo:4.2.5
         ports:
           - 27017:27017
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: unified_warehouse_test
     steps:
       - uses: actions/checkout@v2
       - name: Build the Docker image
@@ -33,6 +40,12 @@ jobs:
           --network host
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           mypy .
+      - name: Setup the test MLWH database
+        run: >-
+          docker run
+          --network host
+          docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
+          python setup_test_db.py
       - name: Run tests against the image
         run: >-
           docker run

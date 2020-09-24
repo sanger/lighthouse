@@ -6,7 +6,15 @@ from typing import Any, Dict, List, Optional
 import requests
 from flask import current_app as app
 
-from lighthouse.constants import FIELD_COG_BARCODE
+from lighthouse.constants import (
+    FIELD_COG_BARCODE,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_RNA_ID,
+    FIELD_RESULT,
+    FIELD_COORDINATE,
+    FIELD_SOURCE,
+    FIELD_PLATE_BARCODE
+)
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -14,12 +22,23 @@ from lighthouse.exceptions import (
     MultipleCentresError,
 )
 
+from lighthouse.helpers.mlwh_db import (
+    create_mlwh_connection_engine,
+    get_table
+)
+
+from sqlalchemy.sql.expression import bindparam # type: ignore
+from sqlalchemy.sql.expression import and_ # type: ignore
+
 logger = logging.getLogger(__name__)
+
+class UnmatchedSampleError(Exception):
+    pass
 
 
 def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
 
-    centre_name = confirm_cente(samples)
+    centre_name = confirm_centre(samples)
     centre_prefix = get_centre_prefix(centre_name)
     num_samples = len(samples)
 
@@ -76,7 +95,7 @@ def find_samples(query: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
 
     samples_for_barcode = list(samples.find(query))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples for {query['plate_barcode']}")
+    logger.info(f"Found {len(samples_for_barcode)} samples for {query[FIELD_PLATE_BARCODE]}")
 
     return samples_for_barcode
 
@@ -84,19 +103,19 @@ def find_samples(query: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
 # TODO: remove once we are sure that we dont need anything other than positives
 def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
-    samples_for_barcode = find_samples({"plate_barcode": plate_barcode})
+    samples_for_barcode = find_samples({FIELD_PLATE_BARCODE: plate_barcode})
 
     return samples_for_barcode
 
 
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
-    samples_for_barcode = find_samples({"plate_barcode": plate_barcode, "Result": "Positive"})
+    samples_for_barcode = find_samples({FIELD_PLATE_BARCODE: plate_barcode, FIELD_RESULT: "Positive"})
 
     return samples_for_barcode
 
 
-def confirm_cente(samples: List[Dict[str, str]]) -> str:
+def confirm_centre(samples: List[Dict[str, str]]) -> str:
     """Confirm that the centre for all the samples is populated and the same and return the centre
     name
 
@@ -106,17 +125,17 @@ def confirm_cente(samples: List[Dict[str, str]]) -> str:
     Returns:
         str -- the name of the centre for these samples
     """
-    logger.debug("confirm_cente()")
+    logger.debug("confirm_centre()")
 
     try:
         # check that the 'source' field has a valid name
         for sample in samples:
-            if not sample["source"]:
+            if not sample[FIELD_SOURCE]:
                 raise MissingCentreError(sample)
 
         # create a set from the 'source' field to check we only have 1 unique centre for these
         #   samples
-        centre_set = {sample["source"] for sample in samples}
+        centre_set = {sample[FIELD_SOURCE] for sample in samples}
     except KeyError:
         raise MissingSourceError()
     else:
@@ -129,15 +148,13 @@ def confirm_cente(samples: List[Dict[str, str]]) -> str:
 def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
     logger.debug(f"Creating POST body to send to SS for barcode '{barcode}'")
 
-    phenotype_pattern = re.compile(r"^Result$", re.I)
-    description_pattern = re.compile(r"^Root Sample ID$", re.I)
     wells_content = {}
     for sample in samples:
         for key, value in sample.items():
-            if phenotype_pattern.match(key.strip()):
+            if key.strip() == FIELD_RESULT:
                 phenotype = value
 
-            if description_pattern.match(key.strip()):
+            if key.strip() == FIELD_ROOT_SAMPLE_ID:
                 description = value
 
         assert phenotype is not None
@@ -150,7 +167,7 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
                 "sample_description": description,
             }
         }
-        wells_content[sample["coordinate"]] = well
+        wells_content[sample[FIELD_COORDINATE]] = well
 
     body = {
         "barcode": barcode,
@@ -176,3 +193,58 @@ def send_to_ss(body: Dict[str, Any]) -> requests.Response:
         raise requests.ConnectionError("Unable to access SS")
 
     return response
+
+def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
+    """Update the MLWH to write the COG UK barcode for each sample.
+
+    Arguments:
+        samples {List[Dict[str, str]]} -- list of samples to be updated
+    """
+    if len(samples) == 0:
+        return None
+
+    # assign db_connection to avoid UnboundLocalError in 'finally' block, in case of exception
+    db_connection = None
+    try:
+        data = []
+        for sample in samples:
+            # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
+            data.append({
+                'b_root_sample_id': sample[FIELD_ROOT_SAMPLE_ID],
+                'b_rna_id':         sample[FIELD_RNA_ID],
+                'b_result':         sample[FIELD_RESULT],
+                'b_cog_uk_id':      sample[FIELD_COG_BARCODE]
+            })
+
+        sql_engine = create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])
+        table = get_table(sql_engine, app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE'])
+
+        stmt = table.update().where(and_(
+            table.c.root_sample_id == bindparam('b_root_sample_id'),
+            table.c.rna_id == bindparam('b_rna_id'),
+            table.c.result == bindparam('b_result')
+        )).values(
+            cog_uk_id=bindparam('b_cog_uk_id')
+        )
+        db_connection = sql_engine.connect()
+
+        results = db_connection.execute(stmt, data)
+
+        rows_matched = results.rowcount
+        if rows_matched != len(samples):
+            msg = f"""
+            Updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids was only partially successful.
+            Only {rows_matched} of the {len(samples)} samples had matches in the MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table.
+            """
+            logger.error(msg)
+            raise UnmatchedSampleError(msg)
+    except (Exception) as e:
+        msg = f"""
+        Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids.
+        {type(e).__name__}: {str(e)}
+        """
+        logger.error(msg)
+        raise
+    finally:
+        if db_connection is not None:
+            db_connection.close()

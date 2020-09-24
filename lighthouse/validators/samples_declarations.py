@@ -1,8 +1,13 @@
 from flask import current_app as app
 from eve.io.mongo import Validator  # type: ignore
 from eve.methods.post import post_internal  # type: ignore
-from lighthouse.constants import DUPLICATE_SAMPLES, NON_EXISTING_SAMPLE
+from lighthouse.constants import (
+    DUPLICATE_SAMPLES,
+    NON_EXISTING_SAMPLE,
+    FIELD_ROOT_SAMPLE_ID
+)
 from collections import Counter
+
 
 # fail in validator -> returns correct response
 
@@ -48,10 +53,10 @@ def find_duplicates(sample_ids):
 # https://stackoverflow.com/questions/3462143/get-difference-between-two-lists
 def find_non_exist_samples(sample_ids):
     cursor = app.data.driver.db.samples.find(
-        {"Root Sample ID": {"$in": sample_ids}}, {"Root Sample ID": 1}
+        {FIELD_ROOT_SAMPLE_ID: {"$in": sample_ids}}, {FIELD_ROOT_SAMPLE_ID: 1}
     )
 
-    existing_sample_ids = [val["Root Sample ID"] for val in cursor]
+    existing_sample_ids = [val[FIELD_ROOT_SAMPLE_ID] for val in cursor]
     return list(set(sample_ids) - set(existing_sample_ids))
 
 

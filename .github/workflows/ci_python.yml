@@ -13,6 +13,13 @@ jobs:
         image: mongo:4.2.5
         ports:
           - 27017:27017
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: unified_warehouse_test
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -41,6 +48,9 @@ jobs:
       - name: Run mypy
         run: |
           mypy .
+      - name: Setup the test MLWH database
+        run: |
+          python setup_test_db.py
       - name: Test with pytest
         run: |
           python -m pytest -vsx
