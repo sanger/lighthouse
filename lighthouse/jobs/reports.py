@@ -15,6 +15,9 @@ from lighthouse.helpers.reports import (
     join_samples_declarations
 )
 from lighthouse.utils import pretty
+from lighthouse.constants import (
+    FIELD_PLATE_BARCODE
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +41,7 @@ def create_report() -> str:
 
     logger.debug("Joining location data from labwhere")
     merged = positive_samples_df.merge(
-        labware_to_location_barcode_df, how="left", on="plate_barcode"
+        labware_to_location_barcode_df, how="left", on=FIELD_PLATE_BARCODE
     )
 
     merged = join_samples_declarations(merged)
