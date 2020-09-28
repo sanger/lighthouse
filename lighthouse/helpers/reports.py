@@ -151,7 +151,7 @@ def map_labware_to_location(labware_barcodes):
     response = get_locations_from_labwhere(labware_barcodes)
 
     if response.status_code != HTTPStatus.OK:
-        raise ReportCreationError(f"Response from LabWhere is not OK with status code: {response.status_code}")
+        raise ReportCreationError(f"Response from LabWhere is not OK with status code: {response.status_code} {response.request.body}")
 
     # create a plate_barcode to location_barcode mapping to join with samples
     # return none for samples where location barcode is not present
@@ -175,6 +175,7 @@ def get_locations_from_labwhere(labware_barcodes):
     Example record from labwhere:
     { 'barcode': 'GLA001024R', 'location_barcode': 'lw-uk-biocentre-box-gsw--98-14813'}
     """
+
     return requests.post(
         f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode",
         json={"barcodes": labware_barcodes},
