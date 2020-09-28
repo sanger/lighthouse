@@ -151,7 +151,7 @@ def map_labware_to_location(labware_barcodes):
     response = get_locations_from_labwhere(labware_barcodes)
 
     if response.status_code != HTTPStatus.OK:
-        raise ReportCreationError("Response from LabWhere is not OK")
+        raise ReportCreationError(f"Response from LabWhere is not OK with status code: {response.status_code} with {response.json()}")
 
     # create a plate_barcode to location_barcode mapping to join with samples
     # return none for samples where location barcode is not present
