@@ -23,6 +23,15 @@ from lighthouse.utils import pretty
 
 from flask import current_app as app
 
+from lighthouse.constants import (
+    FIELD_SOURCE,
+    FIELD_PLATE_BARCODE,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_RESULT,
+    FIELD_DATE_TESTED,
+    FIELD_COORDINATE
+)
+
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
 
@@ -148,7 +157,7 @@ def map_labware_to_location(labware_barcodes):
     # return none for samples where location barcode is not present
     labware_to_location_barcode = [
         {
-            "plate_barcode": record["barcode"],
+            FIELD_PLATE_BARCODE: record["barcode"],
             "location_barcode": str(record["location_barcode"] or ""),
         }
         for record in response.json()
@@ -183,7 +192,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
     events_wh_db = app.config["EVENTS_WH_DB"]
 
     sql = (
-        "select mlwh_sample.description as `Root Sample ID`"
+        f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
         f" FROM {app.config['ML_WH_DB']}.sample as mlwh_sample"
         f" JOIN {app.config['ML_WH_DB']}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
         f" JOIN {app.config['EVENTS_WH_DB']}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
@@ -215,15 +224,15 @@ def get_all_positive_samples(samples):
     logger.debug("Getting all positive samples")
     # filtering using case insensitive regex to catch "Positive" and "positive"
     results = samples.find(
-        filter={"Result": {"$regex": "^positive", "$options": "i"}},
+        filter={FIELD_RESULT: {"$regex": "^positive", "$options": "i"}},
         projection={
             "_id": False,
-            "source": True,
-            "plate_barcode": True,
-            "Root Sample ID": True,
-            "Result": True,
-            "Date Tested": True,
-            "coordinate": True,
+            FIELD_SOURCE: True,
+            FIELD_PLATE_BARCODE: True,
+            FIELD_ROOT_SAMPLE_ID: True,
+            FIELD_RESULT: True,
+            FIELD_DATE_TESTED: True,
+            FIELD_COORDINATE: True,
         },
     )
 
@@ -233,28 +242,27 @@ def get_all_positive_samples(samples):
     pretty(logger, positive_samples_df)
 
     # strip zeros out of the well coordinates
-    positive_samples_df["coordinate"] = positive_samples_df["coordinate"].map(
+    positive_samples_df[FIELD_COORDINATE] = positive_samples_df[FIELD_COORDINATE].map(
         lambda coord: unpad_coordinate(coord)
     )
 
     # create 'plate and well' column for copy-pasting into Sequencescape submission, e.g. DN1234:A1
     positive_samples_df["plate and well"] = (
-        positive_samples_df["plate_barcode"] + ":" + positive_samples_df["coordinate"]
+        positive_samples_df[FIELD_PLATE_BARCODE] + ":" + positive_samples_df[FIELD_COORDINATE]
     )
 
     return positive_samples_df
 
 
 def add_cherrypicked_column(existing_dataframe):
-
-    root_sample_ids = existing_dataframe["Root Sample ID"].to_list()
+    root_sample_ids = existing_dataframe[FIELD_ROOT_SAMPLE_ID].to_list()
     plate_barcodes = existing_dataframe["plate_barcode"].unique()
 
     cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids, plate_barcodes)
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
     existing_dataframe = existing_dataframe.merge(
-        cherrypicked_samples_df, how="left", on="Root Sample ID"
+        cherrypicked_samples_df, how="left", on=FIELD_ROOT_SAMPLE_ID
     )
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 
@@ -268,7 +276,7 @@ def get_distinct_plate_barcodes(samples):
     #   is empty so ignore those
     # TODO: abstract into new method
     distinct_plate_barcodes = samples.distinct(
-        "plate_barcode", {"plate_barcode": {"$nin": ["", None]}}
+        FIELD_PLATE_BARCODE, {FIELD_PLATE_BARCODE: {"$nin": ["", None]}}
     )
     logger.info(f"{len(distinct_plate_barcodes)} distinct barcodes")
 
@@ -288,7 +296,7 @@ def join_samples_declarations(positive_samples):
             {
                 "$group": {
                     "_id": "$root_sample_id",
-                    "Root Sample ID": {"$first": "$root_sample_id"},
+                    FIELD_ROOT_SAMPLE_ID: {"$first": "$root_sample_id"},
                     "Value In Sequencing": {"$first": "$value_in_sequencing"},
                     "Declared At": {
                         "$first": {
@@ -306,11 +314,11 @@ def join_samples_declarations(positive_samples):
     if len(declarations_records) > 0:
         logger.debug("Joining declarations")
         declarations_frame = pd.DataFrame.from_records(declarations_records)
-        result = positive_samples.merge(declarations_frame, how="left", on="Root Sample ID")
+        results = positive_samples.merge(declarations_frame, how="left", on=FIELD_ROOT_SAMPLE_ID)
 
         # Give a default value of Unknown to any entry that does not have a
         # sample declaration
-        result = result.fillna({"Value In Sequencing": "Unknown"})
-        return result
+        results = results.fillna({"Value In Sequencing": "Unknown"})
+        return results
 
     return positive_samples
