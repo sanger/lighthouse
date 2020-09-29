@@ -29,7 +29,11 @@ from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_RESULT,
     FIELD_DATE_TESTED,
-    FIELD_COORDINATE
+    FIELD_COORDINATE,
+    FIELD_CQ_1,
+    FIELD_CQ_2,
+    FIELD_CQ_3,
+    CT_LOWER_LIMIT
 )
 
 logger = logging.getLogger(__name__)
@@ -224,7 +228,14 @@ def get_all_positive_samples(samples):
     logger.debug("Getting all positive samples")
     # filtering using case insensitive regex to catch "Positive" and "positive"
     results = samples.find(
-        filter={FIELD_RESULT: {"$regex": "^positive", "$options": "i"}},
+        filter={
+            "$and": [
+                { FIELD_RESULT: { "$regex": "^positive", "$options": "i" } },
+                { "$or": [ { FIELD_CQ_1: None }, { FIELD_CQ_1: {"$gte": CT_LOWER_LIMIT} } ] },
+                { "$or": [ { FIELD_CQ_2: None }, { FIELD_CQ_2: {"$gte": CT_LOWER_LIMIT} } ] },
+                { "$or": [ { FIELD_CQ_3: None }, { FIELD_CQ_3: {"$gte": CT_LOWER_LIMIT} } ] }
+            ]
+        },
         projection={
             "_id": False,
             FIELD_SOURCE: True,
