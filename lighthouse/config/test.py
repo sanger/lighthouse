@@ -23,5 +23,4 @@ MLWH_CONN_STRING = "root@localhost"
 ML_WH_DB = "unified_warehouse_test"
 
 MLWH_RW_CONN_STRING = "root:root@localhost"
-#MLWH_RW_CONN_STRING = "lighthouse:lighthouse@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
