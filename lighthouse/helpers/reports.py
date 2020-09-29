@@ -158,7 +158,7 @@ def map_labware_to_location(labware_barcodes):
     labware_to_location_barcode = [
         {
             FIELD_PLATE_BARCODE: record["barcode"],
-            "location_barcode": record["location"].get("barcode", ""),
+            "location_barcode": str(record["location_barcode"] or ""),
         }
         for record in response.json()
     ]
@@ -173,31 +173,13 @@ def map_labware_to_location(labware_barcodes):
 def get_locations_from_labwhere(labware_barcodes):
     """
     Example record from labwhere:
-    {'audits': '/api/labwares/GLA001024R/audits',
-    'barcode': 'GLA001024R',
-    'created_at': 'Tuesday May 26 2020 16:13',
-    'location': {'audits': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/audits',
-                'barcode': 'lw-uk-biocentre-box-gsw--98-14813',
-                'children': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/children',
-                'columns': 0,
-                'container': True,
-                'created_at': 'Thursday May  7 2020 11:29',
-                'id': 14813,
-                'labwares': '/api/locations/lw-uk-biocentre-box-gsw--98-14813/labwares',
-                'location_type_id': 7,
-                'name': 'UK Biocentre box GSW  98',
-                'parent': '/api/locations/lw-glasgow-barcodes-14715',
-                'parentage': 'Sanger / Ogilvie / Glasgow Barcodes',
-                'rows': 0,
-                'status': 'active',
-                'updated_at': 'Thursday May  7 2020 11:29'},
-    'updated_at': 'Tuesday May 26 2020 16:13'}
+    { 'barcode': 'GLA001024R', 'location_barcode': 'lw-uk-biocentre-box-gsw--98-14813'}
     """
+
     return requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/labwares/searches",
+        f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode",
         json={"barcodes": labware_barcodes},
     )
-
 
 def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
