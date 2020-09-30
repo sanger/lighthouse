@@ -30,9 +30,6 @@ from lighthouse.constants import (
     FIELD_RESULT,
     FIELD_DATE_TESTED,
     FIELD_COORDINATE,
-    FIELD_CQ_1,
-    FIELD_CQ_2,
-    FIELD_CQ_3,
     CT_VALUE_LIMIT,
     POSITIVE_SAMPLES_MONGODB_FILTER
 )

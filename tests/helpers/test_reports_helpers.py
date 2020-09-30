@@ -24,7 +24,7 @@ from lighthouse.constants import (
     FIELD_RESULT,
     FIELD_PLATE_BARCODE,
     FIELD_SOURCE,
-    FIELD_CQ_1,
+    FIELD_CH1_CQ,
     CT_VALUE_LIMIT
 )
 
@@ -116,7 +116,7 @@ def test_query_by_ct_limit(app, freezer, samples_ct_values):
     # Just testing how mongo queries work with 'less than' comparisons and nulls
     with app.app_context():
         samples = app.data.driver.db.samples
-        ct_less_than_limit = samples.count_documents( { FIELD_CQ_1: {"$lte": CT_VALUE_LIMIT} } )
+        ct_less_than_limit = samples.count_documents( { FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT} } )
 
         assert ct_less_than_limit == 1 # 'MCM003'
 

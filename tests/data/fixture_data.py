@@ -8,9 +8,9 @@ from lighthouse.constants import (
     FIELD_COORDINATE,
     FIELD_SOURCE,
     FIELD_PLATE_BARCODE,
-    FIELD_CQ_1,
-    FIELD_CQ_2,
-    FIELD_CQ_3,
+    FIELD_CH1_CQ,
+    FIELD_CH2_CQ,
+    FIELD_CH3_CQ,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_RESULT
@@ -137,9 +137,9 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "nop",
         FIELD_ROOT_SAMPLE_ID: "MCM005",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CQ_1: 5,
-        FIELD_CQ_2: 6,
-        FIELD_CQ_3: 7
+        FIELD_CH1_CQ: 5,
+        FIELD_CH2_CQ: 6,
+        FIELD_CH3_CQ: 7
     },
     { # positive, with high Ct values
         FIELD_COORDINATE: "F01",
@@ -149,9 +149,9 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "qrs",
         FIELD_ROOT_SAMPLE_ID: "MCM006",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CQ_1: 40,
-        FIELD_CQ_2: 41,
-        FIELD_CQ_3: 42
+        FIELD_CH1_CQ: 40,
+        FIELD_CH2_CQ: 41,
+        FIELD_CH3_CQ: 42
     },
     { # positive, with mix of Ct values
         FIELD_COORDINATE: "G01",
@@ -161,9 +161,9 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "tuv",
         FIELD_ROOT_SAMPLE_ID: "MCM007",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CQ_1: 5,
-        FIELD_CQ_2: None,
-        FIELD_CQ_3: 45
+        FIELD_CH1_CQ: 5,
+        FIELD_CH2_CQ: None,
+        FIELD_CH3_CQ: 45
     }
 ]
 
@@ -185,7 +185,7 @@ SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CQ_1: None
+        FIELD_CH1_CQ: None
     },
     { # Ct is less than limit
         FIELD_COORDINATE: "C01",
@@ -195,7 +195,7 @@ SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "ghi",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CQ_1: 5
+        FIELD_CH1_CQ: 5
     },
     { # Ct is greater than limit
         FIELD_COORDINATE: "C01",
@@ -205,7 +205,7 @@ SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "jkl",
         FIELD_ROOT_SAMPLE_ID: "MCM004",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CQ_1: 45
+        FIELD_CH1_CQ: 45
     }
 ]
 

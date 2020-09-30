@@ -10,9 +10,9 @@ FIELD_SOURCE = "source"
 FIELD_PLATE_BARCODE = "plate_barcode"
 FIELD_COG_BARCODE = "cog_barcode"
 FIELD_DATE_TESTED = "Date Tested"
-FIELD_CQ_1 = "ch1_cq"
-FIELD_CQ_2 = "ch2_cq"
-FIELD_CQ_3 = "ch3_cq"
+FIELD_CH1_CQ = "ch1_cq"
+FIELD_CH2_CQ = "ch2_cq"
+FIELD_CH3_CQ = "ch3_cq"
 
 # MLWH lighthouse samples table field names
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID ="root_sample_id"
@@ -29,16 +29,16 @@ POSITIVE_SAMPLES_MONGODB_FILTER = {
   "$or": [
     {
       "$and": [
-          { FIELD_CQ_1: None },
-          { FIELD_CQ_2: None },
-          { FIELD_CQ_3: None }
+          { FIELD_CH1_CQ: None },
+          { FIELD_CH2_CQ: None },
+          { FIELD_CH3_CQ: None }
       ]
     },
     {
       "$or": [
-          { FIELD_CQ_1: {"$lte": CT_VALUE_LIMIT} },
-          { FIELD_CQ_2: {"$lte": CT_VALUE_LIMIT} },
-          { FIELD_CQ_3: {"$lte": CT_VALUE_LIMIT} }
+          { FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT} },
+          { FIELD_CH2_CQ: {"$lte": CT_VALUE_LIMIT} },
+          { FIELD_CH3_CQ: {"$lte": CT_VALUE_LIMIT} }
       ]
     }
   ]
