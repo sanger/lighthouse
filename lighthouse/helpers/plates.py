@@ -79,7 +79,7 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
 
         prefix = centre["prefix"]
 
-        logger.debug(f"Prefix for '{centre_name}' is '{prefix}")
+        logger.debug(f"Prefix for '{centre_name}' is '{prefix}'")
 
         return prefix
     except Exception as e:

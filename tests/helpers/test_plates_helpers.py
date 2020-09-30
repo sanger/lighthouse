@@ -30,12 +30,12 @@ from lighthouse.helpers.plates import (
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
     with app.app_context():
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TS1/new?count=3"
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TS1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -93,6 +93,34 @@ def test_create_post_body(app, samples):
                                 "sample_description": "MCM003",
                             }
                         },
+                        "D01": {
+                            "content": {
+                                "phenotype": "limit of detection",
+                                "supplier_name": "klm",
+                                "sample_description": "MCM004",
+                            }
+                        },
+                        "E01": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "nop",
+                                "sample_description": "MCM005",
+                            }
+                        },
+                        "F01": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "qrs",
+                                "sample_description": "MCM006",
+                            }
+                        },
+                        "G01": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "tuv",
+                                "sample_description": "MCM007",
+                            }
+                        }
                     },
                 },
             }
@@ -102,11 +130,11 @@ def test_create_post_body(app, samples):
 
 def test_get_samples(app, samples):
     with app.app_context():
-        assert len(get_samples("123")) == 3
+        assert len(get_samples("123")) == 7
 
 def test_get_positive_samples(app, samples):
     with app.app_context():
-        assert len(get_positive_samples("123")) == 1
+        assert len(get_positive_samples("123")) == 4
 
 def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids, sql_engine):
     with app.app_context():
