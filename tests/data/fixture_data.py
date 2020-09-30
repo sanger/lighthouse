@@ -167,6 +167,27 @@ SAMPLES: List[Dict[str, Any]] = [
     }
 ]
 
+SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
+    {
+        FIELD_COORDINATE: "A01",
+        FIELD_SOURCE: "test1",
+        FIELD_RESULT: "Positive",
+        FIELD_PLATE_BARCODE: "123",
+        FIELD_COG_BARCODE: "abc",
+        FIELD_ROOT_SAMPLE_ID: "MCM001",
+        FIELD_RNA_ID: "rna_1"
+    },
+    {
+        FIELD_COORDINATE: "A01",
+        FIELD_SOURCE: "test1",
+        FIELD_RESULT: "Positive",
+        FIELD_PLATE_BARCODE: "456",
+        FIELD_COG_BARCODE: "def",
+        FIELD_ROOT_SAMPLE_ID: "MCM002",
+        FIELD_RNA_ID: "rna_2"
+    }
+]
+
 SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
     { # Ct is missing
         FIELD_COORDINATE: "A01",

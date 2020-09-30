@@ -136,6 +136,10 @@ def test_get_positive_samples(app, samples):
     with app.app_context():
         assert len(get_positive_samples("123")) == 3
 
+def test_get_positive_samples_different_plates(app, samples_different_plates):
+    with app.app_context():
+        assert len(get_positive_samples("123")) == 1
+
 def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids, sql_engine):
     with app.app_context():
         # check that the samples already exist in the MLWH db but do not have cog uk ids
