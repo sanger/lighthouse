@@ -35,7 +35,7 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -120,6 +120,13 @@ def test_create_post_body(app, samples):
                                 "supplier_name": "tuv",
                                 "sample_description": "MCM007",
                             }
+                        },
+                        "A02": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "wxy",
+                                "sample_description": "CBIQA_MCM008",
+                            }
                         }
                     },
                 },
@@ -130,7 +137,7 @@ def test_create_post_body(app, samples):
 
 def test_get_samples(app, samples):
     with app.app_context():
-        assert len(get_samples("123")) == 7
+        assert len(get_samples("123")) == 8
 
 def test_get_positive_samples(app, samples):
     with app.app_context():

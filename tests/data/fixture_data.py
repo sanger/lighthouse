@@ -164,6 +164,15 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: None,
         FIELD_CH3_CQ: 45.12345678
+    },
+    { # positive, with disallowed Root Sample ID
+        FIELD_COORDINATE: "A02",
+        FIELD_SOURCE: "test1",
+        FIELD_RESULT: "Positive",
+        FIELD_PLATE_BARCODE: "123",
+        FIELD_COG_BARCODE: "wxy",
+        FIELD_ROOT_SAMPLE_ID: "CBIQA_MCM008",
+        FIELD_RNA_ID: "rna_1"
     }
 ]
 

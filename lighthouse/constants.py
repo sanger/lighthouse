@@ -1,3 +1,5 @@
+import re
+
 DUPLICATE_SAMPLES = "DuplicateSamples"
 NON_EXISTING_SAMPLE = "NonExistingSample"
 
@@ -25,6 +27,9 @@ CT_VALUE_LIMIT = 30
 POSITIVE_SAMPLES_MONGODB_FILTER = {
   FIELD_RESULT: {
     "$regex": "^positive", "$options": "i"
+  },
+  FIELD_ROOT_SAMPLE_ID: {
+    "$not": re.compile("^CBIQA_")
   },
   "$or": [
     {
