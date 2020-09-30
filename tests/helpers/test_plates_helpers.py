@@ -134,7 +134,7 @@ def test_get_samples(app, samples):
 
 def test_get_positive_samples(app, samples):
     with app.app_context():
-        assert len(get_positive_samples("123")) == 4
+        assert len(get_positive_samples("123")) == 3
 
 def test_update_mlwh_with_cog_uk_ids(app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids, sql_engine):
     with app.app_context():

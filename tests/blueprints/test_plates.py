@@ -20,7 +20,7 @@ def test_post_plates_endpoint_successful(app, client, samples, mocked_responses,
         )
         assert response.status_code == HTTPStatus.OK
         assert response.json == {
-            "data": {"plate_barcode": "123", "centre": "TS1", "number_of_positives": 4}
+            "data": {"plate_barcode": "123", "centre": "TS1", "number_of_positives": 3}
         }
 
 
@@ -41,7 +41,7 @@ def test_post_plates_endpoint_no_positive_samples(app, client):
 def test_post_plates_endpoint_add_cog_barcodes_failed(
     app, client, samples, centres, mocked_responses
 ):
-    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TS1/new?count=4"
+    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TS1/new?count=3"
 
     mocked_responses.add(
         responses.POST, baracoda_url, status=HTTPStatus.BAD_REQUEST,
