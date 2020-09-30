@@ -10,9 +10,9 @@ FIELD_SOURCE = "source"
 FIELD_PLATE_BARCODE = "plate_barcode"
 FIELD_COG_BARCODE = "cog_barcode"
 FIELD_DATE_TESTED = "Date Tested"
-FIELD_CQ_1 = "CH1-Cq"
-FIELD_CQ_2 = "CH2-Cq"
-FIELD_CQ_3 = "CH3-Cq"
+FIELD_CQ_1 = "ch1_cq"
+FIELD_CQ_2 = "ch2_cq"
+FIELD_CQ_3 = "ch3_cq"
 
 # MLWH lighthouse samples table field names
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID ="root_sample_id"
@@ -20,4 +20,4 @@ MLWH_LH_SAMPLE_COG_UK_ID = "cog_uk_id"
 MLWH_LH_SAMPLE_RNA_ID = "rna_id"
 MLWH_LH_SAMPLE_RESULT = "result"
 
-CT_LOWER_LIMIT = 30
+CT_VALUE_LIMIT = 30

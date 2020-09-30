@@ -33,7 +33,7 @@ from lighthouse.constants import (
     FIELD_CQ_1,
     FIELD_CQ_2,
     FIELD_CQ_3,
-    CT_LOWER_LIMIT
+    CT_VALUE_LIMIT
 )
 
 logger = logging.getLogger(__name__)
@@ -230,10 +230,27 @@ def get_all_positive_samples(samples):
     results = samples.find(
         filter={
             "$and": [
-                { FIELD_RESULT: { "$regex": "^positive", "$options": "i" } },
-                { "$or": [ { FIELD_CQ_1: None }, { FIELD_CQ_1: {"$gte": CT_LOWER_LIMIT} } ] },
-                { "$or": [ { FIELD_CQ_2: None }, { FIELD_CQ_2: {"$gte": CT_LOWER_LIMIT} } ] },
-                { "$or": [ { FIELD_CQ_3: None }, { FIELD_CQ_3: {"$gte": CT_LOWER_LIMIT} } ] }
+                {
+                    FIELD_RESULT: { "$regex": "^positive", "$options": "i" }
+                },
+                {
+                    "$or": [
+                        {
+                            "$and": [
+                                { FIELD_CQ_1: None },
+                                { FIELD_CQ_2: None },
+                                { FIELD_CQ_3: None }
+                            ]
+                        },
+                        {
+                            "$or": [
+                                { FIELD_CQ_1: {"$lte": CT_VALUE_LIMIT} },
+                                { FIELD_CQ_2: {"$lte": CT_VALUE_LIMIT} },
+                                { FIELD_CQ_3: {"$lte": CT_VALUE_LIMIT} }
+                            ]
+                        }
+                    ]
+                },
             ]
         },
         projection={
