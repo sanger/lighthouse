@@ -92,7 +92,7 @@ LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
     for i in range(0, MAX_SAMPLES)
 ]
 
-SAMPLES: List[Dict[str, str]] = [
+SAMPLES: List[Dict[str, Any]] = [
     { # a positive result, no Ct values
         FIELD_COORDINATE: "A01",
         FIELD_SOURCE: "test1",
@@ -167,7 +167,7 @@ SAMPLES: List[Dict[str, str]] = [
     }
 ]
 
-SAMPLES_CT_VALUES: List[Dict[str, str]] = [
+SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
     { # Ct is missing
         FIELD_COORDINATE: "A01",
         FIELD_SOURCE: "test1",
