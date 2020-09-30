@@ -277,6 +277,21 @@ MLWH_SEED_SAMPLES: List[Dict[str, str]] = [
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM001',
         MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
         MLWH_LH_SAMPLE_RESULT: 'Positive'
+    },
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM005',
+        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+        MLWH_LH_SAMPLE_RESULT: 'Positive'
+    },
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM006',
+        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+        MLWH_LH_SAMPLE_RESULT: 'Positive'
+    },
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM007',
+        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
+        MLWH_LH_SAMPLE_RESULT: 'Positive'
     }
 ]
 
