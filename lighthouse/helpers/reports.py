@@ -33,7 +33,8 @@ from lighthouse.constants import (
     FIELD_CQ_1,
     FIELD_CQ_2,
     FIELD_CQ_3,
-    CT_VALUE_LIMIT
+    CT_VALUE_LIMIT,
+    POSITIVE_SAMPLES_MONGODB_FILTER
 )
 
 logger = logging.getLogger(__name__)
@@ -228,32 +229,8 @@ def get_all_positive_samples(samples):
     logger.debug("Getting all positive samples")
     # filtering using case insensitive regex to catch "Positive" and "positive"
     results = samples.find(
-        filter={
-            "$and": [
-                {
-                    FIELD_RESULT: { "$regex": "^positive", "$options": "i" }
-                },
-                {
-                    "$or": [
-                        {
-                            "$and": [
-                                { FIELD_CQ_1: None },
-                                { FIELD_CQ_2: None },
-                                { FIELD_CQ_3: None }
-                            ]
-                        },
-                        {
-                            "$or": [
-                                { FIELD_CQ_1: {"$lte": CT_VALUE_LIMIT} },
-                                { FIELD_CQ_2: {"$lte": CT_VALUE_LIMIT} },
-                                { FIELD_CQ_3: {"$lte": CT_VALUE_LIMIT} }
-                            ]
-                        }
-                    ]
-                },
-            ]
-        },
-        projection={
+        filter = POSITIVE_SAMPLES_MONGODB_FILTER,
+        projection = {
             "_id": False,
             FIELD_SOURCE: True,
             FIELD_PLATE_BARCODE: True,

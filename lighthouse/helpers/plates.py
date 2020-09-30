@@ -13,7 +13,8 @@ from lighthouse.constants import (
     FIELD_RESULT,
     FIELD_COORDINATE,
     FIELD_SOURCE,
-    FIELD_PLATE_BARCODE
+    FIELD_PLATE_BARCODE,
+    POSITIVE_SAMPLES_MONGODB_FILTER
 )
 from lighthouse.exceptions import (
     DataError,
@@ -109,8 +110,9 @@ def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
 
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
+    merged_filter = { **{ FIELD_PLATE_BARCODE: plate_barcode }, **POSITIVE_SAMPLES_MONGODB_FILTER }
 
-    samples_for_barcode = find_samples({FIELD_PLATE_BARCODE: plate_barcode, FIELD_RESULT: "Positive"})
+    samples_for_barcode = find_samples(merged_filter)
 
     return samples_for_barcode
 

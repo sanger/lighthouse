@@ -21,3 +21,25 @@ MLWH_LH_SAMPLE_RNA_ID = "rna_id"
 MLWH_LH_SAMPLE_RESULT = "result"
 
 CT_VALUE_LIMIT = 30
+
+POSITIVE_SAMPLES_MONGODB_FILTER = {
+  FIELD_RESULT: {
+    "$regex": "^positive", "$options": "i"
+  },
+  "$or": [
+    {
+      "$and": [
+          { FIELD_CQ_1: None },
+          { FIELD_CQ_2: None },
+          { FIELD_CQ_3: None }
+      ]
+    },
+    {
+      "$or": [
+          { FIELD_CQ_1: {"$lte": CT_VALUE_LIMIT} },
+          { FIELD_CQ_2: {"$lte": CT_VALUE_LIMIT} },
+          { FIELD_CQ_3: {"$lte": CT_VALUE_LIMIT} }
+      ]
+    }
+  ]
+}
