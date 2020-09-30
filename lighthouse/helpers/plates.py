@@ -2,6 +2,7 @@ import logging
 import re
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
+import copy
 
 import requests
 from flask import current_app as app
@@ -91,7 +92,7 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
         raise DataError("Multiple centres with the same name")
 
 
-def find_samples(query: Dict[str, str]) -> Optional[List[Dict[str, Any]]]:
+def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     samples = app.data.driver.db.samples
 
     samples_for_barcode = list(samples.find(query))
@@ -110,9 +111,10 @@ def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
 
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
-    merged_filter = { **{ FIELD_PLATE_BARCODE: plate_barcode }, **POSITIVE_SAMPLES_MONGODB_FILTER }
+    query_filter = copy.deepcopy(POSITIVE_SAMPLES_MONGODB_FILTER)
+    query_filter[FIELD_PLATE_BARCODE] = plate_barcode
 
-    samples_for_barcode = find_samples(merged_filter)
+    samples_for_barcode = find_samples(query_filter)
 
     return samples_for_barcode
 
