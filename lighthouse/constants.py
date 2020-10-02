@@ -12,9 +12,9 @@ FIELD_SOURCE = "source"
 FIELD_PLATE_BARCODE = "plate_barcode"
 FIELD_COG_BARCODE = "cog_barcode"
 FIELD_DATE_TESTED = "Date Tested"
-FIELD_CH1_CQ = "ch1_cq"
-FIELD_CH2_CQ = "ch2_cq"
-FIELD_CH3_CQ = "ch3_cq"
+FIELD_CH1_CQ = "CH1-Cq"
+FIELD_CH2_CQ = "CH2-Cq"
+FIELD_CH3_CQ = "CH3-Cq"
 
 # MLWH lighthouse samples table field names
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID ="root_sample_id"
