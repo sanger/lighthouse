@@ -23,7 +23,9 @@ from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_RESULT,
     FIELD_PLATE_BARCODE,
-    FIELD_SOURCE
+    FIELD_SOURCE,
+    FIELD_CH1_CQ,
+    CT_VALUE_LIMIT
 )
 
 def test_get_new_report_name_and_path(app, freezer):
@@ -98,13 +100,26 @@ def test_get_all_positive_samples(app, freezer, samples):
         samples = app.data.driver.db.samples
         positive_samples = get_all_positive_samples(samples)
 
-        assert len(positive_samples) == 1
+        assert len(positive_samples) == 3
         assert positive_samples.at[0,FIELD_ROOT_SAMPLE_ID] == 'MCM001'
         assert positive_samples.at[0,FIELD_RESULT] == 'Positive'
         assert positive_samples.at[0,FIELD_SOURCE] == 'test1'
         assert positive_samples.at[0,FIELD_PLATE_BARCODE] == '123'
         assert positive_samples.at[0,FIELD_COORDINATE] == 'A1'
         assert positive_samples.at[0,'plate and well'] == '123:A1'
+
+        assert positive_samples.at[1,FIELD_ROOT_SAMPLE_ID] == 'MCM005'
+        assert positive_samples.at[2,FIELD_ROOT_SAMPLE_ID] == 'MCM007'
+
+
+def test_query_by_ct_limit(app, freezer, samples_ct_values):
+    # Just testing how mongo queries work with 'less than' comparisons and nulls
+    with app.app_context():
+        samples = app.data.driver.db.samples
+        ct_less_than_limit = samples.count_documents( { FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT} } )
+
+        assert ct_less_than_limit == 1 # 'MCM003'
+
 
 def test_map_labware_to_location_labwhere_error(app, freezer, labwhere_samples_error):
     # mocks response from get_locations_from_labwhere() with labwhere_samples_error
