@@ -19,7 +19,9 @@ from .data.fixture_data import (
     SAMPLES_FOR_MLWH_UPDATE,
     COG_UK_IDS,
     MLWH_SEED_SAMPLES,
-    MLWH_SEED_SAMPLES_MULTIPLE
+    MLWH_SEED_SAMPLES_MULTIPLE,
+    SAMPLES_CT_VALUES,
+    SAMPLES_DIFFERENT_PLATES
 )
 
 from lighthouse.helpers.mlwh_db import (
@@ -113,6 +115,32 @@ def samples(app):
 
     #  yield a copy of that the test change it however it wants
     yield copy.deepcopy(SAMPLES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
+
+@pytest.fixture
+def samples_different_plates(app):
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        _ = samples_collection.insert_many(SAMPLES_DIFFERENT_PLATES)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SAMPLES_DIFFERENT_PLATES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
+
+@pytest.fixture
+def samples_ct_values(app):
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        _ = samples_collection.insert_many(SAMPLES_CT_VALUES)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SAMPLES_CT_VALUES)
 
     # clear up after the fixture is used
     with app.app_context():

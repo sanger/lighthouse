@@ -16,8 +16,8 @@ def test_find_duplicates():
 def test_find_non_exist_samples(app, samples):
     with app.app_context():
         assert find_non_exist_samples(["MCM001", "MCM003"]) == []
-        assert find_non_exist_samples(["MCM004"]) == ["MCM004"]
-        assert find_non_exist_samples(["MCM004", "MCM003"]) == ["MCM004"]
+        assert find_non_exist_samples(["MCM100"]) == ["MCM100"]
+        assert find_non_exist_samples(["MCM100", "MCM003"]) == ["MCM100"]
         assert sorted(find_non_exist_samples(["a", "b", "c"])) == sorted(["a", "b", "c"])
 
 

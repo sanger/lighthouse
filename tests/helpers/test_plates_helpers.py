@@ -30,12 +30,12 @@ from lighthouse.helpers.plates import (
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
     with app.app_context():
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TS1/new?count=3"
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TS1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -93,6 +93,41 @@ def test_create_post_body(app, samples):
                                 "sample_description": "MCM003",
                             }
                         },
+                        "D01": {
+                            "content": {
+                                "phenotype": "limit of detection",
+                                "supplier_name": "klm",
+                                "sample_description": "MCM004",
+                            }
+                        },
+                        "E01": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "nop",
+                                "sample_description": "MCM005",
+                            }
+                        },
+                        "F01": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "qrs",
+                                "sample_description": "MCM006",
+                            }
+                        },
+                        "G01": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "tuv",
+                                "sample_description": "MCM007",
+                            }
+                        },
+                        "A02": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "wxy",
+                                "sample_description": "CBIQA_MCM008",
+                            }
+                        }
                     },
                 },
             }
@@ -102,9 +137,13 @@ def test_create_post_body(app, samples):
 
 def test_get_samples(app, samples):
     with app.app_context():
-        assert len(get_samples("123")) == 3
+        assert len(get_samples("123")) == 8
 
 def test_get_positive_samples(app, samples):
+    with app.app_context():
+        assert len(get_positive_samples("123")) == 3
+
+def test_get_positive_samples_different_plates(app, samples_different_plates):
     with app.app_context():
         assert len(get_positive_samples("123")) == 1
 
