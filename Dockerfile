@@ -17,4 +17,4 @@ RUN pipenv install --dev --ignore-pipfile --system --deploy
 ADD . /code/
 
 # As described in https://pythonspeed.com/articles/gunicorn-in-docker/
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "--workers=2", "--threads=4", "--worker-class=gthread", "--timeout", "0", "--log-level", "DEBUG", "--worker-tmp-dir", "/dev/shm", "lighthouse:create_app()"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "--workers=2", "--threads=4", "--worker-class=gthread", "--preload", "--timeout", "0", "--log-level", "DEBUG", "--worker-tmp-dir", "/dev/shm", "lighthouse:create_app()"]
