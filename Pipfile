@@ -27,6 +27,7 @@ xlsxwriter = "~=1.2"
 flask-apscheduler = "~=1.11"
 pymysql = "*"
 sqlalchemy = "*"
+pyodbc = "*"
 
 [requires]
 python_version = "3.8"
