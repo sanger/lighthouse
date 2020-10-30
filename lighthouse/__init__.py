@@ -23,11 +23,11 @@ def create_app() -> Eve:
     logging.config.dictConfig(app.config["LOGGING"])
 
     from lighthouse.blueprints import plates
-    from lighthouse.blueprints import dart_plates
+    from lighthouse.blueprints import cherrypicked_plates
     from lighthouse.blueprints import reports
 
     app.register_blueprint(plates.bp)
-    app.register_blueprint(dart_plates.bp)
+    app.register_blueprint(cherrypicked_plates.bp)
     app.register_blueprint(reports.bp)
 
     if app.config.get("SCHEDULER_RUN", False):

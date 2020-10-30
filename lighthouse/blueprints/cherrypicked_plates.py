@@ -17,11 +17,11 @@ from lighthouse.constants import FIELD_PLATE_BARCODE
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint("dart_plates", __name__)
+bp = Blueprint("cherrypicked-plates", __name__)
 CORS(bp)
 
 
-@bp.route("/dart_plates/new", methods=["POST"])
+@bp.route("/cherrypicked-plates/create", methods=["POST"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     try:
         barcode = request.get_json()["barcode"]
