@@ -20,6 +20,13 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: unified_warehouse_test
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: MyV3rY@7742w0rd
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -32,6 +39,9 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      - name: Create SQL Server testing database
+        run: |
+          docker exec -it sqlserver bash -lc "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P $SA_PASSWORD -Q 'CREATE DATABASE DartTestDB'"
       - name: Install pipenv
         run: |
           python -m pip install --upgrade pip

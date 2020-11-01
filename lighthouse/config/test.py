@@ -24,3 +24,19 @@ ML_WH_DB = "unified_warehouse_test"
 
 MLWH_RW_CONN_STRING = "root:root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
+
+DART_SQL_SERVER_HOST = "localhost"
+DART_SQL_SERVER_DATABASE = "DartTestDB"
+DART_SQL_SERVER_USER = "SA"
+DART_SQL_SERVER_PASSWORD = "MyV3rY@7742w0rd"
+
+DART_SQL_SERVER_CONNECTION_STRING = (
+    "DRIVER={ODBC Driver 17 for SQL Server};SERVER=tcp:"
+    + DART_SQL_SERVER_HOST
+    + ";DATABASE="
+    + DART_SQL_SERVER_DATABASE
+    + ";UID="
+    + DART_SQL_SERVER_USER
+    + ";PWD="
+    + DART_SQL_SERVER_PASSWORD
+)
