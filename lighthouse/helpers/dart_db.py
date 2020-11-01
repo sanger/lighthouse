@@ -1,5 +1,5 @@
 import os
-import pyodbc
+import pyodbc  # type: ignore
 import logging
 
 logger = logging.getLogger(__name__)

@@ -24,8 +24,10 @@ from lighthouse.exceptions import (
     MultipleCentresError,
 )
 
-from lighthouse.helpers.mlwh_db import create_mlwh_connection_engine, get_table
+from sqlalchemy.sql.expression import bindparam  # type: ignore
+from sqlalchemy.sql.expression import and_  # type: ignore
 
+from lighthouse.helpers.mlwh_db import create_mlwh_connection_engine, get_table
 from lighthouse.helpers.dart_db import find_dart_source_samples_rows
 
 logger = logging.getLogger(__name__)
