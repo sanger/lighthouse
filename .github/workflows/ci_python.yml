@@ -21,6 +21,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: unified_warehouse_test
       sqlserver:
+        name: sqlserver
         image: mcr.microsoft.com/mssql/server:2019-latest
         ports:
           - 1433:1433
