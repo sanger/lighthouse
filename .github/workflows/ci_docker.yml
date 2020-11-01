@@ -34,7 +34,7 @@ jobs:
           - 1433:1433
         env:
           ACCEPT_EULA: Y
-          SA_PASSWORD: MyV3rY@7742w0rd    
+          SA_PASSWORD: MyV3rY@7742w0rd
     steps:
       - uses: actions/checkout@v2
       - name: Build the Docker image
@@ -51,7 +51,7 @@ jobs:
       - name: Create SQL Server testing database
         run: |
           export SQLSERVER_CONTAINER=`docker ps -q --format "{{.Names}}" | grep sqlserver`
-          docker exec $SQLSERVER_CONTAINER bash -lc "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P $SA_PASSWORD -Q \"CREATE DATABASE DartTestDB\""
+          docker exec $SQLSERVER_CONTAINER bash -lc "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P MyV3rY@7742w0rd -Q \"CREATE DATABASE DartTestDB\""
       - name: Setup the test MLWH database
         run: >-
           docker run
