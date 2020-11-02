@@ -25,7 +25,7 @@ from lighthouse.helpers.plates import (
     get_positive_samples,
     update_mlwh_with_cog_uk_ids,
     UnmatchedSampleError,
-    get_cherrypicked_samples_from_dart,
+    get_cherrypicked_samples,
 )
 
 
@@ -255,6 +255,6 @@ def retrieve_samples_cursor(config, sql_engine):
     return results
 
 
-def test_get_cherrypicked_samples_from_dart(app, dart_seed_reset):
+def test_get_cherrypicked_samples(app, dart_seed_reset, samples_different_plates):
     with app.app_context():
-        assert len(get_cherrypicked_samples_from_dart("TARGET1234")) == 3
+        assert len(get_cherrypicked_samples("test1")) == 2

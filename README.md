@@ -45,6 +45,8 @@ The services has the following routes:
 - To install the required packages (and dev packages) run the following:
   1. `pipenv shell`
   2. `pipenv install --dev` (without the --dev you don't get pytest, mypy etc.)
+- (Optional) To start a Sqlserver container in local:
+  1. `docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=MyS3cr3tPassw0rd" -p 1433:1433 --name sqlserver -h sql1 -d mcr.microsoft.com/mssql/server:2019-latest`
 
 ## Running
 
@@ -53,6 +55,8 @@ The services has the following routes:
     - `FLASK_APP=lighthouse`
     - `FLASK_ENV=development`
     - `EVE_SETTINGS=development.py`
+
+Option A (in local):
 
 1. Enter the python virtual environment using:
 
@@ -64,6 +68,24 @@ The services has the following routes:
 
 **NB:** When adding or changing environmental variables, remember to exit and re-enter the virtual
 environment.
+
+Option B (in Docker):
+
+1. Build the docker image using:
+
+        docker build .
+
+1. Define YOUR_LIGHTHOUSE_PROJECT_HOME:
+
+        export YOUR_LIGHTHOUSE_PROJECT_HOME=/home/myhome/lighthouse
+        
+1. Start the docker container, with:
+
+        docker run --env-file .env -p 80:5000 -v $YOUR_LIGHTHOUSE_PROJECT_HOME:/code -it lighthouse:devel bash
+
+1. Start the app using:
+
+        flask run -h 0.0.0.0
 
 ## Testing
 

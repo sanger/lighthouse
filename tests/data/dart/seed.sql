@@ -2,9 +2,10 @@ delete from CherrypickingInfo;
 
 INSERT INTO CherrypickingInfo
 VALUES
-  (1, 'TARGET1234', 'A01', 'SOURCE1234', 'B01', '2020-11-01 14:30:01', '1.0.0', '2020-11-01 21:30:01'),
-  (1, 'TARGET1234', 'A01', 'SOURCE1234', 'B01', '2020-11-01 14:30:01', '1.0.0', '2020-11-01 21:30:01'),
-  (1, 'TARGET1234', 'A01', 'SOURCE1234', 'B01', '2020-11-01 14:30:01', '1.0.0', '2020-11-01 21:30:01');
+  ('test1', 0, 'rna_1', 0, '', 'MCM001', 'rna_1', 'Lab 1'),
+  ('test1', 1, 'rna_2', 0, '', 'MCM002', 'rna_2', 'Lab 2'),
+  ('test1', 2, 'rna_3', 3, 'Negative', '', '', ''),
+  ('test1', 3, 'rna_4', 5, 'Positive', '', '', '');
 
 -- Query all properties for labware ()
 -- select * from labwareprops 

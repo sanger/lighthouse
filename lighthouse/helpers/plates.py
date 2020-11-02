@@ -96,7 +96,7 @@ def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
 
     samples_for_barcode = list(samples.find(query))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples for {query[FIELD_PLATE_BARCODE]}")
+    logger.info(f"Found {len(samples_for_barcode)} samples")
 
     return samples_for_barcode
 
@@ -118,8 +118,24 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
-def get_cherrypicked_samples_from_dart(barcode):
-    return find_dart_source_samples_rows(app, barcode)
+def query_for_cherrypicked_samples(rows):
+    mongo_query = []
+    for row in rows:
+        sample_query = {
+            FIELD_ROOT_SAMPLE_ID: row.root_sample_id,
+            FIELD_RNA_ID: row.rna_id,
+        }
+        mongo_query.append(sample_query)
+    return {"$or": mongo_query}
+
+
+def get_cherrypicked_samples(barcode):
+    rows = find_dart_source_samples_rows(app, barcode)
+    samples = find_samples(query_for_cherrypicked_samples(rows))
+
+    # joined_structure = join_rows_with_samples(rows, samples)
+
+    return samples
 
 
 def confirm_centre(samples: List[Dict[str, str]]) -> str:
