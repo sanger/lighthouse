@@ -6,8 +6,8 @@ from lighthouse.config.defaults import *  # noqa: F403, F401
 SCHEDULER_RUN = False
 
 # Eve config
-MONGO_HOST = "localhost"
-MONGO_DBNAME = "crawlerDevelopmentDB"
+MONGO_HOST = "127.0.0.1"
+MONGO_DBNAME = "lighthouseDevelopmentDB"
 
 # logging config
 LOGGING["loggers"]["lighthouse"]["level"] = "DEBUG"  # noqa: F405
