@@ -193,7 +193,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
         concat_frame = None
 
         chunk_root_sample_ids = [
-            root_sample_ids[x : (x + 5000)] for x in range(0, len(root_sample_ids), 5000)
+            root_sample_ids[x : (x + 50000)] for x in range(0, len(root_sample_ids), 50000)
         ]
 
         sql_engine = sqlalchemy.create_engine(
