@@ -193,7 +193,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
         concat_frame = None
 
         chunk_root_sample_ids = [
-            root_sample_ids[x : (x + 10000)] for x in range(0, len(root_sample_ids), 10000)
+            root_sample_ids[x : (x + 5000)] for x in range(0, len(root_sample_ids), 5000)
         ]
 
         sql_engine = sqlalchemy.create_engine(
@@ -201,16 +201,14 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
         )
         db_connection = sql_engine.connect()
 
+        ml_wh_db = app.config["ML_WH_DB"]
+        events_wh_db = app.config["EVENTS_WH_DB"]
+
         for chunk_root_sample_id in chunk_root_sample_ids:
             root_sample_id_string = "'" + "','".join(chunk_root_sample_id) + "'"
             plate_barcodes_string = "'" + "','".join(plate_barcodes) + "'"
 
-            ml_wh_db = app.config["ML_WH_DB"]
-            events_wh_db = app.config["EVENTS_WH_DB"]
-
             sql = (
-                # f"CREATE TEMPORARY TABLE temp_root_sample_ids SELECT * FROM mlwh_sample WHERE mlwh_sample.description IN ({root_sample_id_string});"
-                # f"CREATE TEMPORARY TABLE temp_plate_barcodes SELECT * FROM mlwh_stock_resource WHERE mlwh_stock_resource.labware_human_barcode IN ({plate_barcodes_string});"
                 f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
                 f" FROM {app.config['ML_WH_DB']}.sample as mlwh_sample"
                 f" JOIN {app.config['ML_WH_DB']}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
@@ -218,9 +216,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
                 f" JOIN {app.config['EVENTS_WH_DB']}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
                 f" JOIN {app.config['EVENTS_WH_DB']}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
                 f" JOIN {app.config['EVENTS_WH_DB']}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
-                f" JOIN temp_root_sample_ids ON temp_root_sample_ids.description=mlwh_sample.description"
                 f" WHERE mlwh_sample.description IN ({root_sample_id_string})"
-                f" JOIN temp_plate_barcodes ON temp_plate_barcodes.labware_human_barcode=mlwh_stock_resource.labware_human_barcode"
                 f" AND mlwh_stock_resource.labware_human_barcode IN ({plate_barcodes_string})"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
                 " GROUP BY mlwh_sample.description"
@@ -231,7 +227,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
             else:
                 concat_frame.append(frame)
 
-        return frame
+        return concat_frame
     except Exception as e:
         print("Error while connecting to MySQL", e)
         return None
