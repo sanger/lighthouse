@@ -225,7 +225,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
             if concat_frame is None:
                 concat_frame = frame
             else:
-                concat_frame.append(frame)
+                concat_frame = concat_frame.append(frame)
 
         return concat_frame
     except Exception as e:
