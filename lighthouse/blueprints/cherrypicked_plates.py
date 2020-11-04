@@ -8,7 +8,7 @@ from flask_cors import CORS  # type: ignore
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_post_body,
-    get_samples,
+    get_cherrypicked_samples,
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
 )
@@ -31,8 +31,12 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         return {"errors": ["POST request needs 'barcode' in body"]}, HTTPStatus.BAD_REQUEST
 
     try:
-        # get samples for barcode
-        samples = get_samples(barcode)
+        # get samples from dart for barcode 1234
+        # dart_samples [destination_barcode, destination_well_index, source_barcode, source_well_index, control (String), root_sample_id, rna_id, lab_id]
+        dart_samples = get_dart_samples(barcode)
+
+        # get samples from Mongo for keys
+        mongo_samples = get_samples_from_ids(sample_ids) # ids = root_sample_id + rna_id + result
 
         if not samples:
             return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
@@ -47,7 +51,12 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 HTTPStatus.BAD_REQUEST,
             )
 
-        body = create_post_body(barcode, samples)
+        # Update FIELD_COORDINATE to destination_well_index. Add Control field
+        samples = merge_sample_information(mongo_samples, dart_samples)
+
+        mapped_samples = map_lh_to_ss_columns(samples)
+
+        body = create_cherrypicked_post_body(barcode, mapped_samples, plate_purpose_uuid)
 
         response = send_to_ss(body)
 
