@@ -126,14 +126,24 @@ def query_for_cherrypicked_samples(rows):
             FIELD_RNA_ID: row.rna_id,
         }
         mongo_query.append(sample_query)
-    return {"$or": mongo_query}
+    return ({"$or": mongo_query},)
+    {"$bucket": {"groupBy"}}
+
+
+def filter_samples_with_conditions(samples, conditions):
+    samples
+
+
+def build_joined_rows_with_samples(rows, samples):
+    for row in rows:
+        samples[FIELD_ROOT_SAMPLE_ID]
 
 
 def get_cherrypicked_samples(barcode):
     rows = find_dart_source_samples_rows(app, barcode)
     samples = find_samples(query_for_cherrypicked_samples(rows))
 
-    # joined_structure = join_rows_with_samples(rows, samples)
+    joined_structure = join_rows_with_samples(rows, samples)
 
     return samples
 
