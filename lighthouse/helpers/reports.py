@@ -210,12 +210,12 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
 
             sql = (
                 f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
-                f" FROM {app.config['ML_WH_DB']}.sample as mlwh_sample"
-                f" JOIN {app.config['ML_WH_DB']}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+                f" FROM {ml_wh_db}.sample as mlwh_sample"
+                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
+                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
+                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
+                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
+                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
                 f" WHERE mlwh_sample.description IN ({root_sample_id_string})"
                 f" AND mlwh_stock_resource.labware_human_barcode IN ({plate_barcodes_string})"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
