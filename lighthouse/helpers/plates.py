@@ -126,26 +126,34 @@ def query_for_cherrypicked_samples(rows):
             FIELD_RNA_ID: row.rna_id,
         }
         mongo_query.append(sample_query)
-    return ({"$or": mongo_query},)
-    {"$bucket": {"groupBy"}}
+    return {"$or": mongo_query}
 
 
-def filter_samples_with_conditions(samples, conditions):
-    samples
+def find_row_in_samples(row, samples):
+    for pos in range(0, len(samples)):
+        sample = samples[pos]
+        if row["control"] is None or row["control"] == "NULL":
+            if (sample[FIELD_ROOT_SAMPLE_ID] == row[FIELD_ROOT_SAMPLE_ID]) and (
+                sample[FIELD_RNA_ID] == row[FIELD_RNA_ID]
+            ):
+                return sample
+    return None
 
 
-def build_joined_rows_with_samples(rows, samples):
+def join_rows_with_samples(rows, samples):
+    records = []
+
     for row in rows:
-        samples[FIELD_ROOT_SAMPLE_ID]
+        records.append({row: rows, sample: find_row_in_samples(row, samples)})
+
+    return records
 
 
-def get_cherrypicked_samples(barcode):
+def get_cherrypicked_samples_records(barcode):
     rows = find_dart_source_samples_rows(app, barcode)
     samples = find_samples(query_for_cherrypicked_samples(rows))
 
-    joined_structure = join_rows_with_samples(rows, samples)
-
-    return samples
+    return join_rows_with_samples(rows, samples)
 
 
 def confirm_centre(samples: List[Dict[str, str]]) -> str:

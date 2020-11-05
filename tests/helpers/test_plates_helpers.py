@@ -9,6 +9,8 @@ import pytest
 import sqlalchemy  # type: ignore
 from sqlalchemy.exc import OperationalError
 
+from collections import namedtuple
+
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
     FIELD_ROOT_SAMPLE_ID,
@@ -25,7 +27,8 @@ from lighthouse.helpers.plates import (
     get_positive_samples,
     update_mlwh_with_cog_uk_ids,
     UnmatchedSampleError,
-    get_cherrypicked_samples,
+    get_cherrypicked_samples_records,
+    query_for_cherrypicked_samples,
 )
 
 
@@ -255,6 +258,37 @@ def retrieve_samples_cursor(config, sql_engine):
     return results
 
 
-def test_get_cherrypicked_samples(app, dart_seed_reset, samples_different_plates):
+def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_different_plates):
     with app.app_context():
-        assert len(get_cherrypicked_samples("test1")) == 2
+        assert len(get_cherrypicked_samples_records("test1")) == 2
+
+
+def test_query_for_cherrypicked_samples(app):
+    MyRow = namedtuple(
+        "MyRow",
+        [
+            "destination_barcode",
+            "destination_coordinate",
+            "source_barcode",
+            "source_coordinate",
+            "control",
+            "root_sample_id",
+            "rna_id",
+            "lab_id",
+        ],
+    )
+    test = [
+        MyRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        MyRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        MyRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
+        MyRow("DN3333", "A02", "DN2222", "C01", "positive", None, None, None),
+        MyRow("DN3333", "A03", "DN2222", "C05", "negative", None, None, None),
+    ]
+
+    assert query_for_cherrypicked_samples(test) == {
+        "$or": [
+            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A01"},
+            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A02"},
+            {FIELD_ROOT_SAMPLE_ID: "sample_2", FIELD_RNA_ID: "plate1:A03"},
+        ]
+    }

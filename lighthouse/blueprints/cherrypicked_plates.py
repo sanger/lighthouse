@@ -8,7 +8,7 @@ from flask_cors import CORS  # type: ignore
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_post_body,
-    get_cherrypicked_samples,
+    get_cherrypicked_samples_records,
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
 )
@@ -36,7 +36,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         dart_samples = get_dart_samples(barcode)
 
         # get samples from Mongo for keys
-        mongo_samples = get_samples_from_ids(sample_ids) # ids = root_sample_id + rna_id + result
+        mongo_samples = get_samples_from_ids(sample_ids)  # ids = root_sample_id + rna_id + result
 
         if not samples:
             return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
