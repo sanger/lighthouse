@@ -46,6 +46,8 @@ The services has the following routes:
   1. `pipenv shell`
   2. `pipenv install --dev` (without the --dev you don't get pytest, mypy etc.)
 
+- [Installing MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
+
 ## Running
 
 1. Create a `.env` file with the following contents (or use `.env.example` - rename to `.env`):
@@ -67,7 +69,7 @@ environment.
 
 ## Testing
 
-1. Verify the credentials for your database in the settings file 'tests/config.py'
+1. Verify the credentials for your database in the settings file 'lighthouse/config/test.py'
 1. Run the tests using pytest (flags are for verbose, exit early and capture output):
 
         python -m pytest -vsx
