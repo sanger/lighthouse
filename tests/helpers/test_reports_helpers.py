@@ -25,8 +25,9 @@ from lighthouse.constants import (
     FIELD_PLATE_BARCODE,
     FIELD_SOURCE,
     FIELD_CH1_CQ,
-    CT_VALUE_LIMIT
+    CT_VALUE_LIMIT,
 )
+
 
 def test_get_new_report_name_and_path(app, freezer):
     report_date = datetime.now().strftime("%y%m%d_%H%M")
@@ -86,7 +87,8 @@ def test_get_cherrypicked_samples(app, freezer):
     with app.app_context():
         with patch("sqlalchemy.create_engine", return_value=Mock()):
             with patch(
-                "pandas.read_sql", return_value=expected,
+                "pandas.read_sql",
+                return_value=expected,
             ):
                 returned_samples = get_cherrypicked_samples(samples, plate_barcodes)
                 assert returned_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "MCM001"
@@ -101,24 +103,24 @@ def test_get_all_positive_samples(app, freezer, samples):
         positive_samples = get_all_positive_samples(samples)
 
         assert len(positive_samples) == 3
-        assert positive_samples.at[0,FIELD_ROOT_SAMPLE_ID] == 'MCM001'
-        assert positive_samples.at[0,FIELD_RESULT] == 'Positive'
-        assert positive_samples.at[0,FIELD_SOURCE] == 'test1'
-        assert positive_samples.at[0,FIELD_PLATE_BARCODE] == '123'
-        assert positive_samples.at[0,FIELD_COORDINATE] == 'A1'
-        assert positive_samples.at[0,'plate and well'] == '123:A1'
+        assert positive_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "MCM001"
+        assert positive_samples.at[0, FIELD_RESULT] == "Positive"
+        assert positive_samples.at[0, FIELD_SOURCE] == "test1"
+        assert positive_samples.at[0, FIELD_PLATE_BARCODE] == "123"
+        assert positive_samples.at[0, FIELD_COORDINATE] == "A1"
+        assert positive_samples.at[0, "plate and well"] == "123:A1"
 
-        assert positive_samples.at[1,FIELD_ROOT_SAMPLE_ID] == 'MCM005'
-        assert positive_samples.at[2,FIELD_ROOT_SAMPLE_ID] == 'MCM007'
+        assert positive_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "MCM005"
+        assert positive_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "MCM007"
 
 
 def test_query_by_ct_limit(app, freezer, samples_ct_values):
     # Just testing how mongo queries work with 'less than' comparisons and nulls
     with app.app_context():
         samples = app.data.driver.db.samples
-        ct_less_than_limit = samples.count_documents( { FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT} } )
+        ct_less_than_limit = samples.count_documents({FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}})
 
-        assert ct_less_than_limit == 1 # 'MCM003'
+        assert ct_less_than_limit == 1  # 'MCM003'
 
 
 def test_map_labware_to_location_labwhere_error(app, freezer, labwhere_samples_error):
@@ -155,7 +157,9 @@ def test_add_cherrypicked_column(app, freezer):
         columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID"],
     )
 
-    mock_get_cherrypicked_samples = pd.DataFrame(["MCM001", "MCM003"], columns=[FIELD_ROOT_SAMPLE_ID])
+    mock_get_cherrypicked_samples = pd.DataFrame(
+        ["MCM001", "MCM003"], columns=[FIELD_ROOT_SAMPLE_ID]
+    )
 
     expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", "LIMS submission"]
     expected_data = [
@@ -180,7 +184,10 @@ def test_add_cherrypicked_column(app, freezer):
 def test_add_cherrypicked_column_no_rows(app, freezer):
     # mocks response from get_cherrypicked_samples()
     existing_dataframe = pd.DataFrame(
-        [["MCM001", "123", "TEST"], ["MCM002", "123", "TEST"],],
+        [
+            ["MCM001", "123", "TEST"],
+            ["MCM002", "123", "TEST"],
+        ],
         columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID"],
     )
 
