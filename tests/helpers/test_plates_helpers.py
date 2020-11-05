@@ -24,7 +24,8 @@ from lighthouse.helpers.plates import (
     get_samples,
     get_positive_samples,
     update_mlwh_with_cog_uk_ids,
-    UnmatchedSampleError
+    UnmatchedSampleError,
+    map_to_ss_columns
 )
 
 
@@ -233,3 +234,18 @@ def retrieve_samples_cursor(config, sql_engine):
         results = connection.execute(f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} from lighthouse_sample")
 
     return results
+
+def test_map_to_ss_columns(app, dart_mongo_merged_samples):
+    with app.app_context():
+        correct_mapped_samples = [
+            { 
+                "sample_description": "MCM001", 
+                "phenotype": "Positive",
+                'control': "Positive",
+                "supplier_name": "abc",
+                "barcode": "d123",
+                "coordinate": "B01"
+            }
+        ]
+ 
+        assert  map_to_ss_columns(dart_mongo_merged_samples) == correct_mapped_samples

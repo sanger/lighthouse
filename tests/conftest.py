@@ -21,7 +21,8 @@ from .data.fixture_data import (
     MLWH_SEED_SAMPLES,
     MLWH_SEED_SAMPLES_MULTIPLE,
     SAMPLES_CT_VALUES,
-    SAMPLES_DIFFERENT_PLATES
+    SAMPLES_DIFFERENT_PLATES,
+    DART_MONGO_MERGED_SAMPLES
 )
 
 from lighthouse.helpers.mlwh_db import (
@@ -223,3 +224,7 @@ def cog_uk_ids():
 @pytest.fixture
 def sql_engine(app):
     return create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])
+
+@pytest.fixture
+def dart_mongo_merged_samples():
+    return DART_MONGO_MERGED_SAMPLES

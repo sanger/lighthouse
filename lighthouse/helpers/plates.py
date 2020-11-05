@@ -252,3 +252,30 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     finally:
         if db_connection is not None:
             db_connection.close()
+
+def map_to_ss_columns(samples: List[Dict[str, Dict[str, Dict[str, str]]]]) -> List[Dict[str, str]]:
+    mapped_samples = []
+
+    for sample in samples:
+        mapped_sample = {}
+
+        mongo_row = sample["sample"]
+        dart_row = sample["row"]
+        
+        try:
+            mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
+            mapped_sample["phenotype"] = mongo_row[FIELD_RESULT] # This should be the filtered positive field 
+            mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
+
+            mapped_sample["coordinate"] = dart_row["destination_coordinate"]
+            mapped_sample["barcode"] = dart_row["destination_barcode"]
+            mapped_sample["control"] = dart_row["control"]
+        except KeyError:
+            msg = f"""
+            Error while mapping database columns to Sequencescape columns for sample {mongo_row["root_sample_id"]}.
+            {type(e).__name__}: {str(e)}
+            """
+            logger.error(msg)
+            raise
+        mapped_samples.append(mapped_sample)
+    return mapped_samples

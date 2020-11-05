@@ -344,3 +344,30 @@ MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
         MLWH_LH_SAMPLE_RESULT: 'Positive'
     }
 ]
+
+DART_MONGO_MERGED_SAMPLES: List[Dict[str, Dict[str, Dict[str, str]]]] = [
+    {
+        "sample": 
+        {
+            FIELD_COORDINATE: "A01",
+            FIELD_SOURCE: "test1",
+            FIELD_RESULT: "Positive",
+            FIELD_PLATE_BARCODE: "123",
+            FIELD_COG_BARCODE: "abc",
+            FIELD_ROOT_SAMPLE_ID: "MCM001",
+            FIELD_RNA_ID: "rna_1",
+            #FIELD_FILTERED_POSITIVE: "Positive",
+        },
+        "row": 
+        {
+            "destination_coordinate": "B01",
+            "destination_barcode": "d123",
+            "control": "Positive",
+            "source_barcode": "123",
+            "source_coordinate": "A01",
+            "root_sample_id": "MCM001",
+            "rna_id": "rna_1",
+            "lab_id": "AA"
+        }
+    }
+]
