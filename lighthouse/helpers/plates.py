@@ -172,7 +172,6 @@ def find_row_in_samples(row, samples):
 
 def join_rows_with_samples(rows, samples):
     records = []
-
     for row in rows_without_controls(rows):
         records.append({"row": rows, "sample": find_row_in_samples(row, samples)})
 

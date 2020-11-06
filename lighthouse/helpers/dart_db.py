@@ -1,6 +1,7 @@
 import os
 import pyodbc  # type: ignore
 import logging
+from lighthouse.constants import FIELD_DART_DESTINATION_BARCODE
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,9 @@ def find_dart_source_samples_rows(app, barcode):
     cnxn = create_dart_connection(app)
     cursor = cnxn.cursor()
     logger.info(f"Querying samples for destination {barcode}")
-    cursor.execute(f"SELECT * from CherrypickingInfo where destination_barcode='{barcode}';")
+    cursor.execute(
+        f"SELECT * from {app.config['DART_RESULT_VIEW']} where {FIELD_DART_DESTINATION_BARCODE}='{barcode}';"
+    )
     rows = cursor.fetchall()
     logger.info(f"{len(rows)} samples found")
     return rows
