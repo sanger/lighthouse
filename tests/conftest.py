@@ -22,8 +22,7 @@ from .data.fixture_data import (
     MLWH_SEED_SAMPLES_MULTIPLE,
     SAMPLES_CT_VALUES,
     SAMPLES_DIFFERENT_PLATES,
-    DART_MONGO_MERGED_SAMPLES,
-    DART_MONGO_MERGED_SAMPLES_MISSING_VALUE
+    DART_MONGO_MERGED_SAMPLES
 )
 
 from lighthouse.helpers.mlwh_db import (

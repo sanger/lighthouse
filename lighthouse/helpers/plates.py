@@ -280,3 +280,30 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, Dict[str, str]]]]) -> Li
             raise
         mapped_samples.append(mapped_sample)
     return mapped_samples
+
+def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
+    logger.debug(f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'")
+
+    wells_content = {}
+    for sample in samples:
+
+        assert sample["phenotype"] is not None
+        assert sample["supplier_name"] is not None
+
+        well = {
+            "content": {
+                "phenotype": sample["phenotype"].strip().lower(),
+                "supplier_name": sample["supplier_name"],
+                "sample_description": sample["sample_description"],
+            }
+        }
+        wells_content[sample["coordinate"]] = well
+
+    body = {
+        "barcode": barcode,
+        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
+        "study_uuid": app.config["SS_UUID_STUDY_CHERRYPICKED"],
+        "wells": wells_content,
+    }
+
+    return {"data": {"type": "plates", "attributes": body}}
