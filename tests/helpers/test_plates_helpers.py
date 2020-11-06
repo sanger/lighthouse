@@ -245,12 +245,20 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "supplier_name": "abc",
                 "barcode": "d123",
                 "coordinate": "B01"
+            },
+            { 
+                "sample_description": "MCM002", 
+                "phenotype": "Positive",
+                "supplier_name": "abcd",
+                "barcode": "d123",
+                "coordinate": "B02"
             }
         ]
  
         assert  map_to_ss_columns(dart_mongo_merged_samples) == correct_mapped_samples
 
-def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples_missing_value):
+def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
     with app.app_context():
+        del dart_mongo_merged_samples[0]["row"]["destination_coordinate"]
         with pytest.raises(KeyError):
-            map_to_ss_columns(dart_mongo_merged_samples_missing_value)
+            map_to_ss_columns(dart_mongo_merged_samples)

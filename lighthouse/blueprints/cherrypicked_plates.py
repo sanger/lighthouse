@@ -8,7 +8,6 @@ from flask_cors import CORS  # type: ignore
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_post_body,
-    get_cherrypicked_samples,
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
 )

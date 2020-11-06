@@ -269,7 +269,8 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, Dict[str, str]]]]) -> Li
 
             mapped_sample["coordinate"] = dart_row["destination_coordinate"]
             mapped_sample["barcode"] = dart_row["destination_barcode"]
-            mapped_sample["control"] = dart_row["control"]
+            if dart_row["control"]:
+                mapped_sample["control"] = dart_row["control"]
         except KeyError:
             msg = f"""
             Error while mapping database columns to Sequencescape columns for sample {mongo_row["root_sample_id"]}.
