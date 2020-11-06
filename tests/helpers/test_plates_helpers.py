@@ -249,3 +249,8 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
         ]
  
         assert  map_to_ss_columns(dart_mongo_merged_samples) == correct_mapped_samples
+
+def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples_missing_value):
+    with app.app_context():
+        with pytest.raises(KeyError):
+            map_to_ss_columns(dart_mongo_merged_samples_missing_value)

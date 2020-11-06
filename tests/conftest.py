@@ -22,7 +22,8 @@ from .data.fixture_data import (
     MLWH_SEED_SAMPLES_MULTIPLE,
     SAMPLES_CT_VALUES,
     SAMPLES_DIFFERENT_PLATES,
-    DART_MONGO_MERGED_SAMPLES
+    DART_MONGO_MERGED_SAMPLES,
+    DART_MONGO_MERGED_SAMPLES_MISSING_VALUE
 )
 
 from lighthouse.helpers.mlwh_db import (
@@ -228,3 +229,7 @@ def sql_engine(app):
 @pytest.fixture
 def dart_mongo_merged_samples():
     return DART_MONGO_MERGED_SAMPLES
+
+@pytest.fixture
+def dart_mongo_merged_samples_missing_value():
+    return DART_MONGO_MERGED_SAMPLES_MISSING_VALUE
