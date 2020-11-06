@@ -18,6 +18,15 @@ from lighthouse.constants import (
     MLWH_LH_SAMPLE_COG_UK_ID,
     FIELD_RNA_ID,
     FIELD_RESULT,
+    FIELD_LAB_ID,
+    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_SOURCE_BARCODE,
+    FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DART_CONTROL,
+    FIELD_DART_ROOT_SAMPLE_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_LAB_ID,
 )
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
@@ -263,6 +272,28 @@ def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_differen
         assert len(get_cherrypicked_samples_records("test1")) == 2
 
 
+def build_row(
+    destination_barcode,
+    destination_coordinate,
+    source_barcode,
+    source_coordinate,
+    control,
+    root_sample_id,
+    rna_id,
+    lab_id,
+):
+    return {
+        FIELD_DART_DESTINATION_BARCODE: destination_barcode,
+        FIELD_DART_DESTINATION_COORDINATE: destination_coordinate,
+        FIELD_DART_SOURCE_BARCODE: source_barcode,
+        FIELD_DART_SOURCE_COORDINATE: source_coordinate,
+        FIELD_DART_CONTROL: control,
+        FIELD_DART_ROOT_SAMPLE_ID: root_sample_id,
+        FIELD_DART_RNA_ID: rna_id,
+        FIELD_DART_LAB_ID: lab_id,
+    }
+
+
 def test_query_for_cherrypicked_samples(app):
     MyRow = namedtuple(
         "MyRow",
@@ -287,8 +318,8 @@ def test_query_for_cherrypicked_samples(app):
 
     assert query_for_cherrypicked_samples(test) == {
         "$or": [
-            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A01"},
-            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A02"},
-            {FIELD_ROOT_SAMPLE_ID: "sample_2", FIELD_RNA_ID: "plate1:A03"},
+            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A01", FIELD_LAB_ID: "ABC"},
+            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A02", FIELD_LAB_ID: "ABC"},
+            {FIELD_ROOT_SAMPLE_ID: "sample_2", FIELD_RNA_ID: "plate1:A03", FIELD_LAB_ID: "ABC"},
         ]
     }

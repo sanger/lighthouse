@@ -15,7 +15,16 @@ from lighthouse.constants import (
     FIELD_COORDINATE,
     FIELD_SOURCE,
     FIELD_PLATE_BARCODE,
+    FIELD_LAB_ID,
     POSITIVE_SAMPLES_MONGODB_FILTER,
+    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_SOURCE_BARCODE,
+    FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DART_CONTROL,
+    FIELD_DART_ROOT_SAMPLE_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_LAB_ID,
 )
 from lighthouse.exceptions import (
     DataError,
@@ -118,33 +127,54 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
-def query_for_cherrypicked_samples(rows):
-    mongo_query = []
+def row_is_normal_sample(row):
+    control_value = getattr(row, FIELD_DART_CONTROL)
+    return control_value is None or control_value == "NULL" or control_value == ""
+
+
+def rows_without_controls(rows):
+    list = []
     for row in rows:
+        if row_is_normal_sample(row):
+            list.append(row)
+    return list
+
+
+def query_for_cherrypicked_samples(rows):
+    if len(rows) == 0:
+        return {}
+    mongo_query = []
+    for row in rows_without_controls(rows):
         sample_query = {
-            FIELD_ROOT_SAMPLE_ID: row.root_sample_id,
-            FIELD_RNA_ID: row.rna_id,
+            FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
+            FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
+            FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
         }
         mongo_query.append(sample_query)
     return {"$or": mongo_query}
 
 
+def equal_row_and_sample(row, sample):
+    return (
+        (sample[FIELD_ROOT_SAMPLE_ID] == getattr(row, FIELD_DART_ROOT_SAMPLE_ID))
+        and (sample[FIELD_RNA_ID] == getattr(row, FIELD_DART_RNA_ID))
+        and (sample[FIELD_LAB_ID] == getattr(row, FIELD_DART_LAB_ID))
+    )
+
+
 def find_row_in_samples(row, samples):
     for pos in range(0, len(samples)):
         sample = samples[pos]
-        if row["control"] is None or row["control"] == "NULL":
-            if (sample[FIELD_ROOT_SAMPLE_ID] == row[FIELD_ROOT_SAMPLE_ID]) and (
-                sample[FIELD_RNA_ID] == row[FIELD_RNA_ID]
-            ):
-                return sample
+        if equal_row_and_sample(row, sample):
+            return sample
     return None
 
 
 def join_rows_with_samples(rows, samples):
     records = []
 
-    for row in rows:
-        records.append({row: rows, sample: find_row_in_samples(row, samples)})
+    for row in rows_without_controls(rows):
+        records.append({"row": rows, "sample": find_row_in_samples(row, samples)})
 
     return records
 
