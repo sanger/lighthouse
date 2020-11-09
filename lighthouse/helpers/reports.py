@@ -192,13 +192,11 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
     try:
         # Create an empty DataFrame to merge into
         concat_frame = pd.DataFrame()
-        print('chunk_size', chunk_size)
 
         chunk_root_sample_ids = [
             root_sample_ids[x : (x + chunk_size)]
             for x in range(0, len(root_sample_ids), chunk_size)
         ]
-        print('chunk_root_sample_ids', chunk_root_sample_ids)
 
         sql_engine = sqlalchemy.create_engine(
             f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600
@@ -209,10 +207,8 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         events_wh_db = app.config["EVENTS_WH_DB"]
 
         for chunk_root_sample_id in chunk_root_sample_ids:
-            print('chunk_root_sample_id', chunk_root_sample_id)
-            # select fields root sample id, plate barcode and result? + coordinate?
             sql = (
-                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
+                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"
                 f" FROM {ml_wh_db}.sample as mlwh_sample"
                 f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
                 f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
@@ -222,9 +218,23 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
                 f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
-                " GROUP BY mlwh_sample.description"
             )
-            print('sql', sql)
+
+            # old code:
+            # sql = (
+            #     f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
+            #     f" FROM {ml_wh_db}.sample as mlwh_sample"
+            #     f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
+            #     f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
+            #     f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
+            #     f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
+            #     f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+            #     f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
+            #     f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
+            #     " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
+            #     " GROUP BY mlwh_sample.description"
+            # )
+
             frame = pd.read_sql(
                 sql,
                 db_connection,
@@ -234,7 +244,10 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 },
             )
 
-            concat_frame = concat_frame.append(frame)
+            concat_frame = concat_frame.append(frame).drop_duplicates().reset_index(drop=True)
+
+            # old code:
+            # concat_frame = concat_frame.append(frame)
 
         return concat_frame
     except Exception as e:
