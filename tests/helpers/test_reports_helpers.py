@@ -211,19 +211,23 @@ def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_sample
 def test_add_cherrypicked_column(app, freezer):
     # mocks response from get_cherrypicked_samples()
     existing_dataframe = pd.DataFrame(
-        [["MCM001", "123", "TEST"], ["MCM002", "123", "TEST"], ["MCM003", "123", "TEST"]],
+        [["MCM001", "123", "TEST"], ["MCM001", "456", "TEST"], ["MCM002", "456", "TEST"]],
         columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID"],
     )
 
+    expected_rows = [
+        ['MCM001', '123'],
+        ['MCM002', '456']
+    ]
     mock_get_cherrypicked_samples = pd.DataFrame(
-        ["MCM001", "MCM003"], columns=[FIELD_ROOT_SAMPLE_ID]
+        np.array(expected_rows), columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE]
     )
 
     expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", "LIMS submission"]
     expected_data = [
         ["MCM001", "123", "TEST", "Yes"],
-        ["MCM002", "123", "TEST", "No"],
-        ["MCM003", "123", "TEST", "Yes"],
+        ["MCM001", "456", "TEST", "No"],
+        ["MCM002", "456", "TEST", "Yes"],
     ]
 
     with app.app_context():
