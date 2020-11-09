@@ -21,6 +21,7 @@ MLWH_LH_SAMPLE_ROOT_SAMPLE_ID = "root_sample_id"
 MLWH_LH_SAMPLE_COG_UK_ID = "cog_uk_id"
 MLWH_LH_SAMPLE_RNA_ID = "rna_id"
 MLWH_LH_SAMPLE_RESULT = "result"
+MLWH_LH_SAMPLE_PLATE_BARCODE = "plate_barcode"
 
 CT_VALUE_LIMIT = 30
 

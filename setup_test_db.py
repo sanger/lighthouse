@@ -1,17 +1,19 @@
 import lighthouse.config.test as config  # type: ignore
-from lighthouse.helpers.mlwh_db import create_mlwh_connection_engine
+from lighthouse.helpers.warehouses_db import create_mlwh_connection_engine
 
 # Set up a basic MLWH db for testing
 """Drop and recreate required tables."""
 print("Initialising the test MySQL warehouse database")
 
-sql_engine = create_mlwh_connection_engine(config.MLWH_RW_CONN_STRING, config.ML_WH_DB)
+sql_engine = create_mlwh_connection_engine(config.WAREHOUSES_RW_CONN_STRING, config.ML_WH_DB)
 
 create_db = """
 CREATE DATABASE IF NOT EXISTS `unified_warehouse_test` /*!40100 DEFAULT CHARACTER SET latin1 */;
 """
 drop_table = """
 DROP TABLE IF EXISTS `unified_warehouse_test`.`lighthouse_sample`;
+DROP TABLE IF EXISTS `unified_warehouse_test`.`sample`;
+DROP TABLE IF EXISTS `unified_warehouse_test`.`stock_resource`;
 """
 create_table = """
 CREATE TABLE `unified_warehouse_test`.`lighthouse_sample` (
@@ -34,6 +36,166 @@ UNIQUE KEY `index_lighthouse_sample_on_root_sample_id_and_rna_id_and_result` (`r
 UNIQUE KEY `index_lighthouse_sample_on_mongodb_id` (`mongodb_id`),
 KEY `index_lighthouse_sample_on_date_tested` (`date_tested`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `unified_warehouse_test`.`sample` (
+  `id_sample_tmp` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Internal to this database id, value can change',
+  `id_lims` varchar(10) COLLATE utf8_unicode_ci NOT NULL COMMENT 'LIM system identifier, e.g. CLARITY-GCLP, SEQSCAPE',
+  `uuid_sample_lims` varchar(36) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'LIMS-specific sample uuid',
+  `id_sample_lims` varchar(20) COLLATE utf8_unicode_ci NOT NULL COMMENT 'LIMS-specific sample identifier',
+  `last_updated` datetime NOT NULL COMMENT 'Timestamp of last update',
+  `recorded_at` datetime NOT NULL COMMENT 'Timestamp of warehouse update',
+  `deleted_at` datetime DEFAULT NULL COMMENT 'Timestamp of sample deletion',
+  `created` datetime DEFAULT NULL COMMENT 'Timestamp of sample creation',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `reference_genome` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `organism` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `accession_number` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `common_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `taxon_id` int(6) unsigned DEFAULT NULL,
+  `father` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `mother` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `replicate` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ethnicity` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `gender` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cohort` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `country_of_origin` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `geographical_region` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `sanger_sample_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `control` tinyint(1) DEFAULT NULL,
+  `supplier_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `public_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `sample_visibility` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `strain` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `consent_withdrawn` tinyint(1) NOT NULL DEFAULT '0',
+  `donor_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `phenotype` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The phenotype of the sample as described in Sequencescape',
+  `developmental_stage` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Developmental Stage',
+  `control_type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id_sample_tmp`),
+  UNIQUE KEY `index_sample_on_id_sample_lims_and_id_lims` (`id_sample_lims`,`id_lims`),
+  UNIQUE KEY `sample_uuid_sample_lims_index` (`uuid_sample_lims`),
+  KEY `sample_accession_number_index` (`accession_number`),
+  KEY `sample_name_index` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4925703 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `unified_warehouse_test`.`stock_resource` (
+  `id_stock_resource_tmp` int(11) NOT NULL AUTO_INCREMENT,
+  `last_updated` datetime NOT NULL COMMENT 'Timestamp of last update',
+  `recorded_at` datetime NOT NULL COMMENT 'Timestamp of warehouse update',
+  `created` datetime NOT NULL COMMENT 'Timestamp of initial registration of stock in LIMS',
+  `deleted_at` datetime DEFAULT NULL COMMENT 'Timestamp of initial registration of deletion in parent LIMS. NULL if not deleted.',
+  `id_sample_tmp` int(10) unsigned NOT NULL COMMENT 'Sample id, see "sample.id_sample_tmp"',
+  `id_study_tmp` int(10) unsigned NOT NULL COMMENT 'Sample id, see "study.id_study_tmp"',
+  `id_lims` varchar(10) COLLATE utf8_unicode_ci NOT NULL COMMENT 'LIM system identifier',
+  `id_stock_resource_lims` varchar(20) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Lims specific identifier for the stock',
+  `stock_resource_uuid` varchar(36) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Uuid identifier for the stock',
+  `labware_type` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The type of labware containing the stock. eg. Well, Tube',
+  `labware_machine_barcode` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The barcode of the containing labware as read by a barcode scanner',
+  `labware_human_barcode` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The barcode of the containing labware in human readable format',
+  `labware_coordinate` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'For wells, the coordinate on the containing plate. Null for tubes.',
+  `current_volume` float DEFAULT NULL COMMENT 'The current volume of material in microlitres based on measurements and know usage',
+  `initial_volume` float DEFAULT NULL COMMENT 'The result of the initial volume measurement in microlitres conducted on the material',
+  `concentration` float DEFAULT NULL COMMENT 'The concentration of material recorded in the lab in nanograms per microlitre',
+  `gel_pass` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The recorded result for the qel QC assay.',
+  `pico_pass` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The recorded result for the pico green assay. A pass indicates a successful assay, not sufficient material.',
+  `snp_count` int(11) DEFAULT NULL COMMENT 'The number of markers detected in genotyping assays',
+  `measured_gender` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The gender call base on the genotyping assay',
+  PRIMARY KEY (`id_stock_resource_tmp`),
+  KEY `fk_stock_resource_to_sample` (`id_sample_tmp`),
+  KEY `fk_stock_resource_to_study` (`id_study_tmp`),
+  KEY `composition_lookup_index` (`id_stock_resource_lims`,`id_sample_tmp`,`id_lims`),
+  CONSTRAINT `fk_stock_resource_to_sample` FOREIGN KEY (`id_sample_tmp`) REFERENCES `sample` (`id_sample_tmp`),
+  CONSTRAINT `fk_stock_resource_to_study` FOREIGN KEY (`id_study_tmp`) REFERENCES `study` (`id_study_tmp`)
+) ENGINE=InnoDB AUTO_INCREMENT=4656364 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
+
+with sql_engine.connect() as connection:
+    connection.execute(create_db)
+    connection.execute(drop_table)
+    connection.execute(create_table)
+
+
+# sql = (
+#         f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
+#         f" FROM {ml_wh_db}.sample as mlwh_sample"
+#         f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
+#         f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
+#         f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
+#         f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
+#         f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+#         f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
+#         f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
+#         " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
+#         " GROUP BY mlwh_sample.description"
+#     )
+
+print("Initialising the test MySQL events warehouse database")
+
+create_db = """
+CREATE DATABASE IF NOT EXISTS `event_warehouse_test` /*!40100 DEFAULT CHARACTER SET latin1 */;
+"""
+drop_table = """
+DROP TABLE IF EXISTS `event_warehouse_test`.`subjects`;
+DROP TABLE IF EXISTS `event_warehouse_test`.`roles`;
+DROP TABLE IF EXISTS `event_warehouse_test`.`events`;
+DROP TABLE IF EXISTS `event_warehouse_test`.`event_types`;
+"""
+create_table = """
+CREATE TABLE `event_warehouse_test`.`subjects` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` binary(16) NOT NULL COMMENT 'A binary encoded UUID use HEX(uuid) to retrieve the original (minus dashes)',
+  `friendly_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'A user readable identifier for the subject',
+  `subject_type_id` int(11) NOT NULL COMMENT 'References the event type',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_subjects_on_uuid` (`uuid`) USING BTREE,
+  KEY `index_subjects_on_friendly_name` (`friendly_name`) USING BTREE,
+  KEY `fk_rails_b7f2e355a0` (`subject_type_id`) USING BTREE,
+  CONSTRAINT `fk_rails_b7f2e355a0` FOREIGN KEY (`subject_type_id`) REFERENCES `subject_types` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4198465 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `event_warehouse_test`.`roles` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `event_id` int(11) NOT NULL COMMENT 'Associate with the event (what happened)',
+  `subject_id` int(11) NOT NULL COMMENT 'Associate with the subject (what it happened to, or what might care)',
+  `role_type_id` int(11) NOT NULL COMMENT 'References the role_types table, describing the role',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `index_roles_on_event_id` (`event_id`) USING BTREE,
+  KEY `fk_rails_df614e5484` (`role_type_id`) USING BTREE,
+  KEY `index_roles_on_subject_id` (`subject_id`) USING BTREE,
+  CONSTRAINT `fk_rails_42eade4dd3` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`),
+  CONSTRAINT `fk_rails_df614e5484` FOREIGN KEY (`role_type_id`) REFERENCES `role_types` (`id`),
+  CONSTRAINT `fk_rails_e0c7d3e302` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=51090114 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `event_warehouse_test`.`events` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `lims_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Identifier for the originating LIMS. eg. SQSCP for Sequencesacape',
+  `uuid` binary(16) NOT NULL COMMENT 'A binary encoded UUID use HEX(uuid) to retrieve the original (minus dashes)',
+  `event_type_id` int(11) NOT NULL COMMENT 'References the event type',
+  `occured_at` datetime NOT NULL COMMENT 'The time at which the event was recorded as happening. Other timestamps record when the event entered the database',
+  `user_identifier` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_events_on_uuid` (`uuid`) USING BTREE,
+  KEY `fk_rails_75f14fef31` (`event_type_id`) USING BTREE,
+  CONSTRAINT `fk_rails_75f14fef31` FOREIGN KEY (`event_type_id`) REFERENCES `event_types` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1268003 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `event_warehouse_test`.`event_types` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The identifier for the event',
+  `description` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'A description of the meaning of the event',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_event_types_on_key` (`key`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=51468 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 """
 
 with sql_engine.connect() as connection:

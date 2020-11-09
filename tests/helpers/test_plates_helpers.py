@@ -184,7 +184,7 @@ def test_update_mlwh_with_cog_uk_ids_connection_fails(
 ):
     with app.app_context():
         # mock this out to cause an exception
-        app.config["MLWH_RW_CONN_STRING"] = "notarealconnectionstring"
+        app.config["WAREHOUSES_RW_CONN_STRING"] = "notarealconnectionstring"
 
         with pytest.raises(OperationalError):
             update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)

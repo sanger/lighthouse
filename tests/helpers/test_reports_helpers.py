@@ -26,8 +26,12 @@ from lighthouse.constants import (
     FIELD_SOURCE,
     FIELD_CH1_CQ,
     CT_VALUE_LIMIT,
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_PLATE_BARCODE
 )
-
+from tests.data.fixture_data import (
+    MLWH_SEED_SAMPLES_MULTIPLE
+)
 
 def test_get_new_report_name_and_path(app, freezer):
     report_date = datetime.now().strftime("%y%m%d_%H%M")
@@ -118,6 +122,29 @@ def test_get_cherrypicked_samples_chunking(app, freezer):
             ):
                 returned_samples = get_cherrypicked_samples(samples, plate_barcodes, 2)
                 pd.testing.assert_frame_equal(expected, returned_samples)
+
+# test scenario where there have been multiple lighthouse tests for a sample with the same Root Sample ID
+def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_extra_data_multiple, mlwh_lh_samples, events_warehouse_tables):
+    root_sample_ids = []
+    for sample in MLWH_SEED_SAMPLES_MULTIPLE:
+        root_sample_ids.append(sample[MLWH_LH_SAMPLE_ROOT_SAMPLE_ID])
+    print('root_sample_ids', root_sample_ids)
+
+    expected = pd.DataFrame(
+        root_sample_ids, columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 0, 0]
+    )
+
+    plate_barcodes = []
+    for sample in MLWH_SEED_SAMPLES_MULTIPLE:
+        plate_barcodes.append(sample[MLWH_LH_SAMPLE_PLATE_BARCODE])
+    print('plate_barcodes', plate_barcodes)
+
+    with app.app_context():
+        returned_samples = get_cherrypicked_samples(root_sample_ids, plate_barcodes, 2)
+        print('expected', expected)
+        print('returned_samples', returned_samples)
+        pd.testing.assert_frame_equal(expected, returned_samples)
+
 
 
 def test_get_all_positive_samples(app, freezer, samples):

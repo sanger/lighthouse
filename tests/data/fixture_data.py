@@ -14,6 +14,7 @@ from lighthouse.constants import (
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_RESULT,
+    MLWH_LH_SAMPLE_PLATE_BARCODE
 )
 
 CENTRES: List[Dict[str, str]] = [
@@ -336,15 +337,185 @@ MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_1",
         MLWH_LH_SAMPLE_RNA_ID: "rna_1",
         MLWH_LH_SAMPLE_RESULT: "Positive",
+        MLWH_LH_SAMPLE_PLATE_BARCODE: "pb_1"
     },
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_2",
         MLWH_LH_SAMPLE_RNA_ID: "rna_2",
         MLWH_LH_SAMPLE_RESULT: "Positive",
+        MLWH_LH_SAMPLE_PLATE_BARCODE: "pb_2"
     },
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_1",
         MLWH_LH_SAMPLE_RNA_ID: "rna_3",
         MLWH_LH_SAMPLE_RESULT: "Positive",
+        MLWH_LH_SAMPLE_PLATE_BARCODE: "pb_3"
     },
 ]
+
+MLWH_EXTRA_DATA: Dict[str, Any] = {
+    'sample': [
+        {
+            'id_sample_tmp': '1',
+            'id_sample_lims': '1',
+            'description': 'root_1',
+            'supplier_name': 'cog_uk_id_1',
+            'phenotype': 'Positive',
+            'sanger_sample_id': 'ss1',
+            'id_lims': 'SQSCP',
+            'last_updated': '2015-11-25 11:35:30',
+            'recorded_at': '2015-11-25 11:35:30',
+            'created': '2015-11-25 11:35:30',
+        },
+        {
+            'id_sample_tmp': '2',
+            'id_sample_lims': '2',
+            'description': 'root_2',
+            'supplier_name': 'cog_uk_id_2',
+            'phenotype': 'Positive',
+            'sanger_sample_id': 'ss2',
+            'id_lims': 'SQSCP',
+            'last_updated': '2015-11-25 11:35:30',
+            'recorded_at': '2015-11-25 11:35:30',
+            'created': '2015-11-25 11:35:30',
+        },
+        {
+            'id_sample_tmp': '3',
+            'id_sample_lims': '3',
+            'description': 'root_1',
+            'supplier_name': 'cog_uk_id_3',
+            'phenotype': 'Positive',
+            'sanger_sample_id': 'ss3',
+            'id_lims': 'SQSCP',
+            'last_updated': '2015-11-25 11:35:30',
+            'recorded_at': '2015-11-25 11:35:30',
+            'created': '2015-11-25 11:35:30',
+        }
+    ],
+    'stock_resource': [
+        {
+            'id_stock_resource_tmp': '1',
+            'id_sample_tmp': '1',
+            'labware_human_barcode': 'pb_1',
+            'labware_machine_barcode': 'pb_1',
+            'last_updated': '2015-11-25 11:35:30',
+            'recorded_at': '2015-11-25 11:35:30',
+            'created': '2015-11-25 11:35:30',
+            'id_study_tmp': '1',
+            'id_lims': 'SQSCP',
+            'id_stock_resource_lims': '1',
+            'labware_type': 'well'
+        },
+        {
+            'id_stock_resource_tmp': '2',
+            'id_sample_tmp': '2',
+            'labware_human_barcode': 'pb_2',
+            'labware_machine_barcode': 'pb_2',
+            'last_updated': '2015-11-25 11:35:30',
+            'recorded_at': '2015-11-25 11:35:30',
+            'created': '2015-11-25 11:35:30',
+            'id_study_tmp': '1',
+            'id_lims': 'SQSCP',
+            'id_stock_resource_lims': '2',
+            'labware_type': 'well'
+        },
+        {
+            'id_stock_resource_tmp': '3',
+            'id_sample_tmp': '3',
+            'labware_human_barcode': 'pb_3',
+            'labware_machine_barcode': 'pb_3',
+            'last_updated': '2015-11-25 11:35:30',
+            'recorded_at': '2015-11-25 11:35:30',
+            'created': '2015-11-25 11:35:30',
+            'id_study_tmp': '1',
+            'id_lims': 'SQSCP',
+            'id_stock_resource_lims': '3',
+            'labware_type': 'well'
+        }
+    ],
+    'study': [
+        {
+            'id_study_tmp': '1',
+            'last_updated': '2015-11-25 11:35:30',
+            'recorded_at': '2015-11-25 11:35:30',
+            'id_study_lims': '1',
+            'id_lims': 'SQSCP'
+        }
+    ]
+}
+
+EVENTS_WAREHOUSE_DATA: Dict[str, Any] = {
+    'subjects': [
+        {
+            'id': 1,
+            'uuid': 1,
+            'friendly_name': 'ss1',
+            'subject_type_id': 1
+        },
+        {
+            'id': 2,
+            'uuid': 2,
+            'friendly_name': 'ss2',
+            'subject_type_id': 1
+        }
+    ],
+    'roles': [
+        {
+            'id': 1,
+            'event_id': 1,
+            'subject_id': 1,
+            'role_type_id': 1
+        },
+        {
+            'id': 2,
+            'event_id': 2,
+            'subject_id': 2,
+            'role_type_id': 1
+        }
+    ],
+    'events': [
+        {
+            'id': 1,
+            'lims_id': 'SQSCP',
+            'uuid': 1,
+            'event_type_id': 1,
+            'occured_at': '2015-11-25 11:35:30',
+            'user_identifier': 'test@example.com'
+        },
+        {
+            'id': 2,
+            'lims_id': 'SQSCP',
+            'uuid': 2,
+            'event_type_id': 1,
+            'occured_at': '2015-11-25 11:35:30',
+            'user_identifier': 'test@example.com'
+        }
+    ],
+    'event_types': [
+        {
+            'id': 1,
+            'key': 'cherrypick_layout_set',
+            'description': 'stuff'
+        }
+    ],'event_types': [
+        {
+            'id': 1,
+            'key': 'cherrypick_layout_set',
+            'description': 'stuff'
+        }
+    ],
+    'subject_types': [
+        {
+            'id': 1,
+            'key': 'sample',
+            'description': 'stuff'
+        }
+    ],
+    'role_types': [
+        {
+            'id': 1,
+            'key': 'sample',
+            'description': 'stuff'
+        }
+    ]
+}

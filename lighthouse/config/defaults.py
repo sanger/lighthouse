@@ -106,5 +106,15 @@ LOGGING: Dict[str, Any] = {
 MLWH_CONN_STRING = "root@localhost"
 EVENTS_WH_DB = "events_wh_db"
 
-MLWH_RW_CONN_STRING = "root:root@localhost"
+WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
+MLWH_STOCK_RESOURCES_TABLE = "stock_resource"
+MLWH_SAMPLE_TABLE = "sample"
+MLWH_STUDY_TABLE = "study"
+
+EVENTS_WAREHOUSE_SUBJECTS_TABLE = "subjects"
+EVENTS_WAREHOUSE_ROLES_TABLE = "roles"
+EVENTS_WAREHOUSE_EVENTS_TABLE = "events"
+EVENTS_WAREHOUSE_EVENT_TYPES_TABLE = "event_types"
+EVENTS_WAREHOUSE_SUBJECT_TYPES_TABLE = "subject_types"
+EVENTS_WAREHOUSE_ROLE_TYPES_TABLE = "role_types"

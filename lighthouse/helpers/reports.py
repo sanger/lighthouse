@@ -183,8 +183,8 @@ def get_locations_from_labwhere(labware_barcodes):
         json={"barcodes": labware_barcodes},
     )
 
-
 def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
+# def get_cherrypicked_samples(existing_dataframe, chunk_size=50000):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
     # Returns dataframe with 1 column, 'Root Sample ID', containing Root Sample ID of those that have been cherrypicked
     # TODO: move into external method.
@@ -192,11 +192,13 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
     try:
         # Create an empty DataFrame to merge into
         concat_frame = pd.DataFrame()
+        print('chunk_size', chunk_size)
 
         chunk_root_sample_ids = [
             root_sample_ids[x : (x + chunk_size)]
             for x in range(0, len(root_sample_ids), chunk_size)
         ]
+        print('chunk_root_sample_ids', chunk_root_sample_ids)
 
         sql_engine = sqlalchemy.create_engine(
             f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600
@@ -207,7 +209,8 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         events_wh_db = app.config["EVENTS_WH_DB"]
 
         for chunk_root_sample_id in chunk_root_sample_ids:
-
+            print('chunk_root_sample_id', chunk_root_sample_id)
+            # select fields root sample id, plate barcode and result? + coordinate?
             sql = (
                 f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
                 f" FROM {ml_wh_db}.sample as mlwh_sample"
@@ -221,6 +224,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
                 " GROUP BY mlwh_sample.description"
             )
+            print('sql', sql)
             frame = pd.read_sql(
                 sql,
                 db_connection,
@@ -283,7 +287,7 @@ def add_cherrypicked_column(existing_dataframe):
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
     existing_dataframe = existing_dataframe.merge(
-        cherrypicked_samples_df, how="left", on=FIELD_ROOT_SAMPLE_ID
+        cherrypicked_samples_df, how="left", on=FIELD_ROOT_SAMPLE_ID # and ON rna id and ON result
     )
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 
