@@ -124,14 +124,11 @@ def test_get_cherrypicked_samples_chunking(app, freezer):
                 pd.testing.assert_frame_equal(expected, returned_samples)
 
 # test scenario where there have been multiple lighthouse tests for a sample with the same Root Sample ID
+# TODO: make this test more rigorous, so it can't pass by chance
 def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_extra_data_multiple, mlwh_lh_samples, events_warehouse_tables):
     root_sample_ids = []
     for sample in MLWH_SEED_SAMPLES_MULTIPLE:
         root_sample_ids.append(sample[MLWH_LH_SAMPLE_ROOT_SAMPLE_ID])
-
-    expected = pd.DataFrame(
-        root_sample_ids, columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 0, 0]
-    )
 
     plate_barcodes = []
     for sample in MLWH_SEED_SAMPLES_MULTIPLE:
@@ -141,7 +138,6 @@ def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_extra_data_mul
         ['root_1', 'pb_1'],
         ['root_2', 'pb_2']
     ]
-
     expected = pd.DataFrame(
         np.array(expected_rows), columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE], index=[0, 1]
     )
@@ -208,26 +204,29 @@ def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_sample
     assert np.array_equal(result.to_numpy(), expected_data)
 
 
+# TODO: add a test where get_cherrypicked_samples returns duplicates, how does merge handle it?
 def test_add_cherrypicked_column(app, freezer):
-    # mocks response from get_cherrypicked_samples()
+    # existing dataframe before 'add_cherrypicked_column' is run (essentially queried from MongoDB)
     existing_dataframe = pd.DataFrame(
-        [["MCM001", "123", "TEST"], ["MCM001", "456", "TEST"], ["MCM002", "456", "TEST"]],
-        columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID"],
+        [["MCM001", "123", "TEST", "Positive", "A1"], ["MCM001", "456", "TEST", "Positive", "C1"], ["MCM002", "456", "TEST", "Positive2", "B2"]],
+        columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE],
     )
 
-    expected_rows = [
-        ['MCM001', '123'],
-        ['MCM002', '456']
+    # mock response from the 'get_cherrypicked_samples' method
+    mock_get_cherrypicked_samples_rows = [
+        ["MCM001", "123", "Positive", "A1"],
+        ["MCM002", "456", "Positive2", "B2"]
     ]
     mock_get_cherrypicked_samples = pd.DataFrame(
-        np.array(expected_rows), columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE]
+        np.array(mock_get_cherrypicked_samples_rows), columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
     )
 
-    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", "LIMS submission"]
+    # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from 'get_cherrypicked_samples'
+    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE, "LIMS submission"]
     expected_data = [
-        ["MCM001", "123", "TEST", "Yes"],
-        ["MCM001", "456", "TEST", "No"],
-        ["MCM002", "456", "TEST", "Yes"],
+        ["MCM001", "123", "TEST", "Positive", "A1", "Yes"],
+        ["MCM001", "456", "TEST", "Positive", "C1", "No"],
+        ["MCM002", "456", "TEST", "Positive2", "B2", "Yes"],
     ]
 
     with app.app_context():

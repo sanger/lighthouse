@@ -127,7 +127,7 @@ def get_new_report_name_and_path() -> Tuple[str, pathlib.PurePath]:
     return report_name, report_path
 
 
-# Stip any leading zeros from the coordinate
+# Strip any leading zeros from the coordinate
 # eg. A01 => A1
 def unpad_coordinate(coordinate):
     return (
@@ -209,6 +209,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         for chunk_root_sample_id in chunk_root_sample_ids:
             sql = (
                 f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"
+                # f",mlwh_sample.phenotype as `{FIELD_RESULT}`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"
                 f" FROM {ml_wh_db}.sample as mlwh_sample"
                 f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
                 f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
@@ -300,7 +301,8 @@ def add_cherrypicked_column(existing_dataframe):
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
     existing_dataframe = existing_dataframe.merge(
-        cherrypicked_samples_df, how="left", on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE] # and ON rna id and ON result
+        cherrypicked_samples_df, how="left", on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE]
+        # cherrypicked_samples_df, how="left", on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
     )
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 
