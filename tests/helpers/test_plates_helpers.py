@@ -38,6 +38,8 @@ from lighthouse.helpers.plates import (
     UnmatchedSampleError,
     get_cherrypicked_samples_records,
     query_for_cherrypicked_samples,
+    row_is_normal_sample,
+    rows_without_controls,
 )
 
 
@@ -294,20 +296,22 @@ def build_row(
     }
 
 
+MyRow = namedtuple(
+    "MyRow",
+    [
+        "destination_barcode",
+        "destination_coordinate",
+        "source_barcode",
+        "source_coordinate",
+        "control",
+        "root_sample_id",
+        "rna_id",
+        "lab_id",
+    ],
+)
+
+
 def test_query_for_cherrypicked_samples(app):
-    MyRow = namedtuple(
-        "MyRow",
-        [
-            "destination_barcode",
-            "destination_coordinate",
-            "source_barcode",
-            "source_coordinate",
-            "control",
-            "root_sample_id",
-            "rna_id",
-            "lab_id",
-        ],
-    )
     test = [
         MyRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
         MyRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
@@ -323,3 +327,33 @@ def test_query_for_cherrypicked_samples(app):
             {FIELD_ROOT_SAMPLE_ID: "sample_2", FIELD_RNA_ID: "plate1:A03", FIELD_LAB_ID: "ABC"},
         ]
     }
+
+
+def test_row_is_normal_sample_detects_if_sample_is_control(app):
+    assert not row_is_normal_sample(
+        MyRow("DN1111", "A01", "DN2222", "C03", "positive", "sample_1", "plate1:A01", "ABC")
+    )
+    assert not row_is_normal_sample(
+        MyRow("DN1111", "A01", "DN2222", "C03", "negative", "sample_1", "plate1:A01", "ABC")
+    )
+    assert not row_is_normal_sample(
+        MyRow("DN1111", "A01", "DN2222", "C03", "control", "sample_1", "plate1:A01", "ABC")
+    )
+    assert row_is_normal_sample(
+        MyRow("DN1111", "A01", "DN2222", "C03", "", "sample_1", "plate1:A01", "ABC")
+    )
+    assert row_is_normal_sample(
+        MyRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC")
+    )
+
+
+def test_rows_without_controls_filters_out_controls(app):
+    test = [
+        MyRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        MyRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        MyRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
+        MyRow("DN3333", "A02", "DN2222", "C01", "positive", None, None, None),
+        MyRow("DN3333", "A03", "DN2222", "C05", "negative", None, None, None),
+    ]
+
+    assert rows_without_controls(test) == [test[0], test[1], test[2]]
