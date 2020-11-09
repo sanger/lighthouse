@@ -44,6 +44,8 @@ from lighthouse.helpers.plates import (
     find_sample_matching_row,
     join_rows_with_samples,
     row_to_dict,
+    map_to_ss_columns,
+    create_cherrypicked_post_body,
 )
 
 
@@ -467,3 +469,83 @@ def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_differen
                 "sample": samples_different_plates[1],
             },
         ]
+
+
+def test_map_to_ss_columns(app, dart_mongo_merged_samples):
+    with app.app_context():
+        correct_mapped_samples = [
+            {
+                "sample_description": "MCM001",
+                "phenotype": "Positive",
+                "control": "Positive",
+                "supplier_name": "abc",
+                "barcode": "d123",
+                "coordinate": "B01",
+            },
+            {
+                "sample_description": "MCM002",
+                "phenotype": "Positive",
+                "supplier_name": "abcd",
+                "barcode": "d123",
+                "coordinate": "B02",
+            },
+        ]
+
+        assert map_to_ss_columns(dart_mongo_merged_samples) == correct_mapped_samples
+
+
+def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
+    with app.app_context():
+        del dart_mongo_merged_samples[0]["row"]["destination_coordinate"]
+        with pytest.raises(KeyError):
+            map_to_ss_columns(dart_mongo_merged_samples)
+
+
+def test_create_post_body(app):
+    with app.app_context():
+        barcode = "d123"
+        mapped_samples = [
+            {
+                "sample_description": "MCM001",
+                "phenotype": "Positive",
+                "control": "Positive",
+                "supplier_name": "abc",
+                "barcode": "d123",
+                "coordinate": "B01",
+            },
+            {
+                "sample_description": "MCM002",
+                "phenotype": "Positive",
+                "supplier_name": "abcd",
+                "barcode": "d123",
+                "coordinate": "B02",
+            },
+        ]
+        correct_body = {
+            "data": {
+                "type": "plates",
+                "attributes": {
+                    "barcode": "d123",
+                    "purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
+                    "study_uuid": current_app.config["SS_UUID_STUDY_CHERRYPICKED"],
+                    "wells": {
+                        "B01": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "abc",
+                                "sample_description": "MCM001",
+                            }
+                        },
+                        "B02": {
+                            "content": {
+                                "phenotype": "positive",
+                                "supplier_name": "abcd",
+                                "sample_description": "MCM002",
+                            }
+                        },
+                    },
+                },
+            }
+        }
+
+        assert create_cherrypicked_post_body(barcode, mapped_samples) == correct_body

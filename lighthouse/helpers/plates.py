@@ -344,3 +344,58 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     finally:
         if db_connection is not None:
             db_connection.close()
+
+def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str, str]]:
+    mapped_samples = []
+
+    for sample in samples:
+        mapped_sample = {}
+
+        mongo_row = sample["sample"]
+        dart_row = sample["row"]
+        
+        try:
+            mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
+            mapped_sample["phenotype"] = mongo_row[FIELD_RESULT] # This should be the filtered positive field 
+            mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
+
+            mapped_sample["coordinate"] = dart_row["destination_coordinate"]
+            mapped_sample["barcode"] = dart_row["destination_barcode"]
+            if dart_row["control"]:
+                mapped_sample["control"] = dart_row["control"]
+        except KeyError as e:
+            msg = f"""
+            Error while mapping database columns to Sequencescape columns for sample {mongo_row["root_sample_id"]}.
+            {type(e).__name__}: {str(e)}
+            """
+            logger.error(msg)
+            raise
+        mapped_samples.append(mapped_sample)
+    return mapped_samples
+
+def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
+    logger.debug(f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'")
+
+    wells_content = {}
+    for sample in samples:
+
+        assert sample["phenotype"] is not None
+        assert sample["supplier_name"] is not None
+
+        well = {
+            "content": {
+                "phenotype": sample["phenotype"].strip().lower(),
+                "supplier_name": sample["supplier_name"],
+                "sample_description": sample["sample_description"],
+            }
+        }
+        wells_content[sample["coordinate"]] = well
+
+    body = {
+        "barcode": barcode,
+        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
+        "study_uuid": app.config["SS_UUID_STUDY_CHERRYPICKED"],
+        "wells": wells_content,
+    }
+
+    return {"data": {"type": "plates", "attributes": body}}
