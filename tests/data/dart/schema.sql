@@ -2,6 +2,7 @@ if not exists (SELECT Name
 from sys.tables
 where Name='CherrypickingInfo') CREATE TABLE CherrypickingInfo
 (
+  run_id int,
   destination_barcode NVARCHAR(50),
   destination_coordinate NVARCHAR(50),
   source_barcode NVARCHAR(50),

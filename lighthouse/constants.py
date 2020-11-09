@@ -26,6 +26,7 @@ FIELD_DART_CONTROL = "control"
 FIELD_DART_ROOT_SAMPLE_ID = "root_sample_id"
 FIELD_DART_RNA_ID = "rna_id"
 FIELD_DART_LAB_ID = "lab_id"
+FIELD_DART_RUN_ID = "run_id"
 
 #  MLWH lighthouse samples table field names
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID = "root_sample_id"

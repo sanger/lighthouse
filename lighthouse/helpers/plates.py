@@ -141,8 +141,8 @@ def rows_without_controls(rows):
 
 
 def query_for_cherrypicked_samples(rows):
-    if len(rows) == 0:
-        return {}
+    if rows is None or (len(rows) == 0):
+        return None
     mongo_query = []
     for row in rows_without_controls(rows):
         sample_query = {
@@ -162,7 +162,7 @@ def equal_row_and_sample(row, sample):
     )
 
 
-def find_row_in_samples(row, samples):
+def find_sample_matching_row(row, samples):
     for pos in range(0, len(samples)):
         sample = samples[pos]
         if equal_row_and_sample(row, sample):
@@ -173,9 +173,26 @@ def find_row_in_samples(row, samples):
 def join_rows_with_samples(rows, samples):
     records = []
     for row in rows_without_controls(rows):
-        records.append({"row": rows, "sample": find_row_in_samples(row, samples)})
+        records.append({"row": row_to_dict(row), "sample": find_sample_matching_row(row, samples)})
 
     return records
+
+
+def row_to_dict(row):
+    columns = [
+        FIELD_DART_DESTINATION_BARCODE,
+        FIELD_DART_DESTINATION_COORDINATE,
+        FIELD_DART_SOURCE_BARCODE,
+        FIELD_DART_SOURCE_COORDINATE,
+        FIELD_DART_CONTROL,
+        FIELD_DART_ROOT_SAMPLE_ID,
+        FIELD_DART_RNA_ID,
+        FIELD_DART_LAB_ID,
+    ]
+    obj = {}
+    for column in columns:
+        obj[column] = getattr(row, column)
+    return obj
 
 
 def get_cherrypicked_samples_records(barcode):

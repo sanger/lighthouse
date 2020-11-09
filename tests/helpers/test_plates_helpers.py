@@ -40,6 +40,10 @@ from lighthouse.helpers.plates import (
     query_for_cherrypicked_samples,
     row_is_normal_sample,
     rows_without_controls,
+    equal_row_and_sample,
+    find_sample_matching_row,
+    join_rows_with_samples,
+    row_to_dict,
 )
 
 
@@ -269,11 +273,6 @@ def retrieve_samples_cursor(config, sql_engine):
     return results
 
 
-def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_different_plates):
-    with app.app_context():
-        assert len(get_cherrypicked_samples_records("test1")) == 2
-
-
 def build_row(
     destination_barcode,
     destination_coordinate,
@@ -311,7 +310,7 @@ MyRow = namedtuple(
 )
 
 
-def test_query_for_cherrypicked_samples(app):
+def test_query_for_cherrypicked_samples_generates_list(app):
     test = [
         MyRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
         MyRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
@@ -327,6 +326,11 @@ def test_query_for_cherrypicked_samples(app):
             {FIELD_ROOT_SAMPLE_ID: "sample_2", FIELD_RNA_ID: "plate1:A03", FIELD_LAB_ID: "ABC"},
         ]
     }
+
+
+def test_query_for_cherrypicked_samples_returns_empty_if_none(app):
+    assert query_for_cherrypicked_samples([]) is None
+    assert query_for_cherrypicked_samples(None) is None
 
 
 def test_row_is_normal_sample_detects_if_sample_is_control(app):
@@ -357,3 +361,109 @@ def test_rows_without_controls_filters_out_controls(app):
     ]
 
     assert rows_without_controls(test) == [test[0], test[1], test[2]]
+
+
+def test_equal_row_and_sample_compares_row_and_sample(app, samples_different_plates):
+    # Different root sample id
+    row = MyRow("DN1111", "A01", "123", "A01", None, "MCM002", "rna_1", "Lab 1")
+    assert not equal_row_and_sample(row, samples_different_plates[0])
+
+    # Different rna id
+    row = MyRow("DN1111", "A01", "123", "A01", None, "MCM001", "rna_3", "Lab 1")
+    assert not equal_row_and_sample(row, samples_different_plates[0])
+
+    # Different lab id
+    row = MyRow("DN1111", "A01", "123", "A01", None, "MCM001", "rna_1", "Lab 2")
+    assert not equal_row_and_sample(row, samples_different_plates[0])
+
+    # Same 3 values (root sample id, rna id, lab id)
+    row = MyRow("DN1111", "A01", "123", "A01", None, "MCM001", "rna_1", "Lab 1")
+    assert equal_row_and_sample(row, samples_different_plates[0])
+
+
+def test_find_sample_matching_row(app, samples_different_plates):
+    row = MyRow("DN1111", "A01", "123", "A01", None, "MCM002", "rna_2", "Lab 2")
+
+    assert find_sample_matching_row(row, samples_different_plates) == samples_different_plates[1]
+
+
+def test_find_sample_matching_row_returns_none_if_not_found(app, samples_different_plates):
+    row = MyRow("DN1111", "A01", "123", "A01", None, "MCM002", "rna_2", "Lab 3")
+
+    assert find_sample_matching_row(row, samples_different_plates) is None
+
+
+def test_join_rows_with_samples(app, samples_different_plates):
+    rows = [
+        MyRow("DN1111", "A01", "123", "A01", None, "MCM001", "rna_1", "Lab 1"),
+        MyRow("DN1111", "A01", "123", "A01", None, "MCM002", "rna_2", "Lab 2"),
+    ]
+
+    assert join_rows_with_samples(rows, samples_different_plates) == [
+        {"row": row_to_dict(rows[0]), "sample": samples_different_plates[0]},
+        {"row": row_to_dict(rows[1]), "sample": samples_different_plates[1]},
+    ]
+
+
+def test_join_rows_with_samples_joins_with_empty_sample_if_not_found(app, samples_different_plates):
+    rows = [
+        MyRow("DN1111", "A01", "123", "A01", None, "MCM001", "rna_1", "Lab 1"),
+        MyRow("DN1111", "A01", "123", "A01", None, "MCM002", "rna_3", "Lab 2"),
+    ]
+
+    assert join_rows_with_samples(rows, samples_different_plates) == [
+        {"row": row_to_dict(rows[0]), "sample": samples_different_plates[0]},
+        {"row": row_to_dict(rows[1]), "sample": None},
+    ]
+
+
+def test_join_rows_with_samples_filters_out_controls(app, samples_different_plates):
+    rows = [
+        MyRow("DN1111", "A01", "123", "A01", "positive", "MCM001", "rna_1", "Lab 1"),
+        MyRow("DN1111", "A01", "123", "A01", None, "MCM002", "rna_2", "Lab 2"),
+    ]
+
+    assert join_rows_with_samples(rows, samples_different_plates) == [
+        {"row": row_to_dict(rows[1]), "sample": samples_different_plates[1]},
+    ]
+
+
+def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_different_plates):
+    with app.app_context():
+
+        result = get_cherrypicked_samples_records("test1")
+
+        samples_different_plates[0]["_id"] = result[0]["sample"]["_id"]
+        samples_different_plates[1]["_id"] = result[1]["sample"]["_id"]
+
+        assert result[0]["sample"] == samples_different_plates[0]
+        assert result[1]["sample"] == samples_different_plates[1]
+
+        assert result == [
+            {
+                "row": {
+                    FIELD_DART_DESTINATION_BARCODE: "test1",
+                    FIELD_DART_DESTINATION_COORDINATE: "A01",
+                    FIELD_DART_SOURCE_BARCODE: "123",
+                    FIELD_DART_SOURCE_COORDINATE: "A01",
+                    FIELD_DART_CONTROL: "",
+                    FIELD_DART_ROOT_SAMPLE_ID: "MCM001",
+                    FIELD_DART_RNA_ID: "rna_1",
+                    FIELD_DART_LAB_ID: "Lab 1",
+                },
+                "sample": samples_different_plates[0],
+            },
+            {
+                "row": {
+                    FIELD_DART_DESTINATION_BARCODE: "test1",
+                    FIELD_DART_DESTINATION_COORDINATE: "B01",
+                    FIELD_DART_SOURCE_BARCODE: "456",
+                    FIELD_DART_SOURCE_COORDINATE: "A01",
+                    FIELD_DART_CONTROL: "",
+                    FIELD_DART_ROOT_SAMPLE_ID: "MCM002",
+                    FIELD_DART_RNA_ID: "rna_2",
+                    FIELD_DART_LAB_ID: "Lab 2",
+                },
+                "sample": samples_different_plates[1],
+            },
+        ]

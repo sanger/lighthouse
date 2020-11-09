@@ -2,9 +2,9 @@ delete from CherrypickingInfo;
 
 INSERT INTO CherrypickingInfo
 VALUES
-  ('test1', 'A01', '123', 'A01', '', 'MCM001', 'rna_1', 'Lab 1'),
-  ('test1', 'B01', '456', 'A01', '', 'MCM002', 'rna_2', 'Lab 2'),
-  ('test1', 'C01', '789', 'B01', 'positive', '', '', '');
+  (1, 'test1', 'A01', '123', 'A01', '', 'MCM001', 'rna_1', 'Lab 1'),
+  (2, 'test1', 'B01', '456', 'A01', '', 'MCM002', 'rna_2', 'Lab 2'),
+  (2, 'test1', 'C01', '789', 'B01', 'positive', '', '', '');
 -- Query all properties for labware ()
 -- select * from labwareprops 
 -- inner join labware on labware.lab_pk=labwareprops.lab_fk 
