@@ -9,7 +9,7 @@ TESTING = True
 SCHEDULER_RUN = False
 
 # Eve config
-MONGO_HOST = "host.docker.internal"
+MONGO_HOST = "127.0.0.1"
 MONGO_DBNAME = "lighthouseTestDB"
 MONGO_QUERY_BLACKLIST = ["$where"]  # not sure why this was required...
 
@@ -19,13 +19,13 @@ LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream"]  # noqa: F405
 
 REPORTS_DIR = "tests/data/reports"
 
-MLWH_CONN_STRING = "root@host.docker.internal"
+MLWH_CONN_STRING = "root@localhost"
 ML_WH_DB = "unified_warehouse_test"
 
-MLWH_RW_CONN_STRING = "root@host.docker.internal"
+MLWH_RW_CONN_STRING = "root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 
-DART_SQL_SERVER_HOST = "host.docker.internal"
+DART_SQL_SERVER_HOST = "localhost"
 DART_SQL_SERVER_DATABASE = "DartTestDB"
 DART_SQL_SERVER_USER = "SA"
 DART_SQL_SERVER_PASSWORD = "MyS3cr3tPassw0rd"
