@@ -28,6 +28,7 @@ flask-apscheduler = "~=1.11"
 pymysql = "*"
 sqlalchemy = "*"
 pyodbc = "*"
+pytz = "*"
 
 [requires]
 python_version = "3.8"
