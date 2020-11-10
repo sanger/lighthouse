@@ -217,6 +217,14 @@ drop_table_event_types = """
 DROP TABLE IF EXISTS `event_warehouse_test`.`event_types`;
 """
 
+drop_table_subject_types = """
+DROP TABLE IF EXISTS `event_warehouse_test`.`subject_types`;
+"""
+
+drop_table_role_types = """
+DROP TABLE IF EXISTS `event_warehouse_test`.`role_types`;
+"""
+
 create_table_subjects = """
 CREATE TABLE `event_warehouse_test`.`subjects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -280,17 +288,57 @@ CREATE TABLE `event_warehouse_test`.`event_types` (
 ) ENGINE=InnoDB AUTO_INCREMENT=51468 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 """
 
+create_table_subject_types = """
+CREATE TABLE `subject_types` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The identifier for the role type',
+  `description` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'A description of the subject type',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_subject_types_on_key` (`key`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
+
+create_table_role_types = """
+CREATE TABLE `role_types` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The identifier for the role type',
+  `description` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'A description of the role',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_role_types_on_key` (`key`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
+
 with sql_engine.connect() as connection:
     connection.execute(create_db)
 
+    print("*** Dropping table ROLES ***")
     connection.execute(drop_table_roles)
+    print("*** Dropping table ROLE TYPES ***")
+    connection.execute(drop_table_role_types)
+    print("*** Dropping table EVENTS ***")
     connection.execute(drop_table_events)
+    print("*** Dropping table EVENT TYPES ***")
     connection.execute(drop_table_event_types)
+    print("*** Dropping table SUBJECT ***")
     connection.execute(drop_table_subjects)
+    print("*** Dropping table SUBJECT TYPES ***")
+    connection.execute(drop_table_subject_types)
 
+    print("*** Creating table SUBJECT TYPES ***")
+    connection.execute(create_table_subject_types)
+    print("*** Creating table SUBJECTS ***")
     connection.execute(create_table_subjects)
+    print("*** Creating table EVENT TYPES ***")
     connection.execute(create_table_event_types)
+    print("*** Creating table EVENTS ***")
     connection.execute(create_table_events)
+    print("*** Creating table ROLE TYPES ***")
+    connection.execute(create_table_role_types)
+    print("*** Creating table ROLES ***")
     connection.execute(create_table_roles)
 
 print("Done")
