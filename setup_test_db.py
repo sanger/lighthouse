@@ -178,14 +178,22 @@ CREATE TABLE `study` (
 with sql_engine.connect() as connection:
     connection.execute(create_db)
 
+    print("*** Dropping table LIGHTHOUSE SAMPLE ***")
     connection.execute(drop_table_lh_sample)
+    print("*** Dropping table STOCK RESOURCE ***")
     connection.execute(drop_table_stock_resource)
+    print("*** Dropping table STUDY ***")
     connection.execute(drop_table_study)
+    print("*** Dropping table SAMPLE ***")
     connection.execute(drop_table_sample)
 
+    print("*** Creating table SAMPLE ***")
     connection.execute(create_table_sample)
+    print("*** Creating table STUDY ***")
     connection.execute(create_table_study)
+    print("*** Creating table STOCK RESOURCE ***")
     connection.execute(create_table_stock_resource)
+    print("*** Creating table LIGHTHOUSE SAMPLE ***")
     connection.execute(create_table_lh_sample)
 
 print("Initialising the test MySQL events warehouse database")
