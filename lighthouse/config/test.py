@@ -19,7 +19,7 @@ LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream"]  # noqa: F405
 
 REPORTS_DIR = "tests/data/reports"
 
-MLWH_CONN_STRING = "root@localhost"
+WAREHOUSES_RO_CONN_STRING = "root:root@localhost"
 ML_WH_DB = "unified_warehouse_test"
 EVENTS_WH_DB = "event_warehouse_test"
 

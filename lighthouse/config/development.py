@@ -13,7 +13,7 @@ MONGO_DBNAME = "lighthouseDevelopmentDB"
 LOGGING["loggers"]["lighthouse"]["level"] = "DEBUG"  # noqa: F405
 LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream"]  # noqa: F405
 
-MLWH_CONN_STRING = "root@localhost"
+WAREHOUSES_RO_CONN_STRING = "root@localhost"
 ML_WH_DB = "unified_warehouse_test"
 
 WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
