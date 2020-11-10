@@ -15,7 +15,16 @@ from lighthouse.constants import (
     FIELD_COORDINATE,
     FIELD_SOURCE,
     FIELD_PLATE_BARCODE,
-    POSITIVE_SAMPLES_MONGODB_FILTER
+    FIELD_LAB_ID,
+    POSITIVE_SAMPLES_MONGODB_FILTER,
+    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_SOURCE_BARCODE,
+    FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DART_CONTROL,
+    FIELD_DART_ROOT_SAMPLE_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_LAB_ID,
 )
 from lighthouse.exceptions import (
     DataError,
@@ -24,15 +33,14 @@ from lighthouse.exceptions import (
     MultipleCentresError,
 )
 
-from lighthouse.helpers.mlwh_db import (
-    create_mlwh_connection_engine,
-    get_table
-)
+from sqlalchemy.sql.expression import bindparam  # type: ignore
+from sqlalchemy.sql.expression import and_  # type: ignore
 
-from sqlalchemy.sql.expression import bindparam # type: ignore
-from sqlalchemy.sql.expression import and_ # type: ignore
+from lighthouse.helpers.mlwh_db import create_mlwh_connection_engine, get_table
+from lighthouse.helpers.dart_db import find_dart_source_samples_rows
 
 logger = logging.getLogger(__name__)
+
 
 class UnmatchedSampleError(Exception):
     pass
@@ -97,7 +105,7 @@ def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
 
     samples_for_barcode = list(samples.find(query))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples for {query[FIELD_PLATE_BARCODE]}")
+    logger.info(f"Found {len(samples_for_barcode)} samples")
 
     return samples_for_barcode
 
@@ -117,6 +125,81 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     samples_for_barcode = find_samples(query_filter)
 
     return samples_for_barcode
+
+
+def row_is_normal_sample(row):
+    control_value = getattr(row, FIELD_DART_CONTROL)
+    return control_value is None or control_value == "NULL" or control_value == ""
+
+
+def rows_without_controls(rows):
+    list = []
+    for row in rows:
+        if row_is_normal_sample(row):
+            list.append(row)
+    return list
+
+
+def query_for_cherrypicked_samples(rows):
+    if rows is None or (len(rows) == 0):
+        return None
+    mongo_query = []
+    for row in rows_without_controls(rows):
+        sample_query = {
+            FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
+            FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
+            FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
+        }
+        mongo_query.append(sample_query)
+    return {"$or": mongo_query}
+
+
+def equal_row_and_sample(row, sample):
+    return (
+        (sample[FIELD_ROOT_SAMPLE_ID] == getattr(row, FIELD_DART_ROOT_SAMPLE_ID))
+        and (sample[FIELD_RNA_ID] == getattr(row, FIELD_DART_RNA_ID))
+        and (sample[FIELD_LAB_ID] == getattr(row, FIELD_DART_LAB_ID))
+    )
+
+
+def find_sample_matching_row(row, samples):
+    for pos in range(0, len(samples)):
+        sample = samples[pos]
+        if equal_row_and_sample(row, sample):
+            return sample
+    return None
+
+
+def join_rows_with_samples(rows, samples):
+    records = []
+    for row in rows_without_controls(rows):
+        records.append({"row": row_to_dict(row), "sample": find_sample_matching_row(row, samples)})
+
+    return records
+
+
+def row_to_dict(row):
+    columns = [
+        FIELD_DART_DESTINATION_BARCODE,
+        FIELD_DART_DESTINATION_COORDINATE,
+        FIELD_DART_SOURCE_BARCODE,
+        FIELD_DART_SOURCE_COORDINATE,
+        FIELD_DART_CONTROL,
+        FIELD_DART_ROOT_SAMPLE_ID,
+        FIELD_DART_RNA_ID,
+        FIELD_DART_LAB_ID,
+    ]
+    obj = {}
+    for column in columns:
+        obj[column] = getattr(row, column)
+    return obj
+
+
+def get_cherrypicked_samples_records(barcode):
+    rows = find_dart_source_samples_rows(barcode)
+    samples = find_samples(query_for_cherrypicked_samples(rows))
+
+    return join_rows_with_samples(rows, samples)
 
 
 def confirm_centre(samples: List[Dict[str, str]]) -> str:
@@ -198,6 +281,7 @@ def send_to_ss(body: Dict[str, Any]) -> requests.Response:
 
     return response
 
+
 def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     """Update the MLWH to write the COG UK barcode for each sample.
 
@@ -213,22 +297,30 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         data = []
         for sample in samples:
             # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
-            data.append({
-                'b_root_sample_id': sample[FIELD_ROOT_SAMPLE_ID],
-                'b_rna_id':         sample[FIELD_RNA_ID],
-                'b_result':         sample[FIELD_RESULT],
-                'b_cog_uk_id':      sample[FIELD_COG_BARCODE]
-            })
+            data.append(
+                {
+                    "b_root_sample_id": sample[FIELD_ROOT_SAMPLE_ID],
+                    "b_rna_id": sample[FIELD_RNA_ID],
+                    "b_result": sample[FIELD_RESULT],
+                    "b_cog_uk_id": sample[FIELD_COG_BARCODE],
+                }
+            )
 
-        sql_engine = create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])
-        table = get_table(sql_engine, app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE'])
+        sql_engine = create_mlwh_connection_engine(
+            app.config["MLWH_RW_CONN_STRING"], app.config["ML_WH_DB"]
+        )
+        table = get_table(sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
-        stmt = table.update().where(and_(
-            table.c.root_sample_id == bindparam('b_root_sample_id'),
-            table.c.rna_id == bindparam('b_rna_id'),
-            table.c.result == bindparam('b_result')
-        )).values(
-            cog_uk_id=bindparam('b_cog_uk_id')
+        stmt = (
+            table.update()
+            .where(
+                and_(
+                    table.c.root_sample_id == bindparam("b_root_sample_id"),
+                    table.c.rna_id == bindparam("b_rna_id"),
+                    table.c.result == bindparam("b_result"),
+                )
+            )
+            .values(cog_uk_id=bindparam("b_cog_uk_id"))
         )
         db_connection = sql_engine.connect()
 
@@ -252,3 +344,64 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     finally:
         if db_connection is not None:
             db_connection.close()
+
+
+def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str, str]]:
+    mapped_samples = []
+
+    for sample in samples:
+        mapped_sample = {}
+
+        mongo_row = sample["sample"]
+        dart_row = sample["row"]
+
+        try:
+            mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
+            mapped_sample["phenotype"] = mongo_row[
+                FIELD_RESULT
+            ]  # This should be the filtered positive field
+            mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
+
+            mapped_sample["coordinate"] = dart_row["destination_coordinate"]
+            mapped_sample["barcode"] = dart_row["destination_barcode"]
+            if dart_row["control"]:
+                mapped_sample["control"] = dart_row["control"]
+        except KeyError as e:
+            msg = f"""
+            Error while mapping database columns to Sequencescape columns for sample {mongo_row["root_sample_id"]}.
+            {type(e).__name__}: {str(e)}
+            """
+            logger.error(msg)
+            raise
+        mapped_samples.append(mapped_sample)
+    return mapped_samples
+
+
+def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
+    logger.debug(
+        f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
+    )
+
+    wells_content = {}
+    for sample in samples:
+
+        assert sample["phenotype"] is not None
+        assert sample["supplier_name"] is not None
+
+        well = {
+            "content": {
+                "phenotype": sample["phenotype"].strip().lower(),
+                "supplier_name": sample["supplier_name"],
+                "sample_description": sample["sample_description"],
+            }
+        }
+        wells_content[sample["coordinate"]] = well
+
+    body = {
+        "barcode": barcode,
+        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
+        "study_uuid": app.config["SS_UUID_STUDY_CHERRYPICKED"],
+        "wells": wells_content,
+    }
+
+    return {"data": {"type": "plates", "attributes": body}}

@@ -11,9 +11,10 @@ from lighthouse.constants import (
     FIELD_CH1_CQ,
     FIELD_CH2_CQ,
     FIELD_CH3_CQ,
+    FIELD_LAB_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_RNA_ID,
-    MLWH_LH_SAMPLE_RESULT
+    MLWH_LH_SAMPLE_RESULT,
 )
 
 CENTRES: List[Dict[str, str]] = [
@@ -28,10 +29,18 @@ THIRD_TIMESTAMP = datetime(2013, 4, 6, 10, 29, 13)
 
 
 SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
-    {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": FIRST_TIMESTAMP,},
+    {
+        "root_sample_id": "MCM001",
+        "value_in_sequencing": "Yes",
+        "declared_at": FIRST_TIMESTAMP,
+    },
     {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": FIRST_TIMESTAMP},
     {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": SECOND_TIMESTAMP},
-    {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": THIRD_TIMESTAMP,},
+    {
+        "root_sample_id": "MCM003",
+        "value_in_sequencing": "Yes",
+        "declared_at": THIRD_TIMESTAMP,
+    },
 ]
 
 MULTIPLE_ERRORS_SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
@@ -93,43 +102,43 @@ LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
 ]
 
 SAMPLES: List[Dict[str, Any]] = [
-    { # a positive result, no Ct values
+    {  # a positive result, no Ct values
         FIELD_COORDINATE: "A01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
-        FIELD_RNA_ID: "rna_1"
+        FIELD_RNA_ID: "rna_1",
     },
-    { # a negative result
+    {  # a negative result
         FIELD_COORDINATE: "B01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Negative",
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
-        FIELD_RNA_ID: "rna_1"
+        FIELD_RNA_ID: "rna_1",
     },
-    { # a void result
+    {  # a void result
         FIELD_COORDINATE: "C01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Void",
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
-        FIELD_RNA_ID: "rna_1"
+        FIELD_RNA_ID: "rna_1",
     },
-    { # a 'limit of detection' result
+    {  # a 'limit of detection' result
         FIELD_COORDINATE: "D01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "limit of detection",
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "klm",
         FIELD_ROOT_SAMPLE_ID: "MCM004",
-        FIELD_RNA_ID: "rna_1"
+        FIELD_RNA_ID: "rna_1",
     },
-    { # positive, with low Ct values
+    {  #  positive, with low Ct values
         FIELD_COORDINATE: "E01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
@@ -139,9 +148,9 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_RNA_ID: "rna_1",
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: 6.12345678,
-        FIELD_CH3_CQ: 7.12345678
+        FIELD_CH3_CQ: 7.12345678,
     },
-    { # positive, with high Ct values
+    {  #  positive, with high Ct values
         FIELD_COORDINATE: "F01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
@@ -151,9 +160,9 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_RNA_ID: "rna_1",
         FIELD_CH1_CQ: 40.12345678,
         FIELD_CH2_CQ: 41.12345678,
-        FIELD_CH3_CQ: 42.12345678
+        FIELD_CH3_CQ: 42.12345678,
     },
-    { # positive, with mix of Ct values
+    {  #  positive, with mix of Ct values
         FIELD_COORDINATE: "G01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
@@ -163,17 +172,17 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_RNA_ID: "rna_1",
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: None,
-        FIELD_CH3_CQ: 45.12345678
+        FIELD_CH3_CQ: 45.12345678,
     },
-    { # positive, with disallowed Root Sample ID
+    {  #  positive, with disallowed Root Sample ID
         FIELD_COORDINATE: "A02",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "wxy",
         FIELD_ROOT_SAMPLE_ID: "CBIQA_MCM008",
-        FIELD_RNA_ID: "rna_1"
-    }
+        FIELD_RNA_ID: "rna_1",
+    },
 ]
 
 SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
@@ -184,7 +193,8 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
-        FIELD_RNA_ID: "rna_1"
+        FIELD_RNA_ID: "rna_1",
+        FIELD_LAB_ID: "Lab 1",
     },
     {
         FIELD_COORDINATE: "A01",
@@ -193,21 +203,22 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
         FIELD_PLATE_BARCODE: "456",
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
-        FIELD_RNA_ID: "rna_2"
-    }
+        FIELD_RNA_ID: "rna_2",
+        FIELD_LAB_ID: "Lab 2",
+    },
 ]
 
 SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
-    { # Ct is missing
+    {  # Ct is missing
         FIELD_COORDINATE: "A01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
-        FIELD_RNA_ID: "rna_1"
+        FIELD_RNA_ID: "rna_1",
     },
-    { # Ct is null
+    {  # Ct is null
         FIELD_COORDINATE: "B01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Negative",
@@ -215,9 +226,9 @@ SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CH1_CQ: None
+        FIELD_CH1_CQ: None,
     },
-    { # Ct is less than limit
+    {  # Ct is less than limit
         FIELD_COORDINATE: "C01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Negative",
@@ -225,9 +236,9 @@ SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "ghi",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CH1_CQ: 5.12345678
+        FIELD_CH1_CQ: 5.12345678,
     },
-    { # Ct is greater than limit
+    {  # Ct is greater than limit
         FIELD_COORDINATE: "C01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Negative",
@@ -235,8 +246,8 @@ SAMPLES_CT_VALUES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "jkl",
         FIELD_ROOT_SAMPLE_ID: "MCM004",
         FIELD_RNA_ID: "rna_1",
-        FIELD_CH1_CQ: 45.12345678
-    }
+        FIELD_CH1_CQ: 45.12345678,
+    },
 ]
 
 SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
@@ -274,73 +285,116 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
     },
 ]
 
-COG_UK_IDS: List[str] = [
-    'cog_1',
-    'cog_2',
-    'cog_3'
-]
+COG_UK_IDS: List[str] = ["cog_1", "cog_2", "cog_3"]
 
 SAMPLES_FOR_MLWH_UPDATE: List[Dict[str, str]] = [
     {
-        FIELD_ROOT_SAMPLE_ID: 'root_1',
-        FIELD_RNA_ID: 'rna_1',
-        FIELD_RESULT: 'Positive',
-        FIELD_COG_BARCODE: COG_UK_IDS[0]
+        FIELD_ROOT_SAMPLE_ID: "root_1",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_RESULT: "Positive",
+        FIELD_COG_BARCODE: COG_UK_IDS[0],
     },
     {
-        FIELD_ROOT_SAMPLE_ID: 'root_2',
-        FIELD_RNA_ID: 'rna_2',
-        FIELD_RESULT: 'Positive',
-        FIELD_COG_BARCODE: COG_UK_IDS[1]
+        FIELD_ROOT_SAMPLE_ID: "root_2",
+        FIELD_RNA_ID: "rna_2",
+        FIELD_RESULT: "Positive",
+        FIELD_COG_BARCODE: COG_UK_IDS[1],
     },
     {
-        FIELD_ROOT_SAMPLE_ID: 'root_1',
-        FIELD_RNA_ID: 'rna_3',
-        FIELD_RESULT: 'Positive',
-        FIELD_COG_BARCODE: COG_UK_IDS[2]
-    }
+        FIELD_ROOT_SAMPLE_ID: "root_1",
+        FIELD_RNA_ID: "rna_3",
+        FIELD_RESULT: "Positive",
+        FIELD_COG_BARCODE: COG_UK_IDS[2],
+    },
 ]
 
 # this matches the positive sample in SAMPLES
 MLWH_SEED_SAMPLES: List[Dict[str, str]] = [
     {
-        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM001',
-        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-        MLWH_LH_SAMPLE_RESULT: 'Positive'
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "MCM001",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_1",
+        MLWH_LH_SAMPLE_RESULT: "Positive",
     },
     {
-        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM005',
-        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-        MLWH_LH_SAMPLE_RESULT: 'Positive'
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "MCM005",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_1",
+        MLWH_LH_SAMPLE_RESULT: "Positive",
     },
     {
-        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM006',
-        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-        MLWH_LH_SAMPLE_RESULT: 'Positive'
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "MCM006",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_1",
+        MLWH_LH_SAMPLE_RESULT: "Positive",
     },
     {
-        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'MCM007',
-        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-        MLWH_LH_SAMPLE_RESULT: 'Positive'
-    }
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "MCM007",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_1",
+        MLWH_LH_SAMPLE_RESULT: "Positive",
+    },
 ]
 
 # more complex scenario for the mlwh-related tests
 # two of the samples share a root sample id and result
 MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
     {
-        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
-        MLWH_LH_SAMPLE_RNA_ID: 'rna_1',
-        MLWH_LH_SAMPLE_RESULT: 'Positive'
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_1",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_1",
+        MLWH_LH_SAMPLE_RESULT: "Positive",
     },
     {
-        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_2',
-        MLWH_LH_SAMPLE_RNA_ID: 'rna_2',
-        MLWH_LH_SAMPLE_RESULT: 'Positive'
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_2",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_2",
+        MLWH_LH_SAMPLE_RESULT: "Positive",
     },
     {
-        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: 'root_1',
-        MLWH_LH_SAMPLE_RNA_ID: 'rna_3',
-        MLWH_LH_SAMPLE_RESULT: 'Positive'
-    }
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_1",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_3",
+        MLWH_LH_SAMPLE_RESULT: "Positive",
+    },
+]
+
+DART_MONGO_MERGED_SAMPLES: List[Dict[str, Dict[str, str]]] = [
+    {  # Control sample
+        "sample": {
+            FIELD_COORDINATE: "A01",
+            FIELD_SOURCE: "test1",
+            FIELD_RESULT: "Positive",
+            FIELD_PLATE_BARCODE: "123",
+            FIELD_COG_BARCODE: "abc",
+            FIELD_ROOT_SAMPLE_ID: "MCM001",
+            FIELD_RNA_ID: "rna_1",
+            # FIELD_FILTERED_POSITIVE: "Positive",
+        },
+        "row": {
+            "destination_coordinate": "B01",
+            "destination_barcode": "d123",
+            "control": "Positive",
+            "source_barcode": "123",
+            "source_coordinate": "A01",
+            "root_sample_id": "MCM001",
+            "rna_id": "rna_1",
+            "lab_id": "AA",
+        },
+    },
+    {  # Non-control sample
+        "sample": {
+            FIELD_COORDINATE: "A02",
+            FIELD_SOURCE: "test2",
+            FIELD_RESULT: "Positive",
+            FIELD_PLATE_BARCODE: "1234",
+            FIELD_COG_BARCODE: "abcd",
+            FIELD_ROOT_SAMPLE_ID: "MCM002",
+            FIELD_RNA_ID: "rna_2",
+            # FIELD_FILTERED_POSITIVE: "Positive",
+        },
+        "row": {
+            "destination_coordinate": "B02",
+            "destination_barcode": "d123",
+            "control": "",
+            "source_barcode": "1234",
+            "source_coordinate": "A02",
+            "root_sample_id": "MCM002",
+            "rna_id": "rna_2",
+            "lab_id": "AB",
+        },
+    },
 ]

@@ -8,6 +8,8 @@ SS_URL = "localhost:3000"
 LABWHERE_URL = "localhost:3010"
 SS_UUID_PLATE_PURPOSE = ""
 SS_UUID_STUDY = ""
+SS_UUID_PLATE_PURPOSE_CHERRYPICKED = ""
+SS_UUID_STUDY_CHERRYPICKED = ""
 REPORTS_DIR = "data/reports"
 DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
 SS_HOST = "localhost:3000"
@@ -22,7 +24,7 @@ JOBS = [
         "func": "lighthouse.jobs.reports:create_report_job",
         "trigger": "cron",
         "day": "*",
-        "hour": 1,
+        "hour": 2,
     }
 ]
 SCHEDULER_API_ENABLED = False
@@ -39,7 +41,10 @@ SAMPLES_DECLARATIONS_SCHEMA: Dict = {
         "allowed": ["Yes", "No", "Unknown"],
         "required": True,
     },
-    "declared_at": {"type": "datetime", "required": True,},
+    "declared_at": {
+        "type": "datetime",
+        "required": True,
+    },
 }
 # We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
@@ -106,4 +111,4 @@ EVENTS_WH_DB = "events_wh_db"
 MLWH_RW_CONN_STRING = "root:root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 
-
+DART_RESULT_VIEW = "CherrypickingInfo"

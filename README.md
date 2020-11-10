@@ -45,6 +45,8 @@ The services has the following routes:
 - To install the required packages (and dev packages) run the following:
   1. `pipenv shell`
   2. `pipenv install --dev` (without the --dev you don't get pytest, mypy etc.)
+- (Optional) To start a Sqlserver container in local:
+  1. `docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=MyS3cr3tPassw0rd" -p 1433:1433 --name sqlserver -h sql1 -d mcr.microsoft.com/mssql/server:2019-latest`
 
 ## Running
 
@@ -53,6 +55,8 @@ The services has the following routes:
     - `FLASK_APP=lighthouse`
     - `FLASK_ENV=development`
     - `EVE_SETTINGS=development.py`
+
+Option A (in local):
 
 1. Enter the python virtual environment using:
 
@@ -64,6 +68,36 @@ The services has the following routes:
 
 **NB:** When adding or changing environmental variables, remember to exit and re-enter the virtual
 environment.
+
+Option B (in Docker):
+
+1. Build the docker image using:
+
+        docker build .
+
+1. Define YOUR_LIGHTHOUSE_PROJECT_HOME to wherever you downloaded the lighthouse github project:
+
+        export YOUR_LIGHTHOUSE_PROJECT_HOME=/home/myhome/lighthouse
+
+1. Sql server
+
+        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=MyS3cr3tPassw0rd" \
+        -p 1433:1433 --name sql1 -h sql1 \
+        -d mcr.microsoft.com/mssql/server:2019-latest        
+
+1. Start the docker container and open a bash session in it with:
+
+        docker run --env-file .env -p 5000:5000 -v $YOUR_LIGHTHOUSE_PROJECT_HOME:/code -it lighthouse:devel bash
+   
+   After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all 
+   source code of the project from your hosting machine (YOUR_LIGHTHOUSE_PROJECT_HOME). The container will map your 
+   port 5000 with the port 5000 of Docker.
+
+1. Now that you are inside the container, start the app in port 5000 of Docker using:
+
+        flask run -h 0.0.0.0
+
+   After this step you should be able to access the app with a browser going to your local port 5000 (go to http://localhost:5000)
 
 ## Testing
 

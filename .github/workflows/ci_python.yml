@@ -20,6 +20,13 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: unified_warehouse_test
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: MyV3rY@7742w0rd
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -48,6 +55,9 @@ jobs:
       - name: Run mypy
         run: |
           mypy .
+      - name: Create SQL Server testing database
+        run: |
+          python setup_sqlserver_test_db.py
       - name: Setup the test MLWH database
         run: |
           python setup_test_db.py

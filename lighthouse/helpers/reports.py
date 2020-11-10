@@ -31,7 +31,7 @@ from lighthouse.constants import (
     FIELD_DATE_TESTED,
     FIELD_COORDINATE,
     CT_VALUE_LIMIT,
-    POSITIVE_SAMPLES_MONGODB_FILTER
+    POSITIVE_SAMPLES_MONGODB_FILTER,
 )
 
 logger = logging.getLogger(__name__)
@@ -183,37 +183,51 @@ def get_locations_from_labwhere(labware_barcodes):
         json={"barcodes": labware_barcodes},
     )
 
+
 def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
     # Returns dataframe with 1 column, 'Root Sample ID', containing Root Sample ID of those that have been cherrypicked
     # TODO: move into external method.
-    root_sample_id_string = "'" + "','".join(root_sample_ids) + "'"
-    plate_barcodes_string = "'" + "','".join(plate_barcodes) + "'"
-
-    ml_wh_db = app.config["ML_WH_DB"]
-    events_wh_db = app.config["EVENTS_WH_DB"]
-
-    sql = (
-        f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
-        f" FROM {app.config['ML_WH_DB']}.sample as mlwh_sample"
-        f" JOIN {app.config['ML_WH_DB']}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
-        f" JOIN {app.config['EVENTS_WH_DB']}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
-        f" JOIN {app.config['EVENTS_WH_DB']}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
-        f" JOIN {app.config['EVENTS_WH_DB']}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
-        f" JOIN {app.config['EVENTS_WH_DB']}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
-        f" WHERE mlwh_sample.description IN ({root_sample_id_string})"
-        f" AND mlwh_stock_resource.labware_human_barcode IN ({plate_barcodes_string})"
-        " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
-        " GROUP BY mlwh_sample.description"
-    )
 
     try:
+        concat_frame = None
+
+        chunk_root_sample_ids = [
+            root_sample_ids[x : (x + 50000)] for x in range(0, len(root_sample_ids), 50000)
+        ]
+
         sql_engine = sqlalchemy.create_engine(
             f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600
         )
         db_connection = sql_engine.connect()
-        frame = pd.read_sql(sql, db_connection)
-        return frame
+
+        ml_wh_db = app.config["ML_WH_DB"]
+        events_wh_db = app.config["EVENTS_WH_DB"]
+
+        for chunk_root_sample_id in chunk_root_sample_ids:
+            root_sample_id_string = "'" + "','".join(chunk_root_sample_id) + "'"
+            plate_barcodes_string = "'" + "','".join(plate_barcodes) + "'"
+
+            sql = (
+                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
+                f" FROM {ml_wh_db}.sample as mlwh_sample"
+                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
+                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
+                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
+                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
+                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+                f" WHERE mlwh_sample.description IN ({root_sample_id_string})"
+                f" AND mlwh_stock_resource.labware_human_barcode IN ({plate_barcodes_string})"
+                " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
+                " GROUP BY mlwh_sample.description"
+            )
+            frame = pd.read_sql(sql, db_connection)
+            if concat_frame is None:
+                concat_frame = frame
+            else:
+                concat_frame = concat_frame.append(frame)
+
+        return concat_frame
     except Exception as e:
         print("Error while connecting to MySQL", e)
         return None
@@ -226,8 +240,8 @@ def get_all_positive_samples(samples):
     logger.debug("Getting all positive samples")
     # filtering using case insensitive regex to catch "Positive" and "positive"
     results = samples.find(
-        filter = POSITIVE_SAMPLES_MONGODB_FILTER,
-        projection = {
+        filter=POSITIVE_SAMPLES_MONGODB_FILTER,
+        projection={
             "_id": False,
             FIELD_SOURCE: True,
             FIELD_PLATE_BARCODE: True,
