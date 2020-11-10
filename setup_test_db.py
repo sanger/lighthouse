@@ -126,7 +126,7 @@ CREATE TABLE `unified_warehouse_test`.`stock_resource` (
 """
 
 create_table_study = """
-CREATE TABLE `study` (
+CREATE TABLE `unified_warehouse_test`.`study` (
   `id_study_tmp` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Internal to this database id, value can change',
   `id_lims` varchar(10) COLLATE utf8_unicode_ci NOT NULL COMMENT 'LIM system identifier, e.g. GCLP-CLARITY, SEQSCAPE',
   `uuid_study_lims` varchar(36) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'LIMS-specific study uuid',
@@ -289,7 +289,7 @@ CREATE TABLE `event_warehouse_test`.`event_types` (
 """
 
 create_table_subject_types = """
-CREATE TABLE `subject_types` (
+CREATE TABLE `event_warehouse_test`.`subject_types` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `key` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The identifier for the role type',
   `description` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'A description of the subject type',
@@ -301,7 +301,7 @@ CREATE TABLE `subject_types` (
 """
 
 create_table_role_types = """
-CREATE TABLE `role_types` (
+CREATE TABLE `event_warehouse_test`.`role_types` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `key` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The identifier for the role type',
   `description` text COLLATE utf8_unicode_ci NOT NULL COMMENT 'A description of the role',
@@ -330,10 +330,6 @@ with sql_engine.connect() as connection:
 
     print("*** Creating table SUBJECT TYPES ***")
     connection.execute(create_table_subject_types)
-
-    print("Showing tables")
-    connection.execute("SHOW TABLES")
-
     print("*** Creating table SUBJECTS ***")
     connection.execute(create_table_subjects)
     print("*** Creating table EVENT TYPES ***")
