@@ -330,6 +330,10 @@ with sql_engine.connect() as connection:
 
     print("*** Creating table SUBJECT TYPES ***")
     connection.execute(create_table_subject_types)
+
+    print("Showing tables")
+    connection.execute("SHOW TABLES")
+
     print("*** Creating table SUBJECTS ***")
     connection.execute(create_table_subjects)
     print("*** Creating table EVENT TYPES ***")
