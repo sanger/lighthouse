@@ -26,7 +26,7 @@ from .data.fixture_data import (
     MLWH_SAMPLE_STOCK_RESOURCE
 )
 
-from lighthouse.helpers.warehouses_db import create_mlwh_connection_engine, get_table
+from lighthouse.helpers.warehouses_db import create_mysql_connection_engine, get_table
 
 
 @pytest.fixture
@@ -291,8 +291,8 @@ def insert_data_into_events_warehouse_tables(app, data, event_wh_sql_engine):
 
 @pytest.fixture
 def mlwh_sql_engine(app):
-    return create_mlwh_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["ML_WH_DB"])
+    return create_mysql_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["ML_WH_DB"])
 
 @pytest.fixture
 def event_wh_sql_engine(app):
-    return create_mlwh_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"])
+    return create_mysql_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"])

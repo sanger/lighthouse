@@ -1,11 +1,11 @@
 import lighthouse.config.test as config  # type: ignore
-from lighthouse.helpers.warehouses_db import create_mlwh_connection_engine
+from lighthouse.helpers.warehouses_db import create_mysql_connection_engine
 
 # Set up a basic MLWH db for testing
 """Drop and recreate required tables."""
 print("Initialising the test MySQL warehouse database")
 
-sql_engine = create_mlwh_connection_engine(config.WAREHOUSES_RW_CONN_STRING, config.ML_WH_DB)
+sql_engine = create_mysql_connection_engine(config.WAREHOUSES_RW_CONN_STRING, config.ML_WH_DB)
 
 create_db = """
 CREATE DATABASE IF NOT EXISTS `unified_warehouse_test` /*!40100 DEFAULT CHARACTER SET latin1 */;
