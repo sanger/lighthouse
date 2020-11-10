@@ -204,7 +204,6 @@ def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_sample
     assert np.array_equal(result.to_numpy(), expected_data)
 
 
-# TODO: add a test where get_cherrypicked_samples returns duplicates, how does merge handle it?
 def test_add_cherrypicked_column(app, freezer):
     # existing dataframe before 'add_cherrypicked_column' is run (essentially queried from MongoDB)
     existing_dataframe = pd.DataFrame(
@@ -244,10 +243,58 @@ def test_add_cherrypicked_column(app, freezer):
                 "lighthouse.helpers.reports.get_cherrypicked_samples",
                 return_value=mock_get_cherrypicked_samples,
             ):
-
                 new_dataframe = add_cherrypicked_column(existing_dataframe)
 
     assert new_dataframe.columns.to_list() == expected_columns
+    assert np.array_equal(new_dataframe.to_numpy(), expected_data)
+
+
+def test_add_cherrypicked_column_duplicates(app, freezer):
+    # Demonstrates the behaviour where, if 'get_cherrypicked_samples' returns duplicates,
+    # 'add_cherrypicked_column' will also return duplicates.
+    # De-duping should be handled in 'get_cherrypicked_samples'.
+
+    # existing dataframe before 'add_cherrypicked_column' is run (essentially queried from MongoDB)
+    existing_dataframe = pd.DataFrame(
+        [
+            ["MCM001", "123", "TEST", "Positive", "A1"],
+            ["MCM002", "456", "TEST", "Positive", "A2"]
+        ],
+        columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE],
+    )
+
+    # mock response from the 'get_cherrypicked_samples' method
+    mock_get_cherrypicked_samples_rows = [
+        ["MCM002", "456", "Positive", "A2"], # matches second sample
+        ["MCM002", "456", "Positive", "A2"] # identical to above
+    ]
+    mock_get_cherrypicked_samples_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+    mock_get_cherrypicked_samples = pd.DataFrame(
+        np.array(mock_get_cherrypicked_samples_rows), columns=mock_get_cherrypicked_samples_columns
+    )
+
+    # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from 'get_cherrypicked_samples'
+    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE, "LIMS submission"]
+    expected_data = [
+        ["MCM001", "123", "TEST", "Positive", "A1", "No"],
+        ["MCM002", "456", "TEST", "Positive", "A2", "Yes"],
+        ["MCM002", "456", "TEST", "Positive", "A2", "Yes"] # Duplicate, reflecting response from get_cherrypicked_samples
+    ]
+
+    with app.app_context():
+        with patch("sqlalchemy.create_engine", return_value=Mock()):
+            with patch(
+                "lighthouse.helpers.reports.get_cherrypicked_samples",
+                return_value=mock_get_cherrypicked_samples,
+            ):
+                new_dataframe = add_cherrypicked_column(existing_dataframe)
+
+    print('new_dataframe.columns.to_list()', new_dataframe.columns.to_list())
+    print('expected_columns', expected_columns)
+    assert new_dataframe.columns.to_list() == expected_columns
+
+    print('new_dataframe.to_numpy()', new_dataframe.to_numpy())
+    print('expected_data', expected_data)
     assert np.array_equal(new_dataframe.to_numpy(), expected_data)
 
 
