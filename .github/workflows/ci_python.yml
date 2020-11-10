@@ -48,7 +48,7 @@ jobs:
       - name: Run mypy
         run: |
           mypy .
-      - name: Setup the test MLWH database
+      - name: Setup the test MLWH and Events databases
         run: |
           python setup_test_db.py
       - name: Test with pytest

@@ -22,6 +22,10 @@ drop_table_stock_resource = """
 DROP TABLE IF EXISTS `unified_warehouse_test`.`stock_resource`;
 """
 
+drop_table_study = """
+DROP TABLE IF EXISTS `unified_warehouse_test`.`study`;
+"""
+
 create_table_lh_sample = """
 CREATE TABLE `unified_warehouse_test`.`lighthouse_sample` (
 `id` int NOT NULL AUTO_INCREMENT,
@@ -117,17 +121,72 @@ CREATE TABLE `unified_warehouse_test`.`stock_resource` (
   KEY `fk_stock_resource_to_study` (`id_study_tmp`),
   KEY `composition_lookup_index` (`id_stock_resource_lims`,`id_sample_tmp`,`id_lims`),
   CONSTRAINT `fk_stock_resource_to_sample` FOREIGN KEY (`id_sample_tmp`) REFERENCES `sample` (`id_sample_tmp`)
+    CONSTRAINT `fk_stock_resource_to_study` FOREIGN KEY (`id_study_tmp`) REFERENCES `study` (`id_study_tmp`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4656364 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
+
+create_table_study = """
+CREATE TABLE `study` (
+  `id_study_tmp` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Internal to this database id, value can change',
+  `id_lims` varchar(10) COLLATE utf8_unicode_ci NOT NULL COMMENT 'LIM system identifier, e.g. GCLP-CLARITY, SEQSCAPE',
+  `uuid_study_lims` varchar(36) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'LIMS-specific study uuid',
+  `id_study_lims` varchar(20) COLLATE utf8_unicode_ci NOT NULL COMMENT 'LIMS-specific study identifier',
+  `last_updated` datetime NOT NULL COMMENT 'Timestamp of last update',
+  `recorded_at` datetime NOT NULL COMMENT 'Timestamp of warehouse update',
+  `deleted_at` datetime DEFAULT NULL COMMENT 'Timestamp of study deletion',
+  `created` datetime DEFAULT NULL COMMENT 'Timestamp of study creation',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `reference_genome` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ethically_approved` tinyint(1) DEFAULT NULL,
+  `faculty_sponsor` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `state` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `study_type` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `abstract` text COLLATE utf8_unicode_ci,
+  `abbreviation` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `accession_number` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `contains_human_dna` tinyint(1) DEFAULT NULL COMMENT 'Lane may contain human DNA',
+  `contaminated_human_dna` tinyint(1) DEFAULT NULL COMMENT 'Human DNA in the lane is a contaminant and should be removed',
+  `data_release_strategy` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `data_release_sort_of_study` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ena_project_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `study_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `study_visibility` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ega_dac_accession_number` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `array_express_accession_number` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ega_policy_accession_number` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `data_release_timing` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `data_release_delay_period` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `data_release_delay_reason` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `remove_x_and_autosomes` tinyint(1) NOT NULL DEFAULT '0',
+  `aligned` tinyint(1) NOT NULL DEFAULT '1',
+  `separate_y_chromosome_data` tinyint(1) NOT NULL DEFAULT '0',
+  `data_access_group` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `prelim_id` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The preliminary study id prior to entry into the LIMS',
+  `hmdmc_number` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The Human Materials and Data Management Committee approval number(s) for the study.',
+  `data_destination` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The data destination type(s) for the study. It could be ''standard'', ''14mg'' or ''gseq''. This may be extended, if Sanger gains more external customers. It can contain multiply destinations separated by a space.',
+  `s3_email_list` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `data_deletion_period` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id_study_tmp`),
+  UNIQUE KEY `study_id_lims_id_study_lims_index` (`id_lims`,`id_study_lims`),
+  UNIQUE KEY `study_uuid_study_lims_index` (`uuid_study_lims`),
+  KEY `study_accession_number_index` (`accession_number`),
+  KEY `study_name_index` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=6148 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 """
 
 with sql_engine.connect() as connection:
     connection.execute(create_db)
+
     connection.execute(drop_table_lh_sample)
     connection.execute(drop_table_stock_resource)
+    connection.execute(drop_table_study)
     connection.execute(drop_table_sample)
-    connection.execute(create_table_lh_sample)
+
     connection.execute(create_table_sample)
+    connection.execute(create_table_study)
     connection.execute(create_table_stock_resource)
+    connection.execute(create_table_lh_sample)
 
 print("Initialising the test MySQL events warehouse database")
 
@@ -215,10 +274,12 @@ CREATE TABLE `event_warehouse_test`.`event_types` (
 
 with sql_engine.connect() as connection:
     connection.execute(create_db)
+
     connection.execute(drop_table_roles)
     connection.execute(drop_table_events)
     connection.execute(drop_table_event_types)
     connection.execute(drop_table_subjects)
+
     connection.execute(create_table_subjects)
     connection.execute(create_table_event_types)
     connection.execute(create_table_events)

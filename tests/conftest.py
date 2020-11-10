@@ -264,12 +264,12 @@ def event_wh_data(app, event_wh_sql_engine):
     insert_data_into_events_warehouse_tables(app, EVENT_WH_DATA, event_wh_sql_engine)
 
 def insert_data_into_events_warehouse_tables(app, data, event_wh_sql_engine):
-    subjects_table = get_table(event_wh_sql_engine, app.config["EVENTS_WAREHOUSE_SUBJECTS_TABLE"])
-    roles_table = get_table(event_wh_sql_engine, app.config["EVENTS_WAREHOUSE_ROLES_TABLE"])
-    events_table = get_table(event_wh_sql_engine, app.config["EVENTS_WAREHOUSE_EVENTS_TABLE"])
-    event_types_table = get_table(event_wh_sql_engine, app.config["EVENTS_WAREHOUSE_EVENT_TYPES_TABLE"])
-    subject_types_table = get_table(event_wh_sql_engine, app.config["EVENTS_WAREHOUSE_SUBJECT_TYPES_TABLE"])
-    role_types_table = get_table(event_wh_sql_engine, app.config["EVENTS_WAREHOUSE_ROLE_TYPES_TABLE"])
+    subjects_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECTS_TABLE"])
+    roles_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLES_TABLE"])
+    events_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENTS_TABLE"])
+    event_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENT_TYPES_TABLE"])
+    subject_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"])
+    role_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLE_TYPES_TABLE"])
 
     with event_wh_sql_engine.begin() as connection:
         # delete all rows from each table
