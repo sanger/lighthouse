@@ -282,12 +282,7 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
             ):
                 new_dataframe = add_cherrypicked_column(existing_dataframe)
 
-    print('new_dataframe.columns.to_list()', new_dataframe.columns.to_list())
-    print('expected_columns', expected_columns)
     assert new_dataframe.columns.to_list() == expected_columns
-
-    print('new_dataframe.to_numpy()', new_dataframe.to_numpy())
-    print('expected_data', expected_data)
     assert np.array_equal(new_dataframe.to_numpy(), expected_data)
 
 
