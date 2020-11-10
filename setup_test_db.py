@@ -120,8 +120,8 @@ CREATE TABLE `unified_warehouse_test`.`stock_resource` (
   KEY `fk_stock_resource_to_sample` (`id_sample_tmp`),
   KEY `fk_stock_resource_to_study` (`id_study_tmp`),
   KEY `composition_lookup_index` (`id_stock_resource_lims`,`id_sample_tmp`,`id_lims`),
-  CONSTRAINT `fk_stock_resource_to_sample` FOREIGN KEY (`id_sample_tmp`) REFERENCES `sample` (`id_sample_tmp`)
-    CONSTRAINT `fk_stock_resource_to_study` FOREIGN KEY (`id_study_tmp`) REFERENCES `study` (`id_study_tmp`)
+  CONSTRAINT `fk_stock_resource_to_sample` FOREIGN KEY (`id_sample_tmp`) REFERENCES `sample` (`id_sample_tmp`),
+  CONSTRAINT `fk_stock_resource_to_study` FOREIGN KEY (`id_study_tmp`) REFERENCES `study` (`id_study_tmp`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4656364 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 """
 
