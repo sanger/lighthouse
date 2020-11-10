@@ -237,26 +237,13 @@ def test_add_cherrypicked_column(app, freezer):
         FIELD_COORDINATE,
         "LIMS submission",
     ]
+    # rows with "Yes" are because was returned from get_cherrypicked_samples
     expected_data = [
-        [
-            "MCM001",
-            "123",
-            "TEST",
-            "Positive",
-            "A1",
-            "Yes",
-        ],  # 'Yes' because was returned from get_cherrypicked_samples
+        ["MCM001", "123", "TEST", "Positive", "A1", "Yes",],
         ["MCM001", "456", "TEST", "Positive", "A1", "No"],
         ["MCM001", "123", "TEST", "Positive2", "A1", "No"],
         ["MCM001", "123", "TEST", "Positive", "A2", "No"],
-        [
-            "MCM002",
-            "123",
-            "TEST",
-            "Positive",
-            "A1",
-            "Yes",
-        ],  # 'Yes' because was returned from get_cherrypicked_samples
+        ["MCM002", "123", "TEST", "Positive", "A1", "Yes",],
     ]
 
     with app.app_context():
@@ -312,17 +299,11 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
         FIELD_COORDINATE,
         "LIMS submission",
     ]
+    # Duplicates reflect response from get_cherrypicked_samples
     expected_data = [
         ["MCM001", "123", "TEST", "Positive", "A1", "No"],
         ["MCM002", "456", "TEST", "Positive", "A2", "Yes"],
-        [
-            "MCM002",
-            "456",
-            "TEST",
-            "Positive",
-            "A2",
-            "Yes",
-        ],  # Duplicate, reflecting response from get_cherrypicked_samples
+        ["MCM002", "456", "TEST", "Positive", "A2", "Yes",],
     ]
 
     with app.app_context():
