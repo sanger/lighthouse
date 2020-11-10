@@ -26,11 +26,7 @@ from lighthouse.constants import (
     FIELD_SOURCE,
     FIELD_CH1_CQ,
     CT_VALUE_LIMIT,
-    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_PLATE_BARCODE
-)
-from tests.data.fixture_data import (
-    MLWH_LH_SAMPLES_MULTIPLE
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID
 )
 
 def test_get_new_report_name_and_path(app, freezer):

@@ -13,8 +13,7 @@ from lighthouse.constants import (
     FIELD_CH3_CQ,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_RNA_ID,
-    MLWH_LH_SAMPLE_RESULT,
-    MLWH_LH_SAMPLE_PLATE_BARCODE
+    MLWH_LH_SAMPLE_RESULT
 )
 
 CENTRES: List[Dict[str, str]] = [
@@ -336,20 +335,17 @@ MLWH_LH_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_1",
         MLWH_LH_SAMPLE_RNA_ID: "rna_1",
-        MLWH_LH_SAMPLE_RESULT: "Positive",
-        MLWH_LH_SAMPLE_PLATE_BARCODE: "pb_1"
+        MLWH_LH_SAMPLE_RESULT: "Positive"
     },
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_2",
         MLWH_LH_SAMPLE_RNA_ID: "rna_2",
-        MLWH_LH_SAMPLE_RESULT: "Positive",
-        MLWH_LH_SAMPLE_PLATE_BARCODE: "pb_2"
+        MLWH_LH_SAMPLE_RESULT: "Positive"
     },
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_1",
         MLWH_LH_SAMPLE_RNA_ID: "rna_3",
-        MLWH_LH_SAMPLE_RESULT: "Positive",
-        MLWH_LH_SAMPLE_PLATE_BARCODE: "pb_3"
+        MLWH_LH_SAMPLE_RESULT: "Positive"
     },
 ]
 
