@@ -307,7 +307,7 @@ SAMPLES_FOR_MLWH_UPDATE: List[Dict[str, str]] = [
 ]
 
 # this matches the positive sample in SAMPLES
-MLWH_SEED_SAMPLES: List[Dict[str, str]] = [
+MLWH_LH_SAMPLES: List[Dict[str, str]] = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "MCM001",
         MLWH_LH_SAMPLE_RNA_ID: "rna_1",
@@ -332,7 +332,7 @@ MLWH_SEED_SAMPLES: List[Dict[str, str]] = [
 
 # more complex scenario for the mlwh-related tests
 # two of the samples share a root sample id and result
-MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
+MLWH_LH_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_1",
         MLWH_LH_SAMPLE_RNA_ID: "rna_1",
@@ -353,7 +353,7 @@ MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
     },
 ]
 
-MLWH_EXTRA_DATA: Dict[str, Any] = {
+MLWH_SAMPLE_STOCK_RESOURCE: Dict[str, Any] = {
     'sample': [
         {
             'id_sample_tmp': '1',
@@ -447,7 +447,7 @@ MLWH_EXTRA_DATA: Dict[str, Any] = {
     ]
 }
 
-EVENTS_WAREHOUSE_DATA: Dict[str, Any] = {
+EVENT_WH_DATA: Dict[str, Any] = {
     'subjects': [
         {
             'id': 1,

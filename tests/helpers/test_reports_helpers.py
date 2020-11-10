@@ -30,7 +30,7 @@ from lighthouse.constants import (
     MLWH_LH_SAMPLE_PLATE_BARCODE
 )
 from tests.data.fixture_data import (
-    MLWH_SEED_SAMPLES_MULTIPLE
+    MLWH_LH_SAMPLES_MULTIPLE
 )
 
 def test_get_new_report_name_and_path(app, freezer):
@@ -125,13 +125,13 @@ def test_get_cherrypicked_samples_chunking(app, freezer):
 
 # test scenario where there have been multiple lighthouse tests for a sample with the same Root Sample ID
 # TODO: make this test more rigorous, so it can't pass by chance
-def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_extra_data_multiple, mlwh_lh_samples, events_warehouse_tables):
+def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_sample_stock_resource, mlwh_lh_samples, events_warehouse_tables):
     root_sample_ids = []
-    for sample in MLWH_SEED_SAMPLES_MULTIPLE:
+    for sample in MLWH_LH_SAMPLES_MULTIPLE:
         root_sample_ids.append(sample[MLWH_LH_SAMPLE_ROOT_SAMPLE_ID])
 
     plate_barcodes = []
-    for sample in MLWH_SEED_SAMPLES_MULTIPLE:
+    for sample in MLWH_LH_SAMPLES_MULTIPLE:
         plate_barcodes.append(sample[MLWH_LH_SAMPLE_PLATE_BARCODE])
 
     expected_rows = [

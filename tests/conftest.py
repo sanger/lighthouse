@@ -18,12 +18,12 @@ from .data.fixture_data import (
     SAMPLES_NO_DECLARATION,
     SAMPLES_FOR_MLWH_UPDATE,
     COG_UK_IDS,
-    MLWH_SEED_SAMPLES,
-    MLWH_SEED_SAMPLES_MULTIPLE,
+    MLWH_LH_SAMPLES,
+    MLWH_LH_SAMPLES_MULTIPLE,
     SAMPLES_CT_VALUES,
     SAMPLES_DIFFERENT_PLATES,
-    EVENTS_WAREHOUSE_DATA,
-    MLWH_EXTRA_DATA
+    EVENT_WH_DATA,
+    MLWH_SAMPLE_STOCK_RESOURCE
 )
 
 from lighthouse.helpers.warehouses_db import create_mlwh_connection_engine, get_table
@@ -215,17 +215,17 @@ def labwhere_samples_error(app, mocked_responses):
 
 @pytest.fixture
 def mlwh_lh_samples(app, mlwh_sql_engine):
-    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES, mlwh_sql_engine)
+    insert_lh_samples_into_mlwh(app, MLWH_LH_SAMPLES, mlwh_sql_engine)
 
 
 @pytest.fixture
 def event_warehouse_lh_samples(app, mlwh_sql_engine):
-    insert_lh_samples_into_event_warehouse(app, MLWH_SEED_SAMPLES, mlwh_sql_engine)
+    insert_lh_samples_into_event_warehouse(app, MLWH_LH_SAMPLES, mlwh_sql_engine)
 
 
 @pytest.fixture
 def mlwh_lh_samples_multiple(app, mlwh_sql_engine):
-    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE, mlwh_sql_engine)
+    insert_lh_samples_into_mlwh(app, MLWH_LH_SAMPLES_MULTIPLE, mlwh_sql_engine)
 
 def insert_lh_samples_into_mlwh(app, samples, mlwh_sql_engine):
     table = get_table(mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
@@ -237,21 +237,21 @@ def insert_lh_samples_into_mlwh(app, samples, mlwh_sql_engine):
 
 
 @pytest.fixture
-def mlwh_extra_data_multiple(app, mlwh_sql_engine):
-    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE, mlwh_sql_engine)
-    # insert_samples_into_mlwh(app, MLWH_EXTRA_DATA['sample'], mlwh_sql_engine)
-    # insert_studies_into_mlwh(app, MLWH_EXTRA_DATA['study'], mlwh_sql_engine)
-    # insert_stock_resource_into_mlwh(app, MLWH_EXTRA_DATA['stock_resource'], mlwh_sql_engine)
+def mlwh_sample_stock_resource(app, mlwh_sql_engine):
+    insert_lh_samples_into_mlwh(app, MLWH_LH_SAMPLES_MULTIPLE, mlwh_sql_engine)
+    # insert_samples_into_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['sample'], mlwh_sql_engine)
+    # insert_studies_into_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['study'], mlwh_sql_engine)
+    # insert_stock_resource_into_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['stock_resource'], mlwh_sql_engine)
 
     # deletes
-    delete_from_mlwh(app, MLWH_EXTRA_DATA['stock_resource'], mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
-    delete_from_mlwh(app, MLWH_EXTRA_DATA['sample'], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-    delete_from_mlwh(app, MLWH_EXTRA_DATA['study'], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
+    delete_from_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['stock_resource'], mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
+    delete_from_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['sample'], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+    delete_from_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['study'], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
 
     # inserts
-    insert_into_mlwh(app, MLWH_EXTRA_DATA['sample'], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-    insert_into_mlwh(app, MLWH_EXTRA_DATA['study'], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
-    insert_into_mlwh(app, MLWH_EXTRA_DATA['stock_resource'], mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
+    insert_into_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['sample'], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+    insert_into_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['study'], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
+    insert_into_mlwh(app, MLWH_SAMPLE_STOCK_RESOURCE['stock_resource'], mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
 
 def insert_into_mlwh(app, data, mlwh_sql_engine, table_name):
     table = get_table(mlwh_sql_engine, table_name)
@@ -296,7 +296,7 @@ def delete_from_mlwh(app, data, mlwh_sql_engine, table_name):
 
 @pytest.fixture
 def events_warehouse_tables(app, events_warehouse_sql_engine):
-    insert_data_into_events_warehouse_tables(app, EVENTS_WAREHOUSE_DATA, events_warehouse_sql_engine)
+    insert_data_into_events_warehouse_tables(app, EVENT_WH_DATA, events_warehouse_sql_engine)
 
 
 def insert_data_into_events_warehouse_tables(app, data, events_warehouse_sql_engine):
