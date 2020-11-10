@@ -301,8 +301,8 @@ def add_cherrypicked_column(existing_dataframe):
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
     existing_dataframe = existing_dataframe.merge(
-        cherrypicked_samples_df, how="left", on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE]
-        # cherrypicked_samples_df, how="left", on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+        # cherrypicked_samples_df, how="left", on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE]
+        cherrypicked_samples_df, how="left", on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
     )
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 

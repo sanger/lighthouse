@@ -246,17 +246,17 @@ def test_add_cherrypicked_column_no_rows(app, freezer):
     # mocks response from get_cherrypicked_samples()
     existing_dataframe = pd.DataFrame(
         [
-            ["MCM001", "123", "TEST"],
-            ["MCM002", "123", "TEST"],
+            ["MCM001", "123", "TEST", "Positive", "A1"],
+            ["MCM002", "123", "TEST", "Positive", "A1"],
         ],
-        columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID"],
+        columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE],
     )
 
     # Not sure if this is an accurate mock - haven't tried it with a real db connection
-    mock_get_cherrypicked_samples = pd.DataFrame([], columns=[FIELD_ROOT_SAMPLE_ID])
+    mock_get_cherrypicked_samples = pd.DataFrame([], columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE])
 
-    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", "LIMS submission"]
-    expected_data = [["MCM001", "123", "TEST", "No"], ["MCM002", "123", "TEST", "No"]]
+    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE, "LIMS submission"]
+    expected_data = [["MCM001", "123", "TEST", "Positive", "A1", "No"], ["MCM002", "123", "TEST", "Positive", "A1", "No"]]
 
     with app.app_context():
         with patch("sqlalchemy.create_engine", return_value=Mock()):
