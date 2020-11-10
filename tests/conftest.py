@@ -268,32 +268,6 @@ def delete_from_mlwh(app, data, mlwh_sql_engine, table_name):
         print("Deleting MLWH test data")
         connection.execute(table.delete())
 
-
-# def insert_studies_into_mlwh(app, studies, mlwh_sql_engine):
-#     table = get_table(mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
-
-#     with mlwh_sql_engine.begin() as connection:
-#         connection.execute(table.delete())  # delete all rows from table first
-#         print("Inserting MLWH test data")
-#         connection.execute(table.insert(), studies)
-
-# def insert_samples_into_mlwh(app, samples, mlwh_sql_engine):
-#     table = get_table(mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-
-#     with mlwh_sql_engine.begin() as connection:
-#         connection.execute(table.delete())  # delete all rows from table first
-#         print("Inserting MLWH test data")
-#         connection.execute(table.insert(), samples)
-
-# def insert_stock_resource_into_mlwh(app, stock_resources, mlwh_sql_engine):
-#     table = get_table(mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
-
-#     with mlwh_sql_engine.begin() as connection:
-#         connection.execute(table.delete())  # delete all rows from table first
-#         print("Inserting MLWH test data")
-#         connection.execute(table.insert(), stock_resources)
-
-
 @pytest.fixture
 def events_warehouse_tables(app, events_warehouse_sql_engine):
     insert_data_into_events_warehouse_tables(app, EVENT_WH_DATA, events_warehouse_sql_engine)

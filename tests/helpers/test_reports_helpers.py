@@ -131,7 +131,8 @@ def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_sample_stock_r
     plate_barcodes = ['pb_1', 'pb_2', 'pb_3']
 
     # root_1 will match 2 samples, but only one of those will match an event (on Sanger Sample Id)
-    # therefore we only get 1 row back for root_1
+    # therefore we only get 1 of the samples called 'root_1' back (the one on plate 'pb_1')
+    # this also checks we don't get a duplicate row for root_1 / pb_1, despite it cropped up in 2 different 'chunks'
     expected_rows = [
         ['root_1', 'pb_1', 'Positive', 'A1'],
         ['root_2', 'pb_2', 'Positive', 'A1']

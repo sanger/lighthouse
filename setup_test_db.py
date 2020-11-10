@@ -115,21 +115,6 @@ with sql_engine.connect() as connection:
     connection.execute(drop_table)
     connection.execute(create_table)
 
-
-# sql = (
-#         f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
-#         f" FROM {ml_wh_db}.sample as mlwh_sample"
-#         f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
-#         f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
-#         f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
-#         f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
-#         f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
-#         f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
-#         f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
-#         " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
-#         " GROUP BY mlwh_sample.description"
-#     )
-
 print("Initialising the test MySQL events warehouse database")
 
 create_db = """
