@@ -349,7 +349,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             db_connection.close()
 
 
-def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str, str]]:
+def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str, str]]:
     mapped_samples = []
 
     for sample in samples:
@@ -360,15 +360,16 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str
 
         try:
             mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
-            mapped_sample["phenotype"] = mongo_row[
-                FIELD_RESULT
-            ]  # This should be the filtered positive field
             mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
 
             mapped_sample["coordinate"] = dart_row["destination_coordinate"]
             mapped_sample["barcode"] = dart_row["destination_barcode"]
+
+            mapped_sample["phenotype"] = "positive"
+
             if dart_row["control"]:
-                mapped_sample["control"] = dart_row["control"]
+                mapped_sample["control"] = True
+                mapped_sample["control_type"] = dart_row["control"]
         except KeyError as e:
             msg = f"""
             Error while mapping database columns to Sequencescape columns for sample {mongo_row["root_sample_id"]}.
@@ -391,14 +392,17 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -
         assert sample["phenotype"] is not None
         assert sample["supplier_name"] is not None
 
-        well = {
-            "content": {
-                "phenotype": sample["phenotype"].strip().lower(),
-                "supplier_name": sample["supplier_name"],
-                "sample_description": sample["sample_description"],
-            }
+        content = {
+            "phenotype": sample["phenotype"],
+            "supplier_name": sample["supplier_name"],
+            "sample_description": sample["sample_description"],
         }
-        wells_content[sample["coordinate"]] = well
+
+        if "control" in sample:
+            content["control"] = sample["control"]
+            content["control_type"] = sample["control_type"]
+
+        wells_content[sample["coordinate"]] = {"content": content}
 
     body = {
         "barcode": barcode,

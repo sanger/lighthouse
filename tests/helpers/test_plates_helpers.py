@@ -477,15 +477,16 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
         correct_mapped_samples = [
             {
                 "sample_description": "MCM001",
-                "phenotype": "Positive",
-                "control": "Positive",
+                "phenotype": "positive",
+                "control": True,
+                "control_type": "positive",
                 "supplier_name": "abc",
                 "barcode": "d123",
                 "coordinate": "B01",
             },
             {
                 "sample_description": "MCM002",
-                "phenotype": "Positive",
+                "phenotype": "positive",
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
@@ -502,21 +503,22 @@ def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
             map_to_ss_columns(dart_mongo_merged_samples)
 
 
-def test_create_post_body(app):
+def test_create_cherrypicked_post_body(app):
     with app.app_context():
         barcode = "d123"
         mapped_samples = [
             {
                 "sample_description": "MCM001",
-                "phenotype": "Positive",
-                "control": "Positive",
+                "phenotype": "positive",
+                "control": True,
+                "control_type": "positive",
                 "supplier_name": "abc",
                 "barcode": "d123",
                 "coordinate": "B01",
             },
             {
                 "sample_description": "MCM002",
-                "phenotype": "Positive",
+                "phenotype": "positive",
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
@@ -535,6 +537,8 @@ def test_create_post_body(app):
                                 "phenotype": "positive",
                                 "supplier_name": "abc",
                                 "sample_description": "MCM001",
+                                "control": True,
+                                "control_type": "positive"
                             }
                         },
                         "B02": {
