@@ -26,7 +26,7 @@ jobs:
           - 1433:1433
         env:
           ACCEPT_EULA: Y
-          SA_PASSWORD: MyV3rY@7742w0rd
+          SA_PASSWORD: MyS3cr3tPassw0rd
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
