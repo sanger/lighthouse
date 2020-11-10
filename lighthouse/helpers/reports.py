@@ -183,6 +183,7 @@ def get_locations_from_labwhere(labware_barcodes):
         json={"barcodes": labware_barcodes},
     )
 
+
 def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
     # Returns dataframe with 4 columns: those needed to uniquely identify the sample
@@ -287,7 +288,9 @@ def add_cherrypicked_column(existing_dataframe):
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
     existing_dataframe = existing_dataframe.merge(
-        cherrypicked_samples_df, how="left", on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+        cherrypicked_samples_df,
+        how="left",
+        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE],
     )
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 

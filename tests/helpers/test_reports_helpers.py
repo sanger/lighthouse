@@ -28,6 +28,7 @@ from lighthouse.constants import (
     CT_VALUE_LIMIT,
 )
 
+
 def test_get_new_report_name_and_path(app, freezer):
     report_date = datetime.now().strftime("%y%m%d_%H%M")
 
@@ -86,8 +87,7 @@ def test_get_cherrypicked_samples(app, freezer):
     with app.app_context():
         with patch("sqlalchemy.create_engine", return_value=Mock()):
             with patch(
-                "pandas.read_sql",
-                return_value=expected,
+                "pandas.read_sql", return_value=expected,
             ):
                 returned_samples = get_cherrypicked_samples(samples, plate_barcodes)
                 assert returned_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "MCM001"
@@ -112,30 +112,27 @@ def test_get_cherrypicked_samples_chunking(app, freezer):
     with app.app_context():
         with patch("sqlalchemy.create_engine", return_value=Mock()):
             with patch(
-                "pandas.read_sql",
-                side_effect=query_results,
+                "pandas.read_sql", side_effect=query_results,
             ):
                 returned_samples = get_cherrypicked_samples(samples, plate_barcodes, 2)
                 pd.testing.assert_frame_equal(expected, returned_samples)
 
+
 # test scenario where there have been multiple lighthouse tests for a sample with the same Root Sample ID
 # uses actual databases rather than mocking to make sure the query is correct
-def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_sample_stock_resource, event_wh_data):
+def test_get_cherrypicked_samples_repeat_tests(
+    app, freezer, mlwh_sample_stock_resource, event_wh_data
+):
     # the following come from MLWH_SAMPLE_STOCK_RESOURCE in fixture_data
-    root_sample_ids = ['root_1', 'root_2', 'root_1']
-    plate_barcodes = ['pb_1', 'pb_2', 'pb_3']
+    root_sample_ids = ["root_1", "root_2", "root_1"]
+    plate_barcodes = ["pb_1", "pb_2", "pb_3"]
 
     # root_1 will match 2 samples, but only one of those will match an event (on Sanger Sample Id)
     # therefore we only get 1 of the samples called 'root_1' back (the one on plate 'pb_1')
     # this also checks we don't get a duplicate row for root_1 / pb_1, despite it cropped up in 2 different 'chunks'
-    expected_rows = [
-        ['root_1', 'pb_1', 'Positive', 'A1'],
-        ['root_2', 'pb_2', 'Positive', 'A1']
-    ]
+    expected_rows = [["root_1", "pb_1", "Positive", "A1"], ["root_2", "pb_2", "Positive", "A1"]]
     expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
-    expected = pd.DataFrame(
-        np.array(expected_rows), columns=expected_columns, index=[0, 1]
-    )
+    expected = pd.DataFrame(np.array(expected_rows), columns=expected_columns, index=[0, 1])
 
     with app.app_context():
         chunk_size = 2
@@ -202,32 +199,64 @@ def test_add_cherrypicked_column(app, freezer):
     existing_dataframe = pd.DataFrame(
         [
             ["MCM001", "123", "TEST", "Positive", "A1"],
-            ["MCM001", "456", "TEST", "Positive", "A1"], # plate barcode differs from first sample
-            ["MCM001", "123", "TEST", "Positive2", "A1"], # result differs from first sample
-            ["MCM001", "123", "TEST", "Positive", "A2"], # coordinate differs from first sample
-            ["MCM002", "123", "TEST", "Positive", "A1"] # root sample id differs from first sample
+            ["MCM001", "456", "TEST", "Positive", "A1"],  # plate barcode differs from first sample
+            ["MCM001", "123", "TEST", "Positive2", "A1"],  # result differs from first sample
+            ["MCM001", "123", "TEST", "Positive", "A2"],  # coordinate differs from first sample
+            ["MCM002", "123", "TEST", "Positive", "A1"],  # root sample id differs from first sample
         ],
-        columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE],
+        columns=[
+            FIELD_ROOT_SAMPLE_ID,
+            FIELD_PLATE_BARCODE,
+            "Lab ID",
+            FIELD_RESULT,
+            FIELD_COORDINATE,
+        ],
     )
 
     # mock response from the 'get_cherrypicked_samples' method
     mock_get_cherrypicked_samples_rows = [
-        ["MCM001", "123", "Positive", "A1"], # matches first sample only
-        ["MCM002", "123", "Positive", "A1"] # matches final sample only
+        ["MCM001", "123", "Positive", "A1"],  # matches first sample only
+        ["MCM002", "123", "Positive", "A1"],  #  matches final sample only
     ]
-    mock_get_cherrypicked_samples_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+    mock_get_cherrypicked_samples_columns = [
+        FIELD_ROOT_SAMPLE_ID,
+        FIELD_PLATE_BARCODE,
+        FIELD_RESULT,
+        FIELD_COORDINATE,
+    ]
     mock_get_cherrypicked_samples = pd.DataFrame(
         np.array(mock_get_cherrypicked_samples_rows), columns=mock_get_cherrypicked_samples_columns
     )
 
     # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from 'get_cherrypicked_samples'
-    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE, "LIMS submission"]
+    expected_columns = [
+        FIELD_ROOT_SAMPLE_ID,
+        FIELD_PLATE_BARCODE,
+        "Lab ID",
+        FIELD_RESULT,
+        FIELD_COORDINATE,
+        "LIMS submission",
+    ]
     expected_data = [
-        ["MCM001", "123", "TEST", "Positive", "A1", "Yes"], # 'Yes' because was returned from get_cherrypicked_samples
+        [
+            "MCM001",
+            "123",
+            "TEST",
+            "Positive",
+            "A1",
+            "Yes",
+        ],  # 'Yes' because was returned from get_cherrypicked_samples
         ["MCM001", "456", "TEST", "Positive", "A1", "No"],
         ["MCM001", "123", "TEST", "Positive2", "A1", "No"],
         ["MCM001", "123", "TEST", "Positive", "A2", "No"],
-        ["MCM002", "123", "TEST", "Positive", "A1", "Yes"] # 'Yes' because was returned from get_cherrypicked_samples
+        [
+            "MCM002",
+            "123",
+            "TEST",
+            "Positive",
+            "A1",
+            "Yes",
+        ],  # 'Yes' because was returned from get_cherrypicked_samples
     ]
 
     with app.app_context():
@@ -249,29 +278,51 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
 
     # existing dataframe before 'add_cherrypicked_column' is run (essentially queried from MongoDB)
     existing_dataframe = pd.DataFrame(
-        [
-            ["MCM001", "123", "TEST", "Positive", "A1"],
-            ["MCM002", "456", "TEST", "Positive", "A2"]
+        [["MCM001", "123", "TEST", "Positive", "A1"], ["MCM002", "456", "TEST", "Positive", "A2"]],
+        columns=[
+            FIELD_ROOT_SAMPLE_ID,
+            FIELD_PLATE_BARCODE,
+            "Lab ID",
+            FIELD_RESULT,
+            FIELD_COORDINATE,
         ],
-        columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE],
     )
 
     # mock response from the 'get_cherrypicked_samples' method
     mock_get_cherrypicked_samples_rows = [
-        ["MCM002", "456", "Positive", "A2"], # matches second sample
-        ["MCM002", "456", "Positive", "A2"] # identical to above
+        ["MCM002", "456", "Positive", "A2"],  # matches second sample
+        ["MCM002", "456", "Positive", "A2"],  #  identical to above
     ]
-    mock_get_cherrypicked_samples_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+    mock_get_cherrypicked_samples_columns = [
+        FIELD_ROOT_SAMPLE_ID,
+        FIELD_PLATE_BARCODE,
+        FIELD_RESULT,
+        FIELD_COORDINATE,
+    ]
     mock_get_cherrypicked_samples = pd.DataFrame(
         np.array(mock_get_cherrypicked_samples_rows), columns=mock_get_cherrypicked_samples_columns
     )
 
     # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from 'get_cherrypicked_samples'
-    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE, "LIMS submission"]
+    expected_columns = [
+        FIELD_ROOT_SAMPLE_ID,
+        FIELD_PLATE_BARCODE,
+        "Lab ID",
+        FIELD_RESULT,
+        FIELD_COORDINATE,
+        "LIMS submission",
+    ]
     expected_data = [
         ["MCM001", "123", "TEST", "Positive", "A1", "No"],
         ["MCM002", "456", "TEST", "Positive", "A2", "Yes"],
-        ["MCM002", "456", "TEST", "Positive", "A2", "Yes"] # Duplicate, reflecting response from get_cherrypicked_samples
+        [
+            "MCM002",
+            "456",
+            "TEST",
+            "Positive",
+            "A2",
+            "Yes",
+        ],  # Duplicate, reflecting response from get_cherrypicked_samples
     ]
 
     with app.app_context():
@@ -289,18 +340,33 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
 def test_add_cherrypicked_column_no_rows(app, freezer):
     # mocks response from get_cherrypicked_samples()
     existing_dataframe = pd.DataFrame(
-        [
-            ["MCM001", "123", "TEST", "Positive", "A1"],
-            ["MCM002", "123", "TEST", "Positive", "A1"],
+        [["MCM001", "123", "TEST", "Positive", "A1"], ["MCM002", "123", "TEST", "Positive", "A1"],],
+        columns=[
+            FIELD_ROOT_SAMPLE_ID,
+            FIELD_PLATE_BARCODE,
+            "Lab ID",
+            FIELD_RESULT,
+            FIELD_COORDINATE,
         ],
-        columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE],
     )
 
     # Not sure if this is an accurate mock - haven't tried it with a real db connection
-    mock_get_cherrypicked_samples = pd.DataFrame([], columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE])
+    mock_get_cherrypicked_samples = pd.DataFrame(
+        [], columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+    )
 
-    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE, "LIMS submission"]
-    expected_data = [["MCM001", "123", "TEST", "Positive", "A1", "No"], ["MCM002", "123", "TEST", "Positive", "A1", "No"]]
+    expected_columns = [
+        FIELD_ROOT_SAMPLE_ID,
+        FIELD_PLATE_BARCODE,
+        "Lab ID",
+        FIELD_RESULT,
+        FIELD_COORDINATE,
+        "LIMS submission",
+    ]
+    expected_data = [
+        ["MCM001", "123", "TEST", "Positive", "A1", "No"],
+        ["MCM002", "123", "TEST", "Positive", "A1", "No"],
+    ]
 
     with app.app_context():
         with patch("sqlalchemy.create_engine", return_value=Mock()):
