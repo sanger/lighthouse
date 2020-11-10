@@ -27,6 +27,10 @@ JOBS = [
         "hour": 2,
     }
 ]
+
+
+# We need to define timezone because current flask_apscheduler does not load from TZ env
+SCHEDULER_TIMEZONE = "Europe/London"
 SCHEDULER_API_ENABLED = False
 
 # Eve config
