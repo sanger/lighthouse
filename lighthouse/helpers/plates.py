@@ -349,7 +349,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             db_connection.close()
 
 
-def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str, str]]:
+def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str, str]]:
     mapped_samples = []
 
     for sample in samples:
@@ -364,6 +364,8 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str
 
             mapped_sample["coordinate"] = dart_row["destination_coordinate"]
             mapped_sample["barcode"] = dart_row["destination_barcode"]
+
+            mapped_sample["phenotype"] = "positive"
 
             if dart_row["control"]:
                 mapped_sample["control"] = True
@@ -390,14 +392,17 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -
         assert sample["phenotype"] is not None
         assert sample["supplier_name"] is not None
 
-        well = {
-            "content": {
-                "phenotype": sample["phenotype"].strip().lower(),
-                "supplier_name": sample["supplier_name"],
-                "sample_description": sample["sample_description"],
-            }
+        content = {
+            "phenotype": sample["phenotype"],
+            "supplier_name": sample["supplier_name"],
+            "sample_description": sample["sample_description"],
         }
-        wells_content[sample["coordinate"]] = well
+
+        if "control" in sample:
+            content["control"] = sample["control"]
+            content["control_type"] = sample["control_type"]
+
+        wells_content[sample["coordinate"]] = {"content": content}
 
     body = {
         "barcode": barcode,
