@@ -360,15 +360,14 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str
 
         try:
             mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
-            mapped_sample["phenotype"] = mongo_row[
-                FIELD_RESULT
-            ]  # This should be the filtered positive field
             mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
 
             mapped_sample["coordinate"] = dart_row["destination_coordinate"]
             mapped_sample["barcode"] = dart_row["destination_barcode"]
+
             if dart_row["control"]:
-                mapped_sample["control"] = dart_row["control"]
+                mapped_sample["control"] = True
+                mapped_sample["control_type"] = dart_row["control"]
         except KeyError as e:
             msg = f"""
             Error while mapping database columns to Sequencescape columns for sample {mongo_row["root_sample_id"]}.

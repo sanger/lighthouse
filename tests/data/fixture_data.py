@@ -17,6 +17,14 @@ from lighthouse.constants import (
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_RESULT,
+    FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_DART_CONTROL,
+    FIELD_DART_SOURCE_BARCODE,
+    FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DART_ROOT_SAMPLE_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_LAB_ID
 )
 
 CENTRES: List[Dict[str, str]] = [
@@ -364,18 +372,18 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Dict[str, str]]] = [
             FIELD_COG_BARCODE: "abc",
             FIELD_ROOT_SAMPLE_ID: "MCM001",
             FIELD_RNA_ID: "rna_1",
-            # FIELD_FILTERED_POSITIVE: "Positive",
         },
-        "row": {
-            "destination_coordinate": "B01",
-            "destination_barcode": "d123",
-            "control": "Positive",
-            "source_barcode": "123",
-            "source_coordinate": "A01",
-            "root_sample_id": "MCM001",
-            "rna_id": "rna_1",
-            "lab_id": "AA",
-        },
+        "row": 
+        {
+            FIELD_DART_DESTINATION_COORDINATE: "B01",
+            FIELD_DART_DESTINATION_BARCODE: "d123",
+            FIELD_DART_CONTROL: "positive",
+            FIELD_DART_SOURCE_BARCODE: "123",
+            FIELD_DART_SOURCE_COORDINATE: "A01",
+            FIELD_DART_ROOT_SAMPLE_ID: "MCM001",
+            FIELD_DART_RNA_ID: "rna_1",
+            FIELD_DART_LAB_ID: "AA"
+        }
     },
     {  # Non-control sample
         "sample": {
@@ -386,19 +394,19 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Dict[str, str]]] = [
             FIELD_COG_BARCODE: "abcd",
             FIELD_ROOT_SAMPLE_ID: "MCM002",
             FIELD_RNA_ID: "rna_2",
-            # FIELD_FILTERED_POSITIVE: "Positive",
         },
-        "row": {
-            "destination_coordinate": "B02",
-            "destination_barcode": "d123",
-            "control": "",
-            "source_barcode": "1234",
-            "source_coordinate": "A02",
-            "root_sample_id": "MCM002",
-            "rna_id": "rna_2",
-            "lab_id": "AB",
-        },
-    },
+        "row": 
+        {
+            FIELD_DART_DESTINATION_COORDINATE: "B02",
+            FIELD_DART_DESTINATION_BARCODE: "d123",
+            FIELD_DART_CONTROL: "",
+            FIELD_DART_SOURCE_BARCODE: "1234",
+            FIELD_DART_SOURCE_COORDINATE: "A02",
+            FIELD_DART_ROOT_SAMPLE_ID: "MCM002",
+            FIELD_DART_RNA_ID: "rna_2",
+            FIELD_DART_LAB_ID: "AB"
+        }
+    }
 ]
 
 
