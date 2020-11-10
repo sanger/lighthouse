@@ -437,8 +437,8 @@ MLWH_SAMPLE_STOCK_RESOURCE: Dict[str, Any] = {
 
 EVENT_WH_DATA: Dict[str, Any] = {
     "subjects": [
-        {"id": 1, "uuid": 1, "friendly_name": "ss1", "subject_type_id": 1},
-        {"id": 2, "uuid": 2, "friendly_name": "ss2", "subject_type_id": 1},
+        {"id": 1, "uuid": '1'.encode('utf-8'), "friendly_name": "ss1", "subject_type_id": 1},
+        {"id": 2, "uuid": '2'.encode('utf-8'), "friendly_name": "ss2", "subject_type_id": 1},
     ],
     "roles": [
         {"id": 1, "event_id": 1, "subject_id": 1, "role_type_id": 1},
@@ -448,7 +448,7 @@ EVENT_WH_DATA: Dict[str, Any] = {
         {
             "id": 1,
             "lims_id": "SQSCP",
-            "uuid": 1,
+            "uuid": '1'.encode('utf-8'),
             "event_type_id": 1,
             "occured_at": "2015-11-25 11:35:30",
             "user_identifier": "test@example.com",
@@ -456,7 +456,7 @@ EVENT_WH_DATA: Dict[str, Any] = {
         {
             "id": 2,
             "lims_id": "SQSCP",
-            "uuid": 2,
+            "uuid": '2'.encode('utf-8'),
             "event_type_id": 1,
             "occured_at": "2015-11-25 11:35:30",
             "user_identifier": "test@example.com",
