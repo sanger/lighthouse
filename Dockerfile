@@ -27,12 +27,9 @@ WORKDIR /code
 COPY Pipfile /code/
 COPY Pipfile.lock /code/
 
-# Temporal development line
-RUN pipenv install --dev --ignore-pipfile --system
-
 # Remember to rollback line to this:
 # Install both default and dev packages so that we can run the tests against this image
-# RUN pipenv install --dev --ignore-pipfile --system --deploy
+RUN pipenv install --dev --ignore-pipfile --system --deploy
 
 ADD . /code/
 
