@@ -196,7 +196,7 @@ def row_to_dict(row):
 
 
 def get_cherrypicked_samples_records(barcode):
-    rows = find_dart_source_samples_rows(app, barcode)
+    rows = find_dart_source_samples_rows(barcode)
     samples = find_samples(query_for_cherrypicked_samples(rows))
 
     return join_rows_with_samples(rows, samples)
@@ -345,6 +345,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         if db_connection is not None:
             db_connection.close()
 
+
 def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str, str]]:
     mapped_samples = []
 
@@ -353,10 +354,12 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str
 
         mongo_row = sample["sample"]
         dart_row = sample["row"]
-        
+
         try:
             mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
-            mapped_sample["phenotype"] = mongo_row[FIELD_RESULT] # This should be the filtered positive field 
+            mapped_sample["phenotype"] = mongo_row[
+                FIELD_RESULT
+            ]  # This should be the filtered positive field
             mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
 
             mapped_sample["coordinate"] = dart_row["destination_coordinate"]
@@ -373,8 +376,11 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, str]]]) -> List[Dict[str
         mapped_samples.append(mapped_sample)
     return mapped_samples
 
+
 def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    logger.debug(f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'")
+    logger.debug(
+        f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
+    )
 
     wells_content = {}
     for sample in samples:

@@ -254,12 +254,14 @@ def dart_connection(app):
 
 @pytest.fixture
 def dart_schema_create(app):
-    load_sql_server_script(app, "tests/data/dart/schema.sql")
+    with app.app_context():
+        load_sql_server_script(app, "tests/data/dart/schema.sql")
 
 
 @pytest.fixture
 def dart_seed_reset(app, dart_schema_create):
-    load_sql_server_script(app, "tests/data/dart/seed.sql")
+    with app.app_context():
+        load_sql_server_script(app, "tests/data/dart/seed.sql")
 
 
 @pytest.fixture
