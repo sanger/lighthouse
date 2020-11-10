@@ -22,7 +22,7 @@ drop_table_stock_resource = """
 DROP TABLE IF EXISTS `unified_warehouse_test`.`stock_resource`;
 """
 
-create_table = """
+create_table_lh_sample = """
 CREATE TABLE `unified_warehouse_test`.`lighthouse_sample` (
 `id` int NOT NULL AUTO_INCREMENT,
 `mongodb_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Auto-generated id from MongoDB',
@@ -43,7 +43,9 @@ UNIQUE KEY `index_lighthouse_sample_on_root_sample_id_and_rna_id_and_result` (`r
 UNIQUE KEY `index_lighthouse_sample_on_mongodb_id` (`mongodb_id`),
 KEY `index_lighthouse_sample_on_date_tested` (`date_tested`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
 
+create_table_sample = """
 CREATE TABLE `unified_warehouse_test`.`sample` (
   `id_sample_tmp` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Internal to this database id, value can change',
   `id_lims` varchar(10) COLLATE utf8_unicode_ci NOT NULL COMMENT 'LIM system identifier, e.g. CLARITY-GCLP, SEQSCAPE',
@@ -85,7 +87,9 @@ CREATE TABLE `unified_warehouse_test`.`sample` (
   KEY `sample_accession_number_index` (`accession_number`),
   KEY `sample_name_index` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4925703 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
 
+create_table_stock_resource = """
 CREATE TABLE `unified_warehouse_test`.`stock_resource` (
   `id_stock_resource_tmp` int(11) NOT NULL AUTO_INCREMENT,
   `last_updated` datetime NOT NULL COMMENT 'Timestamp of last update',
@@ -120,22 +124,34 @@ CREATE TABLE `unified_warehouse_test`.`stock_resource` (
 with sql_engine.connect() as connection:
     connection.execute(create_db)
     connection.execute(drop_table_lh_sample)
-    connection.execute(drop_table_sample)
     connection.execute(drop_table_stock_resource)
-    connection.execute(create_table)
+    connection.execute(drop_table_sample)
+    connection.execute(create_table_lh_sample)
+    connection.execute(create_table_sample)
+    connection.execute(create_table_stock_resource)
 
 print("Initialising the test MySQL events warehouse database")
 
 create_db = """
 CREATE DATABASE IF NOT EXISTS `event_warehouse_test` /*!40100 DEFAULT CHARACTER SET latin1 */;
 """
-drop_table = """
+drop_table_subjects = """
 DROP TABLE IF EXISTS `event_warehouse_test`.`subjects`;
+"""
+
+drop_table_roles = """
 DROP TABLE IF EXISTS `event_warehouse_test`.`roles`;
+"""
+
+drop_table_events = """
 DROP TABLE IF EXISTS `event_warehouse_test`.`events`;
+"""
+
+drop_table_event_types = """
 DROP TABLE IF EXISTS `event_warehouse_test`.`event_types`;
 """
-create_table = """
+
+create_table_subjects = """
 CREATE TABLE `event_warehouse_test`.`subjects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `uuid` binary(16) NOT NULL COMMENT 'A binary encoded UUID use HEX(uuid) to retrieve the original (minus dashes)',
@@ -149,7 +165,9 @@ CREATE TABLE `event_warehouse_test`.`subjects` (
   KEY `fk_rails_b7f2e355a0` (`subject_type_id`) USING BTREE,
   CONSTRAINT `fk_rails_b7f2e355a0` FOREIGN KEY (`subject_type_id`) REFERENCES `subject_types` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4198465 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
 
+create_table_roles = """
 CREATE TABLE `event_warehouse_test`.`roles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `event_id` int(11) NOT NULL COMMENT 'Associate with the event (what happened)',
@@ -165,7 +183,9 @@ CREATE TABLE `event_warehouse_test`.`roles` (
   CONSTRAINT `fk_rails_df614e5484` FOREIGN KEY (`role_type_id`) REFERENCES `role_types` (`id`),
   CONSTRAINT `fk_rails_e0c7d3e302` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=51090114 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
 
+create_table_events = """
 CREATE TABLE `event_warehouse_test`.`events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lims_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Identifier for the originating LIMS. eg. SQSCP for Sequencesacape',
@@ -180,7 +200,9 @@ CREATE TABLE `event_warehouse_test`.`events` (
   KEY `fk_rails_75f14fef31` (`event_type_id`) USING BTREE,
   CONSTRAINT `fk_rails_75f14fef31` FOREIGN KEY (`event_type_id`) REFERENCES `event_types` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1268003 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+"""
 
+create_table_event_types = """
 CREATE TABLE `event_warehouse_test`.`event_types` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `key` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The identifier for the event',
@@ -194,7 +216,13 @@ CREATE TABLE `event_warehouse_test`.`event_types` (
 
 with sql_engine.connect() as connection:
     connection.execute(create_db)
-    connection.execute(drop_table)
-    connection.execute(create_table)
+    connection.execute(drop_table_roles)
+    connection.execute(drop_table_events)
+    connection.execute(drop_table_event_types)
+    connection.execute(drop_table_subjects)
+    connection.execute(create_table_subjects)
+    connection.execute(create_table_event_types)
+    connection.execute(create_table_events)
+    connection.execute(create_table_roles)
 
 print("Done")
