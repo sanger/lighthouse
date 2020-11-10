@@ -124,30 +124,27 @@ def test_get_cherrypicked_samples_chunking(app, freezer):
                 pd.testing.assert_frame_equal(expected, returned_samples)
 
 # test scenario where there have been multiple lighthouse tests for a sample with the same Root Sample ID
-# TODO: make this test more rigorous, so it can't pass by chance
-def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_sample_stock_resource, mlwh_lh_samples, events_warehouse_tables):
-    root_sample_ids = []
-    for sample in MLWH_LH_SAMPLES_MULTIPLE:
-        root_sample_ids.append(sample[MLWH_LH_SAMPLE_ROOT_SAMPLE_ID])
+# uses actual databases rather than mocking to make sure the query is correct
+def test_get_cherrypicked_samples_repeat_tests(app, freezer, mlwh_sample_stock_resource, events_warehouse_tables):
+    # the following come from MLWH_SAMPLE_STOCK_RESOURCE in fixture_data
+    root_sample_ids = ['root_1', 'root_2', 'root_1']
+    plate_barcodes = ['pb_1', 'pb_2', 'pb_3']
 
-    plate_barcodes = []
-    for sample in MLWH_LH_SAMPLES_MULTIPLE:
-        plate_barcodes.append(sample[MLWH_LH_SAMPLE_PLATE_BARCODE])
-
+    # root_1 will match 2 samples, but only one of those will match an event (on Sanger Sample Id)
+    # therefore we only get 1 row back for root_1
     expected_rows = [
-        ['root_1', 'pb_1'],
-        ['root_2', 'pb_2']
+        ['root_1', 'pb_1', 'Positive', 'A1'],
+        ['root_2', 'pb_2', 'Positive', 'A1']
     ]
+    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
     expected = pd.DataFrame(
-        np.array(expected_rows), columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE], index=[0, 1]
+        np.array(expected_rows), columns=expected_columns, index=[0, 1]
     )
 
     with app.app_context():
-        returned_samples = get_cherrypicked_samples(root_sample_ids, plate_barcodes, 2)
-        # print('expected', expected)
-        # print('returned_samples', returned_samples)
+        chunk_size = 2
+        returned_samples = get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size)
         pd.testing.assert_frame_equal(expected, returned_samples)
-
 
 
 def test_get_all_positive_samples(app, freezer, samples):
