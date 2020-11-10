@@ -24,7 +24,7 @@ from lighthouse.exceptions import (
     MultipleCentresError,
 )
 
-from lighthouse.helpers.warehouses_db import create_mysql_connection_engine, get_table
+from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
 
 from sqlalchemy.sql.expression import bindparam  # type: ignore
 from sqlalchemy.sql.expression import and_  # type: ignore
