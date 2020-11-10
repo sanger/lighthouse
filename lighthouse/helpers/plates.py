@@ -101,6 +101,9 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
 
 
 def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+    if query is None:
+        return None
+
     samples = app.data.driver.db.samples
 
     samples_for_barcode = list(samples.find(query))

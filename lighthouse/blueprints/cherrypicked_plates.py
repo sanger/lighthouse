@@ -36,7 +36,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         return {"errors": ["POST request needs 'barcode' in body"]}, HTTPStatus.BAD_REQUEST
 
     try:
-        get_cherrypicked_samples_records(barcode)
+        # get_cherrypicked_samples_records(barcode)
         # get samples from dart for barcode 1234
         # dart_samples [destination_barcode, destination_well_index, source_barcode, source_well_index, control (String), root_sample_id, rna_id, lab_id]
         dart_samples = find_dart_source_samples_rows(barcode)
@@ -71,14 +71,14 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         if response.ok:
             response_json = {
                 "data": {
-                    "plate_barcode": samples[0]["sample"][FIELD_PLATE_BARCODE],
+                    "plate_barcode": barcode,
                     "centre": centre_prefix,
                     "number_of_positives": len(samples),
                 }
             }
 
             try:
-                update_mlwh_with_cog_uk_ids(samples)
+                update_mlwh_with_cog_uk_ids(mongo_samples)
             except (Exception) as e:
                 logger.exception(e)
                 return (

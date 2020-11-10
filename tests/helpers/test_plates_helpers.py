@@ -46,6 +46,7 @@ from lighthouse.helpers.plates import (
     row_to_dict,
     map_to_ss_columns,
     create_cherrypicked_post_body,
+    find_samples,
 )
 
 
@@ -549,3 +550,8 @@ def test_create_post_body(app):
         }
 
         assert create_cherrypicked_post_body(barcode, mapped_samples) == correct_body
+
+
+def test_find_samples_returns_none_if_no_query_provided(app):
+    with app.app_context():
+        assert find_samples(None) is None

@@ -1,5 +1,7 @@
 from typing import Dict, List, Any
 from datetime import datetime
+from copy import copy
+
 from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_RNA_ID,
@@ -398,3 +400,12 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Dict[str, str]]] = [
         },
     },
 ]
+
+
+def inject_lab_id(sample, lab_id):
+    sample_copy = copy(sample)
+    sample_copy[FIELD_LAB_ID] = lab_id
+    return sample_copy
+
+
+SAMPLES_WITH_LAB_ID = [inject_lab_id(sample, "Lab 1") for sample in SAMPLES]
