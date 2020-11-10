@@ -5,7 +5,7 @@ import responses  # type: ignore
 
 
 def test_post_cherrypicked_plates_endpoint_successful(
-    app, client, dart_seed_reset, samples_different_plates, mocked_responses, mlwh_lh_samples
+    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses, mlwh_lh_samples
 ):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
@@ -13,7 +13,7 @@ def test_post_cherrypicked_plates_endpoint_successful(
     ):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
-        body = json.dumps({"barcode": "123"})
+        body = json.dumps({"barcode": "plate_1"})
         mocked_responses.add(
             responses.POST,
             ss_url,
@@ -22,18 +22,18 @@ def test_post_cherrypicked_plates_endpoint_successful(
         )
         response = client.post(
             "/cherrypicked-plates/create",
-            data=json.dumps({"barcode": "123"}),
+            data=json.dumps({"barcode": "plate_1"}),
             content_type="application/json",
         )
 
         assert response.status_code == HTTPStatus.OK
         assert response.json == {
-            "data": {"plate_barcode": "123", "centre": "TS1", "number_of_positives": 3}
+            "data": {"plate_barcode": "plate_1", "centre": "TS1", "number_of_positives": 2}
         }
 
 
 def test_post_cherrypicked_plates_endpoint_no_barcode_in_request(
-    app, client, dart_seed_reset, samples_different_plates
+    app, client, dart_samples_for_bp_test, samples_with_lab_id
 ):
     response = client.post(
         "/cherrypicked-plates/create",
@@ -47,17 +47,17 @@ def test_post_cherrypicked_plates_endpoint_no_barcode_in_request(
 def test_post_cherrypicked_plates_endpoint_no_positive_samples(app, client):
     response = client.post(
         "/cherrypicked-plates/create",
-        data=json.dumps({"barcode": "123"}),
+        data=json.dumps({"barcode": "plate_1"}),
         content_type="application/json",
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": ["No samples for this barcode: 123"]}
+    assert response.json == {"errors": ["No samples for this barcode: plate_1"]}
 
 
 def test_post_plates_endpoint_add_cog_barcodes_failed(
-    app, client, dart_seed_reset, samples_different_plates, centres, mocked_responses
+    app, client, dart_samples_for_bp_test, samples_with_lab_id, centres, mocked_responses
 ):
-    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TS1/new?count=3"
+    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TS1/new?count=2"
 
     mocked_responses.add(
         responses.POST,
@@ -67,15 +67,15 @@ def test_post_plates_endpoint_add_cog_barcodes_failed(
 
     response = client.post(
         "/cherrypicked-plates/create",
-        data=json.dumps({"barcode": "123"}),
+        data=json.dumps({"barcode": "plate_1"}),
         content_type="application/json",
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": ["Failed to add COG barcodes to plate: 123"]}
+    assert response.json == {"errors": ["Failed to add COG barcodes to plate: plate_1"]}
 
 
 def test_post_plates_endpoint_ss_failure(
-    app, client, dart_seed_reset, samples_different_plates, mocked_responses
+    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses
 ):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
@@ -83,7 +83,7 @@ def test_post_plates_endpoint_ss_failure(
     ):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
-        body = json.dumps({"errors": ["The barcode '123' is not a recognised format."]})
+        body = json.dumps({"errors": ["The barcode 'plate_1' is not a recognised format."]})
         mocked_responses.add(
             responses.POST,
             ss_url,
@@ -93,15 +93,15 @@ def test_post_plates_endpoint_ss_failure(
 
         response = client.post(
             "/cherrypicked-plates/create",
-            data=json.dumps({"barcode": "123"}),
+            data=json.dumps({"barcode": "plate_1"}),
             content_type="application/json",
         )
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-        assert response.json == {"errors": ["The barcode '123' is not a recognised format."]}
+        assert response.json == {"errors": ["The barcode 'plate_1' is not a recognised format."]}
 
 
 def test_post_plates_mlwh_update_failure(
-    app, client, dart_seed_reset, samples_different_plates, mocked_responses
+    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses
 ):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
@@ -113,7 +113,7 @@ def test_post_plates_mlwh_update_failure(
         ):
             ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
-            body = json.dumps({"barcode": "123"})
+            body = json.dumps({"barcode": "plate_1"})
             mocked_responses.add(
                 responses.POST,
                 ss_url,
@@ -123,7 +123,7 @@ def test_post_plates_mlwh_update_failure(
 
             response = client.post(
                 "/cherrypicked-plates/create",
-                data=json.dumps({"barcode": "123"}),
+                data=json.dumps({"barcode": "plate_1"}),
                 content_type="application/json",
             )
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

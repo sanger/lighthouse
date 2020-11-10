@@ -23,6 +23,7 @@ from .data.fixture_data import (
     SAMPLES_CT_VALUES,
     SAMPLES_DIFFERENT_PLATES,
     DART_MONGO_MERGED_SAMPLES,
+    SAMPLES_WITH_LAB_ID,
 )
 
 from lighthouse.helpers.mlwh_db import create_mlwh_connection_engine, get_table
@@ -265,6 +266,12 @@ def dart_seed_reset(app, dart_schema_create):
 
 
 @pytest.fixture
+def dart_samples_for_bp_test(app, dart_schema_create):
+    with app.app_context():
+        load_sql_server_script(app, "tests/data/dart/seed_for_bp_test.sql")
+
+
+@pytest.fixture
 def dart_mongo_merged_samples():
     return DART_MONGO_MERGED_SAMPLES
 
@@ -272,3 +279,17 @@ def dart_mongo_merged_samples():
 @pytest.fixture
 def dart_mongo_merged_samples_missing_value():
     return DART_MONGO_MERGED_SAMPLES_MISSING_VALUE
+
+
+@pytest.fixture
+def samples_with_lab_id(app):
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        _ = samples_collection.insert_many(SAMPLES_WITH_LAB_ID)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SAMPLES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
