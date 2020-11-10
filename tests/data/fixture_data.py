@@ -496,12 +496,6 @@ EVENT_WH_DATA: Dict[str, Any] = {
             'key': 'cherrypick_layout_set',
             'description': 'stuff'
         }
-    ],'event_types': [
-        {
-            'id': 1,
-            'key': 'cherrypick_layout_set',
-            'description': 'stuff'
-        }
     ],
     'subject_types': [
         {
