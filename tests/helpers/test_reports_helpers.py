@@ -208,25 +208,34 @@ def test_map_labware_to_location_dataframe_content(app, freezer, labwhere_sample
 def test_add_cherrypicked_column(app, freezer):
     # existing dataframe before 'add_cherrypicked_column' is run (essentially queried from MongoDB)
     existing_dataframe = pd.DataFrame(
-        [["MCM001", "123", "TEST", "Positive", "A1"], ["MCM001", "456", "TEST", "Positive", "C1"], ["MCM002", "456", "TEST", "Positive2", "B2"]],
+        [
+            ["MCM001", "123", "TEST", "Positive", "A1"],
+            ["MCM001", "456", "TEST", "Positive", "A1"], # plate barcode differs from first sample
+            ["MCM001", "123", "TEST", "Positive2", "A1"], # result differs from first sample
+            ["MCM001", "123", "TEST", "Positive", "A2"], # coordinate differs from first sample
+            ["MCM002", "123", "TEST", "Positive", "A1"] # root sample id differs from first sample
+        ],
         columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE],
     )
 
     # mock response from the 'get_cherrypicked_samples' method
     mock_get_cherrypicked_samples_rows = [
-        ["MCM001", "123", "Positive", "A1"],
-        ["MCM002", "456", "Positive2", "B2"]
+        ["MCM001", "123", "Positive", "A1"], # matches first sample only
+        ["MCM002", "123", "Positive", "A1"] # matches final sample only
     ]
+    mock_get_cherrypicked_samples_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
     mock_get_cherrypicked_samples = pd.DataFrame(
-        np.array(mock_get_cherrypicked_samples_rows), columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+        np.array(mock_get_cherrypicked_samples_rows), columns=mock_get_cherrypicked_samples_columns
     )
 
     # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from 'get_cherrypicked_samples'
     expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Lab ID", FIELD_RESULT, FIELD_COORDINATE, "LIMS submission"]
     expected_data = [
-        ["MCM001", "123", "TEST", "Positive", "A1", "Yes"],
-        ["MCM001", "456", "TEST", "Positive", "C1", "No"],
-        ["MCM002", "456", "TEST", "Positive2", "B2", "Yes"],
+        ["MCM001", "123", "TEST", "Positive", "A1", "Yes"], # 'Yes' because was returned from get_cherrypicked_samples
+        ["MCM001", "456", "TEST", "Positive", "A1", "No"],
+        ["MCM001", "123", "TEST", "Positive2", "A1", "No"],
+        ["MCM001", "123", "TEST", "Positive", "A2", "No"],
+        ["MCM002", "123", "TEST", "Positive", "A1", "Yes"] # 'Yes' because was returned from get_cherrypicked_samples
     ]
 
     with app.app_context():
