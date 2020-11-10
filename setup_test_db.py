@@ -3,7 +3,7 @@ from lighthouse.helpers.warehouses_db import create_mysql_connection_engine
 
 # Set up a basic MLWH db for testing
 """Drop and recreate required tables."""
-print("Initialising the test MySQL warehouse database")
+print("Initialising the test MySQL MLWH database")
 
 sql_engine = create_mysql_connection_engine(config.WAREHOUSES_RW_CONN_STRING, config.ML_WH_DB)
 
