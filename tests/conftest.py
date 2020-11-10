@@ -2,7 +2,7 @@ import copy
 import os
 import json
 
-import pytest # type: ignore
+import pytest  # type: ignore
 import responses  # type: ignore
 from http import HTTPStatus
 
@@ -21,13 +21,10 @@ from .data.fixture_data import (
     MLWH_SEED_SAMPLES,
     MLWH_SEED_SAMPLES_MULTIPLE,
     SAMPLES_CT_VALUES,
-    SAMPLES_DIFFERENT_PLATES
+    SAMPLES_DIFFERENT_PLATES,
 )
 
-from lighthouse.helpers.mlwh_db import (
-    create_mlwh_connection_engine,
-    get_table
-)
+from lighthouse.helpers.mlwh_db import create_mlwh_connection_engine, get_table
 
 
 @pytest.fixture
@@ -120,6 +117,7 @@ def samples(app):
     with app.app_context():
         samples_collection.delete_many({})
 
+
 @pytest.fixture
 def samples_different_plates(app):
     with app.app_context():
@@ -132,6 +130,7 @@ def samples_different_plates(app):
     # clear up after the fixture is used
     with app.app_context():
         samples_collection.delete_many({})
+
 
 @pytest.fixture
 def samples_ct_values(app):
@@ -146,6 +145,7 @@ def samples_ct_values(app):
     with app.app_context():
         samples_collection.delete_many({})
 
+
 @pytest.fixture
 def samples_no_declaration(app):
     with app.app_context():
@@ -159,6 +159,7 @@ def samples_no_declaration(app):
     with app.app_context():
         samples_collection.delete_many({})
 
+
 @pytest.fixture
 def mocked_responses():
     with responses.RequestsMock() as rsps:
@@ -171,21 +172,31 @@ def labwhere_samples_simple(app, mocked_responses):
 
     body = json.dumps([{"barcode": "123", "location_barcode": "4567"}])
     mocked_responses.add(
-        responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+        responses.POST,
+        labwhere_url,
+        body=body,
+        status=HTTPStatus.OK,
     )
+
 
 @pytest.fixture
 def labwhere_samples_multiple(app, mocked_responses):
     labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode"
 
-    body = json.dumps([
-        {"barcode": "123", "location_barcode": "4567"},
-        {"barcode": "456", "location_barcode": "1234"},
-        {"barcode": "789", "location_barcode": None }
-    ])
-    mocked_responses.add(
-        responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+    body = json.dumps(
+        [
+            {"barcode": "123", "location_barcode": "4567"},
+            {"barcode": "456", "location_barcode": "1234"},
+            {"barcode": "789", "location_barcode": None},
+        ]
     )
+    mocked_responses.add(
+        responses.POST,
+        labwhere_url,
+        body=body,
+        status=HTTPStatus.OK,
+    )
+
 
 @pytest.fixture
 def labwhere_samples_error(app, mocked_responses):
@@ -193,33 +204,42 @@ def labwhere_samples_error(app, mocked_responses):
 
     body = json.dumps([])
     mocked_responses.add(
-        responses.POST, labwhere_url, body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR,
+        responses.POST,
+        labwhere_url,
+        body=body,
+        status=HTTPStatus.INTERNAL_SERVER_ERROR,
     )
+
 
 @pytest.fixture
 def mlwh_lh_samples(app, sql_engine):
     insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES, sql_engine)
 
+
 @pytest.fixture
 def mlwh_lh_samples_multiple(app, sql_engine):
     insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE, sql_engine)
 
+
 def insert_lh_samples_into_mlwh(app, samples, sql_engine):
-    table = get_table(sql_engine, app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE'])
+    table = get_table(sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
     with sql_engine.begin() as connection:
-        connection.execute(table.delete()) # delete all rows from table first
-        print('Inserting MLWH test data')
+        connection.execute(table.delete())  # delete all rows from table first
+        print("Inserting MLWH test data")
         connection.execute(table.insert(), samples)
+
 
 @pytest.fixture
 def samples_for_mlwh_update(cog_uk_ids):
     return SAMPLES_FOR_MLWH_UPDATE
 
+
 @pytest.fixture
 def cog_uk_ids():
     return COG_UK_IDS
 
+
 @pytest.fixture
 def sql_engine(app):
-    return create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])
+    return create_mlwh_connection_engine(app.config["MLWH_RW_CONN_STRING"], app.config["ML_WH_DB"])
