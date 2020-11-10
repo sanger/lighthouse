@@ -41,7 +41,7 @@ def create_report_endpoint():
 @bp.route("/delete_reports", methods=["POST"])
 def delete_reports_endpoint():
     """A Flask route which accepts a list of report filenames and then deletes them
-    from the reports path. 
+    from the reports path.
     This endpoint should be json and the body should be in
     the format {"data":"filenames":["file1.xlsx","file2.xlsx", ...]}
     This is a POST request but is a destructive action but this does not need to be

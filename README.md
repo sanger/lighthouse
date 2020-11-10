@@ -48,6 +48,8 @@ The services has the following routes:
 - (Optional) To start a Sqlserver container in local:
   1. `docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=MyS3cr3tPassw0rd" -p 1433:1433 --name sqlserver -h sql1 -d mcr.microsoft.com/mssql/server:2019-latest`
 
+- [Installing MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
+
 ## Running
 
 1. Create a `.env` file with the following contents (or use `.env.example` - rename to `.env`):
@@ -101,7 +103,7 @@ Option B (in Docker):
 
 ## Testing
 
-1. Verify the credentials for your database in the settings file 'tests/config.py'
+1. Verify the credentials for your database in the settings file 'lighthouse/config/test.py'
 1. Run the tests using pytest (flags are for verbose, exit early and capture output):
 
         python -m pytest -vsx

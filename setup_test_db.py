@@ -1,4 +1,4 @@
-import lighthouse.config.test as config # type: ignore
+import lighthouse.config.test as config  # type: ignore
 from lighthouse.helpers.mlwh_db import create_mlwh_connection_engine
 
 # Set up a basic MLWH db for testing
@@ -37,8 +37,8 @@ KEY `index_lighthouse_sample_on_date_tested` (`date_tested`)
 """
 
 with sql_engine.connect() as connection:
-  connection.execute(create_db)
-  connection.execute(drop_table)
-  connection.execute(create_table)
+    connection.execute(create_db)
+    connection.execute(drop_table)
+    connection.execute(create_table)
 
 print("Done")
