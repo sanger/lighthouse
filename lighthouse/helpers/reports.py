@@ -201,7 +201,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         ]
 
         sql_engine = sqlalchemy.create_engine(
-            f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600
+            f"mysql+pymysql://{app.config['WAREHOUSES_RO_CONN_STRING']}", pool_recycle=3600
         )
         db_connection = sql_engine.connect()
 
