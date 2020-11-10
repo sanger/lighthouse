@@ -277,11 +277,6 @@ def dart_mongo_merged_samples():
 
 
 @pytest.fixture
-def dart_mongo_merged_samples_missing_value():
-    return DART_MONGO_MERGED_SAMPLES_MISSING_VALUE
-
-
-@pytest.fixture
 def samples_with_lab_id(app):
     with app.app_context():
         samples_collection = app.data.driver.db.samples
