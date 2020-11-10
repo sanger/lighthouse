@@ -10,11 +10,18 @@ sql_engine = create_mysql_connection_engine(config.WAREHOUSES_RW_CONN_STRING, co
 create_db = """
 CREATE DATABASE IF NOT EXISTS `unified_warehouse_test` /*!40100 DEFAULT CHARACTER SET latin1 */;
 """
-drop_table = """
+drop_table_lh_sample = """
 DROP TABLE IF EXISTS `unified_warehouse_test`.`lighthouse_sample`;
+"""
+
+drop_table_sample = """
 DROP TABLE IF EXISTS `unified_warehouse_test`.`sample`;
+"""
+
+drop_table_stock_resource = """
 DROP TABLE IF EXISTS `unified_warehouse_test`.`stock_resource`;
 """
+
 create_table = """
 CREATE TABLE `unified_warehouse_test`.`lighthouse_sample` (
 `id` int NOT NULL AUTO_INCREMENT,
@@ -112,7 +119,9 @@ CREATE TABLE `unified_warehouse_test`.`stock_resource` (
 
 with sql_engine.connect() as connection:
     connection.execute(create_db)
-    connection.execute(drop_table)
+    connection.execute(drop_table_lh_sample)
+    connection.execute(drop_table_sample)
+    connection.execute(drop_table_stock_resource)
     connection.execute(create_table)
 
 print("Initialising the test MySQL events warehouse database")
