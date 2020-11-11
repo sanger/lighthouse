@@ -1,11 +1,7 @@
 from flask import current_app as app
 from eve.io.mongo import Validator  # type: ignore
 from eve.methods.post import post_internal  # type: ignore
-from lighthouse.constants import (
-    DUPLICATE_SAMPLES,
-    NON_EXISTING_SAMPLE,
-    FIELD_ROOT_SAMPLE_ID
-)
+from lighthouse.constants import DUPLICATE_SAMPLES, NON_EXISTING_SAMPLE, FIELD_ROOT_SAMPLE_ID
 from collections import Counter
 
 

@@ -11,12 +11,10 @@ from lighthouse.helpers.plates import (
     get_samples,
     send_to_ss,
     get_positive_samples,
-    update_mlwh_with_cog_uk_ids
+    update_mlwh_with_cog_uk_ids,
 )
 
-from lighthouse.constants import (
-    FIELD_PLATE_BARCODE
-)
+from lighthouse.constants import FIELD_PLATE_BARCODE
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +66,11 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             except (Exception) as e:
                 logger.exception(e)
                 return (
-                    {"errors": ["Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."]},
+                    {
+                        "errors": [
+                            "Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."
+                        ]
+                    },
                     HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
         else:

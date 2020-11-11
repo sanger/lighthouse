@@ -127,7 +127,7 @@ def get_new_report_name_and_path() -> Tuple[str, pathlib.PurePath]:
     return report_name, report_path
 
 
-# Stip any leading zeros from the coordinate
+# Strip any leading zeros from the coordinate
 # eg. A01 => A1
 def unpad_coordinate(coordinate):
     return (
@@ -184,20 +184,24 @@ def get_locations_from_labwhere(labware_barcodes):
     )
 
 
-def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
+def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
-    # Returns dataframe with 1 column, 'Root Sample ID', containing Root Sample ID of those that have been cherrypicked
+    # Returns dataframe with 4 columns: those needed to uniquely identify the sample
+    # resulting dataframe only contains those samples that have been cherrypicked
+    # (= those that have an entry for the relevant event type in the event warehouse)
     # TODO: move into external method.
 
     try:
-        concat_frame = None
+        # Create an empty DataFrame to merge into
+        concat_frame = pd.DataFrame()
 
         chunk_root_sample_ids = [
-            root_sample_ids[x : (x + 50000)] for x in range(0, len(root_sample_ids), 50000)
+            root_sample_ids[x : (x + chunk_size)]
+            for x in range(0, len(root_sample_ids), chunk_size)
         ]
 
         sql_engine = sqlalchemy.create_engine(
-            f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600
+            f"mysql+pymysql://{app.config['WAREHOUSES_RO_CONN_STRING']}", pool_recycle=3600
         )
         db_connection = sql_engine.connect()
 
@@ -205,27 +209,33 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes):
         events_wh_db = app.config["EVENTS_WH_DB"]
 
         for chunk_root_sample_id in chunk_root_sample_ids:
-            root_sample_id_string = "'" + "','".join(chunk_root_sample_id) + "'"
-            plate_barcodes_string = "'" + "','".join(plate_barcodes) + "'"
-
             sql = (
-                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
-                f" FROM {app.config['ML_WH_DB']}.sample as mlwh_sample"
-                f" JOIN {app.config['ML_WH_DB']}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
-                f" JOIN {app.config['EVENTS_WH_DB']}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
-                f" WHERE mlwh_sample.description IN ({root_sample_id_string})"
-                f" AND mlwh_stock_resource.labware_human_barcode IN ({plate_barcodes_string})"
+                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"
+                f",mlwh_sample.phenotype as `{FIELD_RESULT}`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"
+                f" FROM {ml_wh_db}.sample as mlwh_sample"
+                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
+                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
+                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
+                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
+                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+                f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
+                f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
-                " GROUP BY mlwh_sample.description"
             )
-            frame = pd.read_sql(sql, db_connection)
-            if concat_frame is None:
-                concat_frame = frame
-            else:
-                concat_frame = concat_frame.append(frame)
+
+            frame = pd.read_sql(
+                sql,
+                db_connection,
+                params={
+                    "root_sample_ids": tuple(chunk_root_sample_id),
+                    "plate_barcodes": tuple(plate_barcodes),
+                },
+            )
+
+            # drop_duplicates is needed because the same 'root sample id' could pop up in two different batches,
+            # and then it would retrieve the same rows for that root sample id twice
+            # do reset_index after dropping duplicates to make sure the rows are numbered in a way that makes sense
+            concat_frame = concat_frame.append(frame).drop_duplicates().reset_index(drop=True)
 
         return concat_frame
     except Exception as e:
@@ -278,7 +288,9 @@ def add_cherrypicked_column(existing_dataframe):
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
     existing_dataframe = existing_dataframe.merge(
-        cherrypicked_samples_df, how="left", on=FIELD_ROOT_SAMPLE_ID
+        cherrypicked_samples_df,
+        how="left",
+        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE],
     )
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 

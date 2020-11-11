@@ -12,14 +12,13 @@ from lighthouse.helpers.reports import (
     get_all_positive_samples,
     add_cherrypicked_column,
     get_distinct_plate_barcodes,
-    join_samples_declarations
+    join_samples_declarations,
 )
 from lighthouse.utils import pretty
-from lighthouse.constants import (
-    FIELD_PLATE_BARCODE
-)
+from lighthouse.constants import FIELD_PLATE_BARCODE
 
 logger = logging.getLogger(__name__)
+
 
 def create_report() -> str:
     """Creates a positve samples on site record using the samples collection and location
@@ -81,7 +80,3 @@ def create_report_job():
     logger.info("Starting create_report job")
     with scheduler.app.app_context():
         create_report()
-
-
-
-

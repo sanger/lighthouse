@@ -71,12 +71,14 @@ def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses)
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
         assert response.json == {"errors": ["The barcode '123' is not a recognised format."]}
 
+
 def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses):
     with patch(
         "lighthouse.blueprints.plates.add_cog_barcodes", return_value="TS1",
     ):
         with patch(
-            "lighthouse.blueprints.plates.update_mlwh_with_cog_uk_ids", side_effect=Exception('Boom!')
+            "lighthouse.blueprints.plates.update_mlwh_with_cog_uk_ids",
+            side_effect=Exception("Boom!"),
         ):
             ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
@@ -90,5 +92,7 @@ def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses)
             )
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert response.json == {
-                "errors": ["Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."]
+                "errors": [
+                    "Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."
+                ]
             }
