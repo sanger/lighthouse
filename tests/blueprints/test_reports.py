@@ -2,13 +2,17 @@ from http import HTTPStatus
 from unittest.mock import patch
 import pandas as pd
 
-from lighthouse.constants import FIELD_ROOT_SAMPLE_ID
+from lighthouse.constants import (
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_COORDINATE,
+)
 
 
 def test_get_reports_endpoint(client):
     with patch(
-        "lighthouse.blueprints.reports.get_reports_details",
-        return_value=[],
+        "lighthouse.blueprints.reports.get_reports_details", return_value=[],
     ):
         response = client.get("/reports")
         assert response.status_code == HTTPStatus.OK
@@ -16,8 +20,7 @@ def test_get_reports_endpoint(client):
 
 def test_get_reports_list(client):
     with patch(
-        "lighthouse.blueprints.reports.get_reports_details",
-        return_value=[],
+        "lighthouse.blueprints.reports.get_reports_details", return_value=[],
     ):
         response = client.get("/reports")
         assert response.json == {"reports": []}
@@ -37,7 +40,15 @@ def test_create_report(
             ):
                 with patch(
                     "lighthouse.helpers.reports.get_cherrypicked_samples",
-                    return_value=pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID]),
+                    return_value=pd.DataFrame(
+                        [["MCM001", "pb_1", "Positive", "A1"]],
+                        columns=[
+                            FIELD_ROOT_SAMPLE_ID,
+                            FIELD_PLATE_BARCODE,
+                            FIELD_RESULT,
+                            FIELD_COORDINATE,
+                        ],
+                    ),
                 ):
                     response = client.post("/reports/new")
                     assert response.json == {"reports": "Some details of a report"}
@@ -45,8 +56,7 @@ def test_create_report(
 
 def test_delete_reports_endpoint(client):
     with patch(
-        "lighthouse.blueprints.reports.delete_reports",
-        return_value=None,
+        "lighthouse.blueprints.reports.delete_reports", return_value=None,
     ):
         json_body = {
             "data": {
@@ -67,8 +77,7 @@ def test_delete_reports_endpoint(client):
 
 def test_delete_reports_endpoint_fails(client):
     with patch(
-        "lighthouse.blueprints.reports.delete_reports",
-        return_value=None,
+        "lighthouse.blueprints.reports.delete_reports", return_value=None,
     ):
 
         response = client.post("delete_reports", json="{}")
