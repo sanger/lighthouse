@@ -39,7 +39,10 @@ SAMPLES_DECLARATIONS_SCHEMA: Dict = {
         "allowed": ["Yes", "No", "Unknown"],
         "required": True,
     },
-    "declared_at": {"type": "datetime", "required": True,},
+    "declared_at": {
+        "type": "datetime",
+        "required": True,
+    },
 }
 # We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
@@ -100,8 +103,8 @@ LOGGING: Dict[str, Any] = {
     },
 }
 
-WAREHOUSES_RO_CONN_STRING = "root@localhost"
+MLWH_CONN_STRING = "root@localhost"
 EVENTS_WH_DB = "events_wh_db"
 
-WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
+MLWH_RW_CONN_STRING = "root:root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"

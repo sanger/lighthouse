@@ -3,12 +3,8 @@ from unittest.mock import patch
 import pandas as pd
 
 from lighthouse.constants import (
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_PLATE_BARCODE,
-    FIELD_RESULT,
-    FIELD_COORDINATE,
+    FIELD_ROOT_SAMPLE_ID
 )
-
 
 def test_get_reports_endpoint(client):
     with patch(
@@ -26,9 +22,7 @@ def test_get_reports_list(client):
         assert response.json == {"reports": []}
 
 
-def test_create_report(
-    client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations
-):
+def test_create_report(client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations):
     with app.app_context():
         with patch(
             "lighthouse.jobs.reports.get_new_report_name_and_path",
@@ -40,15 +34,7 @@ def test_create_report(
             ):
                 with patch(
                     "lighthouse.helpers.reports.get_cherrypicked_samples",
-                    return_value=pd.DataFrame(
-                        [["MCM001", "pb_1", "Positive", "A1"]],
-                        columns=[
-                            FIELD_ROOT_SAMPLE_ID,
-                            FIELD_PLATE_BARCODE,
-                            FIELD_RESULT,
-                            FIELD_COORDINATE,
-                        ],
-                    ),
+                    return_value=pd.DataFrame(['MCM001'], columns=[FIELD_ROOT_SAMPLE_ID])
                 ):
                     response = client.post("/reports/new")
                     assert response.json == {"reports": "Some details of a report"}
@@ -73,7 +59,6 @@ def test_delete_reports_endpoint(client):
         response = client.post("delete_reports", json=json_body)
 
         assert response.status_code == HTTPStatus.OK
-
 
 def test_delete_reports_endpoint_fails(client):
     with patch(

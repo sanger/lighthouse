@@ -15,7 +15,7 @@ from lighthouse.constants import (
     FIELD_COORDINATE,
     FIELD_SOURCE,
     FIELD_PLATE_BARCODE,
-    POSITIVE_SAMPLES_MONGODB_FILTER,
+    POSITIVE_SAMPLES_MONGODB_FILTER
 )
 from lighthouse.exceptions import (
     DataError,
@@ -24,13 +24,15 @@ from lighthouse.exceptions import (
     MultipleCentresError,
 )
 
-from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
+from lighthouse.helpers.mlwh_db import (
+    create_mlwh_connection_engine,
+    get_table
+)
 
-from sqlalchemy.sql.expression import bindparam  # type: ignore
-from sqlalchemy.sql.expression import and_  # type: ignore
+from sqlalchemy.sql.expression import bindparam # type: ignore
+from sqlalchemy.sql.expression import and_ # type: ignore
 
 logger = logging.getLogger(__name__)
-
 
 class UnmatchedSampleError(Exception):
     pass
@@ -196,7 +198,6 @@ def send_to_ss(body: Dict[str, Any]) -> requests.Response:
 
     return response
 
-
 def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     """Update the MLWH to write the COG UK barcode for each sample.
 
@@ -212,30 +213,22 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         data = []
         for sample in samples:
             # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
-            data.append(
-                {
-                    "b_root_sample_id": sample[FIELD_ROOT_SAMPLE_ID],
-                    "b_rna_id": sample[FIELD_RNA_ID],
-                    "b_result": sample[FIELD_RESULT],
-                    "b_cog_uk_id": sample[FIELD_COG_BARCODE],
-                }
-            )
+            data.append({
+                'b_root_sample_id': sample[FIELD_ROOT_SAMPLE_ID],
+                'b_rna_id':         sample[FIELD_RNA_ID],
+                'b_result':         sample[FIELD_RESULT],
+                'b_cog_uk_id':      sample[FIELD_COG_BARCODE]
+            })
 
-        sql_engine = create_mysql_connection_engine(
-            app.config["WAREHOUSES_RW_CONN_STRING"], app.config["ML_WH_DB"]
-        )
-        table = get_table(sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+        sql_engine = create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])
+        table = get_table(sql_engine, app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE'])
 
-        stmt = (
-            table.update()
-            .where(
-                and_(
-                    table.c.root_sample_id == bindparam("b_root_sample_id"),
-                    table.c.rna_id == bindparam("b_rna_id"),
-                    table.c.result == bindparam("b_result"),
-                )
-            )
-            .values(cog_uk_id=bindparam("b_cog_uk_id"))
+        stmt = table.update().where(and_(
+            table.c.root_sample_id == bindparam('b_root_sample_id'),
+            table.c.rna_id == bindparam('b_rna_id'),
+            table.c.result == bindparam('b_result')
+        )).values(
+            cog_uk_id=bindparam('b_cog_uk_id')
         )
         db_connection = sql_engine.connect()
 

@@ -2,7 +2,7 @@ import copy
 import os
 import json
 
-import pytest  # type: ignore
+import pytest # type: ignore
 import responses  # type: ignore
 from http import HTTPStatus
 
@@ -18,15 +18,16 @@ from .data.fixture_data import (
     SAMPLES_NO_DECLARATION,
     SAMPLES_FOR_MLWH_UPDATE,
     COG_UK_IDS,
-    MLWH_LH_SAMPLES,
-    MLWH_LH_SAMPLES_MULTIPLE,
+    MLWH_SEED_SAMPLES,
+    MLWH_SEED_SAMPLES_MULTIPLE,
     SAMPLES_CT_VALUES,
-    SAMPLES_DIFFERENT_PLATES,
-    EVENT_WH_DATA,
-    MLWH_SAMPLE_STOCK_RESOURCE,
+    SAMPLES_DIFFERENT_PLATES
 )
 
-from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
+from lighthouse.helpers.mlwh_db import (
+    create_mlwh_connection_engine,
+    get_table
+)
 
 
 @pytest.fixture
@@ -119,7 +120,6 @@ def samples(app):
     with app.app_context():
         samples_collection.delete_many({})
 
-
 @pytest.fixture
 def samples_different_plates(app):
     with app.app_context():
@@ -132,7 +132,6 @@ def samples_different_plates(app):
     # clear up after the fixture is used
     with app.app_context():
         samples_collection.delete_many({})
-
 
 @pytest.fixture
 def samples_ct_values(app):
@@ -147,7 +146,6 @@ def samples_ct_values(app):
     with app.app_context():
         samples_collection.delete_many({})
 
-
 @pytest.fixture
 def samples_no_declaration(app):
     with app.app_context():
@@ -160,7 +158,6 @@ def samples_no_declaration(app):
     # clear up after the fixture is used
     with app.app_context():
         samples_collection.delete_many({})
-
 
 @pytest.fixture
 def mocked_responses():
@@ -177,22 +174,18 @@ def labwhere_samples_simple(app, mocked_responses):
         responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
     )
 
-
 @pytest.fixture
 def labwhere_samples_multiple(app, mocked_responses):
     labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode"
 
-    body = json.dumps(
-        [
-            {"barcode": "123", "location_barcode": "4567"},
-            {"barcode": "456", "location_barcode": "1234"},
-            {"barcode": "789", "location_barcode": None},
-        ]
-    )
+    body = json.dumps([
+        {"barcode": "123", "location_barcode": "4567"},
+        {"barcode": "456", "location_barcode": "1234"},
+        {"barcode": "789", "location_barcode": None }
+    ])
     mocked_responses.add(
         responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
     )
-
 
 @pytest.fixture
 def labwhere_samples_error(app, mocked_responses):
@@ -203,122 +196,30 @@ def labwhere_samples_error(app, mocked_responses):
         responses.POST, labwhere_url, body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR,
     )
 
+@pytest.fixture
+def mlwh_lh_samples(app, sql_engine):
+    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES, sql_engine)
+
+@pytest.fixture
+def mlwh_lh_samples_multiple(app, sql_engine):
+    insert_lh_samples_into_mlwh(app, MLWH_SEED_SAMPLES_MULTIPLE, sql_engine)
+
+def insert_lh_samples_into_mlwh(app, samples, sql_engine):
+    table = get_table(sql_engine, app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE'])
+
+    with sql_engine.begin() as connection:
+        connection.execute(table.delete()) # delete all rows from table first
+        print('Inserting MLWH test data')
+        connection.execute(table.insert(), samples)
 
 @pytest.fixture
 def samples_for_mlwh_update(cog_uk_ids):
     return SAMPLES_FOR_MLWH_UPDATE
 
-
 @pytest.fixture
 def cog_uk_ids():
     return COG_UK_IDS
 
-
-# ********************** WAREHOUSE DATA ************************** #
-
-
 @pytest.fixture
-def mlwh_lh_samples(app, mlwh_sql_engine):
-    insert_into_mlwh(
-        app, MLWH_LH_SAMPLES, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
-    )
-
-
-@pytest.fixture
-def mlwh_lh_samples_multiple(app, mlwh_sql_engine):
-    insert_into_mlwh(
-        app, MLWH_LH_SAMPLES_MULTIPLE, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
-    )
-
-
-@pytest.fixture
-def mlwh_sample_stock_resource(app, mlwh_sql_engine):
-    # deletes
-    delete_from_mlwh(
-        app,
-        MLWH_SAMPLE_STOCK_RESOURCE["stock_resource"],
-        mlwh_sql_engine,
-        app.config["MLWH_STOCK_RESOURCES_TABLE"],
-    )
-    delete_from_mlwh(
-        app, MLWH_SAMPLE_STOCK_RESOURCE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
-    )
-    delete_from_mlwh(
-        app, MLWH_SAMPLE_STOCK_RESOURCE["study"], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"]
-    )
-
-    # inserts
-    insert_into_mlwh(
-        app, MLWH_SAMPLE_STOCK_RESOURCE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
-    )
-    insert_into_mlwh(
-        app, MLWH_SAMPLE_STOCK_RESOURCE["study"], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"]
-    )
-    insert_into_mlwh(
-        app,
-        MLWH_SAMPLE_STOCK_RESOURCE["stock_resource"],
-        mlwh_sql_engine,
-        app.config["MLWH_STOCK_RESOURCES_TABLE"],
-    )
-
-
-def insert_into_mlwh(app, data, mlwh_sql_engine, table_name):
-    table = get_table(mlwh_sql_engine, table_name)
-
-    with mlwh_sql_engine.begin() as connection:
-        connection.execute(table.delete())  # delete all rows from table first
-        print("Inserting MLWH test data")
-        connection.execute(table.insert(), data)
-
-
-def delete_from_mlwh(app, data, mlwh_sql_engine, table_name):
-    table = get_table(mlwh_sql_engine, table_name)
-
-    with mlwh_sql_engine.begin() as connection:
-        print("Deleting MLWH test data")
-        connection.execute(table.delete())
-
-
-@pytest.fixture
-def event_wh_data(app, event_wh_sql_engine):
-    insert_data_into_events_warehouse_tables(app, EVENT_WH_DATA, event_wh_sql_engine)
-
-
-def insert_data_into_events_warehouse_tables(app, data, event_wh_sql_engine):
-    subjects_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECTS_TABLE"])
-    roles_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLES_TABLE"])
-    events_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENTS_TABLE"])
-    event_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENT_TYPES_TABLE"])
-    subject_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"])
-    role_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLE_TYPES_TABLE"])
-
-    with event_wh_sql_engine.begin() as connection:
-        # delete all rows from each table
-        connection.execute(roles_table.delete())
-        connection.execute(subjects_table.delete())
-        connection.execute(events_table.delete())
-        connection.execute(event_types_table.delete())
-        connection.execute(subject_types_table.delete())
-        connection.execute(role_types_table.delete())
-
-        print("Inserting Events Warehouse test data")
-        connection.execute(role_types_table.insert(), data["role_types"])
-        connection.execute(event_types_table.insert(), data["event_types"])
-        connection.execute(subject_types_table.insert(), data["subject_types"])
-        connection.execute(subjects_table.insert(), data["subjects"])
-        connection.execute(events_table.insert(), data["events"])
-        connection.execute(roles_table.insert(), data["roles"])
-
-
-@pytest.fixture
-def mlwh_sql_engine(app):
-    return create_mysql_connection_engine(
-        app.config["WAREHOUSES_RW_CONN_STRING"], app.config["ML_WH_DB"]
-    )
-
-
-@pytest.fixture
-def event_wh_sql_engine(app):
-    return create_mysql_connection_engine(
-        app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"]
-    )
+def sql_engine(app):
+    return create_mlwh_connection_engine(app.config['MLWH_RW_CONN_STRING'], app.config['ML_WH_DB'])
