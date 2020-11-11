@@ -97,10 +97,13 @@ def test_get_cherrypicked_samples(app, freezer):
 
 def test_get_cherrypicked_samples_chunking(app, freezer):
 
+# Note: This represents the results of three different database queries
+    # each of which gets indexed from 0. Do not changes the indicies here unless
+    # you have modified the behaviour of the query.
     query_results = [
         pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[1]),
-        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[2]),
+        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
+        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
     ]
     expected = pd.DataFrame(
         ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
