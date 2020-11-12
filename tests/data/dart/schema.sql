@@ -2,14 +2,13 @@ if not exists (SELECT Name
 from sys.tables
 where Name='CherrypickingInfo') CREATE TABLE CherrypickingInfo
 (
-  run_id int,
-  destination_barcode NVARCHAR(50),
-  destination_coordinate NVARCHAR(50),
-  source_barcode NVARCHAR(50),
-  source_coordinate NVARCHAR(50),
+  [Run-ID] int,
+  [Labware BarCode] NVARCHAR(50),
+  [Well Location] NVARCHAR(50),
+  [Well Source Barcode] NVARCHAR(50),
+  [Well Source Well] NVARCHAR(50),
   control NVARCHAR(50),
-  root_sample_id NVARCHAR(50),
-  rna_id NVARCHAR(50),
-  lab_id NVARCHAR(50),
+  [Well root_sample_id] NVARCHAR(50),
+  [Well rna_id] NVARCHAR(50),
+  [Well lab_id] NVARCHAR(50),
 );
-

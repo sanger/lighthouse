@@ -15,7 +15,7 @@ def get_samples_for_barcode(cnxn, barcode):
     cursor = cnxn.cursor()
     cursor.execute(
         f"SELECT * FROM {app.config['DART_RESULT_VIEW']}"
-        f" WHERE {FIELD_DART_DESTINATION_BARCODE}='{barcode}';"
+        f" WHERE [{FIELD_DART_DESTINATION_BARCODE}]='{barcode}';"
     )
     rows = cursor.fetchall()
     return rows

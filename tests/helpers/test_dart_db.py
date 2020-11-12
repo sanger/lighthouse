@@ -2,14 +2,15 @@ from unittest.mock import patch, Mock
 from pytest import raises
 from flask import current_app
 from lighthouse.helpers.dart_db import find_dart_source_samples_rows
+from lighthouse.constants import FIELD_DART_SOURCE_BARCODE, FIELD_DART_CONTROL
 
 
 def test_find_dart_source_samples_rows(app, dart_seed_reset):
     with app.app_context():
         found = find_dart_source_samples_rows("test1")
         assert len(found) == 3
-        assert found[0].source_barcode == "123"
-        assert found[2].control == "positive"
+        assert getattr(found[0], FIELD_DART_SOURCE_BARCODE) == "123"
+        assert getattr(found[2], FIELD_DART_CONTROL) == "positive"
 
 
 def test_find_dart_source_samples_rows_not_found_barcode(app, dart_seed_reset):
