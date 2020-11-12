@@ -45,7 +45,7 @@ def test_create_report(
                         columns=[
                             FIELD_ROOT_SAMPLE_ID,
                             FIELD_PLATE_BARCODE,
-                            FIELD_RESULT,
+                            'Result_lower',
                             FIELD_COORDINATE,
                         ],
                     ),
