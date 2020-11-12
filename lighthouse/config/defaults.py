@@ -108,3 +108,5 @@ EVENTS_WH_DB = "events_wh_db"
 
 WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
+
+BARACODA_RETRY_ATTEMPTS = 3

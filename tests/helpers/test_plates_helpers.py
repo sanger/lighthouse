@@ -9,6 +9,8 @@ import pytest
 import sqlalchemy  # type: ignore
 from sqlalchemy.exc import OperationalError
 
+from functools import partial
+
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
     FIELD_ROOT_SAMPLE_ID,
@@ -52,6 +54,73 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
         for idx, sample in enumerate(samples):
             assert FIELD_COG_BARCODE in sample.keys()
             assert sample[FIELD_COG_BARCODE] == cog_barcodes[idx]
+
+
+def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_responses):
+    with app.app_context():
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TS1/new?count={len(samples)}"
+
+        # remove the cog_barcode key and value from the samples fixture before testing
+        map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
+
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+
+        # update the 'cog_barcode' tuple when adding more samples to the fixture data
+        assert len(cog_barcodes) == len(samples)
+
+        mocked_responses.add(
+            responses.POST,
+            baracoda_url,
+            json={"errors": ["Some error from baracoda"]},
+            status=HTTPStatus.INTERNAL_SERVER_ERROR,
+        )
+
+        with pytest.raises(Exception):
+            add_cog_barcodes(samples)
+
+        assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
+
+
+def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(
+    app, centres, samples, mocked_responses
+):
+    with app.app_context():
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TS1/new?count={len(samples)}"
+
+        # remove the cog_barcode key and value from the samples fixture before testing
+        map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
+
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+
+        # update the 'cog_barcode' tuple when adding more samples to the fixture data
+        assert len(cog_barcodes) == len(samples)
+
+        def request_callback(request, data):
+            data["calls"] = data["calls"] + 1
+
+            if data["calls"] == app.config["BARACODA_RETRY_ATTEMPTS"]:
+                return (
+                    HTTPStatus.CREATED,
+                    {},
+                    json.dumps({"barcodes_group": {"barcodes": cog_barcodes}}),
+                )
+            return (
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+                {},
+                json.dumps({"errors": ["Some error from baracoda"]}),
+            )
+
+        mocked_responses.add_callback(
+            responses.POST,
+            baracoda_url,
+            callback=partial(request_callback, data={"calls": 0}),
+            content_type="application/json",
+        )
+
+        # This should not raise any error
+        add_cog_barcodes(samples)
+
+        assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
 
 
 def test_centre_prefix(app, centres, mocked_responses):
