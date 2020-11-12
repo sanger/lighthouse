@@ -7,7 +7,7 @@ where Name='CherrypickingInfo') CREATE TABLE CherrypickingInfo
   [Well Location] NVARCHAR(50),
   [Well Source Barcode] NVARCHAR(50),
   [Well Source Well] NVARCHAR(50),
-  control NVARCHAR(50),
+  [Well control] NVARCHAR(50),
   [Well root_sample_id] NVARCHAR(50),
   [Well rna_id] NVARCHAR(50),
   [Well lab_id] NVARCHAR(50),

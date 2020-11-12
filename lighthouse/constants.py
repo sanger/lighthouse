@@ -25,7 +25,7 @@ FIELD_DART_DESTINATION_COORDINATE = os.environ.get(
 )
 FIELD_DART_SOURCE_BARCODE = os.environ.get("FIELD_DART_SOURCE_BARCODE", "Well Source Barcode")
 FIELD_DART_SOURCE_COORDINATE = os.environ.get("FIELD_DART_SOURCE_COORDINATE", "Well Source Well")
-FIELD_DART_CONTROL = os.environ.get("FIELD_DART_CONTROL", "control")
+FIELD_DART_CONTROL = os.environ.get("FIELD_DART_CONTROL", "Well control")
 FIELD_DART_ROOT_SAMPLE_ID = os.environ.get("FIELD_DART_ROOT_SAMPLE_ID", "Well root_sample_id")
 FIELD_DART_RNA_ID = os.environ.get("FIELD_DART_RNA_ID", "Well rna_id")
 FIELD_DART_LAB_ID = os.environ.get("FIELD_DART_LAB_ID", "Well lab_id")
