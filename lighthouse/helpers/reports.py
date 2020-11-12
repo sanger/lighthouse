@@ -221,6 +221,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
                 f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
+                " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"
             )
 
             frame = pd.read_sql(
