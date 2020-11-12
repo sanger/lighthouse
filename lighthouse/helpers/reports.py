@@ -290,8 +290,9 @@ def add_cherrypicked_column(existing_dataframe):
 
     logger.error(f"{len(cherrypicked_samples_df.index)} cherrypicked samples")
 
-    # For some reason the result value in the phenotype in MLWH.sample is all lowercase, whereas
-    # in the original data in MongoDB and NLWH.lighthouse_sample it is capitalised
+    # The result value in the phenotype in MLWH.sample is all lowercase,
+    # because it is converted in create_post_body in helpers/plates.py,
+    # whereas in the original data in MongoDB and MLWH.lighthouse_sample it is capitalised
     existing_dataframe["Result_lower"] = existing_dataframe["Result"].str.lower()
 
     existing_dataframe = existing_dataframe.merge(
