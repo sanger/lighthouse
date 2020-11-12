@@ -75,7 +75,7 @@ Option B (in Docker):
 
 1. Build the docker image using:
 
-        docker build .
+        docker build -t lighthouse:develop .
 
 1. Define YOUR_LIGHTHOUSE_PROJECT_HOME to wherever you downloaded the lighthouse github project:
 
@@ -89,7 +89,7 @@ Option B (in Docker):
 
 1. Start the docker container and open a bash session in it with:
 
-        docker run --env-file .env -p 5000:5000 -v $YOUR_LIGHTHOUSE_PROJECT_HOME:/code -it lighthouse:devel bash
+        docker run --env-file .env -p 5000:5000 -v $YOUR_LIGHTHOUSE_PROJECT_HOME:/code -it lighthouse:develop bash
    
    After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all 
    source code of the project from your hosting machine (YOUR_LIGHTHOUSE_PROJECT_HOME). The container will map your 
