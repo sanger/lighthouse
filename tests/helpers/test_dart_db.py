@@ -1,8 +1,8 @@
-from unittest.mock import patch, Mock
-from pytest import raises
-from flask import current_app
+from unittest.mock import patch
+
+from lighthouse.constants import FIELD_DART_CONTROL, FIELD_DART_SOURCE_BARCODE
 from lighthouse.helpers.dart_db import find_dart_source_samples_rows
-from lighthouse.constants import FIELD_DART_SOURCE_BARCODE, FIELD_DART_CONTROL
+from pytest import raises
 
 
 def test_find_dart_source_samples_rows(app, dart_seed_reset):

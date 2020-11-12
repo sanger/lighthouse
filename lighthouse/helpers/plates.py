@@ -1,30 +1,28 @@
+import copy
 import logging
-import re
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
-import copy
 
 import requests
 from flask import current_app as app
-
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RNA_ID,
-    FIELD_RESULT,
     FIELD_COORDINATE,
-    FIELD_SOURCE,
-    FIELD_PLATE_BARCODE,
-    FIELD_LAB_ID,
-    POSITIVE_SAMPLES_MONGODB_FILTER,
+    FIELD_DART_CONTROL,
     FIELD_DART_DESTINATION_BARCODE,
     FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_LAB_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
-    FIELD_DART_CONTROL,
-    FIELD_DART_ROOT_SAMPLE_ID,
-    FIELD_DART_RNA_ID,
-    FIELD_DART_LAB_ID,
+    FIELD_LAB_ID,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_RNA_ID,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
+    POSITIVE_SAMPLES_MONGODB_FILTER,
 )
 from lighthouse.exceptions import (
     DataError,
@@ -32,13 +30,10 @@ from lighthouse.exceptions import (
     MissingSourceError,
     MultipleCentresError,
 )
-
-from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
 from lighthouse.helpers.dart_db import find_dart_source_samples_rows
-
-from sqlalchemy.sql.expression import bindparam  # type: ignore
+from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
 from sqlalchemy.sql.expression import and_  # type: ignore
-
+from sqlalchemy.sql.expression import bindparam  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -300,7 +295,8 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     try:
         data = []
         for sample in samples:
-            # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
+            # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real
+            # column names
             data.append(
                 {
                     "b_root_sample_id": sample[FIELD_ROOT_SAMPLE_ID],
@@ -333,14 +329,17 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         rows_matched = results.rowcount
         if rows_matched != len(samples):
             msg = f"""
-            Updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids was only partially successful.
-            Only {rows_matched} of the {len(samples)} samples had matches in the MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table.
+            Updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids was
+            only partially successful.
+            Only {rows_matched} of the {len(samples)} samples had matches in the MLWH
+            {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table.
             """
             logger.error(msg)
             raise UnmatchedSampleError(msg)
     except (Exception) as e:
         msg = f"""
-        Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids.
+        Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK
+        ids.
         {type(e).__name__}: {str(e)}
         """
         logger.error(msg)
@@ -373,7 +372,8 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
         except KeyError as e:
             msg = f"""
-            Error while mapping database columns to Sequencescape columns for sample {mongo_row[FIELD_ROOT_SAMPLE_ID]}.
+            Error while mapping database columns to Sequencescape columns for sample
+            {mongo_row[FIELD_ROOT_SAMPLE_ID]}.
             {type(e).__name__}: {str(e)}
             """
             logger.error(msg)

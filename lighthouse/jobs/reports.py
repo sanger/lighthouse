@@ -3,19 +3,16 @@ import time
 
 import pandas as pd  # type: ignore
 from flask import current_app as app
-
 from lighthouse import scheduler
-from lighthouse.helpers.reports import (
-    get_new_report_name_and_path,
-    unpad_coordinate,
-    map_labware_to_location,
-    get_all_positive_samples,
-    add_cherrypicked_column,
-    get_distinct_plate_barcodes,
-    join_samples_declarations,
-)
-from lighthouse.utils import pretty
 from lighthouse.constants import FIELD_PLATE_BARCODE
+from lighthouse.helpers.reports import (
+    add_cherrypicked_column,
+    get_all_positive_samples,
+    get_distinct_plate_barcodes,
+    get_new_report_name_and_path,
+    join_samples_declarations,
+    map_labware_to_location,
+)
 
 logger = logging.getLogger(__name__)
 

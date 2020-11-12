@@ -1,8 +1,8 @@
-import pdb
-import pyodbc  # type: ignore
 import logging
-from lighthouse.constants import FIELD_DART_DESTINATION_BARCODE
+
+import pyodbc  # type: ignore
 from flask import current_app as app
+from lighthouse.constants import FIELD_DART_DESTINATION_BARCODE
 
 logger = logging.getLogger(__name__)
 

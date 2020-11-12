@@ -45,7 +45,7 @@ SAMPLES_DECLARATIONS_SCHEMA: Dict = {
         "allowed": ["Yes", "No", "Unknown"],
         "required": True,
     },
-    "declared_at": {"type": "datetime", "required": True,},
+    "declared_at": {"type": "datetime", "required": True},
 }
 # We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
@@ -82,7 +82,7 @@ LOGGING: Dict[str, Any] = {
     "formatters": {
         "colored": {
             "()": "colorlog.ColoredFormatter",
-            "format": "%(asctime)-15s %(name)-18s:%(lineno)s %(log_color)s%(levelname)-5s %(message)s",
+            "format": "%(asctime)-15s %(name)-18s:%(lineno)s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
         },
         "verbose": {"format": "%(asctime)-15s %(name)-18s:%(lineno)s %(levelname)-5s %(message)s"},
     },

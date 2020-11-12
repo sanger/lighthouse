@@ -1,30 +1,30 @@
-from typing import Dict, List, Any
-from datetime import datetime
 from copy import copy
+from datetime import datetime
+from typing import Any, Dict, List
 
 from lighthouse.constants import (
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RNA_ID,
-    FIELD_RESULT,
-    FIELD_COG_BARCODE,
-    FIELD_COORDINATE,
-    FIELD_SOURCE,
-    FIELD_PLATE_BARCODE,
     FIELD_CH1_CQ,
     FIELD_CH2_CQ,
     FIELD_CH3_CQ,
-    FIELD_LAB_ID,
-    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_RNA_ID,
-    MLWH_LH_SAMPLE_RESULT,
-    FIELD_DART_DESTINATION_COORDINATE,
-    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_COG_BARCODE,
+    FIELD_COORDINATE,
     FIELD_DART_CONTROL,
+    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_LAB_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
-    FIELD_DART_ROOT_SAMPLE_ID,
-    FIELD_DART_RNA_ID,
-    FIELD_DART_LAB_ID,
+    FIELD_LAB_ID,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_RNA_ID,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
+    MLWH_LH_SAMPLE_RESULT,
+    MLWH_LH_SAMPLE_RNA_ID,
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
 
 CENTRES: List[Dict[str, str]] = [
@@ -39,10 +39,10 @@ THIRD_TIMESTAMP = datetime(2013, 4, 6, 10, 29, 13)
 
 
 SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
-    {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": FIRST_TIMESTAMP,},
+    {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": FIRST_TIMESTAMP},
     {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": FIRST_TIMESTAMP},
     {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": SECOND_TIMESTAMP},
-    {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": THIRD_TIMESTAMP,},
+    {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": THIRD_TIMESTAMP},
 ]
 
 MULTIPLE_ERRORS_SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
