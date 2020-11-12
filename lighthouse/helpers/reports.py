@@ -285,8 +285,20 @@ def add_cherrypicked_column(existing_dataframe):
     root_sample_ids = existing_dataframe[FIELD_ROOT_SAMPLE_ID].to_list()
     plate_barcodes = existing_dataframe["plate_barcode"].unique()
 
+    logger.error("Existing dataframe columns:")
+    logger.error(list(existing_dataframe.columns))
+
     cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids, plate_barcodes)
     cherrypicked_samples_df["LIMS submission"] = "Yes"
+
+    logger.error("Cherrypicked samples dataframe columns:")
+    logger.error(list(cherrypicked_samples_df.columns))
+
+    logger.error("Fields to merge on:")
+    logger.error(f"FIELD_ROOT_SAMPLE_ID: {FIELD_ROOT_SAMPLE_ID}")
+    logger.error(f"FIELD_PLATE_BARCODE: {FIELD_PLATE_BARCODE}")
+    logger.error(f"FIELD_RESULT: {FIELD_RESULT}")
+    logger.error(f"FIELD_COORDINATE: {FIELD_COORDINATE}")
 
     existing_dataframe = existing_dataframe.merge(
         cherrypicked_samples_df,
