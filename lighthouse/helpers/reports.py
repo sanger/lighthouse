@@ -292,18 +292,18 @@ def add_cherrypicked_column(existing_dataframe):
 
     # For some reason the result value in the phenotype in MLWH.sample is all lowercase, whereas
     # in the original data in MongoDB and NLWH.lighthouse_sample it is capitalised
-    existing_dataframe['Result_lower'] = existing_dataframe['Result'].str.lower()
+    existing_dataframe["Result_lower"] = existing_dataframe["Result"].str.lower()
 
     existing_dataframe = existing_dataframe.merge(
         cherrypicked_samples_df,
         how="left",
-        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, 'Result_lower', FIELD_COORDINATE],
+        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE],
     )
     # Fill any empty cells for the column with 'No' (those that do not have cherrypicking events)
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 
     # remove the extra column we merged on as no longer needed
-    existing_dataframe = existing_dataframe.drop(columns=['Result_lower'])
+    existing_dataframe = existing_dataframe.drop(columns=["Result_lower"])
 
     return existing_dataframe
 

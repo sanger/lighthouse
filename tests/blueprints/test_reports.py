@@ -12,7 +12,8 @@ from lighthouse.constants import (
 
 def test_get_reports_endpoint(client):
     with patch(
-        "lighthouse.blueprints.reports.get_reports_details", return_value=[],
+        "lighthouse.blueprints.reports.get_reports_details",
+        return_value=[],
     ):
         response = client.get("/reports")
         assert response.status_code == HTTPStatus.OK
@@ -20,7 +21,8 @@ def test_get_reports_endpoint(client):
 
 def test_get_reports_list(client):
     with patch(
-        "lighthouse.blueprints.reports.get_reports_details", return_value=[],
+        "lighthouse.blueprints.reports.get_reports_details",
+        return_value=[],
     ):
         response = client.get("/reports")
         assert response.json == {"reports": []}
@@ -45,7 +47,7 @@ def test_create_report(
                         columns=[
                             FIELD_ROOT_SAMPLE_ID,
                             FIELD_PLATE_BARCODE,
-                            'Result_lower',
+                            "Result_lower",
                             FIELD_COORDINATE,
                         ],
                     ),
@@ -56,7 +58,8 @@ def test_create_report(
 
 def test_delete_reports_endpoint(client):
     with patch(
-        "lighthouse.blueprints.reports.delete_reports", return_value=None,
+        "lighthouse.blueprints.reports.delete_reports",
+        return_value=None,
     ):
         json_body = {
             "data": {
@@ -77,7 +80,8 @@ def test_delete_reports_endpoint(client):
 
 def test_delete_reports_endpoint_fails(client):
     with patch(
-        "lighthouse.blueprints.reports.delete_reports", return_value=None,
+        "lighthouse.blueprints.reports.delete_reports",
+        return_value=None,
     ):
 
         response = client.post("delete_reports", json="{}")
