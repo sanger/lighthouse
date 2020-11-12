@@ -97,7 +97,7 @@ def test_get_cherrypicked_samples(app, freezer):
 
 def test_get_cherrypicked_samples_chunking(app, freezer):
 
-# Note: This represents the results of three different database queries
+    # Note: This represents the results of three different database queries
     # each of which gets indexed from 0. Do not changes the indicies here unless
     # you have modified the behaviour of the query.
     query_results = [
