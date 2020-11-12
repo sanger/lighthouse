@@ -134,7 +134,7 @@ def test_get_cherrypicked_samples_repeat_tests(
     # therefore we only get 1 of the samples called 'root_1' back (the one on plate 'pb_1')
     # this also checks we don't get a duplicate row for root_1 / pb_1, despite it cropped up in 2 different 'chunks'
     expected_rows = [["root_1", "pb_1", "Positive", "A1"], ["root_2", "pb_2", "Positive", "A1"]]
-    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, 'Result_lower', FIELD_COORDINATE]
     expected = pd.DataFrame(np.array(expected_rows), columns=expected_columns, index=[0, 1])
 
     with app.app_context():
@@ -218,13 +218,13 @@ def test_add_cherrypicked_column(app, freezer):
 
     # mock response from the 'get_cherrypicked_samples' method
     mock_get_cherrypicked_samples_rows = [
-        ["MCM001", "123", "Positive", "A1"],  # matches first sample only
-        ["MCM002", "123", "Positive", "A1"],  #  matches final sample only
+        ["MCM001", "123", "positive", "A1"],  # matches first sample only
+        ["MCM002", "123", "positive", "A1"],  #  matches final sample only
     ]
     mock_get_cherrypicked_samples_columns = [
         FIELD_ROOT_SAMPLE_ID,
         FIELD_PLATE_BARCODE,
-        FIELD_RESULT,
+        'Result_lower',
         FIELD_COORDINATE,
     ]
     mock_get_cherrypicked_samples = pd.DataFrame(
@@ -280,13 +280,13 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
 
     # mock response from the 'get_cherrypicked_samples' method
     mock_get_cherrypicked_samples_rows = [
-        ["MCM002", "456", "Positive", "A2"],  # matches second sample
-        ["MCM002", "456", "Positive", "A2"],  #  identical to above
+        ["MCM002", "456", "positive", "A2"],  # matches second sample
+        ["MCM002", "456", "positive", "A2"],  #  identical to above
     ]
     mock_get_cherrypicked_samples_columns = [
         FIELD_ROOT_SAMPLE_ID,
         FIELD_PLATE_BARCODE,
-        FIELD_RESULT,
+        'Result_lower',
         FIELD_COORDINATE,
     ]
     mock_get_cherrypicked_samples = pd.DataFrame(
@@ -336,7 +336,7 @@ def test_add_cherrypicked_column_no_rows(app, freezer):
 
     # Not sure if this is an accurate mock - haven't tried it with a real db connection
     mock_get_cherrypicked_samples = pd.DataFrame(
-        [], columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE]
+        [], columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, 'Result_lower', FIELD_COORDINATE]
     )
 
     expected_columns = [
