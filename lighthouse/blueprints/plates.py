@@ -11,6 +11,8 @@ from lighthouse.helpers.plates import (
     get_samples,
     send_to_ss,
     get_positive_samples,
+    has_sample_data,
+    count_positive_samples,
     update_mlwh_with_cog_uk_ids,
 )
 
@@ -81,3 +83,36 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     except Exception as e:
         logger.exception(e)
         return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+def format_plate(barcode: str) -> Dict[str, Any]:
+    """Used by flask route /plates to format each plate
+    Arguments:
+        barcode
+    Returns:
+        {}, HTTPStatus
+    """
+    plate_map = has_sample_data(barcode)
+    number_of_positives = count_positive_samples(barcode) if plate_map else None
+
+    return {
+        "plate_barcode": barcode,
+        "plate_map": plate_map,
+        "number_of_positives": number_of_positives,
+    }
+
+
+@bp.route("/plates", methods=["GET"])
+def find_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
+    """A Flask route which returns information about a list of plates as
+    specified in the barcodes parameters.
+    This endpoint should be json and the body should be in the format
+    {"data":{"plates":[{"barcode":"12345","plate_map":true,"number_of_positives":0}]}}
+    Arguments:
+        None
+    Returns:
+        {}, HTTPStatus
+    """
+    barcodes = request.args.getlist("barcodes[]")
+    plates = [format_plate(barcode) for barcode in barcodes]
+    return {"plates": plates}, HTTPStatus.OK

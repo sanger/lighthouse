@@ -100,6 +100,12 @@ def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
+def count_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+    samples = app.data.driver.db.samples
+
+    return samples.count_documents(query)
+
+
 # TODO: remove once we are sure that we dont need anything other than positives
 def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
@@ -111,10 +117,22 @@ def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     query_filter = copy.deepcopy(POSITIVE_SAMPLES_MONGODB_FILTER)
     query_filter[FIELD_PLATE_BARCODE] = plate_barcode
-
     samples_for_barcode = find_samples(query_filter)
 
     return samples_for_barcode
+
+
+def count_positive_samples(plate_barcode: str) -> int:
+    query_filter = copy.deepcopy(POSITIVE_SAMPLES_MONGODB_FILTER)
+    query_filter[FIELD_PLATE_BARCODE] = plate_barcode
+    samples_for_barcode = count_samples(query_filter)
+
+    return samples_for_barcode
+
+
+def has_sample_data(plate_barcode: str) -> bool:
+    sample_count = count_samples({FIELD_PLATE_BARCODE: plate_barcode})
+    return sample_count > 0
 
 
 def confirm_centre(samples: List[Dict[str, str]]) -> str:
