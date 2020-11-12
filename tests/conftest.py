@@ -329,11 +329,6 @@ def mlwh_sql_engine(app):
 
 
 @pytest.fixture
-def sql_engine(app):
-    return create_mlwh_connection_engine(app.config["MLWH_RW_CONN_STRING"], app.config["ML_WH_DB"])
-
-
-@pytest.fixture
 def dart_connection(app):
     return create_dart_connection(app)
 
