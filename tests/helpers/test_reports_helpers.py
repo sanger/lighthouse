@@ -219,7 +219,7 @@ def test_add_cherrypicked_column(app, freezer):
     # mock response from the 'get_cherrypicked_samples' method
     mock_get_cherrypicked_samples_rows = [
         ["MCM001", "123", "positive", "A1"],  # matches first sample only
-        ["MCM002", "123", "positive", "A1"],  #  matches final sample only
+        ["MCM002", "123", "positive", "A1"],  # matches final sample only
     ]
     mock_get_cherrypicked_samples_columns = [
         FIELD_ROOT_SAMPLE_ID,
@@ -281,7 +281,7 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
     # mock response from the 'get_cherrypicked_samples' method
     mock_get_cherrypicked_samples_rows = [
         ["MCM002", "456", "positive", "A2"],  # matches second sample
-        ["MCM002", "456", "positive", "A2"],  #  identical to above
+        ["MCM002", "456", "positive", "A2"],  # identical to above
     ]
     mock_get_cherrypicked_samples_columns = [
         FIELD_ROOT_SAMPLE_ID,
