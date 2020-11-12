@@ -28,10 +28,18 @@ THIRD_TIMESTAMP = datetime(2013, 4, 6, 10, 29, 13)
 
 
 SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
-    {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": FIRST_TIMESTAMP,},
+    {
+        "root_sample_id": "MCM001",
+        "value_in_sequencing": "Yes",
+        "declared_at": FIRST_TIMESTAMP,
+    },
     {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": FIRST_TIMESTAMP},
     {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": SECOND_TIMESTAMP},
-    {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": THIRD_TIMESTAMP,},
+    {
+        "root_sample_id": "MCM003",
+        "value_in_sequencing": "Yes",
+        "declared_at": THIRD_TIMESTAMP,
+    },
 ]
 
 MULTIPLE_ERRORS_SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
@@ -348,7 +356,7 @@ MLWH_SAMPLE_STOCK_RESOURCE: Dict[str, Any] = {
             "id_sample_lims": "1",
             "description": "root_1",
             "supplier_name": "cog_uk_id_1",
-            "phenotype": "Positive",
+            "phenotype": "positive",
             "sanger_sample_id": "ss1",
             "id_lims": "SQSCP",
             "last_updated": "2015-11-25 11:35:30",
@@ -360,7 +368,7 @@ MLWH_SAMPLE_STOCK_RESOURCE: Dict[str, Any] = {
             "id_sample_lims": "2",
             "description": "root_2",
             "supplier_name": "cog_uk_id_2",
-            "phenotype": "Positive",
+            "phenotype": "positive",
             "sanger_sample_id": "ss2",
             "id_lims": "SQSCP",
             "last_updated": "2015-11-25 11:35:30",
@@ -372,7 +380,7 @@ MLWH_SAMPLE_STOCK_RESOURCE: Dict[str, Any] = {
             "id_sample_lims": "3",
             "description": "root_1",
             "supplier_name": "cog_uk_id_3",
-            "phenotype": "Positive",
+            "phenotype": "positive",
             "sanger_sample_id": "ss3",
             "id_lims": "SQSCP",
             "last_updated": "2015-11-25 11:35:30",
