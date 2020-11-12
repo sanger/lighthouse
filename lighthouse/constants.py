@@ -1,4 +1,5 @@
 import re
+import os
 
 DUPLICATE_SAMPLES = "DuplicateSamples"
 NON_EXISTING_SAMPLE = "NonExistingSample"
@@ -18,15 +19,17 @@ FIELD_CH2_CQ = "CH2-Cq"
 FIELD_CH3_CQ = "CH3-Cq"
 
 # DART specific column names:
-FIELD_DART_DESTINATION_BARCODE = "Labware BarCode"
-FIELD_DART_DESTINATION_COORDINATE = "Well Location"
-FIELD_DART_SOURCE_BARCODE = "Well Source Barcode"
-FIELD_DART_SOURCE_COORDINATE = "Well Source Well"
-FIELD_DART_CONTROL = "control"
-FIELD_DART_ROOT_SAMPLE_ID = "Well root_sample_id"
-FIELD_DART_RNA_ID = "Well rna_id"
-FIELD_DART_LAB_ID = "Well lab_id"
-FIELD_DART_RUN_ID = "Run-ID"
+FIELD_DART_DESTINATION_BARCODE = os.environ.get("FIELD_DART_DESTINATION_BARCODE", "Labware BarCode")
+FIELD_DART_DESTINATION_COORDINATE = os.environ.get(
+    "FIELD_DART_DESTINATION_COORDINATE", "Well Location"
+)
+FIELD_DART_SOURCE_BARCODE = os.environ.get("FIELD_DART_SOURCE_BARCODE", "Well Source Barcode")
+FIELD_DART_SOURCE_COORDINATE = os.environ.get("FIELD_DART_SOURCE_COORDINATE", "Well Source Well")
+FIELD_DART_CONTROL = os.environ.get("FIELD_DART_CONTROL", "control")
+FIELD_DART_ROOT_SAMPLE_ID = os.environ.get("FIELD_DART_ROOT_SAMPLE_ID", "Well root_sample_id")
+FIELD_DART_RNA_ID = os.environ.get("FIELD_DART_RNA_ID", "Well rna_id")
+FIELD_DART_LAB_ID = os.environ.get("FIELD_DART_LAB_ID", "Well lab_id")
+FIELD_DART_RUN_ID = os.environ.get("FIELD_DART_RUN_ID", "Run-ID")
 
 #  MLWH lighthouse samples table field names
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID = "root_sample_id"
