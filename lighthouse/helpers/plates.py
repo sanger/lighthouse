@@ -368,7 +368,7 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str
 
             mapped_sample["phenotype"] = "positive"
 
-            if dart_row["control"]:
+            if dart_row[FIELD_DART_CONTROL]:
                 mapped_sample["control"] = True
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
         except KeyError as e:
