@@ -293,6 +293,7 @@ def add_cherrypicked_column(existing_dataframe):
 
     logger.error("Cherrypicked samples dataframe columns:")
     logger.error(list(cherrypicked_samples_df.columns))
+    logger.error(f"{len(cherrypicked_samples_df.index)} cherrypicked samples")
 
     logger.error("Fields to merge on:")
     logger.error(f"FIELD_ROOT_SAMPLE_ID: {FIELD_ROOT_SAMPLE_ID}")
