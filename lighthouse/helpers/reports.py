@@ -285,22 +285,13 @@ def add_cherrypicked_column(existing_dataframe):
     root_sample_ids = existing_dataframe[FIELD_ROOT_SAMPLE_ID].to_list()
     plate_barcodes = existing_dataframe["plate_barcode"].unique()
 
-    logger.error("Existing dataframe columns:")
-    logger.error(list(existing_dataframe.columns))
-
     cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids, plate_barcodes)
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
-    logger.error(f"Cherrypicked samples dataframe columns: {list(cherrypicked_samples_df.columns)}")
     logger.error(f"{len(cherrypicked_samples_df.index)} cherrypicked samples")
-    logger.error(f"Cherrypicked samples frame: {cherrypicked_samples_df}")
 
-    logger.error("Fields to merge on:")
-    logger.error(f"FIELD_ROOT_SAMPLE_ID: {FIELD_ROOT_SAMPLE_ID}")
-    logger.error(f"FIELD_PLATE_BARCODE: {FIELD_PLATE_BARCODE}")
-    logger.error(f"FIELD_RESULT: {FIELD_RESULT}")
-    logger.error(f"FIELD_COORDINATE: {FIELD_COORDINATE}")
-
+    # For some reason the result value in the phenotype in MLWH.sample is all lowercase, whereas
+    # in the original data in MongoDB and NLWH.lighthouse_sample it is capitalised
     existing_dataframe['Result_lower'] = existing_dataframe['Result'].str.lower()
 
     existing_dataframe = existing_dataframe.merge(
@@ -308,11 +299,11 @@ def add_cherrypicked_column(existing_dataframe):
         how="left",
         on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, 'Result_lower', FIELD_COORDINATE],
     )
+    # Fill any empty cells for the column with 'No' (those that do not have cherrypicking events)
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
 
-    logger.error(f"existing_dataframe columns after merge: {list(existing_dataframe.columns)}")
+    # remove the extra column we merged on as no longer needed
     existing_dataframe = existing_dataframe.drop(columns=['Result_lower'])
-    logger.error(f"existing_dataframe columns after drop: {list(existing_dataframe.columns)}")
 
     return existing_dataframe
 
