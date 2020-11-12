@@ -211,7 +211,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         for chunk_root_sample_id in chunk_root_sample_ids:
             sql = (
                 f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"
-                f",mlwh_sample.phenotype as `{FIELD_RESULT}`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"
+                f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"
                 f" FROM {ml_wh_db}.sample as mlwh_sample"
                 f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
                 f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
@@ -301,12 +301,18 @@ def add_cherrypicked_column(existing_dataframe):
     logger.error(f"FIELD_RESULT: {FIELD_RESULT}")
     logger.error(f"FIELD_COORDINATE: {FIELD_COORDINATE}")
 
+    existing_dataframe['Result_lower'] = existing_dataframe['Result'].str.lower()
+
     existing_dataframe = existing_dataframe.merge(
         cherrypicked_samples_df,
         how="left",
-        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE],
+        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, 'Result_lower', FIELD_COORDINATE],
     )
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
+
+    logger.error(f"existing_dataframe columns after merge: {list(existing_dataframe.columns)}")
+    existing_dataframe = existing_dataframe.drop(columns=['Result_lower'])
+    logger.error(f"existing_dataframe columns after drop: {list(existing_dataframe.columns)}")
 
     return existing_dataframe
 
