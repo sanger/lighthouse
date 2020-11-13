@@ -13,7 +13,7 @@ jobs:
         image: mongo:4.2.5
         ports:
           - 27017:27017
-      mysql
+      mysql:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
