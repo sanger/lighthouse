@@ -106,13 +106,25 @@ def format_plate(barcode: str) -> Dict[str, Any]:
 def find_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     """A Flask route which returns information about a list of plates as
     specified in the barcodes parameters.
-    This endpoint should be json and the body should be in the format
-    {"data":{"plates":[{"barcode":"12345","plate_map":true,"number_of_positives":0}]}}
+    For example:
+    GET http://host:port/plates?barcodes[]=123&barcodes[]=456&barcodes[]=789
+    To fetch data for 123,456 and 789
+    This endpoint responds with json and the body is in the format
+    {"plates":[{"barcode":"12345","plate_map":true,"number_of_positives":0}]}
     Arguments:
         None
     Returns:
         {}, HTTPStatus
     """
     barcodes = request.args.getlist("barcodes[]")
-    plates = [format_plate(barcode) for barcode in barcodes]
-    return {"plates": plates}, HTTPStatus.OK
+    try:
+        plates = [format_plate(barcode) for barcode in barcodes]
+        return {"plates": plates}, HTTPStatus.OK
+    except Exception as e:
+        logger.exception(e)
+        # We don't use str(e) here to fetch the exception summary, because
+        # the exceptions we're most likely to see here aren't end-user-friendly
+        exception_type = type(e).__name__
+        return {
+            "errors": [f"Failed to lookup plates: {exception_type}"]
+        }, HTTPStatus.INTERNAL_SERVER_ERROR
