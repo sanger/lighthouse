@@ -194,7 +194,11 @@ def check_unmatched_sample_data(samples):
     for sample in samples:
         if sample["sample"] is None:
             unmatched_samples.append(sample)
-    return unmatched_samples
+    
+    if len(unmatched_samples) > 0:
+        msg = f"Unable to to find data in Mongo for {len(unmatched_samples)} DART samples"
+        logger.error(msg)
+        raise UnmatchedSampleError(msg)
 
 
 def row_to_dict(row):

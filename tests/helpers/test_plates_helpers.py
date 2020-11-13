@@ -431,25 +431,39 @@ def test_join_rows_with_samples_filters_out_controls(app, samples_different_plat
     ]
 
 
-def test_check_unmatched_sample_data(app, samples_different_plates):
+def test_check_unmatched_sample_data_raises_error(app, samples_different_plates):
+    with pytest.raises(UnmatchedSampleError):
+
+        rows = [
+            DartRow("DN1111", "A01", "123", "A01", "positive", "MCM001", "rna_1", "Lab 1"),
+            DartRow("DN1111", "A02", "123", "A01", None, "MCM002", "rna_3", "Lab 2"),
+            DartRow("DN1111", "A03", "123", "C06", None, "sample_2", "plate1:A03", "ABC"),
+            DartRow("DN1111", "A01", "123", "A01", "negative", "MCM001", "rna_1", "Lab 1")
+        ]
+
+        samples = [
+            {"row": row_to_dict(rows[0]), "sample": None},
+            {"row": row_to_dict(rows[1]), "sample": samples_different_plates[0]},
+            {"row": row_to_dict(rows[2]), "sample": samples_different_plates[1]},
+            {"row": row_to_dict(rows[3]), "sample": None}
+        ]
+
+        check_unmatched_sample_data(samples)
+
+
+def test_check_unmatched_sample_data_matched_samples_no_error(app, samples_different_plates):
     rows = [
         DartRow("DN1111", "A01", "123", "A01", "positive", "MCM001", "rna_1", "Lab 1"),
         DartRow("DN1111", "A02", "123", "A01", None, "MCM002", "rna_3", "Lab 2"),
-        DartRow("DN1111", "A03", "123", "C06", None, "sample_2", "plate1:A03", "ABC"),
-        DartRow("DN1111", "A01", "123", "A01", "negative", "MCM001", "rna_1", "Lab 1")
     ]
 
     samples = [
-        {"row": row_to_dict(rows[0]), "sample": None},
-        {"row": row_to_dict(rows[1]), "sample": samples_different_plates[0]},
-        {"row": row_to_dict(rows[2]), "sample": samples_different_plates[1]},
-        {"row": row_to_dict(rows[3]), "sample": None}
+        {"row": row_to_dict(rows[0]), "sample": samples_different_plates[0]},
+        {"row": row_to_dict(rows[1]), "sample": samples_different_plates[1]},
     ]
 
-    assert check_unmatched_sample_data(samples) == [
-        {"row": row_to_dict(rows[0]), "sample": None},
-        {"row": row_to_dict(rows[3]), "sample": None}
-    ]
+    check_unmatched_sample_data(samples)
+
 
 
 def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_different_plates):
