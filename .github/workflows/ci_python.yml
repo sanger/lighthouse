@@ -18,7 +18,6 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_ROOT_PASSWORD: badger
           MYSQL_DATABASE: unified_warehouse_test
     steps:
       - uses: actions/checkout@v2
