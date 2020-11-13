@@ -116,3 +116,4 @@ WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 
 DART_RESULT_VIEW = "CherrypickingInfo"
+BARACODA_RETRY_ATTEMPTS = 3
