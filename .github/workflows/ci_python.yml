@@ -11,10 +11,12 @@ jobs:
     services:
       mongodb:
         image: mongo:4.2.5
-        ports: '27017:27017'
+        ports:
+          - 27017:27017
       mysql:
         image: mysql:5.7
-        ports: '3306:3306'
+        ports:
+          - 3306:3306
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
