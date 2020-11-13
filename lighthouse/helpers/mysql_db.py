@@ -6,7 +6,7 @@ from sqlalchemy import MetaData  # type: ignore
 
 
 def create_mysql_connection_engine(connection_string: str, database: str) -> Engine:
-    the_url = sqlalchemy.engine.url.URL('mysql+pymysql', username='root', password='badger', host='localhost', port=3306, database=None, query=None)
+    the_url = sqlalchemy.engine.url.URL('mysql+pymysql', username='root', password=None, host='localhost', port=3306, database=None, query=None)
     print('the_url: ', the_url)
 
     create_engine_string =  the_url
