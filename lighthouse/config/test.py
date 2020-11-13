@@ -23,7 +23,7 @@ WAREHOUSES_RO_CONN_STRING = "root@localhost"
 ML_WH_DB = "unified_warehouse_test"
 EVENTS_WH_DB = "event_warehouse_test"
 
-WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
+WAREHOUSES_RW_CONN_STRING = "root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 
 DART_SQL_SERVER_HOST = "localhost"
