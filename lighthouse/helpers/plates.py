@@ -144,6 +144,14 @@ def rows_without_controls(rows):
     return list
 
 
+def rows_with_controls(rows):
+    list = []
+    for row in rows:
+        if not row_is_normal_sample(row):
+            list.append(row)
+    return list
+
+
 def query_for_cherrypicked_samples(rows):
     if rows is None or (len(rows) == 0):
         return None

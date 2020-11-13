@@ -40,6 +40,7 @@ from lighthouse.helpers.plates import (
     query_for_cherrypicked_samples,
     row_is_normal_sample,
     rows_without_controls,
+    rows_with_controls,
     equal_row_and_sample,
     find_sample_matching_row,
     join_rows_with_samples,
@@ -350,6 +351,18 @@ def test_rows_without_controls_filters_out_controls(app):
     ]
 
     assert rows_without_controls(test) == [test[0], test[1], test[2]]
+
+
+def test_rows_with_controls_returns_controls(app):
+    test = [
+        DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow("DN3333", "A02", "DN2222", "C01", "positive", None, None, None),
+        DartRow("DN3333", "A03", "DN2222", "C05", "negative", None, None, None),
+    ]
+
+    assert rows_with_controls(test) == [test[3], test[4]]
 
 
 def test_equal_row_and_sample_compares_row_and_sample(app, samples_different_plates):
