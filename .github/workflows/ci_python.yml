@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-18.04
     services:
       - mongodb
-        image: mongo:4.2.5
-        ports:
-          - 27017:27017
       - mysql
     steps:
       - uses: actions/checkout@v2
