@@ -9,7 +9,7 @@ jobs:
   build_and_test_job:
     runs-on: ubuntu-18.04
     services:
-      - mongodb:
+      - mongodb
         image: mongo:4.2.5
         ports:
           - 27017:27017
