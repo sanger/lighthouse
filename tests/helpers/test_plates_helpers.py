@@ -49,6 +49,7 @@ from lighthouse.helpers.plates import (
     map_to_ss_columns,
     create_cherrypicked_post_body,
     find_samples,
+    add_controls_to_samples
 )
 
 
@@ -428,6 +429,25 @@ def test_join_rows_with_samples_filters_out_controls(app, samples_different_plat
 
     assert join_rows_with_samples(rows, samples_different_plates) == [
         {"row": row_to_dict(rows[1]), "sample": samples_different_plates[1]},
+    ]
+
+
+def test_add_controls_to_samples(app, samples_different_plates):
+    rows = [
+        DartRow("DN1111", "A01", "123", "A01", "positive", "MCM001", "rna_1", "Lab 1"),
+        DartRow("DN1111", "A01", "123", "A01", "negative", "MCM002", "rna_2", "Lab 2"),
+    ]
+
+    samples_without_controls = [
+        {"row": row_to_dict(rows[0]), "sample": samples_different_plates[0]},
+        {"row": row_to_dict(rows[1]), "sample": samples_different_plates[1]},
+    ]
+
+    assert add_controls_to_samples(rows, samples_without_controls) == [
+        {"row": row_to_dict(rows[0]), "sample": samples_different_plates[0]},
+        {"row": row_to_dict(rows[1]), "sample": samples_different_plates[1]},
+        {"row": row_to_dict(rows[0]), "sample": None},
+        {"row": row_to_dict(rows[1]), "sample": None},
     ]
 
 
