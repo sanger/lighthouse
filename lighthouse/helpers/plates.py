@@ -186,8 +186,15 @@ def join_rows_with_samples(rows, samples):
     records = []
     for row in rows_without_controls(rows):
         records.append({"row": row_to_dict(row), "sample": find_sample_matching_row(row, samples)})
-
     return records
+
+
+def check_unmatched_sample_data(samples):
+    unmatched_samples=[]
+    for sample in samples:
+        if sample["sample"] is None:
+            unmatched_samples.append(sample)
+    return unmatched_samples
 
 
 def row_to_dict(row):
@@ -381,7 +388,7 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
         except KeyError as e:
             msg = f"""
-            Error while mapping database columns to Sequencescape columns for sample {mongo_row[FIELD_ROOT_SAMPLE_ID]}.
+            Error mapping database columns to Sequencescape columns for sample {mongo_row[FIELD_ROOT_SAMPLE_ID]}.
             {type(e).__name__}: {str(e)}
             """
             logger.error(msg)
