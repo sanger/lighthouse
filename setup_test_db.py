@@ -4,8 +4,9 @@ from lighthouse.helpers.mysql_db import create_mysql_connection_engine
 # Set up a basic MLWH db for testing
 """Drop and recreate required tables."""
 print("Initialising the test MySQL MLWH database")
+print("config.ML_WH_DB: ", config.ML_WH_DB)
 
-sql_engine = create_mysql_connection_engine(config.WAREHOUSES_RW_CONN_STRING, config.ML_WH_DB)
+sql_engine = create_mysql_connection_engine("root@localhost", config.ML_WH_DB)
 
 create_db = """
 CREATE DATABASE IF NOT EXISTS `unified_warehouse_test` /*!40100 DEFAULT CHARACTER SET latin1 */;
