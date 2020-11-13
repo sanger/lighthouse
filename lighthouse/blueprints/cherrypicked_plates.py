@@ -16,6 +16,7 @@ from lighthouse.helpers.plates import (
     query_for_cherrypicked_samples,
     join_rows_with_samples,
     map_to_ss_columns,
+    check_unmatched_sample_data
 )
 
 from lighthouse.constants import FIELD_PLATE_BARCODE
@@ -36,14 +37,15 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         return {"errors": ["POST request needs 'barcode' in body"]}, HTTPStatus.BAD_REQUEST
 
     try:
-        # get_cherrypicked_samples_records(barcode)
-        # get samples from dart for barcode 1234
-        # dart_samples [destination_barcode, destination_well_index, source_barcode, source_well_index, control (String), root_sample_id, rna_id, lab_id]
         dart_samples = find_dart_source_samples_rows(barcode)
-        # dart_samples = get_dart_samples(barcode)
+        if len(dart_samples) == 0:
+            msg = "Failed to find sample data in DART for plate barcode: " + barcode
+            logger.error(msg)
+            return (
+                {"errors": [msg]},
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
 
-        # get samples from Mongo for keys
-        # mongo_samples = get_samples_from_ids(sample_ids)  # ids = root_sample_id + rna_id + result
         mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
 
         if not mongo_samples:
@@ -59,10 +61,19 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 HTTPStatus.BAD_REQUEST,
             )
 
-        # Update FIELD_COORDINATE to destination_well_index. Add Control field
         samples = join_rows_with_samples(dart_samples, mongo_samples)
 
-        mapped_samples = map_to_ss_columns(samples)
+        try:
+            check_unmatched_sample_data(samples)
+        except (Exception) as e:
+            logger.exception(e)
+            return (
+                {"errors": ["Failed to find matching data in Mongo for DART samples on plate:" + barcode]},
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+
+
+        mapped_samples = map_to_ss_columns(all_samples)
 
         body = create_cherrypicked_post_body(barcode, mapped_samples)
 
