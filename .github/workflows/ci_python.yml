@@ -18,7 +18,7 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_ROOT_PASSWORD: null
+          MYSQL_ROOT_PASSWORD: ''
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
