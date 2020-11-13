@@ -437,15 +437,11 @@ def test_check_unmatched_sample_data_raises_error(app, samples_different_plates)
         rows = [
             DartRow("DN1111", "A01", "123", "A01", "positive", "MCM001", "rna_1", "Lab 1"),
             DartRow("DN1111", "A02", "123", "A01", None, "MCM002", "rna_3", "Lab 2"),
-            DartRow("DN1111", "A03", "123", "C06", None, "sample_2", "plate1:A03", "ABC"),
-            DartRow("DN1111", "A01", "123", "A01", "negative", "MCM001", "rna_1", "Lab 1")
         ]
 
         samples = [
             {"row": row_to_dict(rows[0]), "sample": None},
             {"row": row_to_dict(rows[1]), "sample": samples_different_plates[0]},
-            {"row": row_to_dict(rows[2]), "sample": samples_different_plates[1]},
-            {"row": row_to_dict(rows[3]), "sample": None}
         ]
 
         check_unmatched_sample_data(samples)
