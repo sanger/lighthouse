@@ -28,14 +28,18 @@ bp = Blueprint("cherrypicked-plates", __name__)
 CORS(bp)
 
 
-@bp.route("/cherrypicked-plates/create", methods=["POST"])
+@bp.route("/cherrypicked-plates/create", methods=["GET"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
+
+    invalid_url = {"errors": ["GET request needs 'barcode' in url"]}, HTTPStatus.BAD_REQUEST
     try:
-        barcode = request.get_json()["barcode"]
+        barcode = request.args.get('barcode', '')
+        if len(barcode) == 0:
+            return invalid_url
         logger.info(f"Attempting to create a plate in SS from barcode: {barcode}")
     except (KeyError, TypeError) as e:
         logger.exception(e)
-        return {"errors": ["POST request needs 'barcode' in body"]}, HTTPStatus.BAD_REQUEST
+        return invalid_url
 
     try:
         dart_samples = find_dart_source_samples_rows(barcode)
