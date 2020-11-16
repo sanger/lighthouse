@@ -84,7 +84,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
-        all_samples = add_controls_to_samples(samples)
+        all_samples = add_controls_to_samples(dart_samples, samples)
 
         mapped_samples = map_to_ss_columns(all_samples)
 

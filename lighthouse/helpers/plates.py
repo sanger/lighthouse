@@ -205,10 +205,12 @@ def join_rows_with_samples(rows, samples):
     return records
 
 
-def add_controls_to_samples(rows, combined_samples):
+def add_controls_to_samples(rows, samples):
+    control_samples = []
     for row in rows_with_controls(rows):
-        combined_samples.append({"row": row_to_dict(row), "sample": None})
-    return combined_samples
+        control_samples.append({"row": row_to_dict(row), "sample": None})
+    return samples + control_samples
+
 
 def check_unmatched_sample_data(samples):
     unmatched_samples=[]
