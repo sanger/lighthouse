@@ -42,10 +42,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         if len(dart_samples) == 0:
             msg = "Failed to find sample data in DART for plate barcode: " + barcode
             logger.error(msg)
-            return (
-                {"errors": [msg]},
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
+            return ({"errors": [msg]}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
         mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
 
@@ -70,17 +67,6 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             logger.exception(e)
             return (
                 {"errors": ["Failed to find matching data in Mongo for DART samples on plate: " + barcode]},
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
-
-
-        mapped_samples = map_to_ss_columns(samples)
-        try:
-            check_unmatched_sample_data(samples)
-        except (Exception) as e:
-            logger.exception(e)
-            return (
-                {"errors": ["Failed to find matching data in Mongo for DART samples on plate:" + barcode]},
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
