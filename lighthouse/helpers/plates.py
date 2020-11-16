@@ -392,7 +392,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             db_connection.close()
 
 
-def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str, str]]:
+def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
     for sample in samples:
@@ -423,7 +423,7 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str
     return mapped_samples
 
 
-def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
+def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -> Dict[str, Any]:
     logger.debug(
         f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
     )

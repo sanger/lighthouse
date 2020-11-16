@@ -362,7 +362,7 @@ MLWH_LH_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
     },
 ]
 
-DART_MONGO_MERGED_SAMPLES: List[Dict[str, Dict[str, str]]] = [
+DART_MONGO_MERGED_SAMPLES: List[Dict[str, Any]] = [
     {  # Control sample
         "sample": None,
         "row": {
