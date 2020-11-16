@@ -16,7 +16,7 @@ from lighthouse.helpers.plates import (
     query_for_cherrypicked_samples,
     join_rows_with_samples,
     map_to_ss_columns,
-    check_unmatched_sample_data,
+    check_matching_sample_numbers,
     add_controls_to_samples
 )
 
@@ -49,6 +49,12 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         if not mongo_samples:
             return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
 
+        try:
+            check_matching_sample_numbers(dart_samples, mongo_samples)
+        except (Exception) as e:
+            logger.exception(e)
+            return ({"errors": ["Mismatch in destination and source sample data for plate: " + barcode]}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
         # add COG barcodes to samples
         try:
             centre_prefix = add_cog_barcodes(mongo_samples)
@@ -60,15 +66,6 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             )
 
         samples = join_rows_with_samples(dart_samples, mongo_samples)
-
-        try:
-            check_unmatched_sample_data(samples)
-        except (Exception) as e:
-            logger.exception(e)
-            return (
-                {"errors": ["Failed to find matching data in Mongo for DART samples on plate: " + barcode]},
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
 
         all_samples = add_controls_to_samples(dart_samples, samples)
 

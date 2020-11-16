@@ -46,7 +46,7 @@ from lighthouse.helpers.plates import (
     equal_row_and_sample,
     find_sample_matching_row,
     join_rows_with_samples,
-    check_unmatched_sample_data,
+    check_matching_sample_numbers,
     row_to_dict,
     map_to_ss_columns,
     create_cherrypicked_post_body,
@@ -545,34 +545,31 @@ def test_add_controls_to_samples(app, samples_different_plates):
     ]
 
 
-def test_check_unmatched_sample_data_raises_error(app, samples_different_plates):
+def test_check_matching_sample_numbers_raises_error(app, samples_different_plates):
     with pytest.raises(UnmatchedSampleError):
 
         rows = [
-            DartRow("DN1111", "A01", "123", "A01", "positive", "MCM001", "rna_1", "Lab 1"),
-            DartRow("DN1111", "A02", "123", "A01", None, "MCM002", "rna_3", "Lab 2"),
+            DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+            DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+            DartRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
+            DartRow("DN1111", "A04", "DN2222", "C07", None, "sample_2", "plate1:A03", "ABC"),
+            DartRow("DN1111", "A05", "DN2222", "C08", None, "sample_2", "plate1:A03", "ABC"),
+            DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
+            DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None)
         ]
 
-        samples = [
-            {"row": row_to_dict(rows[0]), "sample": None},
-            {"row": row_to_dict(rows[1]), "sample": samples_different_plates[0]},
-        ]
-
-        check_unmatched_sample_data(samples)
+        check_matching_sample_numbers(rows, samples_different_plates)
 
 
-def test_check_unmatched_sample_data_matched_samples_no_error(app, samples_different_plates):
+def test_check_matching_sample_numbers_passes(app, samples_different_plates):
     rows = [
-        DartRow("DN1111", "A01", "123", "A01", "positive", "MCM001", "rna_1", "Lab 1"),
-        DartRow("DN1111", "A02", "123", "A01", None, "MCM002", "rna_3", "Lab 2"),
-    ]
+            DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+            DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+            DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
+            DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None)
+        ]
 
-    samples = [
-        {"row": row_to_dict(rows[0]), "sample": samples_different_plates[0]},
-        {"row": row_to_dict(rows[1]), "sample": samples_different_plates[1]},
-    ]
-
-    check_unmatched_sample_data(samples)
+    check_matching_sample_numbers(rows, samples_different_plates)
 
 
 
