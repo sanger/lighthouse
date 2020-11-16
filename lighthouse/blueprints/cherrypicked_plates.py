@@ -68,7 +68,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         except (Exception) as e:
             logger.exception(e)
             return (
-                {"errors": ["Failed to find matching data in Mongo for DART samples on plate:" + barcode]},
+                {"errors": ["Failed to find matching data in Mongo for DART samples on plate: " + barcode]},
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
