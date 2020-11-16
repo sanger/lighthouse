@@ -567,7 +567,7 @@ def test_check_matching_sample_numbers_raises_error(app, samples_different_plate
             DartRow("DN1111", "A04", "DN2222", "C07", None, "sample_2", "plate1:A03", "ABC"),
             DartRow("DN1111", "A05", "DN2222", "C08", None, "sample_2", "plate1:A03", "ABC"),
             DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
-            DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None)
+            DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
         ]
 
         check_matching_sample_numbers(rows, samples_different_plates)
@@ -575,11 +575,11 @@ def test_check_matching_sample_numbers_raises_error(app, samples_different_plate
 
 def test_check_matching_sample_numbers_passes(app, samples_different_plates):
     rows = [
-            DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-            DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-            DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
-            DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None)
-        ]
+        DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
+        DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
+    ]
 
     check_matching_sample_numbers(rows, samples_different_plates)
 

@@ -138,10 +138,12 @@ def test_post_plates_mlwh_update_failure(
             }
 
 
-def test_post_plates_endpoint_mismatched_sample_numbers(app, client, dart_samples_for_bp_test, samples_with_lab_id):
+def test_post_plates_endpoint_mismatched_sample_numbers(
+    app, client, dart_samples_for_bp_test, samples_with_lab_id
+):
     with patch(
-    "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
-    return_value="TS1",
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+        return_value="TS1",
     ):
         with patch(
             "lighthouse.blueprints.cherrypicked_plates.check_matching_sample_numbers",
@@ -155,7 +157,9 @@ def test_post_plates_endpoint_mismatched_sample_numbers(app, client, dart_sample
             )
 
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert response.json == {"errors": ["Mismatch in destination and source sample data for plate: " + barcode]}
+            assert response.json == {
+                "errors": ["Mismatch in destination and source sample data for plate: " + barcode]
+            }
 
 
 def test_post_plates_endpoint_missing_dart_data(app, client):
@@ -171,7 +175,5 @@ def test_post_plates_endpoint_missing_dart_data(app, client):
         )
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert response.json == {
-            "errors": [
-                "Failed to find sample data in DART for plate barcode: " + barcode
-            ]
+            "errors": ["Failed to find sample data in DART for plate barcode: " + barcode]
         }
