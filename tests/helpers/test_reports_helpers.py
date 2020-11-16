@@ -133,7 +133,8 @@ def test_get_cherrypicked_samples_repeat_tests(
 
     # root_1 will match 2 samples, but only one of those will match an event (on Sanger Sample Id)
     # therefore we only get 1 of the samples called 'root_1' back (the one on plate 'pb_1')
-    # this also checks we don't get a duplicate row for root_1 / pb_1, despite it cropped up in 2 different 'chunks'
+    # this also checks we don't get a duplicate row for root_1 / pb_1, despite it cropped up in 2
+    # different 'chunks'
     expected_rows = [["root_1", "pb_1", "positive", "A1"], ["root_2", "pb_2", "positive", "A1"]]
     expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE]
     expected = pd.DataFrame(np.array(expected_rows), columns=expected_columns, index=[0, 1])
