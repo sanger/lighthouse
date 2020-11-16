@@ -4,23 +4,19 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
-
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_cherrypicked_post_body,
-    get_cherrypicked_samples_records,
-    send_to_ss,
-    update_mlwh_with_cog_uk_ids,
     find_dart_source_samples_rows,
     find_samples,
-    query_for_cherrypicked_samples,
     join_rows_with_samples,
     map_to_ss_columns,
     check_matching_sample_numbers,
-    add_controls_to_samples
+    add_controls_to_samples,
+    query_for_cherrypicked_samples,
+    send_to_ss,
+    update_mlwh_with_cog_uk_ids,
 )
-
-from lighthouse.constants import FIELD_PLATE_BARCODE
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +49,14 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             check_matching_sample_numbers(dart_samples, mongo_samples)
         except (Exception) as e:
             logger.exception(e)
-            return ({"errors": ["Mismatch in destination and source sample data for plate: " + barcode]}, HTTPStatus.INTERNAL_SERVER_ERROR)
+            return (
+                {
+                    "errors": [
+                        "Mismatch in destination and source sample data for plate: " + barcode
+                    ]
+                },
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
 
         # add COG barcodes to samples
         try:
@@ -91,7 +94,10 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 return (
                     {
                         "errors": [
-                            "Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."
+                            (
+                                "Failed to update MLWH with COG UK ids. The samples should have "
+                                "been successfully inserted into Sequencescape."
+                            )
                         ]
                     },
                     HTTPStatus.INTERNAL_SERVER_ERROR,

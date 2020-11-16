@@ -1,3 +1,4 @@
+# flake8: noqa
 import lighthouse.config.test as config  # type: ignore
 from lighthouse.helpers.mysql_db import create_mysql_connection_engine
 

@@ -1,6 +1,7 @@
 import json
 from http import HTTPStatus
 
+import pytest
 import responses  # type: ignore
 from flask import current_app
 
@@ -15,30 +16,35 @@ from requests import ConnectionError
 
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
-    FIELD_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_COG_UK_ID,
-    FIELD_RNA_ID,
-    FIELD_RESULT,
-    FIELD_LAB_ID,
+    FIELD_DART_CONTROL,
     FIELD_DART_DESTINATION_BARCODE,
     FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_LAB_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
-    FIELD_DART_CONTROL,
-    FIELD_DART_ROOT_SAMPLE_ID,
-    FIELD_DART_RNA_ID,
-    FIELD_DART_LAB_ID,
+    FIELD_LAB_ID,
+    FIELD_RESULT,
+    FIELD_RNA_ID,
+    FIELD_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_COG_UK_ID,
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
 from lighthouse.helpers.plates import (
-    add_cog_barcodes,
-    create_post_body,
-    get_centre_prefix,
-    get_samples,
-    get_positive_samples,
-    update_mlwh_with_cog_uk_ids,
     UnmatchedSampleError,
+    add_cog_barcodes,
+    create_cherrypicked_post_body,
+    create_post_body,
+    equal_row_and_sample,
+    find_sample_matching_row,
+    find_samples,
+    get_centre_prefix,
     get_cherrypicked_samples_records,
+    get_positive_samples,
+    get_samples,
+    join_rows_with_samples,
+    map_to_ss_columns,
     query_for_cherrypicked_samples,
     row_is_normal_sample,
     rows_without_controls,
@@ -51,13 +57,18 @@ from lighthouse.helpers.plates import (
     map_to_ss_columns,
     create_cherrypicked_post_body,
     find_samples,
-    add_controls_to_samples
+    add_controls_to_samples,
+    update_mlwh_with_cog_uk_ids,
 )
+from sqlalchemy.exc import OperationalError
 
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
     with app.app_context():
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TS1/new?count={len(samples)}"
+        baracoda_url = (
+            f"http://{current_app.config['BARACODA_URL']}"
+            f"/barcodes_group/TS1/new?count={len(samples)}"
+        )
 
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -367,7 +378,8 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(
 def retrieve_samples_cursor(config, mlwh_sql_engine):
     with mlwh_sql_engine.connect() as connection:
         results = connection.execute(
-            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} from lighthouse_sample"
+            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} "
+            "FROM lighthouse_sample"
         )
 
     return results
@@ -572,7 +584,6 @@ def test_check_matching_sample_numbers_passes(app, samples_different_plates):
     check_matching_sample_numbers(rows, samples_different_plates)
 
 
-
 def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_different_plates):
     with app.app_context():
 
@@ -658,7 +669,7 @@ def test_create_cherrypicked_post_body(app):
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
-            }
+            },
         ]
         correct_body = {
             "data": {

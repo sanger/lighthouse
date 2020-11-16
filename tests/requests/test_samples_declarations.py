@@ -1,5 +1,5 @@
-from http import HTTPStatus
 import json
+from http import HTTPStatus
 
 TIMESTAMP = "2013-04-04T10:29:13"
 
