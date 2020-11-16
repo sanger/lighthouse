@@ -205,10 +205,12 @@ def join_rows_with_samples(rows, samples):
     return records
 
 
-def add_controls_to_samples(rows, combined_samples):
+def add_controls_to_samples(rows, samples):
+    control_samples = []
     for row in rows_with_controls(rows):
-        combined_samples.append({"row": row_to_dict(row), "sample": None})
-    return combined_samples
+        control_samples.append({"row": row_to_dict(row), "sample": None})
+    return samples + control_samples
+
 
 def check_unmatched_sample_data(samples):
     unmatched_samples=[]
@@ -390,27 +392,26 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             db_connection.close()
 
 
-def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str, str]]:
+def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
     for sample in samples:
-        mapped_sample = {}
+        mapped_sample = {} # type: Dict[str, Any]
 
         mongo_row = sample["sample"]
         dart_row = sample["row"]
 
         try:
-            mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
-            mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
-
-            mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
-            mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
-
-            mapped_sample["phenotype"] = "positive"
-
             if dart_row[FIELD_DART_CONTROL]:
                 mapped_sample["control"] = True
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
+            else:
+                mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
+                mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
+                mapped_sample["phenotype"] = "positive"
+
+            mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
+            mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
         except KeyError as e:
             msg = f"""
             Error mapping database columns to Sequencescape columns for sample {mongo_row[FIELD_ROOT_SAMPLE_ID]}.
@@ -422,7 +423,7 @@ def map_to_ss_columns(samples: List[Dict[str, Dict[str, Any]]]) -> List[Dict[str
     return mapped_samples
 
 
-def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
+def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -> Dict[str, Any]:
     logger.debug(
         f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
     )
@@ -430,18 +431,15 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, str]]) -
     wells_content = {}
     for sample in samples:
 
-        assert sample["phenotype"] is not None
-        assert sample["supplier_name"] is not None
-
-        content = {
-            "phenotype": sample["phenotype"],
-            "supplier_name": sample["supplier_name"],
-            "sample_description": sample["sample_description"],
-        }
+        content = {}
 
         if "control" in sample:
             content["control"] = sample["control"]
             content["control_type"] = sample["control_type"]
+        else:
+            content["phenotype"] = sample["phenotype"]
+            content["supplier_name"] = sample["supplier_name"]
+            content["sample_description"] = sample["sample_description"]
 
         wells_content[sample["coordinate"]] = {"content": content}
 

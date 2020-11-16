@@ -621,11 +621,8 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
     with app.app_context():
         correct_mapped_samples = [
             {
-                "sample_description": "MCM001",
-                "phenotype": "positive",
                 "control": True,
                 "control_type": "positive",
-                "supplier_name": "abc",
                 "barcode": "d123",
                 "coordinate": "B01",
             },
@@ -643,7 +640,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
 
 def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
     with app.app_context():
-        del dart_mongo_merged_samples[0]["row"][FIELD_DART_DESTINATION_COORDINATE]
+        del dart_mongo_merged_samples[1]["row"][FIELD_DART_DESTINATION_COORDINATE]
         with pytest.raises(KeyError):
             map_to_ss_columns(dart_mongo_merged_samples)
 
@@ -653,11 +650,8 @@ def test_create_cherrypicked_post_body(app):
         barcode = "d123"
         mapped_samples = [
             {
-                "sample_description": "MCM001",
-                "phenotype": "positive",
                 "control": True,
                 "control_type": "positive",
-                "supplier_name": "abc",
                 "barcode": "d123",
                 "coordinate": "B01",
             },
@@ -667,7 +661,7 @@ def test_create_cherrypicked_post_body(app):
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
-            },
+            }
         ]
         correct_body = {
             "data": {
@@ -679,9 +673,6 @@ def test_create_cherrypicked_post_body(app):
                     "wells": {
                         "B01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "abc",
-                                "sample_description": "MCM001",
                                 "control": True,
                                 "control_type": "positive",
                             }

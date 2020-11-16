@@ -132,3 +132,42 @@ def test_post_plates_mlwh_update_failure(
                     "Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."
                 ]
             }
+
+
+def test_post_plates_endpoint_unmatched_sample_data(app, client, dart_samples_for_bp_test, samples_with_lab_id):
+    with patch(
+    "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+    return_value="TS1",
+    ):
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.check_unmatched_sample_data",
+            side_effect=Exception("Boom!"),
+        ):
+            barcode = "plate_1"
+            response = client.post(
+                "/cherrypicked-plates/create",
+                data=json.dumps({"barcode": barcode}),
+                content_type="application/json",
+            )
+
+            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+            assert response.json == {"errors": ["Failed to find matching data in Mongo for DART samples on plate: " + barcode]}
+
+
+def test_post_plates_endpoint_missing_dart_data(app, client):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.find_dart_source_samples_rows",
+        return_value=[],
+    ):
+        barcode = "plate_1"
+        response = client.post(
+            "/cherrypicked-plates/create",
+            data=json.dumps({"barcode": barcode}),
+            content_type="application/json",
+        )
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert response.json == {
+            "errors": [
+                "Failed to find sample data in DART for plate barcode: " + barcode
+            ]
+        }
