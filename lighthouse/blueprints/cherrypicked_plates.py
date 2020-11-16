@@ -16,7 +16,8 @@ from lighthouse.helpers.plates import (
     query_for_cherrypicked_samples,
     join_rows_with_samples,
     map_to_ss_columns,
-    check_unmatched_sample_data
+    check_unmatched_sample_data,
+    add_controls_to_samples
 )
 
 from lighthouse.constants import FIELD_PLATE_BARCODE
@@ -74,6 +75,18 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
 
         mapped_samples = map_to_ss_columns(samples)
+        try:
+            check_unmatched_sample_data(samples)
+        except (Exception) as e:
+            logger.exception(e)
+            return (
+                {"errors": ["Failed to find matching data in Mongo for DART samples on plate:" + barcode]},
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+
+        all_samples = add_controls_to_samples(samples)
+
+        mapped_samples = map_to_ss_columns(all_samples)
 
         body = create_cherrypicked_post_body(barcode, mapped_samples)
 

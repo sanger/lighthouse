@@ -59,16 +59,32 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
         f"http://{app.config['BARACODA_URL']}"
         f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
     )
-    try:
-        response = requests.post(baracoda_url)
-        if response.status_code == HTTPStatus.CREATED:
-            barcodes = response.json()["barcodes_group"]["barcodes"]
-            for (sample, barcode) in zip(samples, barcodes):
-                sample[FIELD_COG_BARCODE] = barcode
-        else:
-            raise Exception("Unable to create COG barcodes")
-    except requests.ConnectionError:
-        raise requests.ConnectionError("Unable to access baracoda")
+
+    retries = app.config["BARACODA_RETRY_ATTEMPTS"]
+    success_operation = False
+    except_obj = None
+
+    while retries > 0:
+        try:
+            response = requests.post(baracoda_url)
+            if response.status_code == HTTPStatus.CREATED:
+                success_operation = True
+                retries = 0
+                barcodes = response.json()["barcodes_group"]["barcodes"]
+                for (sample, barcode) in zip(samples, barcodes):
+                    sample[FIELD_COG_BARCODE] = barcode
+            else:
+                retries = retries - 1
+                logger.error("Unable to create COG barcodes")
+                logger.error(response.json())
+                except_obj = Exception("Unable to create COG barcodes")
+        except requests.ConnectionError:
+            retries = retries - 1
+            logger.error("Unable to access baracoda")
+            except_obj = requests.ConnectionError("Unable to access baracoda")
+
+    if not success_operation and except_obj is not None:
+        raise except_obj
 
     # return centre prefix
     # TODO: I didn't know how else to get centre prefix?
@@ -188,6 +204,11 @@ def join_rows_with_samples(rows, samples):
         records.append({"row": row_to_dict(row), "sample": find_sample_matching_row(row, samples)})
     return records
 
+
+def add_controls_to_samples(rows, combined_samples):
+    for row in rows_with_controls(rows):
+        combined_samples.append({"row": row_to_dict(row), "sample": None})
+    return combined_samples
 
 def check_unmatched_sample_data(samples):
     unmatched_samples=[]
