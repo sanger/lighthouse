@@ -396,7 +396,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
     for sample in samples:
-        mapped_sample = {}
+        mapped_sample = {} # type: Dict[str, Any]
 
         mongo_row = sample["sample"]
         dart_row = sample["row"]
