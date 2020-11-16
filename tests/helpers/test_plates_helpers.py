@@ -621,11 +621,8 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
     with app.app_context():
         correct_mapped_samples = [
             {
-                "sample_description": "MCM001",
-                "phenotype": "positive",
                 "control": True,
                 "control_type": "positive",
-                "supplier_name": "abc",
                 "barcode": "d123",
                 "coordinate": "B01",
             },

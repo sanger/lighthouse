@@ -364,24 +364,16 @@ MLWH_LH_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
 
 DART_MONGO_MERGED_SAMPLES: List[Dict[str, Dict[str, str]]] = [
     {  # Control sample
-        "sample": {
-            FIELD_COORDINATE: "A01",
-            FIELD_SOURCE: "test1",
-            FIELD_RESULT: "Positive",
-            FIELD_PLATE_BARCODE: "123",
-            FIELD_COG_BARCODE: "abc",
-            FIELD_ROOT_SAMPLE_ID: "MCM001",
-            FIELD_RNA_ID: "rna_1",
-        },
+        "sample": None,
         "row": {
             FIELD_DART_DESTINATION_COORDINATE: "B01",
             FIELD_DART_DESTINATION_BARCODE: "d123",
             FIELD_DART_CONTROL: "positive",
             FIELD_DART_SOURCE_BARCODE: "123",
             FIELD_DART_SOURCE_COORDINATE: "A01",
-            FIELD_DART_ROOT_SAMPLE_ID: "MCM001",
-            FIELD_DART_RNA_ID: "rna_1",
-            FIELD_DART_LAB_ID: "AA",
+            FIELD_DART_ROOT_SAMPLE_ID: "",
+            FIELD_DART_RNA_ID: "",
+            FIELD_DART_LAB_ID: "",
         },
     },
     {  # Non-control sample
