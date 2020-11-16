@@ -212,14 +212,9 @@ def add_controls_to_samples(rows, samples):
     return samples + control_samples
 
 
-def check_unmatched_sample_data(samples):
-    unmatched_samples=[]
-    for sample in samples:
-        if sample["sample"] is None:
-            unmatched_samples.append(sample)
-    
-    if len(unmatched_samples) > 0:
-        msg = f"Unable to to find data in Mongo for {len(unmatched_samples)} DART samples"
+def check_matching_sample_numbers(rows, samples):
+    if len(samples) != len(rows_without_controls(rows)):
+        msg = "Mismatch in data present for destination plate: number of samples in DART and Mongo does not match"
         logger.error(msg)
         raise UnmatchedSampleError(msg)
 

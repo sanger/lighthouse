@@ -134,7 +134,7 @@ def test_post_plates_mlwh_update_failure(
             }
 
 
-def test_post_plates_endpoint_unmatched_sample_data(app, client, dart_samples_for_bp_test, samples_with_lab_id):
+def test_post_plates_endpoint_mismatched_sample_numbers(app, client, dart_samples_for_bp_test, samples_with_lab_id):
     with patch(
     "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
     return_value="TS1",
@@ -151,7 +151,7 @@ def test_post_plates_endpoint_unmatched_sample_data(app, client, dart_samples_fo
             )
 
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert response.json == {"errors": ["Failed to find matching data in Mongo for DART samples on plate: " + barcode]}
+            assert response.json == {"errors": ["Mismatch in destination and source sample data for plate: " + barcode]}
 
 
 def test_post_plates_endpoint_missing_dart_data(app, client):
