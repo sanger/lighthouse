@@ -140,7 +140,7 @@ def test_post_plates_endpoint_mismatched_sample_numbers(app, client, dart_sample
     return_value="TS1",
     ):
         with patch(
-            "lighthouse.blueprints.cherrypicked_plates.check_unmatched_sample_data",
+            "lighthouse.blueprints.cherrypicked_plates.check_matching_sample_numbers",
             side_effect=Exception("Boom!"),
         ):
             barcode = "plate_1"
