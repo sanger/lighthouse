@@ -431,18 +431,15 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
     wells_content = {}
     for sample in samples:
 
-        assert sample["phenotype"] is not None
-        assert sample["supplier_name"] is not None
-
-        content = {
-            "phenotype": sample["phenotype"],
-            "supplier_name": sample["supplier_name"],
-            "sample_description": sample["sample_description"],
-        }
+        content = {}
 
         if "control" in sample:
             content["control"] = sample["control"]
             content["control_type"] = sample["control_type"]
+        else:
+            content["phenotype"] = sample["phenotype"]
+            content["supplier_name"] = sample["supplier_name"]
+            content["sample_description"] = sample["sample_description"]
 
         wells_content[sample["coordinate"]] = {"content": content}
 

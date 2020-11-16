@@ -650,11 +650,8 @@ def test_create_cherrypicked_post_body(app):
         barcode = "d123"
         mapped_samples = [
             {
-                "sample_description": "MCM001",
-                "phenotype": "positive",
                 "control": True,
                 "control_type": "positive",
-                "supplier_name": "abc",
                 "barcode": "d123",
                 "coordinate": "B01",
             },
@@ -664,7 +661,7 @@ def test_create_cherrypicked_post_body(app):
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
-            },
+            }
         ]
         correct_body = {
             "data": {
@@ -676,9 +673,6 @@ def test_create_cherrypicked_post_body(app):
                     "wells": {
                         "B01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "abc",
-                                "sample_description": "MCM001",
                                 "control": True,
                                 "control_type": "positive",
                             }
