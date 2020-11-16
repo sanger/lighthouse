@@ -176,7 +176,10 @@ def labwhere_samples_simple(app, mocked_responses):
 
     body = json.dumps([{"barcode": "123", "location_barcode": "4567"}])
     mocked_responses.add(
-        responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+        responses.POST,
+        labwhere_url,
+        body=body,
+        status=HTTPStatus.OK,
     )
 
 
@@ -192,7 +195,10 @@ def labwhere_samples_multiple(app, mocked_responses):
         ]
     )
     mocked_responses.add(
-        responses.POST, labwhere_url, body=body, status=HTTPStatus.OK,
+        responses.POST,
+        labwhere_url,
+        body=body,
+        status=HTTPStatus.OK,
     )
 
 
@@ -202,7 +208,10 @@ def labwhere_samples_error(app, mocked_responses):
 
     body = json.dumps([])
     mocked_responses.add(
-        responses.POST, labwhere_url, body=body, status=HTTPStatus.INTERNAL_SERVER_ERROR,
+        responses.POST,
+        labwhere_url,
+        body=body,
+        status=HTTPStatus.INTERNAL_SERVER_ERROR,
     )
 
 

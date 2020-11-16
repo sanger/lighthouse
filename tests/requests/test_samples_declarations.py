@@ -94,8 +94,16 @@ def test_post_new_sample_declaration_for_existing_samples(
 ):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 2):
         items = [
-            {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP},
-            {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP},
+            {
+                "root_sample_id": "MCM001",
+                "value_in_sequencing": "Yes",
+                "declared_at": TIMESTAMP,
+            },
+            {
+                "root_sample_id": "MCM003",
+                "value_in_sequencing": "Yes",
+                "declared_at": TIMESTAMP,
+            },
         ]
 
         response = post_authorized_create_samples_declaration(client, items)
@@ -232,7 +240,11 @@ def test_unknown_sample_for_root_sample_id(
     with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
         response = post_authorized_create_samples_declaration(
             client,
-            {"root_sample_id": "nonsense", "value_in_sequencing": "Yes", "declared_at": TIMESTAMP},
+            {
+                "root_sample_id": "nonsense",
+                "value_in_sequencing": "Yes",
+                "declared_at": TIMESTAMP,
+            },
         )
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert response.json["_status"] == "ERR"
@@ -248,7 +260,10 @@ def test_missing_value_for_root_sample_id_multiple(
         response = post_authorized_create_samples_declaration(
             client,
             [
-                {"value_in_sequencing": "Yes", "declared_at": TIMESTAMP},
+                {
+                    "value_in_sequencing": "Yes",
+                    "declared_at": TIMESTAMP,
+                },
                 {
                     "root_sample_id": "MCM003",
                     "value_in_sequencing": "Yes",
@@ -268,7 +283,11 @@ def test_missing_value_for_root_sample_id_single(
 ):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
         response = post_authorized_create_samples_declaration(
-            client, {"value_in_sequencing": "Yes", "declared_at": TIMESTAMP},
+            client,
+            {
+                "value_in_sequencing": "Yes",
+                "declared_at": TIMESTAMP,
+            },
         )
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert response.json["_status"] == "ERR"
@@ -443,7 +462,8 @@ def test_multiple_errors_on_samples_declaration(
 
 def test_filter_by_root_sample_id(client, samples_declarations):
     response = client.get(
-        '/samples_declarations?where={"root_sample_id":"MCM001"}', content_type="application/json",
+        '/samples_declarations?where={"root_sample_id":"MCM001"}',
+        content_type="application/json",
     )
     assert response.status_code == HTTPStatus.OK, response.json
     assert len(response.json["_items"]) == 1, response.json

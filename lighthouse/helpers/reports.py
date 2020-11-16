@@ -204,17 +204,18 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
 
         for chunk_root_sample_id in chunk_root_sample_ids:
             sql = (
-                f"SELECT mlwh_sample.description AS `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode AS `{FIELD_PLATE_BARCODE}`"  # noqa: E501
-                f",mlwh_sample.phenotype AS `{FIELD_RESULT}`, mlwh_stock_resource.labware_coordinate AS `{FIELD_COORDINATE}`"  # noqa: E501
-                f" FROM {ml_wh_db}.sample AS mlwh_sample"
-                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"  # noqa: E501
-                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"  # noqa: E501
-                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"  # noqa: E501
-                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"  # noqa: E501
-                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"  # noqa: E501
-                " WHERE mlwh_sample.description IN %(root_sample_ids)s"
-                " AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
+                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"
+                f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"
+                f" FROM {ml_wh_db}.sample as mlwh_sample"
+                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
+                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
+                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
+                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
+                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+                f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
+                f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
+                " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"
             )
 
             frame = pd.read_sql(
@@ -282,12 +283,23 @@ def add_cherrypicked_column(existing_dataframe):
     cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids, plate_barcodes)
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
+    logger.error(f"{len(cherrypicked_samples_df.index)} cherrypicked samples")
+
+    # The result value in the phenotype in MLWH.sample is all lowercase,
+    # because it is converted in create_post_body in helpers/plates.py,
+    # whereas in the original data in MongoDB and MLWH.lighthouse_sample it is capitalised
+    existing_dataframe["Result_lower"] = existing_dataframe["Result"].str.lower()
+
     existing_dataframe = existing_dataframe.merge(
         cherrypicked_samples_df,
         how="left",
-        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, FIELD_RESULT, FIELD_COORDINATE],
+        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE],
     )
+    # Fill any empty cells for the column with 'No' (those that do not have cherrypicking events)
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
+
+    # remove the extra column we merged on as no longer needed
+    existing_dataframe = existing_dataframe.drop(columns=["Result_lower"])
 
     return existing_dataframe
 
