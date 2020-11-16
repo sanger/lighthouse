@@ -73,7 +73,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             )
 
 
-        mapped_samples = map_to_ss_columns(all_samples)
+        mapped_samples = map_to_ss_columns(samples)
 
         body = create_cherrypicked_post_body(barcode, mapped_samples)
 
