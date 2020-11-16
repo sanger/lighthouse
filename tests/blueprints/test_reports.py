@@ -1,13 +1,8 @@
 from http import HTTPStatus
 from unittest.mock import patch
-import pandas as pd
 
-from lighthouse.constants import (
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_PLATE_BARCODE,
-    FIELD_RESULT,
-    FIELD_COORDINATE,
-)
+import pandas as pd
+from lighthouse.constants import FIELD_COORDINATE, FIELD_PLATE_BARCODE, FIELD_ROOT_SAMPLE_ID
 
 
 def test_get_reports_endpoint(client):

@@ -4,23 +4,19 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
-
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_cherrypicked_post_body,
-    get_cherrypicked_samples_records,
-    send_to_ss,
-    update_mlwh_with_cog_uk_ids,
     find_dart_source_samples_rows,
     find_samples,
-    query_for_cherrypicked_samples,
     join_rows_with_samples,
     map_to_ss_columns,
     check_unmatched_sample_data,
-    add_controls_to_samples
+    add_controls_to_samples,
+    query_for_cherrypicked_samples,
+    send_to_ss,
+    update_mlwh_with_cog_uk_ids,
 )
-
-from lighthouse.constants import FIELD_PLATE_BARCODE
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +62,12 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         except (Exception) as e:
             logger.exception(e)
             return (
-                {"errors": ["Failed to find matching data in Mongo for DART samples on plate: " + barcode]},
+                {
+                    "errors": [
+                        "Failed to find matching data in Mongo for DART samples on plate: "
+                        + barcode
+                    ]
+                },
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
@@ -94,7 +95,10 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 return (
                     {
                         "errors": [
-                            "Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."
+                            (
+                                "Failed to update MLWH with COG UK ids. The samples should have "
+                                "been successfully inserted into Sequencescape."
+                            )
                         ]
                     },
                     HTTPStatus.INTERNAL_SERVER_ERROR,
