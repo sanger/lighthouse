@@ -640,7 +640,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
 
 def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
     with app.app_context():
-        del dart_mongo_merged_samples[0]["row"][FIELD_DART_DESTINATION_COORDINATE]
+        del dart_mongo_merged_samples[1]["row"][FIELD_DART_DESTINATION_COORDINATE]
         with pytest.raises(KeyError):
             map_to_ss_columns(dart_mongo_merged_samples)
 
