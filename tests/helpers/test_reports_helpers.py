@@ -86,8 +86,7 @@ def test_get_cherrypicked_samples(app, freezer):
     with app.app_context():
         with patch("sqlalchemy.create_engine", return_value=Mock()):
             with patch(
-                "pandas.read_sql",
-                return_value=expected,
+                "pandas.read_sql", return_value=expected,
             ):
                 returned_samples = get_cherrypicked_samples(samples, plate_barcodes)
                 assert returned_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "MCM001"
@@ -115,8 +114,7 @@ def test_get_cherrypicked_samples_chunking(app, freezer):
     with app.app_context():
         with patch("sqlalchemy.create_engine", return_value=Mock()):
             with patch(
-                "pandas.read_sql",
-                side_effect=query_results,
+                "pandas.read_sql", side_effect=query_results,
             ):
                 returned_samples = get_cherrypicked_samples(samples, plate_barcodes, 2)
                 pd.testing.assert_frame_equal(expected, returned_samples)
@@ -245,25 +243,11 @@ def test_add_cherrypicked_column(app, freezer):
     ]
     # rows with "Yes" are because was returned from get_cherrypicked_samples
     expected_data = [
-        [
-            "MCM001",
-            "123",
-            "TEST",
-            "Positive",
-            "A1",
-            "Yes",
-        ],
+        ["MCM001", "123", "TEST", "Positive", "A1", "Yes",],
         ["MCM001", "456", "TEST", "Positive", "A1", "No"],
         ["MCM001", "123", "TEST", "Positive2", "A1", "No"],
         ["MCM001", "123", "TEST", "Positive", "A2", "No"],
-        [
-            "MCM002",
-            "123",
-            "TEST",
-            "Positive",
-            "A1",
-            "Yes",
-        ],
+        ["MCM002", "123", "TEST", "Positive", "A1", "Yes",],
     ]
 
     with app.app_context():
@@ -324,14 +308,7 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
     expected_data = [
         ["MCM001", "123", "TEST", "Positive", "A1", "No"],
         ["MCM002", "456", "TEST", "Positive", "A2", "Yes"],
-        [
-            "MCM002",
-            "456",
-            "TEST",
-            "Positive",
-            "A2",
-            "Yes",
-        ],
+        ["MCM002", "456", "TEST", "Positive", "A2", "Yes",],
     ]
 
     with app.app_context():
@@ -349,10 +326,7 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
 def test_add_cherrypicked_column_no_rows(app, freezer):
     # mocks response from get_cherrypicked_samples()
     existing_dataframe = pd.DataFrame(
-        [
-            ["MCM001", "123", "TEST", "Positive", "A1"],
-            ["MCM002", "123", "TEST", "Positive", "A1"],
-        ],
+        [["MCM001", "123", "TEST", "Positive", "A1"], ["MCM002", "123", "TEST", "Positive", "A1"],],
         columns=[
             FIELD_ROOT_SAMPLE_ID,
             FIELD_PLATE_BARCODE,
