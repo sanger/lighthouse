@@ -39,10 +39,18 @@ THIRD_TIMESTAMP = datetime(2013, 4, 6, 10, 29, 13)
 
 
 SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [
-    {"root_sample_id": "MCM001", "value_in_sequencing": "Yes", "declared_at": FIRST_TIMESTAMP,},
+    {
+        "root_sample_id": "MCM001",
+        "value_in_sequencing": "Yes",
+        "declared_at": FIRST_TIMESTAMP,
+    },
     {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": FIRST_TIMESTAMP},
     {"root_sample_id": "MCM003", "value_in_sequencing": "No", "declared_at": SECOND_TIMESTAMP},
-    {"root_sample_id": "MCM003", "value_in_sequencing": "Yes", "declared_at": THIRD_TIMESTAMP,},
+    {
+        "root_sample_id": "MCM003",
+        "value_in_sequencing": "Yes",
+        "declared_at": THIRD_TIMESTAMP,
+    },
 ]
 
 MULTIPLE_ERRORS_SAMPLES_DECLARATIONS: List[Dict[str, Any]] = [

@@ -22,7 +22,8 @@ def test_find_dart_source_samples_rows_not_found_barcode(app, dart_seed_reset):
 def test_exceptions_are_propagated_up(app, dart_seed_reset):
     with app.app_context():
         with patch(
-            "lighthouse.helpers.dart_db.create_dart_connection", side_effect=Exception("Boom!!"),
+            "lighthouse.helpers.dart_db.create_dart_connection",
+            side_effect=Exception("Boom!!"),
         ):
             with raises(Exception):
                 found = find_dart_source_samples_rows("unknown")

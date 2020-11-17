@@ -628,7 +628,12 @@ def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_differen
 def test_map_to_ss_columns(app, dart_mongo_merged_samples):
     with app.app_context():
         correct_mapped_samples = [
-            {"control": True, "control_type": "positive", "barcode": "d123", "coordinate": "B01",},
+            {
+                "control": True,
+                "control_type": "positive",
+                "barcode": "d123",
+                "coordinate": "B01",
+            },
             {
                 "name": "rna_2",
                 "sample_description": "MCM002",
@@ -653,7 +658,12 @@ def test_create_cherrypicked_post_body(app):
     with app.app_context():
         barcode = "d123"
         mapped_samples = [
-            {"control": True, "control_type": "positive", "barcode": "d123", "coordinate": "B01",},
+            {
+                "control": True,
+                "control_type": "positive",
+                "barcode": "d123",
+                "coordinate": "B01",
+            },
             {
                 "name": "rna_2",
                 "sample_description": "MCM002",
@@ -671,7 +681,12 @@ def test_create_cherrypicked_post_body(app):
                     "purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
                     "study_uuid": current_app.config["SS_UUID_STUDY_CHERRYPICKED"],
                     "wells": {
-                        "B01": {"content": {"control": True, "control_type": "positive",}},
+                        "B01": {
+                            "content": {
+                                "control": True,
+                                "control_type": "positive",
+                            }
+                        },
                         "B02": {
                             "content": {
                                 "name": "rna_2",

@@ -13,5 +13,8 @@ def test_create_report(client, samples, samples_declarations, labwhere_samples_s
             columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE],
         ),
     ):
-        response = client.post("/reports/new", content_type="application/json",)
+        response = client.post(
+            "/reports/new",
+            content_type="application/json",
+        )
         assert response.status_code == HTTPStatus.CREATED
