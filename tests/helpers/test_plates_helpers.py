@@ -635,6 +635,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "coordinate": "B01",
             },
             {
+                "name": "rna_2",
                 "sample_description": "MCM002",
                 "phenotype": "positive",
                 "supplier_name": "abcd",
@@ -664,6 +665,7 @@ def test_create_cherrypicked_post_body(app):
                 "coordinate": "B01",
             },
             {
+                "name": "rna_2",
                 "sample_description": "MCM002",
                 "phenotype": "positive",
                 "supplier_name": "abcd",
@@ -687,6 +689,7 @@ def test_create_cherrypicked_post_body(app):
                         },
                         "B02": {
                             "content": {
+                                "name": "rna_2",
                                 "phenotype": "positive",
                                 "supplier_name": "abcd",
                                 "sample_description": "MCM002",

@@ -400,6 +400,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["control"] = True
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
             else:
+                mapped_sample["name"] = mongo_row[FIELD_RNA_ID]
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
@@ -432,6 +433,7 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
             content["control"] = sample["control"]
             content["control_type"] = sample["control_type"]
         else:
+            content["name"] = sample["name"]
             content["phenotype"] = sample["phenotype"]
             content["supplier_name"] = sample["supplier_name"]
             content["sample_description"] = sample["sample_description"]
