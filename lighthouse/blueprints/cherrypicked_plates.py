@@ -31,15 +31,14 @@ CORS(bp)
 @bp.route("/cherrypicked-plates/create", methods=["GET"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
-    invalid_url = {"errors": ["GET request needs 'barcode' in url"]}, HTTPStatus.BAD_REQUEST
     try:
         barcode = request.args.get('barcode', '')
         if len(barcode) == 0:
-            return invalid_url
+            return invalid_url_error()
         logger.info(f"Attempting to create a plate in SS from barcode: {barcode}")
     except (KeyError, TypeError) as e:
         logger.exception(e)
-        return invalid_url
+        return invalid_url_error()
 
     try:
         dart_samples = find_dart_source_samples_rows(barcode)
@@ -111,3 +110,6 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     except Exception as e:
         logger.exception(e)
         return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
+
+def invalid_url_error():
+    return {"errors": ["GET request needs 'barcode' in url"]}, HTTPStatus.BAD_REQUEST
