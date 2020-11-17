@@ -25,10 +25,12 @@ def create_app() -> Eve:
     from lighthouse.blueprints import plates
     from lighthouse.blueprints import cherrypicked_plates
     from lighthouse.blueprints import reports
+    from lighthouse.blueprints import plate_events
 
     app.register_blueprint(plates.bp)
     app.register_blueprint(cherrypicked_plates.bp)
     app.register_blueprint(reports.bp)
+    app.register_blueprint(plate_events.bp)
 
     if app.config.get("SCHEDULER_RUN", False):
         scheduler.init_app(app)
