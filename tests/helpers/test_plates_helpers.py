@@ -630,6 +630,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
         correct_mapped_samples = [
             {"control": True, "control_type": "positive", "barcode": "d123", "coordinate": "B01",},
             {
+                "name": "rna_2",
                 "sample_description": "MCM002",
                 "phenotype": "positive",
                 "supplier_name": "abcd",
@@ -654,6 +655,7 @@ def test_create_cherrypicked_post_body(app):
         mapped_samples = [
             {"control": True, "control_type": "positive", "barcode": "d123", "coordinate": "B01",},
             {
+                "name": "rna_2",
                 "sample_description": "MCM002",
                 "phenotype": "positive",
                 "supplier_name": "abcd",
@@ -672,6 +674,7 @@ def test_create_cherrypicked_post_body(app):
                         "B01": {"content": {"control": True, "control_type": "positive",}},
                         "B02": {
                             "content": {
+                                "name": "rna_2",
                                 "phenotype": "positive",
                                 "supplier_name": "abcd",
                                 "sample_description": "MCM002",
