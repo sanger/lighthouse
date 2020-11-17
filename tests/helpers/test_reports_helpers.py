@@ -1,31 +1,30 @@
+import os
 from datetime import datetime
 from shutil import copy
-import os
+from unittest.mock import Mock, patch
 
-import pandas as pd
 import numpy as np
-from unittest.mock import patch, Mock
-
-from lighthouse.helpers.reports import (
-    get_new_report_name_and_path,
-    unpad_coordinate,
-    delete_reports,
-    get_cherrypicked_samples,
-    get_all_positive_samples,
-    map_labware_to_location,
-    add_cherrypicked_column,
-    get_distinct_plate_barcodes,
-    join_samples_declarations,
+import pandas as pd
+from lighthouse.constants import (
+    CT_VALUE_LIMIT,
+    FIELD_CH1_CQ,
+    FIELD_COORDINATE,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
 )
 from lighthouse.exceptions import ReportCreationError
-from lighthouse.constants import (
-    FIELD_COORDINATE,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RESULT,
-    FIELD_PLATE_BARCODE,
-    FIELD_SOURCE,
-    FIELD_CH1_CQ,
-    CT_VALUE_LIMIT,
+from lighthouse.helpers.reports import (
+    add_cherrypicked_column,
+    delete_reports,
+    get_all_positive_samples,
+    get_cherrypicked_samples,
+    get_distinct_plate_barcodes,
+    get_new_report_name_and_path,
+    join_samples_declarations,
+    map_labware_to_location,
+    unpad_coordinate,
 )
 
 
@@ -73,7 +72,7 @@ def test_delete_reports(app, freezer):
         delete_reports(filenames)
 
     for filename in filenames:
-        assert os.path.isfile(f"{app.config['REPORTS_DIR']}/{filename}") == False
+        assert os.path.isfile(f"{app.config['REPORTS_DIR']}/{filename}") is False
 
 
 def test_get_cherrypicked_samples(app, freezer):
@@ -123,8 +122,8 @@ def test_get_cherrypicked_samples_chunking(app, freezer):
                 pd.testing.assert_frame_equal(expected, returned_samples)
 
 
-# test scenario where there have been multiple lighthouse tests for a sample with the same Root Sample ID
-# uses actual databases rather than mocking to make sure the query is correct
+# test scenario where there have been multiple lighthouse tests for a sample with the same Root
+# Sample ID uses actual databases rather than mocking to make sure the query is correct
 def test_get_cherrypicked_samples_repeat_tests(
     app, freezer, mlwh_sample_stock_resource, event_wh_data
 ):
@@ -134,7 +133,8 @@ def test_get_cherrypicked_samples_repeat_tests(
 
     # root_1 will match 2 samples, but only one of those will match an event (on Sanger Sample Id)
     # therefore we only get 1 of the samples called 'root_1' back (the one on plate 'pb_1')
-    # this also checks we don't get a duplicate row for root_1 / pb_1, despite it cropped up in 2 different 'chunks'
+    # this also checks we don't get a duplicate row for root_1 / pb_1, despite it cropped up in 2
+    # different 'chunks'
     expected_rows = [["root_1", "pb_1", "positive", "A1"], ["root_2", "pb_2", "positive", "A1"]]
     expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE]
     expected = pd.DataFrame(np.array(expected_rows), columns=expected_columns, index=[0, 1])
@@ -233,7 +233,8 @@ def test_add_cherrypicked_column(app, freezer):
         np.array(mock_get_cherrypicked_samples_rows), columns=mock_get_cherrypicked_samples_columns
     )
 
-    # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from 'get_cherrypicked_samples'
+    # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from
+    # 'get_cherrypicked_samples'
     expected_columns = [
         FIELD_ROOT_SAMPLE_ID,
         FIELD_PLATE_BARCODE,
@@ -309,7 +310,8 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
         np.array(mock_get_cherrypicked_samples_rows), columns=mock_get_cherrypicked_samples_columns
     )
 
-    # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from 'get_cherrypicked_samples'
+    # output from 'add_cherrypicked_column' - after merging existing_dataframe with response from
+    # 'get_cherrypicked_samples'
     expected_columns = [
         FIELD_ROOT_SAMPLE_ID,
         FIELD_PLATE_BARCODE,
