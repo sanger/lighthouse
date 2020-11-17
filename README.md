@@ -52,7 +52,7 @@ The services has the following routes:
 
 ## Running
 
-1. Create a `.env` file with the following contents (or use `.env.example` - rename to `.env`):
+Create a `.env` file with the following contents (or use `.env.example` - rename to `.env`):
 
     - `FLASK_APP=lighthouse`
     - `FLASK_ENV=development`
@@ -64,7 +64,7 @@ Option A (in local):
 
         pipenv shell
 
-1. Run the app using:
+2. Run the app using:
 
         flask run
 
@@ -77,17 +77,17 @@ Option B (in Docker):
 
         docker build -t lighthouse:develop .
 
-1. Define YOUR_LIGHTHOUSE_PROJECT_HOME to wherever you downloaded the lighthouse github project:
+2. Define YOUR_LIGHTHOUSE_PROJECT_HOME to wherever you downloaded the lighthouse github project:
 
         export YOUR_LIGHTHOUSE_PROJECT_HOME=/home/myhome/lighthouse
 
-1. Sql server
+3. Sql server
 
         docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=MyS3cr3tPassw0rd" \
         -p 1433:1433 --name sql1 -h sql1 \
         -d mcr.microsoft.com/mssql/server:2019-latest
 
-1. Start the docker container and open a bash session in it with:
+4. Start the docker container and open a bash session in it with:
 
         docker run --env-file .env -p 5000:5000 -v $YOUR_LIGHTHOUSE_PROJECT_HOME:/code -it lighthouse:develop bash
    
@@ -95,12 +95,12 @@ Option B (in Docker):
    source code of the project from your hosting machine (YOUR_LIGHTHOUSE_PROJECT_HOME). The container will map your 
    port 5000 with the port 5000 of Docker.
 
-1. Initialize the development database for sqlserver:
+5. Initialize the development database for sqlserver:
 
         python setup_sqlserver_test_db
 
 
-1. Now that you are inside the container, start the app in port 5000 of Docker using:
+6. Now that you are inside the container, start the app in port 5000 of Docker using:
 
         flask run -h 0.0.0.0
 
