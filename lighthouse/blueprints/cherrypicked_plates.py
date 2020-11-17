@@ -28,7 +28,7 @@ CORS(bp)
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
     try:
-        barcode = request.args.get('barcode', '')
+        barcode = request.args.get("barcode", "")
         if len(barcode) == 0:
             return invalid_url_error()
         logger.info(f"Attempting to create a plate in SS from barcode: {barcode}")
@@ -113,6 +113,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     except Exception as e:
         logger.exception(e)
         return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
+
 
 def invalid_url_error():
     return {"errors": ["GET request needs 'barcode' in url"]}, HTTPStatus.BAD_REQUEST
