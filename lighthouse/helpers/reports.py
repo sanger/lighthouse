@@ -11,15 +11,10 @@ import pandas as pd  # type: ignore
 import requests
 import sqlalchemy  # type: ignore
 from flask import current_app as app
-from lighthouse.constants import (
-    FIELD_COORDINATE,
-    FIELD_DATE_TESTED,
-    FIELD_PLATE_BARCODE,
-    FIELD_RESULT,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_SOURCE,
-    STAGE_MATCH_POSITIVE,
-)
+from lighthouse.constants import (FIELD_COORDINATE, FIELD_DATE_TESTED,
+                                  FIELD_PLATE_BARCODE, FIELD_RESULT,
+                                  FIELD_ROOT_SAMPLE_ID, FIELD_SOURCE,
+                                  STAGE_MATCH_POSITIVE)
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.utils import pretty
 from pandas import DataFrame
@@ -423,6 +418,9 @@ def report_query_window_start() -> datetime:
         datetime: start date for the report window
     """
     window_size = app.config["REPORT_WINDOW_SIZE"]
+    logger.debug(f"Current report window size: {window_size}")
+
     start = datetime.now() + timedelta(days=-window_size)
+    logger.info(f"Report starting from: {start.strftime('%d/%m/%Y')}")
 
     return datetime(year=start.year, month=start.month, day=start.day)
