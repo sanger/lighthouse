@@ -3,36 +3,30 @@ import math
 import os
 import pathlib
 import re
-import requests
-import pandas as pd  # type: ignore
-
-import pymysql
-
-# we only need the create_engine method
-# but that can't be mocked
-# can't seem to mock it at the top because
-# it is outside the app context
-import sqlalchemy  # type: ignore
-
-from datetime import datetime
-from typing import Dict, List, Tuple
+from datetime import datetime, timedelta
 from http import HTTPStatus
+from typing import Dict, List, Tuple
 
+import pandas as pd  # type: ignore
+import requests
+import sqlalchemy  # type: ignore
+from flask import current_app as app
+from lighthouse.constants import (
+    CT_VALUE_LIMIT,
+    FIELD_CH1_CQ,
+    FIELD_CH2_CQ,
+    FIELD_CH3_CQ,
+    FIELD_COORDINATE,
+    FIELD_DATE_TESTED,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
+)
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.utils import pretty
-
-from flask import current_app as app
-
-from lighthouse.constants import (
-    FIELD_SOURCE,
-    FIELD_PLATE_BARCODE,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RESULT,
-    FIELD_DATE_TESTED,
-    FIELD_COORDINATE,
-    CT_VALUE_LIMIT,
-    POSITIVE_SAMPLES_MONGODB_FILTER,
-)
+from pandas import DataFrame
+from pymongo.collection import Collection
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
@@ -196,7 +190,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         concat_frame = pd.DataFrame()
 
         chunk_root_sample_ids = [
-            root_sample_ids[x : (x + chunk_size)]
+            root_sample_ids[x : (x + chunk_size)]  # noqa: E203
             for x in range(0, len(root_sample_ids), chunk_size)
         ]
 
@@ -210,18 +204,18 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
 
         for chunk_root_sample_id in chunk_root_sample_ids:
             sql = (
-                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"
-                f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"
+                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"  # noqa: E501
+                f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"  # noqa: E501
                 f" FROM {ml_wh_db}.sample as mlwh_sample"
-                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
-                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
-                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
-                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
-                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"  # noqa: E501
+                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"  # noqa: E501
+                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"  # noqa: E501
+                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"  # noqa: E501
+                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"  # noqa: E501
                 f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
                 f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
-                " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"
+                " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"  # noqa: E501
             )
 
             frame = pd.read_sql(
@@ -233,9 +227,10 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 },
             )
 
-            # drop_duplicates is needed because the same 'root sample id' could pop up in two different batches,
-            # and then it would retrieve the same rows for that root sample id twice
-            # do reset_index after dropping duplicates to make sure the rows are numbered in a way that makes sense
+            # drop_duplicates is needed because the same 'root sample id' could pop up in two
+            # different batches, and then it would retrieve the same rows for that root sample id
+            # twice do reset_index after dropping duplicates to make sure the rows are numbered in
+            # a way that makes sense
             concat_frame = concat_frame.append(frame).drop_duplicates().reset_index(drop=True)
 
         return concat_frame
@@ -246,25 +241,111 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         db_connection.close()
 
 
-def get_all_positive_samples(samples):
+def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
+    """Get all the positive samples from mongo from a specific date.
 
-    logger.debug("Getting all positive samples")
-    # filtering using case insensitive regex to catch "Positive" and "positive"
-    results = samples.find(
-        filter=POSITIVE_SAMPLES_MONGODB_FILTER,
-        projection={
-            "_id": False,
-            FIELD_SOURCE: True,
-            FIELD_PLATE_BARCODE: True,
-            FIELD_ROOT_SAMPLE_ID: True,
-            FIELD_RESULT: True,
-            FIELD_DATE_TESTED: True,
-            FIELD_COORDINATE: True,
+    Args:
+        samples_collection (Collection): the samples collection.
+
+    Returns:
+        DataFrame: a pandas DataFrame with the positive samples.
+    """
+    logger.debug("Getting all positive samples from a specific date")
+
+    # The projection defines which fields are present in the documents from the output of the mongo
+    # query
+    projection = {
+        "_id": False,
+        FIELD_SOURCE: True,
+        FIELD_PLATE_BARCODE: True,
+        FIELD_ROOT_SAMPLE_ID: True,
+        FIELD_RESULT: True,
+        FIELD_DATE_TESTED: True,
+        FIELD_COORDINATE: True,
+    }
+
+    DATE_EXTRACTED = "extracted_date"
+    DATE_CONVERTED = "converted_date"
+    DATE_ERROR = "date_conversion_error"
+
+    # The pipeline defines stages which execute in sequence
+    pipeline = [
+        {
+            "$match": {
+                #  1. We are only interested in positive samples
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
+                # 2. We are not interested in controls
+                FIELD_ROOT_SAMPLE_ID: {"$not": {"$regex": "^CBIQA_"}},
+                # 3. Further filter the positive samples
+                # TODO: needs to align with the crawler changes
+                "$or": [
+                    {
+                        "$and": [
+                            {FIELD_CH1_CQ: {"$exists": False}},
+                            {FIELD_CH2_CQ: {"$exists": False}},
+                            {FIELD_CH3_CQ: {"$exists": False}},
+                        ],
+                    },
+                    {
+                        "$or": [
+                            {FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}},
+                            {FIELD_CH2_CQ: {"$lte": CT_VALUE_LIMIT}},
+                            {FIELD_CH3_CQ: {"$lte": CT_VALUE_LIMIT}},
+                        ],
+                    },
+                ],
+                # 4. We are only interested in documents which have a valid date
+                FIELD_DATE_TESTED: {"$exists": True, "$nin": [None, ""]},
+            }
         },
-    )
+        {
+            # 5. We then need to extract the date using substring since most dates look like this:
+            # "2020-05-10 07:30:00 UTC" but the `dateFromString` function does not handle the
+            # timezone string "UTC"
+            "$addFields": {
+                DATE_EXTRACTED: {
+                    "$substrBytes": [f"${FIELD_DATE_TESTED}", 0, 19],
+                },
+            },
+        },
+        {
+            # 6. Then add a date field which converts the extracted date string to a mongo date
+            # type using the specified format. If it cannot parse the date using the first format
+            # it tries with the other format found in the data
+            # TODO: handle the case that no format is matched
+            "$addFields": {
+                DATE_CONVERTED: {
+                    "$dateFromString": {
+                        "dateString": f"${DATE_EXTRACTED}",
+                        "format": "%Y-%m-%d %H:%M:%S",
+                        "timezone": "UTC",
+                        "onError": {
+                            "$dateFromString": {
+                                "dateString": f"${DATE_EXTRACTED}",
+                                "format": "%d/%m/%Y %H:%M",
+                                "timezone": "UTC",
+                                "onError": DATE_ERROR,
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        # 7. We only want documents which have valid dates that we can compare against
+        {"$match": {DATE_CONVERTED: {"$ne": DATE_ERROR}}},
+        # 8. Find all the document after a certain date
+        {"$match": {DATE_CONVERTED: {"$gte": report_query_window_start()}}},
+        # 9. Define which fields to have in the output documents
+        {"$project": projection},
+    ]
+
+    # Perform an aggregation using the defined pipeline - this will run through the pipeline
+    # "stages" in sequence
+    results = samples_collection.aggregate(pipeline)
 
     # converting to a dataframe to make it easy to join with data from labwhere
     positive_samples_df = pd.DataFrame.from_records(results)
+
     logger.info(f"{len(positive_samples_df.index)} positive samples")
     pretty(logger, positive_samples_df)
 
@@ -362,3 +443,15 @@ def join_samples_declarations(positive_samples):
         return results
 
     return positive_samples
+
+
+def report_query_window_start() -> datetime:
+    """Return the start date for the report window.
+
+    Returns:
+        datetime: start date for the report window
+    """
+    window_size = app.config["REPORT_WINDOW_SIZE"]
+    start = datetime.now() + timedelta(days=-window_size)
+
+    return datetime(year=start.year, month=start.month, day=start.day)

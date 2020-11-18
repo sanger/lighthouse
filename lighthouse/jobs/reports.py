@@ -3,19 +3,16 @@ import time
 
 import pandas as pd  # type: ignore
 from flask import current_app as app
-
 from lighthouse import scheduler
-from lighthouse.helpers.reports import (
-    get_new_report_name_and_path,
-    unpad_coordinate,
-    map_labware_to_location,
-    get_all_positive_samples,
-    add_cherrypicked_column,
-    get_distinct_plate_barcodes,
-    join_samples_declarations,
-)
-from lighthouse.utils import pretty
 from lighthouse.constants import FIELD_PLATE_BARCODE
+from lighthouse.helpers.reports import (
+    add_cherrypicked_column,
+    get_all_positive_samples,
+    get_distinct_plate_barcodes,
+    get_new_report_name_and_path,
+    join_samples_declarations,
+    map_labware_to_location,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +29,13 @@ def create_report() -> str:
 
     # get samples collection
     logger.debug("Getting all positive samples")
-    samples = app.data.driver.db.samples
-    positive_samples_df = get_all_positive_samples(samples)
+    samples_collection = app.data.driver.db.samples
+    positive_samples_df = get_all_positive_samples(samples_collection)
 
     logger.debug("Getting location barcodes from labwhere")
-    labware_to_location_barcode_df = map_labware_to_location(get_distinct_plate_barcodes(samples))
+    labware_to_location_barcode_df = map_labware_to_location(
+        get_distinct_plate_barcodes(samples_collection)
+    )
 
     logger.debug("Joining location data from labwhere")
     merged = positive_samples_df.merge(

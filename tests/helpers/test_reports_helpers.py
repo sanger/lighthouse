@@ -1,31 +1,31 @@
-from datetime import datetime
-from shutil import copy
 import os
+from datetime import datetime, timedelta
+from shutil import copy
+from unittest.mock import Mock, patch
 
-import pandas as pd
 import numpy as np
-from unittest.mock import patch, Mock
-
-from lighthouse.helpers.reports import (
-    get_new_report_name_and_path,
-    unpad_coordinate,
-    delete_reports,
-    get_cherrypicked_samples,
-    get_all_positive_samples,
-    map_labware_to_location,
-    add_cherrypicked_column,
-    get_distinct_plate_barcodes,
-    join_samples_declarations,
+import pandas as pd
+from lighthouse.constants import (
+    CT_VALUE_LIMIT,
+    FIELD_CH1_CQ,
+    FIELD_COORDINATE,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
 )
 from lighthouse.exceptions import ReportCreationError
-from lighthouse.constants import (
-    FIELD_COORDINATE,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RESULT,
-    FIELD_PLATE_BARCODE,
-    FIELD_SOURCE,
-    FIELD_CH1_CQ,
-    CT_VALUE_LIMIT,
+from lighthouse.helpers.reports import (
+    add_cherrypicked_column,
+    delete_reports,
+    get_all_positive_samples,
+    get_cherrypicked_samples,
+    get_distinct_plate_barcodes,
+    get_new_report_name_and_path,
+    join_samples_declarations,
+    map_labware_to_location,
+    report_query_window_start,
+    unpad_coordinate,
 )
 
 
@@ -419,3 +419,16 @@ def test_join_samples_declarations_empty_collection(app, freezer, samples_no_dec
         joined = join_samples_declarations(positive_samples)
 
         assert np.array_equal(positive_samples.to_numpy(), joined.to_numpy())
+
+
+def test_report_query_window_start(app):
+    with app.app_context():
+        window_size = app.config["REPORT_WINDOW_SIZE"]
+        start = datetime.now() + timedelta(days=-window_size)
+
+        assert report_query_window_start().year == start.year
+        assert report_query_window_start().month == start.month
+        assert report_query_window_start().day == start.day
+        assert report_query_window_start().hour == 0
+        assert report_query_window_start().minute == 0
+        assert report_query_window_start().second == 0
