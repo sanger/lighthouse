@@ -1,15 +1,14 @@
 import logging
-from lighthouse.constants import (
-    FIELD_DART_DESTINATION_BARCODE,
-    FIELD_DART_ROOT_SAMPLE_ID,
-    FIELD_DART_RNA_ID,
-    FIELD_DART_LAB_ID,
-    FIELD_DART_CONTROL,
-)
 
 import pyodbc  # type: ignore
 from flask import current_app as app
-from lighthouse.constants import FIELD_DART_DESTINATION_BARCODE
+from lighthouse.constants import (
+    FIELD_DART_CONTROL,
+    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_DART_LAB_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_ROOT_SAMPLE_ID,
+)
 
 logger = logging.getLogger(__name__)
 

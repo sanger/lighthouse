@@ -1,4 +1,3 @@
-import copy
 import logging
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
@@ -22,7 +21,7 @@ from lighthouse.constants import (
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
-    POSITIVE_SAMPLES_MONGODB_FILTER,
+    STAGE_MATCH_POSITIVE,
 )
 from lighthouse.exceptions import (
     DataError,
@@ -134,10 +133,27 @@ def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
 
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
-    query_filter = copy.deepcopy(POSITIVE_SAMPLES_MONGODB_FILTER)
-    query_filter[FIELD_PLATE_BARCODE] = plate_barcode
+    """Get a list of documents which correspond to filtered positive samples for a specific plate.
 
-    samples_for_barcode = find_samples(query_filter)
+    Args:
+        plate_barcode (str): the barcode of the plate to get samples for.
+
+    Returns:
+        Optional[List[Dict[str, Any]]]: the list of samples for this plate.
+    """
+    samples_collection = app.data.driver.db.samples
+
+    # The pipeline defines stages which execute in sequence
+    pipeline = [
+        # 1. First run the positive match stage
+        STAGE_MATCH_POSITIVE,
+        # 2. We are only interested in the samples for a particular plate
+        {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
+    ]
+
+    samples_for_barcode = list(samples_collection.aggregate(pipeline))
+
+    logger.info(f"Found {len(samples_for_barcode)} samples")
 
     return samples_for_barcode
 
@@ -209,7 +225,10 @@ def add_controls_to_samples(rows, samples):
 
 def check_matching_sample_numbers(rows, samples):
     if len(samples) != len(rows_without_controls(rows)):
-        msg = "Mismatch in data present for destination plate: number of samples in DART and Mongo does not match"
+        msg = (
+            "Mismatch in data present for destination plate: number of samples in DART and Mongo "
+            "does not match"
+        )
         logger.error(msg)
         raise UnmatchedSampleError(msg)
 

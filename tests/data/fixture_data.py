@@ -16,6 +16,7 @@ from lighthouse.constants import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DATE_TESTED,
     FIELD_LAB_ID,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
@@ -111,6 +112,7 @@ LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
     for i in range(0, MAX_SAMPLES)
 ]
 
+DATE_TESTED_NOW = datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
 SAMPLES: List[Dict[str, Any]] = [
     {  # a positive result, no Ct values
         FIELD_COORDINATE: "A01",
@@ -120,6 +122,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
         FIELD_RNA_ID: "rna_1",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  # a negative result
         FIELD_COORDINATE: "B01",
@@ -129,6 +132,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_1",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  # a void result
         FIELD_COORDINATE: "C01",
@@ -138,6 +142,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
         FIELD_RNA_ID: "rna_1",
+        FIELD_DATE_TESTED: "2020-05-10 07:30:00 UTC",
     },
     {  # a 'limit of detection' result
         FIELD_COORDINATE: "D01",
@@ -147,6 +152,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "klm",
         FIELD_ROOT_SAMPLE_ID: "MCM004",
         FIELD_RNA_ID: "rna_1",
+        FIELD_DATE_TESTED: "2020-05-10 07:30:00 UTC",
     },
     {  #  positive, with low Ct values
         FIELD_COORDINATE: "E01",
@@ -159,6 +165,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: 6.12345678,
         FIELD_CH3_CQ: 7.12345678,
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  #  positive, with high Ct values
         FIELD_COORDINATE: "F01",
@@ -171,6 +178,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 40.12345678,
         FIELD_CH2_CQ: 41.12345678,
         FIELD_CH3_CQ: 42.12345678,
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  #  positive, with mix of Ct values
         FIELD_COORDINATE: "G01",
@@ -183,6 +191,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: None,
         FIELD_CH3_CQ: 45.12345678,
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  #  positive, with disallowed Root Sample ID
         FIELD_COORDINATE: "A02",
@@ -192,6 +201,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "wxy",
         FIELD_ROOT_SAMPLE_ID: "CBIQA_MCM008",
         FIELD_RNA_ID: "rna_1",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
 ]
 
@@ -205,6 +215,7 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
         FIELD_ROOT_SAMPLE_ID: "MCM001",
         FIELD_RNA_ID: "rna_1",
         FIELD_LAB_ID: "Lab 1",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {
         FIELD_COORDINATE: "A01",
@@ -215,6 +226,7 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_2",
         FIELD_LAB_ID: "Lab 2",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
 ]
 
@@ -268,6 +280,7 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {
         FIELD_COORDINATE: "B01",
@@ -276,6 +289,7 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {
         FIELD_COORDINATE: "C01",
@@ -284,6 +298,7 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {
         FIELD_COORDINATE: "D01",
@@ -292,6 +307,7 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM010",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
 ]
 

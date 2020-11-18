@@ -12,21 +12,18 @@ import requests
 import sqlalchemy  # type: ignore
 from flask import current_app as app
 from lighthouse.constants import (
-    CT_VALUE_LIMIT,
-    FIELD_CH1_CQ,
-    FIELD_CH2_CQ,
-    FIELD_CH3_CQ,
     FIELD_COORDINATE,
     FIELD_DATE_TESTED,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
+    STAGE_MATCH_POSITIVE,
 )
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.utils import pretty
 from pandas import DataFrame
-from pymongo.collection import Collection
+from pymongo.collection import Collection  # type: ignore
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
@@ -270,36 +267,10 @@ def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
 
     # The pipeline defines stages which execute in sequence
     pipeline = [
+        # 1. First run the positive match stage
+        STAGE_MATCH_POSITIVE,
         {
-            "$match": {
-                #  1. We are only interested in positive samples
-                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
-                # 2. We are not interested in controls
-                FIELD_ROOT_SAMPLE_ID: {"$not": {"$regex": "^CBIQA_"}},
-                # 3. Further filter the positive samples
-                # TODO: needs to align with the crawler changes
-                "$or": [
-                    {
-                        "$and": [
-                            {FIELD_CH1_CQ: {"$exists": False}},
-                            {FIELD_CH2_CQ: {"$exists": False}},
-                            {FIELD_CH3_CQ: {"$exists": False}},
-                        ],
-                    },
-                    {
-                        "$or": [
-                            {FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}},
-                            {FIELD_CH2_CQ: {"$lte": CT_VALUE_LIMIT}},
-                            {FIELD_CH3_CQ: {"$lte": CT_VALUE_LIMIT}},
-                        ],
-                    },
-                ],
-                # 4. We are only interested in documents which have a valid date
-                FIELD_DATE_TESTED: {"$exists": True, "$nin": [None, ""]},
-            }
-        },
-        {
-            # 5. We then need to extract the date using substring since most dates look like this:
+            # 2. We then need to extract the date using substring since most dates look like this:
             # "2020-05-10 07:30:00 UTC" but the `dateFromString` function does not handle the
             # timezone string "UTC"
             "$addFields": {
@@ -309,7 +280,7 @@ def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
             },
         },
         {
-            # 6. Then add a date field which converts the extracted date string to a mongo date
+            # 3. Then add a date field which converts the extracted date string to a mongo date
             # type using the specified format. If it cannot parse the date using the first format
             # it tries with the other format found in the data
             # TODO: handle the case that no format is matched
@@ -331,11 +302,11 @@ def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
                 },
             },
         },
-        # 7. We only want documents which have valid dates that we can compare against
+        # 4. We only want documents which have valid dates that we can compare against
         {"$match": {DATE_CONVERTED: {"$ne": DATE_ERROR}}},
-        # 8. Find all the document after a certain date
+        # 5. Find all the document after a certain date
         {"$match": {DATE_CONVERTED: {"$gte": report_query_window_start()}}},
-        # 9. Define which fields to have in the output documents
+        # 6. Define which fields to have in the output documents
         {"$project": projection},
     ]
 
