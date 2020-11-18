@@ -11,10 +11,15 @@ import pandas as pd  # type: ignore
 import requests
 import sqlalchemy  # type: ignore
 from flask import current_app as app
-from lighthouse.constants import (FIELD_COORDINATE, FIELD_DATE_TESTED,
-                                  FIELD_PLATE_BARCODE, FIELD_RESULT,
-                                  FIELD_ROOT_SAMPLE_ID, FIELD_SOURCE,
-                                  STAGE_MATCH_POSITIVE)
+from lighthouse.constants import (
+    FIELD_COORDINATE,
+    FIELD_DATE_TESTED,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
+    STAGE_MATCH_POSITIVE,
+)
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.utils import pretty
 from pandas import DataFrame
