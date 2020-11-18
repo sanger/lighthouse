@@ -34,6 +34,10 @@ JOBS = [
         "hour": 2,
     }
 ]
+
+
+# We need to define timezone because current flask_apscheduler does not load from TZ env
+SCHEDULER_TIMEZONE = "Europe/London"
 SCHEDULER_API_ENABLED = False
 
 # Eve config
@@ -111,3 +115,6 @@ LOGGING: Dict[str, Any] = {
         "lighthouse": {"handlers": ["console", "slack"], "level": "INFO", "propagate": True}
     },
 }
+
+DART_RESULT_VIEW = "CherrypickingInfo"
+BARACODA_RETRY_ATTEMPTS = 3

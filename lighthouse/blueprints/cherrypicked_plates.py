@@ -4,40 +4,66 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
-from lighthouse.constants import FIELD_PLATE_BARCODE
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
-    create_post_body,
-    get_positive_samples,
+    create_cherrypicked_post_body,
+    find_dart_source_samples_rows,
+    find_samples,
+    join_rows_with_samples,
+    map_to_ss_columns,
+    check_matching_sample_numbers,
+    add_controls_to_samples,
+    query_for_cherrypicked_samples,
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
 )
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint("plates", __name__)
+bp = Blueprint("cherrypicked-plates", __name__)
 CORS(bp)
 
 
-@bp.route("/plates/new", methods=["POST"])
+@bp.route("/cherrypicked-plates/create", methods=["GET"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
+
     try:
-        barcode = request.get_json()["barcode"]
+        barcode = request.args.get("barcode", "")
+        if len(barcode) == 0:
+            return invalid_url_error()
         logger.info(f"Attempting to create a plate in SS from barcode: {barcode}")
     except (KeyError, TypeError) as e:
         logger.exception(e)
-        return {"errors": ["POST request needs 'barcode' in body"]}, HTTPStatus.BAD_REQUEST
+        return invalid_url_error()
 
     try:
-        # get samples for barcode
-        samples = get_positive_samples(barcode)
+        dart_samples = find_dart_source_samples_rows(barcode)
+        if len(dart_samples) == 0:
+            msg = "Failed to find sample data in DART for plate barcode: " + barcode
+            logger.error(msg)
+            return ({"errors": [msg]}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
-        if not samples:
+        mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
+
+        if not mongo_samples:
             return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
+
+        try:
+            check_matching_sample_numbers(dart_samples, mongo_samples)
+        except (Exception) as e:
+            logger.exception(e)
+            return (
+                {
+                    "errors": [
+                        "Mismatch in destination and source sample data for plate: " + barcode
+                    ]
+                },
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
 
         # add COG barcodes to samples
         try:
-            centre_prefix = add_cog_barcodes(samples)
+            centre_prefix = add_cog_barcodes(mongo_samples)
         except (Exception) as e:
             logger.exception(e)
             return (
@@ -45,21 +71,27 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 HTTPStatus.BAD_REQUEST,
             )
 
-        body = create_post_body(barcode, samples)
+        samples = join_rows_with_samples(dart_samples, mongo_samples)
+
+        all_samples = add_controls_to_samples(dart_samples, samples)
+
+        mapped_samples = map_to_ss_columns(all_samples)
+
+        body = create_cherrypicked_post_body(barcode, mapped_samples)
 
         response = send_to_ss(body)
 
         if response.ok:
             response_json = {
                 "data": {
-                    "plate_barcode": samples[0][FIELD_PLATE_BARCODE],
+                    "plate_barcode": barcode,
                     "centre": centre_prefix,
                     "number_of_positives": len(samples),
                 }
             }
 
             try:
-                update_mlwh_with_cog_uk_ids(samples)
+                update_mlwh_with_cog_uk_ids(mongo_samples)
             except (Exception) as e:
                 logger.exception(e)
                 return (
@@ -81,3 +113,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     except Exception as e:
         logger.exception(e)
         return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+def invalid_url_error():
+    return {"errors": ["GET request needs 'barcode' in url"]}, HTTPStatus.BAD_REQUEST

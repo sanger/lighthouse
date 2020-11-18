@@ -4,11 +4,8 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
-
-from lighthouse.helpers.reports import get_reports_details, delete_reports
+from lighthouse.helpers.reports import delete_reports, get_reports_details
 from lighthouse.jobs.reports import create_report
-
-import json
 
 logger = logging.getLogger(__name__)
 

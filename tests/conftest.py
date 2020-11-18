@@ -22,11 +22,13 @@ from .data.fixture_data import (
     MLWH_LH_SAMPLES_MULTIPLE,
     SAMPLES_CT_VALUES,
     SAMPLES_DIFFERENT_PLATES,
+    DART_MONGO_MERGED_SAMPLES,
+    SAMPLES_WITH_LAB_ID,
     EVENT_WH_DATA,
     MLWH_SAMPLE_STOCK_RESOURCE,
 )
-
 from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
+from lighthouse.helpers.dart_db import create_dart_connection, load_sql_server_script
 
 
 @pytest.fixture
@@ -324,6 +326,48 @@ def mlwh_sql_engine(app):
     return create_mysql_connection_engine(
         app.config["WAREHOUSES_RW_CONN_STRING"], app.config["ML_WH_DB"]
     )
+
+
+@pytest.fixture
+def dart_connection(app):
+    return create_dart_connection(app)
+
+
+@pytest.fixture
+def dart_schema_create(app):
+    with app.app_context():
+        load_sql_server_script(app, "tests/data/dart/schema.sql")
+
+
+@pytest.fixture
+def dart_seed_reset(app, dart_schema_create):
+    with app.app_context():
+        load_sql_server_script(app, "tests/data/dart/seed.sql")
+
+
+@pytest.fixture
+def dart_samples_for_bp_test(app, dart_schema_create):
+    with app.app_context():
+        load_sql_server_script(app, "tests/data/dart/seed_for_bp_test.sql")
+
+
+@pytest.fixture
+def dart_mongo_merged_samples():
+    return DART_MONGO_MERGED_SAMPLES
+
+
+@pytest.fixture
+def samples_with_lab_id(app):
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        _ = samples_collection.insert_many(SAMPLES_WITH_LAB_ID)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SAMPLES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
 
 
 @pytest.fixture

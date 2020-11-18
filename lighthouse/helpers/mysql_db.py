@@ -1,8 +1,6 @@
-from typing import Any, Dict, List, Optional
-
 import sqlalchemy  # type: ignore
-from sqlalchemy.engine.base import Engine  # type: ignore
 from sqlalchemy import MetaData  # type: ignore
+from sqlalchemy.engine.base import Engine  # type: ignore
 
 
 def create_mysql_connection_engine(connection_string: str, database: str) -> Engine:
