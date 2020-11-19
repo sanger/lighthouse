@@ -23,6 +23,7 @@ def get_samples_for_barcode(cnxn, barcode):
     cursor.execute(
         f"SELECT * FROM {app.config['DART_RESULT_VIEW']}"
         f" WHERE [{FIELD_DART_DESTINATION_BARCODE}]='{barcode}'"
+        f" AND (([{FIELD_DART_SAMPLE_UUID}] IS NOT NULL"
         f" AND (([{FIELD_DART_ROOT_SAMPLE_ID}] IS NOT NULL"
         f" AND [{FIELD_DART_RNA_ID}] IS NOT NULL"
         f" AND [{FIELD_DART_LAB_ID}] IS NOT NULL)"
