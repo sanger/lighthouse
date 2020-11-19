@@ -5,7 +5,7 @@ from lighthouse.constants import (
     FIELD_DART_RNA_ID,
     FIELD_DART_LAB_ID,
     FIELD_DART_CONTROL,
-    FIELD_DART_SAMPLE_UUID
+    FIELD_DART_SAMPLE_UUID,
 )
 
 import pyodbc  # type: ignore

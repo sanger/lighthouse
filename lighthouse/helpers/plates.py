@@ -16,6 +16,7 @@ from lighthouse.constants import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DART_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
@@ -405,6 +406,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
 
+            mapped_sample["replace_uuid"] = dart_row[FIELD_DART_SAMPLE_UUID]
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
             mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
         except KeyError as e:
