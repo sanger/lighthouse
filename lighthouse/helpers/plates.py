@@ -125,7 +125,7 @@ def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
-def count_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+def count_samples(query: Dict[str, Any]) -> int:
     samples = app.data.driver.db.samples
 
     return samples.count_documents(query)
