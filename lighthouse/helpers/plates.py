@@ -1,3 +1,4 @@
+import copy
 import logging
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
@@ -21,6 +22,7 @@ from lighthouse.constants import (
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
+    POSITIVE_SAMPLES_MONGODB_FILTER,
     STAGE_MATCH_POSITIVE,
 )
 from lighthouse.exceptions import (
