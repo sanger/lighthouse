@@ -22,7 +22,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
             status=HTTPStatus.OK,
         )
         response = client.get(
-            "/cherrypicked-plates/create?barcode=plate_1",
+            "/cherrypicked-plates/create?barcode=plate_1&robot=robot_1",
             content_type="application/json",
         )
 
@@ -33,7 +33,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
 
 
 def test_get_cherrypicked_plates_endpoint_no_barcode_in_request(
-    app, client, dart_samples_for_bp_test, samples_with_lab_id
+    app, client, samples_with_lab_id
 ):
     response = client.get(
         "/cherrypicked-plates/create",
@@ -44,13 +44,16 @@ def test_get_cherrypicked_plates_endpoint_no_barcode_in_request(
     assert response.json == {"errors": ["GET request needs 'barcode' in url"]}
 
 
-def test_get_cherrypicked_plates_endpoint_no_positive_samples(app, client):
+def test_get_cherrypicked_plates_endpoint_no_robot_number_in_request(
+    app, client, samples_with_lab_id
+):
     response = client.get(
         "/cherrypicked-plates/create?barcode=plate_1",
         content_type="application/json",
     )
+
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": ["No samples for this barcode: plate_1"]}
+    assert response.json == {"errors": ["GET request needs 'robot' in url"]}
 
 
 def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
@@ -65,7 +68,7 @@ def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
     )
 
     response = client.get(
-        "/cherrypicked-plates/create?barcode=plate_1",
+        "/cherrypicked-plates/create?barcode=plate_1&robot=robot_1",
         content_type="application/json",
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -90,7 +93,7 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
         )
 
         response = client.get(
-            "/cherrypicked-plates/create?barcode=plate_1",
+            "/cherrypicked-plates/create?barcode=plate_1&robot=robot_1",
             content_type="application/json",
         )
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -119,7 +122,7 @@ def test_get_cherrypicked_plates_mlwh_update_failure(
             )
 
             response = client.get(
-                "/cherrypicked-plates/create?barcode=plate_1",
+                "/cherrypicked-plates/create?barcode=plate_1&robot=robot_1",
                 content_type="application/json",
             )
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -146,7 +149,7 @@ def test_post_plates_endpoint_mismatched_sample_numbers(
         ):
             barcode = "plate_1"
             response = client.get(
-                "/cherrypicked-plates/create?barcode=plate_1",
+                "/cherrypicked-plates/create?barcode=plate_1&robot=robot_1",
                 content_type="application/json",
             )
 
@@ -163,7 +166,7 @@ def test_post_plates_endpoint_missing_dart_data(app, client):
     ):
         barcode = "plate_1"
         response = client.get(
-            "/cherrypicked-plates/create?barcode=plate_1",
+            "/cherrypicked-plates/create?barcode=plate_1&robot=robot_1",
             content_type="application/json",
         )
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

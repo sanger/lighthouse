@@ -30,7 +30,12 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
     try:
         barcode = request.args.get("barcode", "")
         if len(barcode) == 0:
-            return invalid_url_error()
+            return missing_barcode_url_error()
+
+        robot_serial_number = request.args.get("robot", "")
+        if len(robot_serial_number) == 0:
+            return missing_robot_number_url_error()
+
         logger.info(f"Attempting to create a plate in SS from barcode: {barcode}")
     except (KeyError, TypeError) as e:
         logger.exception(e)
@@ -114,6 +119,12 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         logger.exception(e)
         return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
 
-
 def invalid_url_error():
+    return {"errors": ["Missing/invalid query parameters in url"]}, HTTPStatus.BAD_REQUEST
+
+def missing_barcode_url_error():
     return {"errors": ["GET request needs 'barcode' in url"]}, HTTPStatus.BAD_REQUEST
+
+
+def missing_robot_number_url_error():
+    return {"errors": ["GET request needs 'robot' in url"]}, HTTPStatus.BAD_REQUEST
