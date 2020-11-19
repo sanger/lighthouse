@@ -6,7 +6,7 @@ on:
       - "README.md"
 
 jobs:
-  build_and_test_job:
+  test_job:
     runs-on: ubuntu-18.04
     services:
       mongodb:
