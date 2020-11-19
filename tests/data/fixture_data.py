@@ -1,19 +1,30 @@
-from typing import Dict, List, Any
+from copy import copy
 from datetime import datetime
+from typing import Any, Dict, List
+
 from lighthouse.constants import (
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RNA_ID,
-    FIELD_RESULT,
-    FIELD_COG_BARCODE,
-    FIELD_COORDINATE,
-    FIELD_SOURCE,
-    FIELD_PLATE_BARCODE,
     FIELD_CH1_CQ,
     FIELD_CH2_CQ,
     FIELD_CH3_CQ,
-    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_RNA_ID,
+    FIELD_COG_BARCODE,
+    FIELD_COORDINATE,
+    FIELD_DART_CONTROL,
+    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_LAB_ID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_ROOT_SAMPLE_ID,
+    FIELD_DART_SOURCE_BARCODE,
+    FIELD_DART_SOURCE_COORDINATE,
+    FIELD_LAB_ID,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_RNA_ID,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
     MLWH_LH_SAMPLE_RESULT,
+    MLWH_LH_SAMPLE_RNA_ID,
+    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
 
 CENTRES: List[Dict[str, str]] = [
@@ -193,6 +204,7 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
         FIELD_RNA_ID: "rna_1",
+        FIELD_LAB_ID: "Lab 1",
     },
     {
         FIELD_COORDINATE: "A01",
@@ -202,6 +214,7 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_2",
+        FIELD_LAB_ID: "Lab 2",
     },
 ]
 
@@ -306,7 +319,7 @@ SAMPLES_FOR_MLWH_UPDATE: List[Dict[str, str]] = [
 ]
 
 # this matches the positive sample in SAMPLES
-MLWH_SEED_SAMPLES: List[Dict[str, str]] = [
+MLWH_LH_SAMPLES: List[Dict[str, str]] = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "MCM001",
         MLWH_LH_SAMPLE_RNA_ID: "rna_1",
@@ -331,7 +344,7 @@ MLWH_SEED_SAMPLES: List[Dict[str, str]] = [
 
 # more complex scenario for the mlwh-related tests
 # two of the samples share a root sample id and result
-MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
+MLWH_LH_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "root_1",
         MLWH_LH_SAMPLE_RNA_ID: "rna_1",
@@ -348,3 +361,174 @@ MLWH_SEED_SAMPLES_MULTIPLE: List[Dict[str, str]] = [
         MLWH_LH_SAMPLE_RESULT: "Positive",
     },
 ]
+
+DART_MONGO_MERGED_SAMPLES: List[Dict[str, Any]] = [
+    {  # Control sample
+        "sample": None,
+        "row": {
+            FIELD_DART_DESTINATION_COORDINATE: "B01",
+            FIELD_DART_DESTINATION_BARCODE: "d123",
+            FIELD_DART_CONTROL: "positive",
+            FIELD_DART_SOURCE_BARCODE: "123",
+            FIELD_DART_SOURCE_COORDINATE: "A01",
+            FIELD_DART_ROOT_SAMPLE_ID: "",
+            FIELD_DART_RNA_ID: "",
+            FIELD_DART_LAB_ID: "",
+        },
+    },
+    {  # Non-control sample
+        "sample": {
+            FIELD_COORDINATE: "A02",
+            FIELD_SOURCE: "test2",
+            FIELD_RESULT: "Positive",
+            FIELD_PLATE_BARCODE: "1234",
+            FIELD_COG_BARCODE: "abcd",
+            FIELD_ROOT_SAMPLE_ID: "MCM002",
+            FIELD_RNA_ID: "rna_2",
+        },
+        "row": {
+            FIELD_DART_DESTINATION_COORDINATE: "B02",
+            FIELD_DART_DESTINATION_BARCODE: "d123",
+            FIELD_DART_CONTROL: "",
+            FIELD_DART_SOURCE_BARCODE: "1234",
+            FIELD_DART_SOURCE_COORDINATE: "A02",
+            FIELD_DART_ROOT_SAMPLE_ID: "MCM002",
+            FIELD_DART_RNA_ID: "rna_2",
+            FIELD_DART_LAB_ID: "AB",
+        },
+    },
+]
+
+
+def inject_lab_id(sample, lab_id):
+    sample_copy = copy(sample)
+    sample_copy[FIELD_LAB_ID] = lab_id
+    return sample_copy
+
+
+SAMPLES_WITH_LAB_ID = [inject_lab_id(sample, "Lab 1") for sample in SAMPLES]
+MLWH_SAMPLE_STOCK_RESOURCE: Dict[str, Any] = {
+    "sample": [
+        {
+            "id_sample_tmp": "1",
+            "id_sample_lims": "1",
+            "description": "root_1",
+            "supplier_name": "cog_uk_id_1",
+            "phenotype": "positive",
+            "sanger_sample_id": "ss1",
+            "id_lims": "SQSCP",
+            "last_updated": "2015-11-25 11:35:30",
+            "recorded_at": "2015-11-25 11:35:30",
+            "created": "2015-11-25 11:35:30",
+        },
+        {
+            "id_sample_tmp": "2",
+            "id_sample_lims": "2",
+            "description": "root_2",
+            "supplier_name": "cog_uk_id_2",
+            "phenotype": "positive",
+            "sanger_sample_id": "ss2",
+            "id_lims": "SQSCP",
+            "last_updated": "2015-11-25 11:35:30",
+            "recorded_at": "2015-11-25 11:35:30",
+            "created": "2015-11-25 11:35:30",
+        },
+        {
+            "id_sample_tmp": "3",
+            "id_sample_lims": "3",
+            "description": "root_1",
+            "supplier_name": "cog_uk_id_3",
+            "phenotype": "positive",
+            "sanger_sample_id": "ss3",
+            "id_lims": "SQSCP",
+            "last_updated": "2015-11-25 11:35:30",
+            "recorded_at": "2015-11-25 11:35:30",
+            "created": "2015-11-25 11:35:30",
+        },
+    ],
+    "stock_resource": [
+        {
+            "id_stock_resource_tmp": "1",
+            "id_sample_tmp": "1",
+            "labware_human_barcode": "pb_1",
+            "labware_machine_barcode": "pb_1",
+            "labware_coordinate": "A1",
+            "last_updated": "2015-11-25 11:35:30",
+            "recorded_at": "2015-11-25 11:35:30",
+            "created": "2015-11-25 11:35:30",
+            "id_study_tmp": "1",
+            "id_lims": "SQSCP",
+            "id_stock_resource_lims": "1",
+            "labware_type": "well",
+        },
+        {
+            "id_stock_resource_tmp": "2",
+            "id_sample_tmp": "2",
+            "labware_human_barcode": "pb_2",
+            "labware_machine_barcode": "pb_2",
+            "labware_coordinate": "A1",
+            "last_updated": "2015-11-25 11:35:30",
+            "recorded_at": "2015-11-25 11:35:30",
+            "created": "2015-11-25 11:35:30",
+            "id_study_tmp": "1",
+            "id_lims": "SQSCP",
+            "id_stock_resource_lims": "2",
+            "labware_type": "well",
+        },
+        {
+            "id_stock_resource_tmp": "3",
+            "id_sample_tmp": "3",
+            "labware_human_barcode": "pb_3",
+            "labware_machine_barcode": "pb_3",
+            "labware_coordinate": "A1",
+            "last_updated": "2015-11-25 11:35:30",
+            "recorded_at": "2015-11-25 11:35:30",
+            "created": "2015-11-25 11:35:30",
+            "id_study_tmp": "1",
+            "id_lims": "SQSCP",
+            "id_stock_resource_lims": "3",
+            "labware_type": "well",
+        },
+    ],
+    "study": [
+        {
+            "id_study_tmp": "1",
+            "last_updated": "2015-11-25 11:35:30",
+            "recorded_at": "2015-11-25 11:35:30",
+            "id_study_lims": "1",
+            "id_lims": "SQSCP",
+        }
+    ],
+}
+
+EVENT_WH_DATA: Dict[str, Any] = {
+    "subjects": [
+        {"id": 1, "uuid": "1".encode("utf-8"), "friendly_name": "ss1", "subject_type_id": 1},
+        {"id": 2, "uuid": "2".encode("utf-8"), "friendly_name": "ss2", "subject_type_id": 1},
+    ],
+    "roles": [
+        {"id": 1, "event_id": 1, "subject_id": 1, "role_type_id": 1},
+        {"id": 2, "event_id": 2, "subject_id": 2, "role_type_id": 1},
+    ],
+    "events": [
+        {
+            "id": 1,
+            "lims_id": "SQSCP",
+            "uuid": "1".encode("utf-8"),
+            "event_type_id": 1,
+            "occured_at": "2015-11-25 11:35:30",
+            "user_identifier": "test@example.com",
+        },
+        {
+            "id": 2,
+            "lims_id": "SQSCP",
+            "uuid": "2".encode("utf-8"),
+            "event_type_id": 1,
+            "occured_at": "2015-11-25 11:35:30",
+            "user_identifier": "test@example.com",
+        },
+    ],
+    "event_types": [{"id": 1, "key": "cherrypick_layout_set", "description": "stuff"}],
+    "subject_types": [{"id": 1, "key": "sample", "description": "stuff"}],
+    "role_types": [{"id": 1, "key": "sample", "description": "stuff"}],
+}

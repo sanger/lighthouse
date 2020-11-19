@@ -1,14 +1,17 @@
 from http import HTTPStatus
 from unittest.mock import patch
-import pandas as pd
 
-from lighthouse.constants import FIELD_ROOT_SAMPLE_ID
+import pandas as pd
+from lighthouse.constants import FIELD_COORDINATE, FIELD_PLATE_BARCODE, FIELD_ROOT_SAMPLE_ID
 
 
 def test_create_report(client, samples, samples_declarations, labwhere_samples_simple):
     with patch(
         "lighthouse.helpers.reports.get_cherrypicked_samples",
-        return_value=pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID]),
+        return_value=pd.DataFrame(
+            [["MCM001", "pb_1", "Positive", "A1"]],
+            columns=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE],
+        ),
     ):
         response = client.post(
             "/reports/new",

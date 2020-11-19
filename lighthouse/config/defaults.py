@@ -8,6 +8,8 @@ SS_URL = "localhost:3000"
 LABWHERE_URL = "localhost:3010"
 SS_UUID_PLATE_PURPOSE = ""
 SS_UUID_STUDY = ""
+SS_UUID_PLATE_PURPOSE_CHERRYPICKED = ""
+SS_UUID_STUDY_CHERRYPICKED = ""
 REPORTS_DIR = "data/reports"
 DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
 SS_HOST = "localhost:3000"
@@ -25,6 +27,10 @@ JOBS = [
         "hour": 2,
     }
 ]
+
+
+# We need to define timezone because current flask_apscheduler does not load from TZ env
+SCHEDULER_TIMEZONE = "Europe/London"
 SCHEDULER_API_ENABLED = False
 
 # Eve config
@@ -79,7 +85,7 @@ LOGGING: Dict[str, Any] = {
     "formatters": {
         "colored": {
             "()": "colorlog.ColoredFormatter",
-            "format": "%(asctime)-15s %(name)-18s:%(lineno)s %(log_color)s%(levelname)-5s %(message)s",
+            "format": "%(asctime)-15s %(name)-18s:%(lineno)s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
         },
         "verbose": {"format": "%(asctime)-15s %(name)-18s:%(lineno)s %(levelname)-5s %(message)s"},
     },
@@ -103,8 +109,11 @@ LOGGING: Dict[str, Any] = {
     },
 }
 
-MLWH_CONN_STRING = "root@localhost"
+WAREHOUSES_RO_CONN_STRING = "root@localhost"
 EVENTS_WH_DB = "events_wh_db"
 
-MLWH_RW_CONN_STRING = "root:root@localhost"
+WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
+
+DART_RESULT_VIEW = "CherrypickingInfo"
+BARACODA_RETRY_ATTEMPTS = 3

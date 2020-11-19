@@ -4,19 +4,16 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
-
+from lighthouse.constants import FIELD_PLATE_BARCODE
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_post_body,
-    get_samples,
-    send_to_ss,
     get_positive_samples,
     has_sample_data,
     count_positive_samples,
+    send_to_ss,
     update_mlwh_with_cog_uk_ids,
 )
-
-from lighthouse.constants import FIELD_PLATE_BARCODE
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +67,10 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 return (
                     {
                         "errors": [
-                            "Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."
+                            (
+                                "Failed to update MLWH with COG UK ids. The samples should have "
+                                "been successfully inserted into Sequencescape."
+                            )
                         ]
                     },
                     HTTPStatus.INTERNAL_SERVER_ERROR,

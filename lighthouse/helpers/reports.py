@@ -3,36 +3,30 @@ import math
 import os
 import pathlib
 import re
-import requests
-import pandas as pd  # type: ignore
+from datetime import datetime
+from http import HTTPStatus
+from typing import Dict, List, Tuple
 
-import pymysql
+import pandas as pd  # type: ignore
+import requests
 
 # we only need the create_engine method
 # but that can't be mocked
 # can't seem to mock it at the top because
 # it is outside the app context
 import sqlalchemy  # type: ignore
-
-from datetime import datetime
-from typing import Dict, List, Tuple
-from http import HTTPStatus
-
-from lighthouse.exceptions import ReportCreationError
-from lighthouse.utils import pretty
-
 from flask import current_app as app
-
 from lighthouse.constants import (
-    FIELD_SOURCE,
-    FIELD_PLATE_BARCODE,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RESULT,
-    FIELD_DATE_TESTED,
     FIELD_COORDINATE,
-    CT_VALUE_LIMIT,
+    FIELD_DATE_TESTED,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
     POSITIVE_SAMPLES_MONGODB_FILTER,
 )
+from lighthouse.exceptions import ReportCreationError
+from lighthouse.utils import pretty
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
@@ -127,7 +121,7 @@ def get_new_report_name_and_path() -> Tuple[str, pathlib.PurePath]:
     return report_name, report_path
 
 
-# Stip any leading zeros from the coordinate
+# Strip any leading zeros from the coordinate
 # eg. A01 => A1
 def unpad_coordinate(coordinate):
     return (
@@ -186,7 +180,9 @@ def get_locations_from_labwhere(labware_barcodes):
 
 def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
-    # Returns dataframe with 1 column, 'Root Sample ID', containing Root Sample ID of those that have been cherrypicked
+    # Returns dataframe with 4 columns: those needed to uniquely identify the sample
+    # resulting dataframe only contains those samples that have been cherrypicked
+    # (= those that have an entry for the relevant event type in the event warehouse)
     # TODO: move into external method.
 
     try:
@@ -194,12 +190,12 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         concat_frame = pd.DataFrame()
 
         chunk_root_sample_ids = [
-            root_sample_ids[x : (x + chunk_size)]
+            root_sample_ids[x : (x + chunk_size)]  # noqa: E203
             for x in range(0, len(root_sample_ids), chunk_size)
         ]
 
         sql_engine = sqlalchemy.create_engine(
-            f"mysql+pymysql://{app.config['MLWH_CONN_STRING']}", pool_recycle=3600
+            f"mysql+pymysql://{app.config['WAREHOUSES_RO_CONN_STRING']}", pool_recycle=3600
         )
         db_connection = sql_engine.connect()
 
@@ -207,20 +203,21 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         events_wh_db = app.config["EVENTS_WH_DB"]
 
         for chunk_root_sample_id in chunk_root_sample_ids:
-
             sql = (
-                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`"
+                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"  # noqa: E501
+                f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"  # noqa: E501
                 f" FROM {ml_wh_db}.sample as mlwh_sample"
-                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
-                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
-                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
-                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
-                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"  # noqa: E501
+                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"  # noqa: E501
+                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"  # noqa: E501
+                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"  # noqa: E501
+                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"  # noqa: E501
                 f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
                 f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
-                " GROUP BY mlwh_sample.description"
+                " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"  # noqa: E501
             )
+
             frame = pd.read_sql(
                 sql,
                 db_connection,
@@ -230,7 +227,11 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 },
             )
 
-            concat_frame = concat_frame.append(frame)
+            # drop_duplicates is needed because the same 'root sample id' could pop up in two
+            # different batches, and then it would retrieve the same rows for that root sample id
+            # twice do reset_index after dropping duplicates to make sure the rows are numbered in
+            # a way that makes sense
+            concat_frame = concat_frame.append(frame).drop_duplicates().reset_index(drop=True)
 
         return concat_frame
     except Exception as e:
@@ -282,10 +283,23 @@ def add_cherrypicked_column(existing_dataframe):
     cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids, plate_barcodes)
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
+    logger.info(f"{len(cherrypicked_samples_df.index)} cherrypicked samples")
+
+    # The result value in the phenotype in MLWH.sample is all lowercase,
+    # because it is converted in create_post_body in helpers/plates.py,
+    # whereas in the original data in MongoDB and MLWH.lighthouse_sample it is capitalised
+    existing_dataframe["Result_lower"] = existing_dataframe["Result"].str.lower()
+
     existing_dataframe = existing_dataframe.merge(
-        cherrypicked_samples_df, how="left", on=FIELD_ROOT_SAMPLE_ID
+        cherrypicked_samples_df,
+        how="left",
+        on=[FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE],
     )
+    # Fill any empty cells for the column with 'No' (those that do not have cherrypicking events)
     existing_dataframe = existing_dataframe.fillna({"LIMS submission": "No"})
+
+    # remove the extra column we merged on as no longer needed
+    existing_dataframe = existing_dataframe.drop(columns=["Result_lower"])
 
     return existing_dataframe
 
