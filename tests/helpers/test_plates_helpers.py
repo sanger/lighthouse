@@ -42,6 +42,7 @@ from lighthouse.helpers.plates import (
     get_centre_prefix,
     get_cherrypicked_samples_records,
     get_positive_samples,
+    count_positive_samples,
     get_samples,
     join_rows_with_samples,
     map_to_ss_columns,
@@ -279,6 +280,16 @@ def test_get_positive_samples(app, samples):
 def test_get_positive_samples_different_plates(app, samples_different_plates):
     with app.app_context():
         assert len(get_positive_samples("123")) == 1
+
+
+def test_count_positive_samples(app, samples):
+    with app.app_context():
+        assert count_positive_samples("123") == 3
+
+
+def test_count_positive_samples_different_plates(app, samples_different_plates):
+    with app.app_context():
+        assert count_positive_samples("123") == 1
 
 
 def test_update_mlwh_with_cog_uk_ids(
