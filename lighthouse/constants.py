@@ -1,5 +1,5 @@
-import re
 import os
+import re
 
 DUPLICATE_SAMPLES = "DuplicateSamples"
 NON_EXISTING_SAMPLE = "NonExistingSample"
@@ -37,8 +37,40 @@ MLWH_LH_SAMPLE_COG_UK_ID = "cog_uk_id"
 MLWH_LH_SAMPLE_RNA_ID = "rna_id"
 MLWH_LH_SAMPLE_RESULT = "result"
 
+# Used for filtering positive results
 CT_VALUE_LIMIT = 30
 
+# Stage for mongo aggregation pipeline
+STAGE_MATCH_POSITIVE = {
+    "$match": {
+        #  1. We are only interested in positive samples
+        FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
+        # 2. We are not interested in controls
+        FIELD_ROOT_SAMPLE_ID: {"$not": {"$regex": "^CBIQA_"}},
+        # 3. Further filter the positive samples
+        # TODO: needs to align with the crawler changes
+        "$or": [
+            {
+                "$and": [
+                    {FIELD_CH1_CQ: {"$exists": False}},
+                    {FIELD_CH2_CQ: {"$exists": False}},
+                    {FIELD_CH3_CQ: {"$exists": False}},
+                ],
+            },
+            {
+                "$or": [
+                    {FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}},
+                    {FIELD_CH2_CQ: {"$lte": CT_VALUE_LIMIT}},
+                    {FIELD_CH3_CQ: {"$lte": CT_VALUE_LIMIT}},
+                ],
+            },
+        ],
+        # 4. We are only interested in documents which have a valid date
+        FIELD_DATE_TESTED: {"$exists": True, "$nin": [None, ""]},
+    }
+}
+
+# TODO: use the stage above and an aggregate intead
 POSITIVE_SAMPLES_MONGODB_FILTER = {
     FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
     FIELD_ROOT_SAMPLE_ID: {"$not": re.compile("^CBIQA_")},

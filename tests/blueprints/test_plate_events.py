@@ -1,7 +1,4 @@
 from http import HTTPStatus
-from unittest.mock import patch
-
-import responses  # type: ignore
 
 
 def test_get_create_plate_event_endpoint_bad_request_no_barcode(client):
