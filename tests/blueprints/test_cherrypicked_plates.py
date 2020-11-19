@@ -32,9 +32,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
         }
 
 
-def test_get_cherrypicked_plates_endpoint_no_barcode_in_request(
-    app, client, samples_with_lab_id
-):
+def test_get_cherrypicked_plates_endpoint_no_barcode_in_request(app, client, samples_with_lab_id):
     response = client.get(
         "/cherrypicked-plates/create",
         content_type="application/json",
