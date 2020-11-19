@@ -145,10 +145,10 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
     # The pipeline defines stages which execute in sequence
     pipeline = [
-        # 1. First run the positive match stage
-        STAGE_MATCH_POSITIVE,
-        # 2. We are only interested in the samples for a particular plate
+        # 1. We are only interested in the samples for a particular plate
         {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
+        # 2. Then run the positive match stage
+        STAGE_MATCH_POSITIVE,
     ]
 
     samples_for_barcode = list(samples_collection.aggregate(pipeline))
