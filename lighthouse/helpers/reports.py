@@ -247,7 +247,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         db_connection.close()
 
 
-def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
+def get_all_positive_samples(samples_collection):
     """Get all the positive samples from mongo from a specific date.
     Args:
         samples_collection (Collection): the samples collection.
