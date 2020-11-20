@@ -16,6 +16,7 @@ from lighthouse.constants import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DART_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
@@ -378,6 +379,7 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Any]] = [
     },
     {  # Non-control sample
         "sample": {
+            FIELD_DART_SAMPLE_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
             FIELD_COORDINATE: "A02",
             FIELD_SOURCE: "test2",
             FIELD_RESULT: "Positive",

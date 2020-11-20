@@ -405,8 +405,8 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
+                mapped_sample["replace_uuid"] = mongo_row[FIELD_DART_SAMPLE_UUID]
 
-            mapped_sample["replace_uuid"] = dart_row[FIELD_DART_SAMPLE_UUID]
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
             mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
         except KeyError as e:

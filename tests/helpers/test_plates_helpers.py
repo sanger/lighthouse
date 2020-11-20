@@ -24,6 +24,7 @@ from lighthouse.constants import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DART_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_RESULT,
     FIELD_RNA_ID,
@@ -635,6 +636,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "coordinate": "B01",
             },
             {
+                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 "name": "rna_2",
                 "sample_description": "MCM002",
                 "phenotype": "positive",
