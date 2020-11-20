@@ -451,3 +451,14 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
     }
 
     return {"data": {"type": "plates", "attributes": body}}
+def get_unique_plate_barcodes(samples):
+    barcodes = []
+    for sample in samples:
+        barcode = sample[FIELD_PLATE_BARCODE]
+        if barcode not in barcodes:
+            barcodes.append(barcode)
+    return barcodes
+
+
+def get_source_plate_uuids(samples):
+    barcodes = get_unique_plate_barcodes(samples)

@@ -60,6 +60,7 @@ from lighthouse.helpers.plates import (
     find_samples,
     add_controls_to_samples,
     update_mlwh_with_cog_uk_ids,
+    get_unique_plate_barcodes
 )
 from sqlalchemy.exc import OperationalError
 
@@ -710,3 +711,8 @@ def test_create_cherrypicked_post_body(app):
 def test_find_samples_returns_none_if_no_query_provided(app):
     with app.app_context():
         assert find_samples(None) is None
+
+
+def test_get_unique_plate_barcodes(app, samples_different_plates):
+    correct_barcodes = ["123", "456"]
+    assert get_unique_plate_barcodes(samples_different_plates) == correct_barcodes
