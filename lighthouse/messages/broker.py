@@ -44,6 +44,4 @@ class Broker:
     def __declare_exchange(self) -> None:
         exchange_name = app.config["RMQ_EXCHANGE"]
         logger.debug(f"Declaring exchange '{exchange_name}'")
-        self.channel.exchange_declare(
-            exchange_name, exchange_type=app.config["RMQ_EXCHANGE_TYPE"]
-        )
+        self.channel.exchange_declare(exchange_name, exchange_type=app.config["RMQ_EXCHANGE_TYPE"])
