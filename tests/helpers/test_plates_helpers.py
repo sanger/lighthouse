@@ -29,6 +29,7 @@ from lighthouse.constants import (
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
+    FIELD_PLATE_BARCODE,
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
@@ -60,7 +61,8 @@ from lighthouse.helpers.plates import (
     find_samples,
     add_controls_to_samples,
     update_mlwh_with_cog_uk_ids,
-    get_unique_plate_barcodes
+    get_unique_plate_barcodes,
+    query_for_source_plate_uuids,
 )
 from sqlalchemy.exc import OperationalError
 
@@ -715,4 +717,23 @@ def test_find_samples_returns_none_if_no_query_provided(app):
 
 def test_get_unique_plate_barcodes(app, samples_different_plates):
     correct_barcodes = ["123", "456"]
+
+    samples = [
+        samples_different_plates[0],
+        samples_different_plates[0],
+        samples_different_plates[1],
+        samples_different_plates[1],
+    ]
+
     assert get_unique_plate_barcodes(samples_different_plates) == correct_barcodes
+
+
+def test_query_for_source_plate_uuids(app, samples_different_plates):
+    correct_query = {
+        "$or": [
+            { FIELD_PLATE_BARCODE: "123"},
+            { FIELD_PLATE_BARCODE: "456"},
+        ]
+    }
+
+    assert query_for_source_plate_uuids(samples_different_plates) == correct_query

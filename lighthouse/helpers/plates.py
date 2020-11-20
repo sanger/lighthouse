@@ -173,6 +173,7 @@ def query_for_cherrypicked_samples(rows):
             FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
             FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
             FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
+            FIELD_PLATE_BARCODE: getattr(row, FIELD_PLATE_BARCODE),
         }
         mongo_query.append(sample_query)
     return {"$or": mongo_query}
@@ -451,6 +452,27 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
     }
 
     return {"data": {"type": "plates", "attributes": body}}
+
+
+def get_source_plate_uuids(samples):
+    find_source_plates(query_for_source_plate_uuids)
+
+
+def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+    if query is None:
+        return None
+    
+    get_unique_plate_barcodes(samples)
+
+    source_plates = app.data.driver.db.source_plates
+
+    source_plate_uuids = list(source_plates.find(query))
+
+    logger.info(f"Found {len(samples_for_barcode)} samples")
+
+    return samples_for_barcode
+
+
 def get_unique_plate_barcodes(samples):
     barcodes = []
     for sample in samples:
@@ -460,5 +482,15 @@ def get_unique_plate_barcodes(samples):
     return barcodes
 
 
-def get_source_plate_uuids(samples):
-    barcodes = get_unique_plate_barcodes(samples)
+def query_for_source_plate_uuids(samples):
+    if samples is None or (len(samples) == 0):
+        return None
+    mongo_query = []
+    for sample in samples:
+        import pdb
+        pdb.set_trace()
+        plate_query = {
+            FIELD_PLATE_BARCODE: getattr(sample, FIELD_PLATE_BARCODE),
+        }
+        mongo_query.append(plate_query)
+    return {"$or": mongo_query}
