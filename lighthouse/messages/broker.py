@@ -25,7 +25,6 @@ class Broker:
 
     def close_connection(self) -> None:
         logger.debug("Closing connection")
-        self.channel = None
         self.connection.close()
 
     def __create_connection(self) -> None:

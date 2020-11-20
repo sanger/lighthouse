@@ -76,7 +76,6 @@ def test_broker_close_connection(app, mock_pika):
         broker.close_connection()
 
         mock_connection.close.assert_called()
-        assert broker.channel is None
 
 
 def test_broker_close_connection_no_connection():
