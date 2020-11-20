@@ -12,7 +12,8 @@ class Broker:
     def connect(self) -> None:
         self.__create_connection()
         self.__open_channel()
-        self.__declare_exchange()
+        if app.config["RMQ_DECLARE_EXCHANGE"]:
+            self.__declare_exchange()
 
     def publish(self, message: Message) -> None:
         if message is not None:
@@ -44,5 +45,5 @@ class Broker:
         exchange_name = app.config["RMQ_EXCHANGE"]
         logger.debug(f"Declaring exchange '{exchange_name}'")
         self.channel.exchange_declare(
-            exchange_name, exchange_type=app.config["RMQ_EXCHANGE_TYPE"], passive=True
+            exchange_name, exchange_type=app.config["RMQ_EXCHANGE_TYPE"]
         )

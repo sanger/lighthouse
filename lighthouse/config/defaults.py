@@ -126,6 +126,7 @@ RMQ_PORT = 5672
 RMQ_USERNAME = "guest"
 RMQ_PASSWORD = "guest"
 RMQ_VHOST = "/"
+RMQ_DECLARE_EXCHANGE = True
 RMQ_EXCHANGE = "lighthouse.examples"
 RMQ_EXCHANGE_TYPE = "topic"
 RMQ_ROUTING_KEY = ""

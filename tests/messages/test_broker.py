@@ -22,9 +22,10 @@ def test_broker_connect_connects(app, mock_pika):
         )
         pika.BlockingConnection.assert_called_with(test_parameters)
         mock_connection.channel.assert_called()
-        mock_channel.exchange_declare.assert_called_with(
-            app.config["RMQ_EXCHANGE"], exchange_type=app.config["RMQ_EXCHANGE_TYPE"], passive=True
-        )
+        if app.config["RMQ_DECLARE_EXCHANGE"]:
+            mock_channel.exchange_declare.assert_called_with(
+                app.config["RMQ_EXCHANGE"], exchange_type=app.config["RMQ_EXCHANGE_TYPE"]
+            )
 
         assert broker.connection == mock_connection
         assert broker.channel == mock_channel
