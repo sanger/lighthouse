@@ -439,6 +439,7 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
             content["phenotype"] = sample["phenotype"]
             content["supplier_name"] = sample["supplier_name"]
             content["sample_description"] = sample["sample_description"]
+            content["replace_uuid"] = sample["replace_uuid"]
 
         wells_content[sample["coordinate"]] = {"content": content}
 

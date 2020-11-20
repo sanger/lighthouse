@@ -636,13 +636,13 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "coordinate": "B01",
             },
             {
-                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 "name": "rna_2",
                 "sample_description": "MCM002",
                 "phenotype": "positive",
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
+                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
             },
         ]
 
@@ -673,6 +673,7 @@ def test_create_cherrypicked_post_body(app):
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
+                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
             },
         ]
         correct_body = {
@@ -695,6 +696,7 @@ def test_create_cherrypicked_post_body(app):
                                 "phenotype": "positive",
                                 "supplier_name": "abcd",
                                 "sample_description": "MCM002",
+                                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77"
                             }
                         },
                     },
