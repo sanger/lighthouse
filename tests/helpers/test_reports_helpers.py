@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from shutil import copy
 import os
 
@@ -16,6 +16,7 @@ from lighthouse.helpers.reports import (
     add_cherrypicked_column,
     get_distinct_plate_barcodes,
     join_samples_declarations,
+    report_query_window_start
 )
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.constants import (
@@ -419,3 +420,16 @@ def test_join_samples_declarations_empty_collection(app, freezer, samples_no_dec
         joined = join_samples_declarations(positive_samples)
 
         assert np.array_equal(positive_samples.to_numpy(), joined.to_numpy())
+
+
+def test_report_query_window_start(app):
+    with app.app_context():
+        window_size = app.config["REPORT_WINDOW_SIZE"]
+        start = datetime.now() + timedelta(days=-window_size)
+
+        assert report_query_window_start().year == start.year
+        assert report_query_window_start().month == start.month
+        assert report_query_window_start().day == start.day
+        assert report_query_window_start().hour == 0
+        assert report_query_window_start().minute == 0
+        assert report_query_window_start().second == 0
