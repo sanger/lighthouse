@@ -14,7 +14,7 @@ import pymysql
 # it is outside the app context
 import sqlalchemy  # type: ignore
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 from http import HTTPStatus
 
@@ -32,6 +32,7 @@ from lighthouse.constants import (
     FIELD_COORDINATE,
     CT_VALUE_LIMIT,
     POSITIVE_SAMPLES_MONGODB_FILTER,
+    STAGE_MATCH_POSITIVE
 )
 
 logger = logging.getLogger(__name__)
@@ -246,25 +247,83 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         db_connection.close()
 
 
-def get_all_positive_samples(samples):
+def get_all_positive_samples(samples_collection):
+    """Get all the positive samples from mongo from a specific date.
+    Args:
+        samples_collection (Collection): the samples collection.
+    Returns:
+        DataFrame: a pandas DataFrame with the positive samples.
+    """
+    logger.debug("Getting all positive samples from a specific date")
 
-    logger.debug("Getting all positive samples")
-    # filtering using case insensitive regex to catch "Positive" and "positive"
-    results = samples.find(
-        filter=POSITIVE_SAMPLES_MONGODB_FILTER,
-        projection={
-            "_id": False,
-            FIELD_SOURCE: True,
-            FIELD_PLATE_BARCODE: True,
-            FIELD_ROOT_SAMPLE_ID: True,
-            FIELD_RESULT: True,
-            FIELD_DATE_TESTED: True,
-            FIELD_COORDINATE: True,
+    # The projection defines which fields are present in the documents from the output of the mongo
+    # query
+    projection = {
+        "_id": False,
+        FIELD_SOURCE: True,
+        FIELD_PLATE_BARCODE: True,
+        FIELD_ROOT_SAMPLE_ID: True,
+        FIELD_RESULT: True,
+        FIELD_DATE_TESTED: True,
+        FIELD_COORDINATE: True,
+    }
+
+    DATE_EXTRACTED = "extracted_date"
+    DATE_CONVERTED = "converted_date"
+    DATE_ERROR = "date_conversion_error"
+
+    # The pipeline defines stages which execute in sequence
+    pipeline = [
+        # 1. First run the positive match stage
+        STAGE_MATCH_POSITIVE,
+        {
+            # 2. We then need to extract the date using substring since most dates look like this:
+            # "2020-05-10 07:30:00 UTC" but the `dateFromString` function does not handle the
+            # timezone string "UTC"
+            "$addFields": {
+                DATE_EXTRACTED: {
+                    "$substrBytes": [f"${FIELD_DATE_TESTED}", 0, 19],
+                },
+            },
         },
-    )
+        {
+            # 3. Then add a date field which converts the extracted date string to a mongo date
+            # type using the specified format. If it cannot parse the date using the first format
+            # it tries with the other format found in the data
+            # TODO: handle the case that no format is matched
+            "$addFields": {
+                DATE_CONVERTED: {
+                    "$dateFromString": {
+                        "dateString": f"${DATE_EXTRACTED}",
+                        "format": "%Y-%m-%d %H:%M:%S",
+                        "timezone": "UTC",
+                        "onError": {
+                            "$dateFromString": {
+                                "dateString": f"${DATE_EXTRACTED}",
+                                "format": "%d/%m/%Y %H:%M",
+                                "timezone": "UTC",
+                                "onError": DATE_ERROR,
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        # 4. We only want documents which have valid dates that we can compare against
+        {"$match": {DATE_CONVERTED: {"$ne": DATE_ERROR}}},
+        # 5. Find all the document after a certain date
+        {"$match": {DATE_CONVERTED: {"$gte": report_query_window_start()}}},
+        # 6. Define which fields to have in the output documents
+        {"$project": projection},
+    ]
+
+    # Perform an aggregation using the defined pipeline - this will run through the pipeline
+    # "stages" in sequence
+    results = samples_collection.aggregate(pipeline)
 
     # converting to a dataframe to make it easy to join with data from labwhere
     positive_samples_df = pd.DataFrame.from_records(results)
+
     logger.info(f"{len(positive_samples_df.index)} positive samples")
     pretty(logger, positive_samples_df)
 
@@ -362,3 +421,17 @@ def join_samples_declarations(positive_samples):
         return results
 
     return positive_samples
+
+
+def report_query_window_start() -> datetime:
+    """Return the start date for the report window.
+    Returns:
+        datetime: start date for the report window
+    """
+    window_size = app.config["REPORT_WINDOW_SIZE"]
+    logger.debug(f"Current report window size: {window_size}")
+
+    start = datetime.now() + timedelta(days=-window_size)
+    logger.info(f"Report starting from: {start.strftime('%d/%m/%Y')}")
+
+    return datetime(year=start.year, month=start.month, day=start.day)

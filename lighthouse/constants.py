@@ -38,3 +38,33 @@ POSITIVE_SAMPLES_MONGODB_FILTER = {
         },
     ],
 }
+
+# Stage for mongo aggregation pipeline
+STAGE_MATCH_POSITIVE = {
+    "$match": {
+        #  1. We are only interested in positive samples
+        FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
+        # 2. We are not interested in controls
+        FIELD_ROOT_SAMPLE_ID: {"$not": {"$regex": "^CBIQA_"}},
+        # 3. Further filter the positive samples
+        # TODO: needs to align with the crawler changes
+        "$or": [
+            {
+                "$and": [
+                    {FIELD_CH1_CQ: {"$exists": False}},
+                    {FIELD_CH2_CQ: {"$exists": False}},
+                    {FIELD_CH3_CQ: {"$exists": False}},
+                ],
+            },
+            {
+                "$or": [
+                    {FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}},
+                    {FIELD_CH2_CQ: {"$lte": CT_VALUE_LIMIT}},
+                    {FIELD_CH3_CQ: {"$lte": CT_VALUE_LIMIT}},
+                ],
+            },
+        ],
+        # 4. We are only interested in documents which have a valid date
+        FIELD_DATE_TESTED: {"$exists": True, "$nin": [None, ""]},
+    }
+}
