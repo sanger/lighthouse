@@ -120,3 +120,12 @@ LOGGING: Dict[str, Any] = {
 
 DART_RESULT_VIEW = "CherrypickingInfo"
 BARACODA_RETRY_ATTEMPTS = 3
+
+RMQ_HOST = "localhost"
+RMQ_PORT = 5672
+RMQ_USERNAME = "guest"
+RMQ_PASSWORD = "guest"
+RMQ_VHOST = "/"
+RMQ_EXCHANGE = "lighthouse.examples"
+RMQ_EXCHANGE_TYPE = "topic"
+RMQ_ROUTING_KEY = ""
