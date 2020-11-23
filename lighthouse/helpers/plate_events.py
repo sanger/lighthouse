@@ -1,5 +1,11 @@
 from typing import Optional, Dict, Tuple, List
 from lighthouse.messages.message import Message  # type: ignore
+from lighthouse.constants import (
+    PLATE_EVENT_SOURCE_COMPLETED,
+    PLATE_EVENT_SOURCE_NOT_RECOGNISED,
+    PLATE_EVENT_SOURCE_NO_MAP_DATA,
+    PLATE_EVENT_SOURCE_ALL_NEGATIVES,
+)
 
 
 def construct_event_message(
@@ -12,19 +18,19 @@ def construct_event_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    if event_type == "lh_beckman_cp_source_completed":
-        return construct_source_plate_complete_message(params)
-    elif event_type == "lh_beckman_cp_source_plate_unrecognised":
+    if event_type == PLATE_EVENT_SOURCE_COMPLETED:
+        return construct_source_plate_completed_message(params)
+    elif event_type == PLATE_EVENT_SOURCE_NOT_RECOGNISED:
         return construct_source_plate_not_recognised_message(params)
-    elif event_type == "lh_beckman_cp_source_no_plate_map_data":
+    elif event_type == PLATE_EVENT_SOURCE_NO_MAP_DATA:
         return construct_source_plate_no_map_data_message(params)
-    elif event_type == "lh_beckman_cp_source_all_negatives":
+    elif event_type == PLATE_EVENT_SOURCE_ALL_NEGATIVES:
         return construct_source_plate_all_negatives_message(params)
     else:
         return [f"Unrecognised event type '{event_type}'"], None
 
 
-def construct_source_plate_complete_message(
+def construct_source_plate_completed_message(
     params: Dict[str, str]
 ) -> Tuple[List[str], Optional[Message]]:
     """Constructs a message representing a source plate complete event;
