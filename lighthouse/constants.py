@@ -87,6 +87,6 @@ POSITIVE_SAMPLES_MONGODB_FILTER = {
 }
 
 PLATE_EVENT_SOURCE_COMPLETED = "lh_beckman_cp_source_completed"
-PLATE_EVENT_SOURCE_NOT_RECOGNISED = "lh_beckam_cp_source_plate_unrecognised"
+PLATE_EVENT_SOURCE_NOT_RECOGNISED = "lh_beckman_cp_source_plate_unrecognised"
 PLATE_EVENT_SOURCE_NO_MAP_DATA = "lh_beckman_cp_source_no_plate_map_data"
 PLATE_EVENT_SOURCE_ALL_NEGATIVES = "lh_beckman_cp_source_all_negatives"
