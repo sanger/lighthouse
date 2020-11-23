@@ -6,8 +6,6 @@ from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
 
 from lighthouse.messages.broker import Broker  # type: ignore
-from lighthouse.messages.message import Message  # type: ignore
-
 from lighthouse.helpers.plate_events import (
     construct_event_message,
 )
@@ -50,4 +48,4 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
             "errors": ["An unexpected error occurred attempting to publish a plate event message"]
         }, HTTPStatus.INTERNAL_SERVER_ERROR
 
-    return ({}, HTTPStatus.OK)
+    return ({"errors": []}, HTTPStatus.OK)
