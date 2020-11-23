@@ -23,6 +23,7 @@ from lighthouse.constants import (
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
+    FIELD_SOURCE_PLATE_UUID,
     MLWH_LH_SAMPLE_RESULT,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
@@ -534,3 +535,26 @@ EVENT_WH_DATA: Dict[str, Any] = {
     "subject_types": [{"id": 1, "key": "sample", "description": "stuff"}],
     "role_types": [{"id": 1, "key": "sample", "description": "stuff"}],
 }
+
+SOURCE_PLATES: List[Dict[str, Any]] = [
+    {
+        FIELD_SOURCE_PLATE_UUID: "a17c38cd-b2df-43a7-9896-582e7855b4cc",
+        FIELD_PLATE_BARCODE: "123",
+        FIELD_LAB_ID: "Lab 1",
+    },
+    {
+        FIELD_SOURCE_PLATE_UUID: "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+        FIELD_PLATE_BARCODE: "456",
+        FIELD_LAB_ID: "Lab 2",
+    },
+    {
+        FIELD_SOURCE_PLATE_UUID: "2745095c-73da-4824-8af0-4c9d06055090",
+        FIELD_PLATE_BARCODE: "A123",
+        FIELD_LAB_ID: "Lab 2",
+    },
+    {
+        FIELD_SOURCE_PLATE_UUID: "bba490a1-9858-49e5-a096-ee386f99fc38",
+        FIELD_PLATE_BARCODE: "A456",
+        FIELD_LAB_ID: "Lab 3",
+    },
+]

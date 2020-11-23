@@ -23,6 +23,7 @@ from lighthouse.constants import (
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
+    FIELD_SOURCE_PLATE_UUID,
     POSITIVE_SAMPLES_MONGODB_FILTER,
 )
 from lighthouse.exceptions import (
@@ -455,22 +456,26 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
 
 
 def get_source_plate_uuids(samples):
-    find_source_plates(query_for_source_plate_uuids)
+    source_plate_records = find_source_plates(query_for_source_plate_uuids(samples))
+
+    source_plate_uuids = []
+    for plate in source_plate_records:
+        source_plate_uuids.append(plate[FIELD_SOURCE_PLATE_UUID])
+    
+    return source_plate_uuids
 
 
 def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
-    
-    get_unique_plate_barcodes(samples)
 
     source_plates = app.data.driver.db.source_plates
 
-    source_plate_uuids = list(source_plates.find(query))
+    source_plate_records = list(source_plates.find(query))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples")
+    logger.info(f"Found {len(source_plate_records)} source plates")
 
-    return samples_for_barcode
+    return source_plate_records
 
 
 def get_unique_plate_barcodes(samples):
@@ -487,10 +492,8 @@ def query_for_source_plate_uuids(samples):
         return None
     mongo_query = []
     for sample in samples:
-        import pdb
-        pdb.set_trace()
         plate_query = {
-            FIELD_PLATE_BARCODE: getattr(sample, FIELD_PLATE_BARCODE),
+            FIELD_PLATE_BARCODE: sample[FIELD_PLATE_BARCODE],
         }
         mongo_query.append(plate_query)
     return {"$or": mongo_query}

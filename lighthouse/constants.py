@@ -17,6 +17,7 @@ FIELD_DATE_TESTED = "Date Tested"
 FIELD_CH1_CQ = "CH1-Cq"
 FIELD_CH2_CQ = "CH2-Cq"
 FIELD_CH3_CQ = "CH3-Cq"
+FIELD_SOURCE_PLATE_UUID = "lh_source_plate_uuid"
 
 # DART specific column names:
 FIELD_DART_DESTINATION_BARCODE = os.environ.get("FIELD_DART_DESTINATION_BARCODE", "Labware BarCode")

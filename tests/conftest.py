@@ -26,6 +26,7 @@ from .data.fixture_data import (
     SAMPLES_WITH_LAB_ID,
     EVENT_WH_DATA,
     MLWH_SAMPLE_STOCK_RESOURCE,
+    SOURCE_PLATES,
 )
 from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
 from lighthouse.helpers.dart_db import create_dart_connection, load_sql_server_script
@@ -162,6 +163,20 @@ def samples_no_declaration(app):
     # clear up after the fixture is used
     with app.app_context():
         samples_collection.delete_many({})
+
+
+@pytest.fixture
+def source_plates(app):
+    with app.app_context():
+        source_plates_collection = app.data.driver.db.source_plates
+        _ = source_plates_collection.insert_many(SOURCE_PLATES)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SOURCE_PLATES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        source_plates_collection.delete_many({})
 
 
 @pytest.fixture

@@ -30,6 +30,7 @@ from lighthouse.constants import (
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_PLATE_BARCODE,
+    FIELD_SOURCE_PLATE_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
@@ -63,6 +64,7 @@ from lighthouse.helpers.plates import (
     update_mlwh_with_cog_uk_ids,
     get_unique_plate_barcodes,
     query_for_source_plate_uuids,
+    get_source_plate_uuids,
 )
 from sqlalchemy.exc import OperationalError
 
@@ -737,3 +739,18 @@ def test_query_for_source_plate_uuids(app, samples_different_plates):
     }
 
     assert query_for_source_plate_uuids(samples_different_plates) == correct_query
+
+
+def test_get_source_plate_uuids(app, samples_different_plates, source_plates):
+    with app.app_context():
+        samples = [
+            samples_different_plates[0],
+            samples_different_plates[0],
+            samples_different_plates[1],
+            samples_different_plates[1],
+        ]
+
+        correct_uuids = [source_plates[0][FIELD_SOURCE_PLATE_UUID], source_plates[1][FIELD_SOURCE_PLATE_UUID]]
+        source_plate_uuids = get_source_plate_uuids(samples)
+
+        assert source_plate_uuids == correct_uuids
