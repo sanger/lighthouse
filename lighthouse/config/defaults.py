@@ -129,4 +129,5 @@ RMQ_VHOST = "/"
 RMQ_DECLARE_EXCHANGE = True
 RMQ_EXCHANGE = "lighthouse.examples"
 RMQ_EXCHANGE_TYPE = "topic"
-RMQ_ROUTING_KEY = ""
+RMQ_ROUTING_KEY = "staging.event.#"
+RMQ_LIMS_ID = "LH_LOCAL"

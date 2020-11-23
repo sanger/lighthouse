@@ -48,3 +48,14 @@ EVENT_WH_EVENTS_TABLE = "events"
 EVENT_WH_EVENT_TYPES_TABLE = "event_types"
 EVENT_WH_SUBJECT_TYPES_TABLE = "subject_types"
 EVENT_WH_ROLE_TYPES_TABLE = "role_types"
+
+RMQ_HOST = "localhost"
+RMQ_PORT = 5672
+RMQ_USERNAME = "guest"
+RMQ_PASSWORD = "guest"
+RMQ_VHOST = "/"
+RMQ_DECLARE_EXCHANGE = True
+RMQ_EXCHANGE = "lighthouse.test.examples"
+RMQ_EXCHANGE_TYPE = "topic"
+RMQ_ROUTING_KEY = "test.event.#"
+RMQ_LIMS_ID = "LH_TEST"
