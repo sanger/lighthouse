@@ -461,7 +461,7 @@ def get_source_plate_uuids(samples):
     source_plate_uuids = []
     for plate in source_plate_records:
         source_plate_uuids.append(plate[FIELD_SOURCE_PLATE_UUID])
-    
+
     return source_plate_uuids
 
 

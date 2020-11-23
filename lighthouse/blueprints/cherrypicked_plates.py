@@ -16,6 +16,7 @@ from lighthouse.helpers.plates import (
     query_for_cherrypicked_samples,
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
+    get_source_plate_uuids,
 )
 
 logger = logging.getLogger(__name__)

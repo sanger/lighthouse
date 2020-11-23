@@ -701,7 +701,7 @@ def test_create_cherrypicked_post_body(app):
                                 "phenotype": "positive",
                                 "supplier_name": "abcd",
                                 "sample_description": "MCM002",
-                                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77"
+                                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                             }
                         },
                     },
@@ -733,8 +733,8 @@ def test_get_unique_plate_barcodes(app, samples_different_plates):
 def test_query_for_source_plate_uuids(app, samples_different_plates):
     correct_query = {
         "$or": [
-            { FIELD_PLATE_BARCODE: "123"},
-            { FIELD_PLATE_BARCODE: "456"},
+            {FIELD_PLATE_BARCODE: "123"},
+            {FIELD_PLATE_BARCODE: "456"},
         ]
     }
 
@@ -750,7 +750,10 @@ def test_get_source_plate_uuids(app, samples_different_plates, source_plates):
             samples_different_plates[1],
         ]
 
-        correct_uuids = [source_plates[0][FIELD_SOURCE_PLATE_UUID], source_plates[1][FIELD_SOURCE_PLATE_UUID]]
+        correct_uuids = [
+            source_plates[0][FIELD_SOURCE_PLATE_UUID],
+            source_plates[1][FIELD_SOURCE_PLATE_UUID],
+        ]
         source_plate_uuids = get_source_plate_uuids(samples)
 
         assert source_plate_uuids == correct_uuids
