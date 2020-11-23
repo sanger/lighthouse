@@ -456,10 +456,11 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
 
 
 def get_source_plate_uuids(samples):
-    source_plate_records = find_source_plates(query_for_source_plate_uuids(samples))
+    barcodes = get_unique_plate_barcodes(samples)
+    source_plate_documents = find_source_plates(query_for_source_plate_uuids(barcodes))
 
     source_plate_uuids = []
-    for plate in source_plate_records:
+    for plate in source_plate_documents:
         source_plate_uuids.append(plate[FIELD_SOURCE_PLATE_UUID])
 
     return source_plate_uuids
@@ -471,11 +472,11 @@ def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
 
     source_plates = app.data.driver.db.source_plates
 
-    source_plate_records = list(source_plates.find(query))
+    source_plate_documents = list(source_plates.find(query))
 
-    logger.info(f"Found {len(source_plate_records)} source plates")
+    logger.info(f"Found {len(source_plate_documents)} source plates")
 
-    return source_plate_records
+    return source_plate_documents
 
 
 def get_unique_plate_barcodes(samples):
@@ -487,13 +488,14 @@ def get_unique_plate_barcodes(samples):
     return barcodes
 
 
-def query_for_source_plate_uuids(samples):
-    if samples is None or (len(samples) == 0):
+def query_for_source_plate_uuids(barcodes):
+    if barcodes is None or (len(barcodes) == 0):
         return None
     mongo_query = []
-    for sample in samples:
+
+    for barcode in barcodes:
         plate_query = {
-            FIELD_PLATE_BARCODE: sample[FIELD_PLATE_BARCODE],
+            FIELD_PLATE_BARCODE: barcode,
         }
         mongo_query.append(plate_query)
     return {"$or": mongo_query}
