@@ -1,5 +1,4 @@
 from lighthouse.messages.broker import Broker
-from lighthouse.messages.message import Message
 import pytest  # type: ignore
 from unittest.mock import patch, MagicMock
 
