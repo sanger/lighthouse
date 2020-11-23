@@ -68,3 +68,15 @@ STAGE_MATCH_POSITIVE = {
         FIELD_DATE_TESTED: {"$exists": True, "$nin": [None, ""]},
     }
 }
+
+# Columns (and order) for positive samples report
+REPORT_COLUMNS = [
+    "Date Tested",
+    "Root Sample ID",
+    "Result",
+    "source",
+    "coordinate",
+    "plate and well",
+    "location_barcode",
+    "LIMS submission",
+]
