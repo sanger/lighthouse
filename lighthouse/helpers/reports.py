@@ -347,7 +347,7 @@ def add_cherrypicked_column(existing_dataframe):
     cherrypicked_samples_df = get_cherrypicked_samples(root_sample_ids, plate_barcodes)
     cherrypicked_samples_df["LIMS submission"] = "Yes"
 
-    logger.error(f"{len(cherrypicked_samples_df.index)} cherrypicked samples")
+    logger.info(f"{len(cherrypicked_samples_df.index)} cherrypicked samples")
 
     # The result value in the phenotype in MLWH.sample is all lowercase,
     # because it is converted in create_post_body in helpers/plates.py,

@@ -3,19 +3,16 @@ import time
 
 import pandas as pd  # type: ignore
 from flask import current_app as app
-
 from lighthouse import scheduler
+from lighthouse.constants import FIELD_PLATE_BARCODE, REPORT_COLUMNS
 from lighthouse.helpers.reports import (
-    get_new_report_name_and_path,
-    unpad_coordinate,
-    map_labware_to_location,
-    get_all_positive_samples,
     add_cherrypicked_column,
+    get_all_positive_samples,
     get_distinct_plate_barcodes,
+    get_new_report_name_and_path,
     join_samples_declarations,
+    map_labware_to_location,
 )
-from lighthouse.utils import pretty
-from lighthouse.constants import FIELD_PLATE_BARCODE
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +51,18 @@ def create_report() -> str:
     # Create a Pandas Excel writer using XlsxWriter as the engine
     writer = pd.ExcelWriter(report_path, engine="xlsxwriter")
 
+    # Get the list (and order) of columns for the report from config otherwise fall back to
+    #   pre-defined list
+    columns = app.config.get("REPORT_COLUMNS", REPORT_COLUMNS)
+
     # Sheet2 contains all positive samples WITH location barcodes
     merged[merged.location_barcode.notnull()].to_excel(
-        writer, sheet_name="POSITIVE SAMPLES WITH LOCATION", index=False
+        writer, sheet_name="POSITIVE SAMPLES WITH LOCATION", columns=columns, index=False
     )
 
     # Convert the dataframe to an XlsxWriter Excel object
     #  Sheet1 contains all positive samples with AND without location barcodes
-    merged.to_excel(writer, sheet_name="ALL POSITIVE SAMPLES", index=False)
+    merged.to_excel(writer, sheet_name="ALL POSITIVE SAMPLES", columns=columns, index=False)
 
     # Close the Pandas Excel writer and output the Excel file
     writer.save()
