@@ -2,6 +2,7 @@ from unittest.mock import patch
 from lighthouse.messages.message import Message
 from lighthouse.helpers.plate_events import (
     construct_event_message,
+    get_routing_key,
 )
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,
@@ -72,3 +73,11 @@ def test_construct_event_message_source_all_negatives():
 
         mock_construct_source_all_negatives_message.assert_called_with(test_params)
         assert result == test_return_value
+
+
+def test_get_routing_key(app):
+    with app.app_context():
+        test_event_type = "test_event_type"
+        result = get_routing_key(test_event_type)
+
+        assert result == f"test.event.{test_event_type}"

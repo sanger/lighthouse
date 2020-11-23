@@ -8,6 +8,7 @@ from flask_cors import CORS  # type: ignore
 from lighthouse.messages.broker import Broker  # type: ignore
 from lighthouse.helpers.plate_events import (
     construct_event_message,
+    get_routing_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,10 +36,13 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
             )
             return {"errors": errors}, HTTPStatus.INTERNAL_SERVER_ERROR
 
+        # By this stage we know the event type is valid as we have been able to construct a message
+        routing_key = get_routing_key(event_type)
+
         logger.debug("Attempting to publish the constructed plate event message")
         broker = Broker()
         broker.connect()
-        broker.publish(message)
+        broker.publish(message, routing_key)
         broker.close_connection()
         logger.info(f"Successfully published a '{event_type}' plate event message")
     except Exception as e:
