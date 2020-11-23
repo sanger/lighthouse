@@ -24,11 +24,17 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
         event_type = request.args.get("event_type", "")
         logger.info(f"Attempting to publish an '{event_type}' plate event message")
         if len(event_type) == 0:
+            logger.error(
+                "Failed publishing plate event message: missing required 'event_type' parameter"
+            )
             return {"errors": ["'event_type' is a required parameter"]}, HTTPStatus.BAD_REQUEST
 
         logger.debug("Attempting to construct the plate event message")
         errors, message = construct_event_message(event_type, request.args)
         if len(errors) > 0:
+            logger.error(
+                "Failed publishing plate event message: error(s) constructing event message"
+            )
             return {"errors": errors}, HTTPStatus.INTERNAL_SERVER_ERROR
 
         logger.debug("Attempting to publish the constructed plate event message")
@@ -38,7 +44,7 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
         broker.close_connection()
         logger.info(f"Successfully published a '{event_type}' plate event message")
     except Exception as e:
-        logger.error("An error occurred attempting to publish a plate event message")
+        logger.error("Failed publishing plate event message: an unexpected error occurred")
         logger.exception(e)
         return {
             "errors": ["An unexpected error occurred attempting to publish a plate event message"]
