@@ -12,7 +12,11 @@ def construct_event_message(
     event_type: str, params: Dict[str, str]
 ) -> Tuple[List[str], Optional[Message]]:
     """Delegates to the appropriate event construction method;
-    otherwise returns with errors for unknown event type
+    otherwise returns with errors for unknown event type.
+
+    Arguments:
+        event_type {str} -- The event type for which to construct a message.
+        params {Dict[str, str]} -- All parameters of the plate event message request.
 
     Returns:
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
@@ -48,6 +52,9 @@ def construct_source_plate_completed_message(
     """Constructs a message representing a source plate complete event;
     otherwise returns appropriate errors.
 
+    Arguments:
+        params {Dict[str, str]} -- All parameters of the plate event message request.
+
     Returns:
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
@@ -62,6 +69,9 @@ def construct_source_plate_not_recognised_message(
     """Constructs a message representing a source plate not recognised event;
     otherwise returns appropriate errors.
 
+    Arguments:
+        params {Dict[str, str]} -- All parameters of the plate event message request.
+
     Returns:
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
@@ -75,6 +85,9 @@ def construct_source_plate_no_map_data_message(
     """Constructs a message representing a source plate without plate map data event;
     otherwise returns appropriate errors.
 
+    Arguments:
+        params {Dict[str, str]} -- All parameters of the plate event message request.
+
     Returns:
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
@@ -87,6 +100,9 @@ def construct_source_plate_all_negatives_message(
 ) -> Tuple[List[str], Optional[Message]]:
     """Constructs a message representing a source plate without positives event;
     otherwise returns appropriate errors.
+
+    Arguments:
+        params {Dict[str, str]} -- All parameters of the plate event message request.
 
     Returns:
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
