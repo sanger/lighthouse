@@ -137,7 +137,56 @@ def construct_source_plate_no_map_data_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return ["Not implemented"], None
+    try:
+        barcode = params.get("barcode", "")
+        user_id = params.get("user_id", "")
+        robot_serial_number = params.get("robot", "")
+        if len(barcode) == 0 or len(user_id) == 0 or len(robot_serial_number) == 0:
+            return [
+                "'barcode', 'user_id' and 'robot' are required to construct a "
+                f"{PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
+            ], None
+
+        robot_uuid = get_robot_uuid(robot_serial_number)
+        if robot_uuid is None:
+            return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
+
+        source_plate_uuid = get_source_plate_uuid(barcode)
+        if source_plate_uuid is None:
+            return [f"Unable to determine a uuid for source plate '{barcode}'"], None
+
+        message_content = {
+            "event": {
+                "uuid": str(uuid4()),
+                "event_type": PLATE_EVENT_SOURCE_NO_MAP_DATA,
+                "occured_at": get_current_datetime(),
+                "user_identifier": user_id,
+                "subjects": [
+                    {
+                        "role_type": "robot",
+                        "subject_type": "robot",
+                        "friendly_name": robot_serial_number,
+                        "uuid": robot_uuid,
+                    },
+                    {
+                        "role_type": "cherrypicking_source_labware",
+                        "subject_type": "plate",
+                        "friendly_name": barcode,
+                        "uuid": source_plate_uuid,
+                    },
+                ],
+                "metadata": {},
+            },
+            "lims": app.config["RMQ_LIMS_ID"],
+        }
+        return [], Message(message_content)
+    except Exception as e:
+        logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_NO_MAP_DATA} message")
+        logger.exception(e)
+        return [
+            "An unexpected error occurred attempting to construct the "
+            f"{PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
+        ], None
 
 
 def construct_source_plate_all_negatives_message(
@@ -165,15 +214,25 @@ def get_current_datetime() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
-def get_robot_uuid(serial_number: str) -> str:
+def get_robot_uuid(serial_number: str) -> Optional[str]:
     """Maps a robot serial number to a uuid.
 
     Arguments:
-        params {str} -- The robot serial number.
+        serial_number {str} -- The robot serial number.
 
     Returns:
-        {str} -- The robot uuid.
+        {str} -- The robot uuid; otherwise None if it cannot be determined.
     """
     return str(uuid4())  # TODO - get robot uuid from config
 
 
+def get_source_plate_uuid(barcode: str) -> Optional[str]:
+    """Attempt to get a uuid for a source plate barcode.
+
+    Arguments:
+        barcode {str} -- The source plate barcode.
+
+    Returns:
+        {str} -- The source plate uuid; otherwise None if it cannot be determined.
+    """
+    return str(uuid4())  # TODO - get the source plate uuid from Mongo
