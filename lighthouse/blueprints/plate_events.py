@@ -28,7 +28,7 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
             )
             return {"errors": ["'event_type' is a required parameter"]}, HTTPStatus.BAD_REQUEST
 
-        logger.debug("Attempting to construct the plate event message")
+        logger.info("Attempting to construct the plate event message")
         errors, message = construct_event_message(event_type, request.args)
         if len(errors) > 0:
             logger.error(
@@ -39,7 +39,7 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
         # By this stage we know the event type is valid as we have been able to construct a message
         routing_key = get_routing_key(event_type)
 
-        logger.debug("Attempting to publish the constructed plate event message")
+        logger.info("Attempting to publish the constructed plate event message")
         broker = Broker()
         broker.connect()
         broker.publish(message, routing_key)
