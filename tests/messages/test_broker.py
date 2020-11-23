@@ -34,14 +34,15 @@ def test_broker_publish(app, mock_pika, mock_message):
     with app.app_context():
         _, _, mock_channel, _, _ = mock_pika
         test_payload, test_message = mock_message
+        test_routing_key = "routing key"
 
         broker = Broker()
         broker.connect()
-        broker.publish(test_message)
+        broker.publish(test_message, test_routing_key)
 
         mock_channel.basic_publish.assert_called_with(
             exchange=app.config["RMQ_EXCHANGE"],
-            routing_key=app.config["RMQ_ROUTING_KEY"],
+            routing_key=test_routing_key,
             body=test_payload,
         )
 
@@ -49,10 +50,24 @@ def test_broker_publish(app, mock_pika, mock_message):
 def test_broker_publish_no_message(app, mock_pika):
     with app.app_context():
         _, _, mock_channel, _, _ = mock_pika
+        test_routing_key = "routing key"
 
         broker = Broker()
         broker.connect()
         broker.publish(None)
+
+        mock_channel.basic_publish.assert_not_called()
+
+
+def test_broker_publish_no_routing_key(app, mock_pika):
+    with app.app_context():
+        _, _, mock_channel, _, _ = mock_pika
+        _, test_message = mock_message
+        test_routing_key = "routing key"
+
+        broker = Broker()
+        broker.connect()
+        broker.publish(None, test_routing_key)
 
         mock_channel.basic_publish.assert_not_called()
 
@@ -64,7 +79,7 @@ def test_broker_publish_no_connection(app, mock_pika, mock_message):
 
         broker = Broker()
         with pytest.raises(AttributeError):
-            broker.publish(test_message)
+            broker.publish(test_message, "test routing key")
 
 
 def test_broker_close_connection(app, mock_pika):

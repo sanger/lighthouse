@@ -15,12 +15,12 @@ class Broker:
         if app.config["RMQ_DECLARE_EXCHANGE"]:
             self.__declare_exchange()
 
-    def publish(self, message: Message) -> None:
-        if message is not None:
+    def publish(self, message: Message, routing_key: str) -> None:
+        if message is not None and routing_key is not None:
             logger.debug("Publishing message")
             self.channel.basic_publish(
                 exchange=app.config["RMQ_EXCHANGE"],
-                routing_key=app.config["RMQ_ROUTING_KEY"],
+                routing_key=routing_key,
                 body=message.payload(),
             )
 
