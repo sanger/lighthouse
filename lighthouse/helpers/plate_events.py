@@ -91,7 +91,7 @@ def construct_source_plate_not_recognised_message(
                 f"{PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
             ], None
 
-        robot_uuid = get_robot_uuid(robot_serial_number)
+        robot_uuid = __get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
@@ -99,7 +99,7 @@ def construct_source_plate_not_recognised_message(
             "event": {
                 "uuid": str(uuid4()),
                 "event_type": PLATE_EVENT_SOURCE_NOT_RECOGNISED,
-                "occured_at": get_current_datetime(),
+                "occured_at": __get_current_datetime(),
                 "user_identifier": user_id,
                 "subjects": [
                     {
@@ -146,11 +146,11 @@ def construct_source_plate_no_map_data_message(
                 f"{PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
             ], None
 
-        robot_uuid = get_robot_uuid(robot_serial_number)
+        robot_uuid = __get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
-        source_plate_uuid = get_source_plate_uuid(barcode)
+        source_plate_uuid = __get_source_plate_uuid(barcode)
         if source_plate_uuid is None:
             return [f"Unable to determine a uuid for source plate '{barcode}'"], None
 
@@ -158,7 +158,7 @@ def construct_source_plate_no_map_data_message(
             "event": {
                 "uuid": str(uuid4()),
                 "event_type": PLATE_EVENT_SOURCE_NO_MAP_DATA,
-                "occured_at": get_current_datetime(),
+                "occured_at": __get_current_datetime(),
                 "user_identifier": user_id,
                 "subjects": [
                     {
@@ -204,7 +204,10 @@ def construct_source_plate_all_negatives_message(
     return ["Not implemented"], None
 
 
-def get_current_datetime() -> str:
+# Private methods
+
+
+def __get_current_datetime() -> str:
     """Returns the current datetime in a format compatible with messaging.
 
     Returns:
@@ -213,7 +216,7 @@ def get_current_datetime() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
-def get_robot_uuid(serial_number: str) -> Optional[str]:
+def __get_robot_uuid(serial_number: str) -> Optional[str]:
     """Maps a robot serial number to a uuid.
 
     Arguments:
@@ -225,7 +228,7 @@ def get_robot_uuid(serial_number: str) -> Optional[str]:
     return str(uuid4())  # TODO - get robot uuid from config
 
 
-def get_source_plate_uuid(barcode: str) -> Optional[str]:
+def __get_source_plate_uuid(barcode: str) -> Optional[str]:
     """Attempt to get a uuid for a source plate barcode.
 
     Arguments:
