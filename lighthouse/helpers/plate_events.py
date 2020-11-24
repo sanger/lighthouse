@@ -9,6 +9,11 @@ from lighthouse.constants import (
     PLATE_EVENT_SOURCE_NOT_RECOGNISED,
     PLATE_EVENT_SOURCE_NO_MAP_DATA,
     PLATE_EVENT_SOURCE_ALL_NEGATIVES,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_RNA_ID,
+    FIELD_LAB_ID,
+    FIELD_RESULT,
+    FIELD_LH_SAMPLE_UUID,
 )
 from lighthouse.helpers.mongo_db import (
     get_source_plate_uuid,
@@ -69,8 +74,51 @@ def construct_source_plate_completed_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    # try get required params
-    return ["Not implemented"], None
+    try:
+        barcode = params.get("barcode", "")
+        user_id = params.get("user_id", "")
+        robot_serial_number = params.get("robot", "")
+        if len(barcode) == 0 or len(user_id) == 0 or len(robot_serial_number) == 0:
+            return [
+                "'barcode', 'user_id' and 'robot' are required to construct a "
+                f"{PLATE_EVENT_SOURCE_COMPLETED} event message"
+            ], None
+
+        robot_uuid = __get_robot_uuid(robot_serial_number)
+        if robot_uuid is None:
+            return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
+
+        source_plate_uuid = get_source_plate_uuid(barcode)
+        if source_plate_uuid is None:
+            return [f"Unable to determine a uuid for source plate '{barcode}'"], None
+
+        samples = get_samples(source_plate_uuid)
+        if samples is None:
+            return [f"Unable to determine samples that belong to source plate '{barcode}'"], None
+
+        event_subjects = [
+            __construct_robot_message_subject(robot_serial_number, robot_uuid),
+            __construct_source_plate_message_subject(barcode, source_plate_uuid),
+        ]
+        event_subjects.extend([__construct_sample_message_subject(sample) for sample in samples])
+        message_content = {
+            "event": {
+                "uuid": str(uuid4()),
+                "event_type": PLATE_EVENT_SOURCE_COMPLETED,
+                "occured_at": __get_current_datetime(),
+                "user_identifier": user_id,
+                "subjects": event_subjects,
+                "metadata": {},
+            },
+            "lims": app.config["RMQ_LIMS_ID"],
+        }
+        return [], Message(message_content)
+    except Exception as e:
+        logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_COMPLETED} message")
+        logger.exception(e)
+        return [
+            f"An unexpected error occurred attempting to construct the {PLATE_EVENT_SOURCE_COMPLETED} event message"
+        ], None
 
 
 def construct_source_plate_not_recognised_message(
@@ -266,4 +314,27 @@ def __construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[st
         "subject_type": "plate",
         "friendly_name": barcode,
         "uuid": uuid,
+    }
+
+
+def __construct_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]:
+    """Generates sample subject for a plate event message.
+
+    Arguments:
+        samples {Dict[str, str]} -- The sample for which to generate a subject.
+
+    Returns:
+        {Dict[str, str]} -- The plate message sample subject.
+    """
+    friendly_name = "__".join([
+        sample[FIELD_ROOT_SAMPLE_ID],
+        sample[FIELD_RNA_ID],
+        sample[FIELD_LAB_ID],
+        sample[FIELD_RESULT],
+    ])
+    return {
+        "role_type": "sample",
+        "subject_type": "sample",
+        "friendly_name": friendly_name,
+        "uuid": sample[FIELD_LH_SAMPLE_UUID],
     }

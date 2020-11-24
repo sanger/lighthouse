@@ -6,12 +6,18 @@ from lighthouse.helpers.plate_events import (
     construct_source_plate_not_recognised_message,
     construct_source_plate_no_map_data_message,
     construct_source_plate_all_negatives_message,
+    construct_source_plate_completed_message,
 )
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,
     PLATE_EVENT_SOURCE_NOT_RECOGNISED,
     PLATE_EVENT_SOURCE_NO_MAP_DATA,
     PLATE_EVENT_SOURCE_ALL_NEGATIVES,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_RNA_ID,
+    FIELD_LAB_ID,
+    FIELD_RESULT,
+    FIELD_LH_SAMPLE_UUID,
 )
 
 
@@ -316,7 +322,7 @@ def test_construct_source_plate_no_map_data_message_creates_expected_message(app
                     "friendly_name": test_robot_serial_number,
                     "uuid": test_robot_uuid,
                 } in subjects
-                assert {
+                assert {  # source plate subject
                     "role_type": "cherrypicking_source_labware",
                     "subject_type": "plate",
                     "friendly_name": test_barcode,
@@ -459,9 +465,220 @@ def test_construct_source_plate_all_negatives_message_creates_expected_message(a
                     "friendly_name": test_robot_serial_number,
                     "uuid": test_robot_uuid,
                 } in subjects
-                assert {
+                assert {  # source plate subject
                     "role_type": "cherrypicking_source_labware",
                     "subject_type": "plate",
                     "friendly_name": test_barcode,
                     "uuid": test_source_plate_uuid,
                 } in subjects
+
+
+# ---------- construct_source_plate_completed_message tests ----------
+
+
+def test_construct_source_plate_completed_message_errors_without_barcode():
+    test_params = {"user_id": "test user", "robot": "12345"}
+    errors, message = construct_source_plate_completed_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+    test_params = {"barcode": "", "user_id": "test user", "robot": "12345"}
+    errors, message = construct_source_plate_completed_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_without_user_id():
+    test_params = {"barcode": "ABC123", "robot": "12345"}
+    errors, message = construct_source_plate_completed_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+    test_params = {"barcode": "ABC123", "user_id": "", "robot": "12345"}
+    errors, message = construct_source_plate_completed_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_without_robot():
+    test_params = {"barcode": "ABC123", "user_id": "test user"}
+    errors, message = construct_source_plate_completed_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+    test_params = {"barcode": "ABC123", "user_id": "test user", "robot": ""}
+    errors, message = construct_source_plate_completed_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_with_failure_getting_robot_uuid():
+    # don't provide an app config to query
+    test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
+    errors, message = construct_source_plate_completed_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_without_robot_uuid(app):
+    with app.app_context():
+        test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
+        errors, message = construct_source_plate_completed_message(test_params)
+
+        assert len(errors) == 1
+        assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_with_failure_getting_plate_uuid(app):
+    with app.app_context():
+        test_robot_serial_number, _ = any_robot_info(app)
+        with patch(
+            "lighthouse.helpers.plate_events.get_source_plate_uuid",
+            side_effect=Exception("Boom!"),
+        ):
+            test_params = {
+                "barcode": "ABC123",
+                "user_id": "test_user",
+                "robot": test_robot_serial_number,
+            }
+            errors, message = construct_source_plate_completed_message(test_params)
+
+            assert len(errors) == 1
+            assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_without_source_plate_uuid(app):
+    with app.app_context():
+        test_robot_serial_number, _ = any_robot_info(app)
+        with patch("lighthouse.helpers.plate_events.get_source_plate_uuid", return_value=None):
+            test_params = {
+                "barcode": "ABC123",
+                "user_id": "test_user",
+                "robot": test_robot_serial_number,
+            }
+            errors, message = construct_source_plate_completed_message(test_params)
+
+            assert len(errors) == 1
+            assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_with_failure_getting_samples(app):
+    with app.app_context():
+        test_robot_serial_number, _ = any_robot_info(app)
+        test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
+        with patch(
+            "lighthouse.helpers.plate_events.get_source_plate_uuid",
+            return_value=test_source_plate_uuid,
+        ):
+            with patch("lighthouse.helpers.plate_events.get_samples", side_effect=Exception("Boom!")):
+                test_params = {
+                    "barcode": "ABC123",
+                    "user_id": "test_user",
+                    "robot": test_robot_serial_number,
+                }
+                errors, message = construct_source_plate_completed_message(test_params)
+
+                assert len(errors) == 1
+                assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_without_source_plate_uuid(app):
+    with app.app_context():
+        test_robot_serial_number, _ = any_robot_info(app)
+        test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
+        with patch(
+            "lighthouse.helpers.plate_events.get_source_plate_uuid",
+            return_value=test_source_plate_uuid,
+        ):
+            with patch("lighthouse.helpers.plate_events.get_samples", return_value=None):
+                test_params = {
+                    "barcode": "ABC123",
+                    "user_id": "test_user",
+                    "robot": test_robot_serial_number,
+                }
+                errors, message = construct_source_plate_completed_message(test_params)
+
+                assert len(errors) == 1
+                assert message is None
+
+
+def test_construct_source_plate_completed_message_creates_expected_message(app):
+    with app.app_context():
+        test_robot_serial_number, test_robot_uuid = any_robot_info(app)
+        test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
+        with patch(
+            "lighthouse.helpers.plate_events.get_source_plate_uuid",
+            return_value=test_source_plate_uuid,
+        ):
+            test_samples = [
+                {
+                    FIELD_ROOT_SAMPLE_ID: "MCM001",
+                    FIELD_RNA_ID: "rna_1",
+                    FIELD_LAB_ID: "Lab 1",
+                    FIELD_RESULT: "Positive",
+                    FIELD_LH_SAMPLE_UUID: "17be6834-06e7-4ce1-8413-9d8667cb9022",
+                    "friendly_name": "MCM001__rna_1__Lab 1__Positive",
+                },
+                {
+                    FIELD_ROOT_SAMPLE_ID: "MCM002",
+                    FIELD_RNA_ID: "rna_2",
+                    FIELD_LAB_ID: "Lab 1",
+                    FIELD_RESULT: "Negative",
+                    FIELD_LH_SAMPLE_UUID: "57c4e79d-04f4-4eeb-a2b9-316312ac3a3d",
+                    "friendly_name": "MCM002__rna_2__Lab 1__Negative",
+                }
+            ]
+            with patch("lighthouse.helpers.plate_events.get_samples", return_value=test_samples):
+                with patch("lighthouse.helpers.plate_events.Message") as mock_message:
+                    test_barcode = "ABC123"
+                    test_user_id = "test_user"
+                    test_params = {
+                        "barcode": test_barcode,
+                        "user_id": test_user_id,
+                        "robot": test_robot_serial_number,
+                    }
+                    errors, _ = construct_source_plate_completed_message(test_params)
+
+                    assert len(errors) == 0
+
+                    args, _ = mock_message.call_args
+                    message_content = args[0]
+
+                    assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+
+                    event = message_content["event"]
+                    assert event["uuid"] is not None
+                    assert event["event_type"] == PLATE_EVENT_SOURCE_COMPLETED
+                    assert event["occured_at"] is not None
+                    assert event["user_identifier"] == test_user_id
+
+                    subjects = event["subjects"]
+                    assert len(subjects) == 4
+                    assert {  # robot subject
+                        "role_type": "robot",
+                        "subject_type": "robot",
+                        "friendly_name": test_robot_serial_number,
+                        "uuid": test_robot_uuid,
+                    } in subjects
+                    assert {  # source plate subject
+                        "role_type": "cherrypicking_source_labware",
+                        "subject_type": "plate",
+                        "friendly_name": test_barcode,
+                        "uuid": test_source_plate_uuid,
+                    } in subjects
+
+                    # sample subjects
+                    for sample in test_samples:
+                        assert {
+                            "role_type": "sample",
+                            "subject_type": "sample",
+                            "friendly_name": sample["friendly_name"],
+                            "uuid": sample[FIELD_LH_SAMPLE_UUID],
+                        } in subjects
