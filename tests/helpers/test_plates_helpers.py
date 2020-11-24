@@ -751,10 +751,10 @@ def test_get_source_plate_uuids(app, samples_different_plates, source_plates):
             samples_different_plates[1],
         ]
 
-        correct_uuids = [
-            source_plates[0][FIELD_SOURCE_PLATE_UUID],
-            source_plates[1][FIELD_SOURCE_PLATE_UUID],
-        ]
-        source_plate_uuids = get_source_plate_uuids(samples)
+        correct_uuids = {
+            source_plates[0][FIELD_PLATE_BARCODE]: source_plates[0][FIELD_SOURCE_PLATE_UUID],
+            source_plates[1][FIELD_PLATE_BARCODE]: source_plates[1][FIELD_SOURCE_PLATE_UUID],
+        }
+        source_plate_uuids = get_source_plate_id_mappings(samples)
 
         assert source_plate_uuids == correct_uuids

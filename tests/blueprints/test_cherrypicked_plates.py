@@ -187,7 +187,7 @@ def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
         return_value="TS1",
     ):
         with patch(
-            "lighthouse.blueprints.cherrypicked_plates.get_source_plate_uuids", return_value=[]
+            "lighthouse.blueprints.cherrypicked_plates.get_source_plate_id_mappings", return_value=[]
         ):
             barcode = "plate_1"
             response = client.get(

@@ -423,7 +423,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return mapped_samples
 
 
-def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -> Dict[str, Any]:
+def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]], robot_serial_number: str, plate_id_mappings: Dict[str, str]) -> Dict[str, Any]:
     logger.debug(
         f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
     )
@@ -455,13 +455,16 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
     return {"data": {"type": "plates", "attributes": body}}
 
 
-def get_source_plate_uuids(samples):
+
+def get_source_plate_id_mappings(samples):
     barcodes = get_unique_plate_barcodes(samples)
     source_plate_documents = find_source_plates(query_for_source_plate_uuids(barcodes))
 
-    source_plate_uuids = []
+    source_plate_uuids = {}
     for plate in source_plate_documents:
-        source_plate_uuids.append(plate[FIELD_SOURCE_PLATE_UUID])
+        plate_barcode = plate[FIELD_PLATE_BARCODE]
+        plate_uuid = plate[FIELD_SOURCE_PLATE_UUID]
+        source_plate_uuids[plate_barcode] = plate_uuid
 
     return source_plate_uuids
 
