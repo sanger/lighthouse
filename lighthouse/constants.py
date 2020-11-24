@@ -75,6 +75,7 @@ REPORT_COLUMNS = [
     "Root Sample ID",
     "Result",
     "source",
+    "plate_barcode",
     "coordinate",
     "plate and well",
     "location_barcode",
