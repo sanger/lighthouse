@@ -117,7 +117,8 @@ def construct_source_plate_completed_message(
         logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_COMPLETED} message")
         logger.exception(e)
         return [
-            f"An unexpected error occurred attempting to construct the {PLATE_EVENT_SOURCE_COMPLETED} event message"
+            "An unexpected error occurred attempting to construct the "
+            f"{PLATE_EVENT_SOURCE_COMPLETED} event message"
         ], None
 
 
@@ -326,12 +327,14 @@ def __construct_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]
     Returns:
         {Dict[str, str]} -- The plate message sample subject.
     """
-    friendly_name = "__".join([
-        sample[FIELD_ROOT_SAMPLE_ID],
-        sample[FIELD_RNA_ID],
-        sample[FIELD_LAB_ID],
-        sample[FIELD_RESULT],
-    ])
+    friendly_name = "__".join(
+        [
+            sample[FIELD_ROOT_SAMPLE_ID],
+            sample[FIELD_RNA_ID],
+            sample[FIELD_LAB_ID],
+            sample[FIELD_RESULT],
+        ]
+    )
     return {
         "role_type": "sample",
         "subject_type": "sample",

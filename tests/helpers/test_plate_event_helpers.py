@@ -577,7 +577,9 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_sa
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
             return_value=test_source_plate_uuid,
         ):
-            with patch("lighthouse.helpers.plate_events.get_samples", side_effect=Exception("Boom!")):
+            with patch(
+                "lighthouse.helpers.plate_events.get_samples", side_effect=Exception("Boom!")
+            ):
                 test_params = {
                     "barcode": "ABC123",
                     "user_id": "test_user",
@@ -589,7 +591,7 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_sa
                 assert message is None
 
 
-def test_construct_source_plate_completed_message_errors_without_source_plate_uuid(app):
+def test_construct_source_plate_completed_message_errors_without_samples(app):
     with app.app_context():
         test_robot_serial_number, _ = any_robot_info(app)
         test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
@@ -633,7 +635,7 @@ def test_construct_source_plate_completed_message_creates_expected_message(app):
                     FIELD_RESULT: "Negative",
                     FIELD_LH_SAMPLE_UUID: "57c4e79d-04f4-4eeb-a2b9-316312ac3a3d",
                     "friendly_name": "MCM002__rna_2__Lab 1__Negative",
-                }
+                },
             ]
             with patch("lighthouse.helpers.plate_events.get_samples", return_value=test_samples):
                 with patch("lighthouse.helpers.plate_events.Message") as mock_message:
