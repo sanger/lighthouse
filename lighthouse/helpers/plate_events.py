@@ -95,7 +95,6 @@ def construct_source_plate_not_recognised_message(
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
-        robot_uuid = str(uuid4())  # TODO - get robot uuid from config
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
