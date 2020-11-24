@@ -32,7 +32,8 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
         errors, message = construct_event_message(event_type, request.args)
         if len(errors) > 0:
             logger.error(
-                "Failed publishing plate event message: error(s) constructing event message"
+                "Failed publishing plate event message: error(s) constructing event message: "
+                f"{errors}"
             )
             return {"errors": errors}, HTTPStatus.INTERNAL_SERVER_ERROR
 
