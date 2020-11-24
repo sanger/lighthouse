@@ -85,6 +85,11 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
         source_plate_uuids = get_source_plate_uuids(mongo_samples)
 
+        if not source_plate_uuids:
+            return {
+                "errors": ["No source plate UUIDs for samples on plate: " + barcode]
+            }, HTTPStatus.BAD_REQUEST
+
         body = create_cherrypicked_post_body(barcode, mapped_samples)
 
         response = send_to_ss(body)

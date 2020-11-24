@@ -730,15 +730,16 @@ def test_get_unique_plate_barcodes(app, samples_different_plates):
     assert get_unique_plate_barcodes(samples_different_plates) == correct_barcodes
 
 
-def test_query_for_source_plate_uuids(app, samples_different_plates):
+def test_query_for_source_plate_uuids(app):
     correct_query = {
         "$or": [
             {FIELD_PLATE_BARCODE: "123"},
             {FIELD_PLATE_BARCODE: "456"},
         ]
     }
+    barcodes = ["123", "456"]
 
-    assert query_for_source_plate_uuids(samples_different_plates) == correct_query
+    assert query_for_source_plate_uuids(barcodes) == correct_query
 
 
 def test_get_source_plate_uuids(app, samples_different_plates, source_plates):

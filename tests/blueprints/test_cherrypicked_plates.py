@@ -6,7 +6,13 @@ import responses  # type: ignore
 
 
 def test_get_cherrypicked_plates_endpoint_successful(
-    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses, mlwh_lh_samples, source_plates
+    app,
+    client,
+    dart_samples_for_bp_test,
+    samples_with_lab_id,
+    mocked_responses,
+    mlwh_lh_samples,
+    source_plates,
 ):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
@@ -74,7 +80,7 @@ def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
 
 
 def test_get_cherrypicked_plates_endpoint_ss_failure(
-    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses
+    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses, source_plates
 ):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
@@ -99,7 +105,7 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
 
 
 def test_get_cherrypicked_plates_mlwh_update_failure(
-    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses
+    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses, source_plates
 ):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
@@ -157,7 +163,7 @@ def test_post_plates_endpoint_mismatched_sample_numbers(
             }
 
 
-def test_post_plates_endpoint_missing_dart_data(app, client):
+def test_post_cherrypicked_plates_endpoint_missing_dart_data(app, client):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.find_dart_source_samples_rows",
         return_value=[],
@@ -171,3 +177,24 @@ def test_post_plates_endpoint_missing_dart_data(app, client):
         assert response.json == {
             "errors": ["Failed to find sample data in DART for plate barcode: " + barcode]
         }
+
+
+def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
+    app, client, dart_samples_for_bp_test, samples_with_lab_id
+):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+        return_value="TS1",
+    ):
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.get_source_plate_uuids", return_value=[]
+        ):
+            barcode = "plate_1"
+            response = client.get(
+                f"/cherrypicked-plates/create?barcode={barcode}&robot=robot_1",
+                content_type="application/json",
+            )
+            assert response.status_code == HTTPStatus.BAD_REQUEST
+            assert response.json == {
+                "errors": ["No source plate UUIDs for samples on plate: " + barcode]
+            }

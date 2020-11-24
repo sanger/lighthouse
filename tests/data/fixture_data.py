@@ -153,7 +153,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "klm",
         FIELD_ROOT_SAMPLE_ID: "MCM004",
         FIELD_RNA_ID: "rna_1",
-        FIELD_SAMPLE_UUID: "8e595a92-6798-4c93-8dc8-44f3ffb8bed3"
+        FIELD_SAMPLE_UUID: "8e595a92-6798-4c93-8dc8-44f3ffb8bed3",
     },
     {  #  positive, with low Ct values
         FIELD_COORDINATE: "E01",
@@ -166,7 +166,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: 6.12345678,
         FIELD_CH3_CQ: 7.12345678,
-        FIELD_SAMPLE_UUID: "2184f5df-fdbb-4dcb-8bec-9f86450e0c82"
+        FIELD_SAMPLE_UUID: "2184f5df-fdbb-4dcb-8bec-9f86450e0c82",
     },
     {  #  positive, with high Ct values
         FIELD_COORDINATE: "F01",
@@ -389,7 +389,7 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Any]] = [
     },
     {  # Non-control sample
         "sample": {
-            FIELD_DART_SAMPLE_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
+            FIELD_SAMPLE_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
             FIELD_COORDINATE: "A02",
             FIELD_SOURCE: "test2",
             FIELD_RESULT: "Positive",
@@ -407,6 +407,7 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Any]] = [
             FIELD_DART_ROOT_SAMPLE_ID: "MCM002",
             FIELD_DART_RNA_ID: "rna_2",
             FIELD_DART_LAB_ID: "AB",
+            FIELD_DART_SAMPLE_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
         },
     },
 ]
