@@ -171,7 +171,7 @@ def __get_robot_uuid(serial_number: str) -> Optional[str]:
     Returns:
         {str} -- The robot uuid; otherwise None if it cannot be determined.
     """
-    return str(uuid4())  # TODO - get robot uuid from config
+    return app.config["BECKMAN_ROBOTS"].get(serial_number, {}).get("uuid", None)
 
 
 def __get_source_plate_uuid(barcode: str) -> Optional[str]:
