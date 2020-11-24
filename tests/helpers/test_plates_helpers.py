@@ -64,7 +64,7 @@ from lighthouse.helpers.plates import (
     update_mlwh_with_cog_uk_ids,
     get_unique_plate_barcodes,
     query_for_source_plate_uuids,
-    get_source_plate_uuids,
+    get_source_plate_id_mappings,
 )
 from sqlalchemy.exc import OperationalError
 
@@ -663,12 +663,12 @@ def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
 
 def test_create_cherrypicked_post_body(app):
     with app.app_context():
-        barcode = "d123"
+        barcode = "123"
         mapped_samples = [
             {
                 "control": True,
                 "control_type": "positive",
-                "barcode": "d123",
+                "barcode": "123",
                 "coordinate": "B01",
             },
             {
@@ -676,16 +676,24 @@ def test_create_cherrypicked_post_body(app):
                 "sample_description": "MCM002",
                 "phenotype": "positive",
                 "supplier_name": "abcd",
-                "barcode": "d123",
+                "barcode": "123",
                 "coordinate": "B02",
                 "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
             },
         ]
+
+        robot_serial_number = "BKRB0001"
+
+        plate_id_mappings = {
+            "123": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
+            "456": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+        }
+
         correct_body = {
             "data": {
                 "type": "plates",
                 "attributes": {
-                    "barcode": "d123",
+                    "barcode": "123",
                     "purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
                     "study_uuid": current_app.config["SS_UUID_STUDY_CHERRYPICKED"],
                     "wells": {
@@ -705,11 +713,23 @@ def test_create_cherrypicked_post_body(app):
                             }
                         },
                     },
+                    "events": {
+                        "event": {
+                            "subjects":[
+                                {
+                                    "role_type":"robot",
+                                    "subject_type":"robot",
+                                    "friendly_name":"Robot 1",
+                                    "uuid":"082effc3-f769-4e83-9073-dc7aacd5f71b"
+                                },
+                            ]
+                        }
+                    }
                 },
             }
         }
 
-        assert create_cherrypicked_post_body(barcode, mapped_samples) == correct_body
+        assert create_cherrypicked_post_body(barcode, mapped_samples, robot_serial_number, plate_id_mappings) == correct_body
 
 
 def test_find_samples_returns_none_if_no_query_provided(app):
@@ -742,7 +762,7 @@ def test_query_for_source_plate_uuids(app):
     assert query_for_source_plate_uuids(barcodes) == correct_query
 
 
-def test_get_source_plate_uuids(app, samples_different_plates, source_plates):
+def test_get_source_plate_id_mappings(app, samples_different_plates, source_plates):
     with app.app_context():
         samples = [
             samples_different_plates[0],

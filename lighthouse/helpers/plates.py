@@ -445,15 +445,48 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]], r
 
         wells_content[sample["coordinate"]] = {"content": content}
 
+    events = create_destination_event_message(samples, robot_serial_number)
+
     body = {
         "barcode": barcode,
         "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
         "study_uuid": app.config["SS_UUID_STUDY_CHERRYPICKED"],
         "wells": wells_content,
+        "events": events,
     }
 
     return {"data": {"type": "plates", "attributes": body}}
 
+def create_destination_event_message(samples, robot_serial_number):
+    try:
+        robot_mapping = app.config["BECKMAN_ROBOTS"][robot_serial_number]
+    except KeyError as e:
+        logger.error("Unable to find mapping information for robot:" + robot_serial_number)
+        raise
+    
+    try:
+        robot_friendly_name = robot_mapping["name"]
+        robot_uuid = robot_mapping["uuid"]
+    except:
+        logger.error("Unable to ")
+
+    subjects = []
+
+    robot_subject = {
+        "role_type":"robot",
+        "subject_type":"robot",
+        "friendly_name": robot_friendly_name,
+        "uuid":robot_uuid,
+    }
+
+    subjects.append(robot_subject)
+
+    events = {
+        "event": {
+            "subjects": subjects,
+        }
+    }
+    return events
 
 
 def get_source_plate_id_mappings(samples):
@@ -472,7 +505,7 @@ def get_source_plate_id_mappings(samples):
 def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
-    
+
     source_plates = app.data.driver.db.source_plates
 
     source_plate_documents = list(source_plates.find(query))
