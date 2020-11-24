@@ -101,14 +101,7 @@ def construct_source_plate_not_recognised_message(
                 "event_type": PLATE_EVENT_SOURCE_NOT_RECOGNISED,
                 "occured_at": __get_current_datetime(),
                 "user_identifier": user_id,
-                "subjects": [
-                    {
-                        "role_type": "robot",
-                        "subject_type": "robot",
-                        "friendly_name": robot_serial_number,
-                        "uuid": robot_uuid,
-                    }
-                ],
+                "subjects": [__get_robot_message_subject(robot_serial_number, robot_uuid)],
                 "metadata": {},
             },
             "lims": app.config["RMQ_LIMS_ID"],
@@ -161,18 +154,8 @@ def construct_source_plate_no_map_data_message(
                 "occured_at": __get_current_datetime(),
                 "user_identifier": user_id,
                 "subjects": [
-                    {
-                        "role_type": "robot",
-                        "subject_type": "robot",
-                        "friendly_name": robot_serial_number,
-                        "uuid": robot_uuid,
-                    },
-                    {
-                        "role_type": "cherrypicking_source_labware",
-                        "subject_type": "plate",
-                        "friendly_name": barcode,
-                        "uuid": source_plate_uuid,
-                    },
+                    __get_robot_message_subject(robot_serial_number, robot_uuid),
+                    __get_source_plate_message_subject(barcode, source_plate_uuid),
                 ],
                 "metadata": {},
             },
@@ -238,3 +221,39 @@ def __get_source_plate_uuid(barcode: str) -> Optional[str]:
         {str} -- The source plate uuid; otherwise None if it cannot be determined.
     """
     return str(uuid4())  # TODO - get the source plate uuid from Mongo
+
+
+def __get_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]:
+    """Generates a robot subject for a plate event message.
+
+    Arguments:
+        serial_number {str} -- The robot serial number.
+        uuid {str} -- The robot uuid.
+
+    Returns:
+        {Dict[str, str]} -- The robot message subject.
+    """
+    return {
+        "role_type": "robot",
+        "subject_type": "robot",
+        "friendly_name": serial_number,
+        "uuid": uuid,
+    }
+
+
+def __get_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str, str]:
+    """Generates a source plate subject for a plate event message.
+
+    Arguments:
+        barcode {str} -- The source plate barcode.
+        uuid {str} -- The robot uuid.
+
+    Returns:
+        {Dict[str, str]} -- The source plate message subject.
+    """
+    return {
+        "role_type": "cherrypicking_source_labware",
+        "subject_type": "plate",
+        "friendly_name": barcode,
+        "uuid": uuid,
+    }
