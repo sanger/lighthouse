@@ -24,8 +24,10 @@ from .data.fixture_data import (
     SAMPLES_DIFFERENT_PLATES,
     DART_MONGO_MERGED_SAMPLES,
     SAMPLES_WITH_LAB_ID,
+    SAMPLES_WITH_UUIDS,
     EVENT_WH_DATA,
     MLWH_SAMPLE_STOCK_RESOURCE,
+    SOURCE_PLATES,
 )
 from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
 from lighthouse.helpers.dart_db import create_dart_connection, load_sql_server_script
@@ -375,3 +377,31 @@ def event_wh_sql_engine(app):
     return create_mysql_connection_engine(
         app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"]
     )
+
+
+@pytest.fixture
+def source_plates(app):
+    with app.app_context():
+        source_plates_collection = app.data.driver.db.source_plates
+        _ = source_plates_collection.insert_many(SOURCE_PLATES)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SOURCE_PLATES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        source_plates_collection.delete_many({})
+
+
+@pytest.fixture
+def samples_with_uuids(app):
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        _ = samples_collection.insert_many(SAMPLES_WITH_UUIDS)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SAMPLES_WITH_UUIDS)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
