@@ -105,7 +105,7 @@ def construct_source_plate_not_recognised_message(
                 "event_type": PLATE_EVENT_SOURCE_NOT_RECOGNISED,
                 "occured_at": __get_current_datetime(),
                 "user_identifier": user_id,
-                "subjects": [__get_robot_message_subject(robot_serial_number, robot_uuid)],
+                "subjects": [__construct_robot_message_subject(robot_serial_number, robot_uuid)],
                 "metadata": {},
             },
             "lims": app.config["RMQ_LIMS_ID"],
@@ -217,8 +217,8 @@ def __construct_default_source_plate_on_robot_message(
                 "occured_at": __get_current_datetime(),
                 "user_identifier": user_id,
                 "subjects": [
-                    __get_robot_message_subject(robot_serial_number, robot_uuid),
-                    __get_source_plate_message_subject(barcode, source_plate_uuid),
+                    __construct_robot_message_subject(robot_serial_number, robot_uuid),
+                    __construct_source_plate_message_subject(barcode, source_plate_uuid),
                 ],
                 "metadata": {},
             },
@@ -233,7 +233,7 @@ def __construct_default_source_plate_on_robot_message(
         ], None
 
 
-def __get_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]:
+def __construct_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]:
     """Generates a robot subject for a plate event message.
 
     Arguments:
@@ -251,7 +251,7 @@ def __get_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]
     }
 
 
-def __get_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str, str]:
+def __construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str, str]:
     """Generates a source plate subject for a plate event message.
 
     Arguments:
