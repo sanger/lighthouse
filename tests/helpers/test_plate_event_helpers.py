@@ -248,7 +248,7 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
     with app.app_context():
         test_robot_serial_number, _ = any_robot_info(app)
         with patch(
-            "lighthouse.helpers.plate_events.__get_source_plate_uuid",
+            "lighthouse.helpers.plate_events.get_source_plate_uuid",
             side_effect=Exception("Boom!"),
         ):
             test_params = {
@@ -265,7 +265,7 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
 def test_construct_source_plate_no_map_data_message_errors_without_source_plate_uuid(app):
     with app.app_context():
         test_robot_serial_number, _ = any_robot_info(app)
-        with patch("lighthouse.helpers.plate_events.__get_source_plate_uuid", return_value=None):
+        with patch("lighthouse.helpers.plate_events.get_source_plate_uuid", return_value=None):
             test_params = {
                 "barcode": "ABC123",
                 "user_id": "test_user",
@@ -282,7 +282,7 @@ def test_construct_source_plate_no_map_data_message_creates_expected_message(app
         test_robot_serial_number, test_robot_uuid = any_robot_info(app)
         test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
         with patch(
-            "lighthouse.helpers.plate_events.__get_source_plate_uuid",
+            "lighthouse.helpers.plate_events.get_source_plate_uuid",
             return_value=test_source_plate_uuid,
         ):
             with patch("lighthouse.helpers.plate_events.Message") as mock_message:
@@ -391,7 +391,7 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
     with app.app_context():
         test_robot_serial_number, _ = any_robot_info(app)
         with patch(
-            "lighthouse.helpers.plate_events.__get_source_plate_uuid",
+            "lighthouse.helpers.plate_events.get_source_plate_uuid",
             side_effect=Exception("Boom!"),
         ):
             test_params = {
@@ -408,7 +408,7 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
 def test_construct_source_plate_all_negatives_message_errors_without_source_plate_uuid(app):
     with app.app_context():
         test_robot_serial_number, _ = any_robot_info(app)
-        with patch("lighthouse.helpers.plate_events.__get_source_plate_uuid", return_value=None):
+        with patch("lighthouse.helpers.plate_events.get_source_plate_uuid", return_value=None):
             test_params = {
                 "barcode": "ABC123",
                 "user_id": "test_user",
@@ -425,7 +425,7 @@ def test_construct_source_plate_all_negatives_message_creates_expected_message(a
         test_robot_serial_number, test_robot_uuid = any_robot_info(app)
         test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
         with patch(
-            "lighthouse.helpers.plate_events.__get_source_plate_uuid",
+            "lighthouse.helpers.plate_events.get_source_plate_uuid",
             return_value=test_source_plate_uuid,
         ):
             with patch("lighthouse.helpers.plate_events.Message") as mock_message:

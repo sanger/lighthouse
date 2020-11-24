@@ -10,6 +10,10 @@ from lighthouse.constants import (
     PLATE_EVENT_SOURCE_NO_MAP_DATA,
     PLATE_EVENT_SOURCE_ALL_NEGATIVES,
 )
+from lighthouse.helpers.mongo_db import (
+    get_source_plate_uuid,
+    get_samples,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -174,18 +178,6 @@ def __get_robot_uuid(serial_number: str) -> Optional[str]:
     return app.config["BECKMAN_ROBOTS"].get(serial_number, {}).get("uuid", None)
 
 
-def __get_source_plate_uuid(barcode: str) -> Optional[str]:
-    """Attempt to get a uuid for a source plate barcode.
-
-    Arguments:
-        barcode {str} -- The source plate barcode.
-
-    Returns:
-        {str} -- The source plate uuid; otherwise None if it cannot be determined.
-    """
-    return str(uuid4())  # TODO - get the source plate uuid from Mongo
-
-
 def __construct_default_source_plate_on_robot_message(
     event_type: str, params: Dict[str, str]
 ) -> Tuple[List[str], Optional[Message]]:
@@ -214,7 +206,7 @@ def __construct_default_source_plate_on_robot_message(
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
-        source_plate_uuid = __get_source_plate_uuid(barcode)
+        source_plate_uuid = get_source_plate_uuid(barcode)
         if source_plate_uuid is None:
             return [f"Unable to determine a uuid for source plate '{barcode}'"], None
 
