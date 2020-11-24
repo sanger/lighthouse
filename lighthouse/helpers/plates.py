@@ -24,6 +24,7 @@ from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
     FIELD_SOURCE_PLATE_UUID,
+    FIELD_SAMPLE_UUID,
     POSITIVE_SAMPLES_MONGODB_FILTER,
 )
 from lighthouse.exceptions import (
@@ -174,7 +175,6 @@ def query_for_cherrypicked_samples(rows):
             FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
             FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
             FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
-            FIELD_PLATE_BARCODE: getattr(row, FIELD_PLATE_BARCODE),
         }
         mongo_query.append(sample_query)
     return {"$or": mongo_query}
@@ -407,7 +407,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
-                mapped_sample["replace_uuid"] = mongo_row[FIELD_DART_SAMPLE_UUID]
+                mapped_sample["replace_uuid"] = mongo_row[FIELD_SAMPLE_UUID]
 
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
             mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
@@ -469,7 +469,7 @@ def get_source_plate_uuids(samples):
 def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
-
+    
     source_plates = app.data.driver.db.source_plates
 
     source_plate_documents = list(source_plates.find(query))

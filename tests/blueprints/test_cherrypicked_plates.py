@@ -6,7 +6,7 @@ import responses  # type: ignore
 
 
 def test_get_cherrypicked_plates_endpoint_successful(
-    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses, mlwh_lh_samples
+    app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses, mlwh_lh_samples, source_plates
 ):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",

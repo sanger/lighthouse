@@ -24,6 +24,7 @@ from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
     FIELD_SOURCE_PLATE_UUID,
+    FIELD_SAMPLE_UUID,
     MLWH_LH_SAMPLE_RESULT,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
@@ -122,6 +123,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
         FIELD_RNA_ID: "rna_1",
+        FIELD_SAMPLE_UUID: "0a53e7b6-7ce8-4ebc-95c3-02dd64942531",
     },
     {  # a negative result
         FIELD_COORDINATE: "B01",
@@ -131,6 +133,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_1",
+        FIELD_SAMPLE_UUID: "8426ba76-e595-4475-92a6-8a60be0eee20",
     },
     {  # a void result
         FIELD_COORDINATE: "C01",
@@ -140,6 +143,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
         FIELD_RNA_ID: "rna_1",
+        FIELD_SAMPLE_UUID: "8d809bc1-2da6-42f2-9fc8-2eb6794f316f",
     },
     {  # a 'limit of detection' result
         FIELD_COORDINATE: "D01",
@@ -149,6 +153,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "klm",
         FIELD_ROOT_SAMPLE_ID: "MCM004",
         FIELD_RNA_ID: "rna_1",
+        FIELD_SAMPLE_UUID: "8e595a92-6798-4c93-8dc8-44f3ffb8bed3"
     },
     {  #  positive, with low Ct values
         FIELD_COORDINATE: "E01",
@@ -161,6 +166,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: 6.12345678,
         FIELD_CH3_CQ: 7.12345678,
+        FIELD_SAMPLE_UUID: "2184f5df-fdbb-4dcb-8bec-9f86450e0c82"
     },
     {  #  positive, with high Ct values
         FIELD_COORDINATE: "F01",
@@ -173,6 +179,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 40.12345678,
         FIELD_CH2_CQ: 41.12345678,
         FIELD_CH3_CQ: 42.12345678,
+        FIELD_SAMPLE_UUID: "16dbdac1-ffe9-4d3d-92be-3a77c1e4c65e",
     },
     {  #  positive, with mix of Ct values
         FIELD_COORDINATE: "G01",
@@ -185,6 +192,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: None,
         FIELD_CH3_CQ: 45.12345678,
+        FIELD_SAMPLE_UUID: "502a44a7-e4b4-4ad6-8e4c-3cfae35193d8",
     },
     {  #  positive, with disallowed Root Sample ID
         FIELD_COORDINATE: "A02",
@@ -194,6 +202,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "wxy",
         FIELD_ROOT_SAMPLE_ID: "CBIQA_MCM008",
         FIELD_RNA_ID: "rna_1",
+        FIELD_SAMPLE_UUID: "d38f7f9a-6f17-4ff4-a2f9-b49505317340",
     },
 ]
 

@@ -6,6 +6,7 @@ NON_EXISTING_SAMPLE = "NonExistingSample"
 
 # MongoDB field names
 FIELD_ROOT_SAMPLE_ID = "Root Sample ID"
+FIELD_SAMPLE_UUID = "lh_sample_uuid"
 FIELD_RNA_ID = "RNA ID"
 FIELD_RESULT = "Result"
 FIELD_COORDINATE = "coordinate"
