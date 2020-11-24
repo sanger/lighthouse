@@ -131,3 +131,10 @@ RMQ_EXCHANGE = "lighthouse.examples"
 RMQ_EXCHANGE_TYPE = "topic"
 RMQ_ROUTING_KEY = "staging.event.#"
 RMQ_LIMS_ID = "LH_LOCAL"
+
+BECKMAN_ROBOTS = {
+    "BKRB0001": {"name": "Robot 1", "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b"},
+    "BKRB0002": {"name": "Robot 2", "uuid": "4fe4ca2b-09a7-40d6-a0ce-0e5dd5f30c47"},
+    "BKRB0003": {"name": "Robot 3", "uuid": "90d8bc7a-2f6e-4a5f-8bea-1e8d27a1ac89"},
+    "BKRB0004": {"name": "Robot 4", "uuid": "675002fe-f364-47e4-b71f-4fe1bb7b5091"},
+}
