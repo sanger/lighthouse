@@ -408,6 +408,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
                 mapped_sample["replace_uuid"] = mongo_row[FIELD_SAMPLE_UUID]
+                mapped_sample["lab_id"] = mongo_row[FIELD_LAB_ID]
 
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
             mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
@@ -454,6 +455,7 @@ def create_cherrypicked_post_body(
     subjects.append(robot_subject(robot_serial_number))
     subjects.extend(source_plate_subjects(plate_id_mappings))
     subjects.append(destination_labware_subject(barcode))
+    subjects.extend(sample_subjects(samples))
 
     events = {
         "event": {
@@ -470,6 +472,27 @@ def create_cherrypicked_post_body(
     }
 
     return {"data": {"type": "plates", "attributes": body}}
+
+
+def sample_subjects(samples):
+    subjects = []
+    for sample in samples:
+        if "control" not in sample:
+            subject = {
+                "role_type": "sample",
+                "subject_type": "sample",
+                "friendly_name": sample_friendly_name(sample),
+                "uuid": sample["replace_uuid"],
+            }
+            subjects.append(subject)
+    return subjects
+
+
+def sample_friendly_name(sample):
+    name = "__".join(
+        [sample["sample_description"], sample["name"], sample["lab_id"], sample["phenotype"]]
+    )
+    return name
 
 
 def destination_labware_subject(barcode):
@@ -503,13 +526,13 @@ def robot_subject(robot_serial_number):
 
     try:
         robot_friendly_name = robot_mapping["name"]
-    except:
+    except KeyError as e:
         logger.error("Unable to find friendly name for robot: " + robot_serial_number)
         raise
 
     try:
         robot_uuid = robot_mapping["uuid"]
-    except:
+    except KeyError as e:
         logger.error("Unable to find UUID for robot: " + robot_serial_number)
         raise
 

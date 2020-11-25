@@ -397,6 +397,7 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Any]] = [
             FIELD_COG_BARCODE: "abcd",
             FIELD_ROOT_SAMPLE_ID: "MCM002",
             FIELD_RNA_ID: "rna_2",
+            FIELD_LAB_ID: "AP",
         },
         "row": {
             FIELD_DART_DESTINATION_COORDINATE: "B02",

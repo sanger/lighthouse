@@ -65,6 +65,7 @@ from lighthouse.helpers.plates import (
     get_unique_plate_barcodes,
     query_for_source_plate_uuids,
     get_source_plate_id_mappings,
+    robot_subject,
 )
 from sqlalchemy.exc import OperationalError
 
@@ -648,6 +649,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "barcode": "d123",
                 "coordinate": "B02",
                 "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                "lab_id": "AP",
             },
         ]
 
@@ -679,6 +681,7 @@ def test_create_cherrypicked_post_body(app):
                 "barcode": "123",
                 "coordinate": "B02",
                 "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                "lab_id": "AP",
             },
         ]
 
@@ -738,6 +741,12 @@ def test_create_cherrypicked_post_body(app):
                                     "role_type": "cherrypicking_destination_labware",
                                     "subject_type": "plate",
                                     "friendly_name": barcode,
+                                },
+                                {
+                                    "role_type": "sample",
+                                    "subject_type": "sample",
+                                    "friendly_name": "MCM002__rna_2__AP__positive",
+                                    "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                                 },
                             ]
                         }
