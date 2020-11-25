@@ -63,11 +63,10 @@ def test_broker_publish_no_routing_key(app, mock_pika, mock_message):
     with app.app_context():
         _, _, mock_channel, _, _ = mock_pika
         _, test_message = mock_message
-        test_routing_key = "routing key"
 
         broker = Broker()
         broker.connect()
-        broker.publish(None, test_routing_key)
+        broker.publish(test_message, None)
 
         mock_channel.basic_publish.assert_not_called()
 
