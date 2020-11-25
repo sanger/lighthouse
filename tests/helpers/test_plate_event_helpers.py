@@ -7,6 +7,10 @@ from lighthouse.helpers.plate_events import (
     construct_source_plate_no_map_data_message,
     construct_source_plate_all_negatives_message,
     construct_source_plate_completed_message,
+    get_robot_uuid,
+    construct_robot_message_subject,
+    construct_source_plate_message_subject,
+    construct_sample_message_subject,
 )
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,
@@ -689,4 +693,14 @@ def test_construct_source_plate_completed_message_creates_expected_message(app):
 # ---------- message subject generation tests ----------
 
 
+def test_construct_robot_message_subject(app):
+    test_robot_serial_number, test_robot_uuid = any_robot_info(app)
 
+    correct_subject = {
+        "role_type":"robot",
+        "subject_type":"robot",
+        "friendly_name":test_robot_serial_number,
+        "uuid":test_robot_uuid
+    }
+
+    assert construct_robot_message_subject(test_robot_serial_number, test_robot_uuid) == correct_subject
