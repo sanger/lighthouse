@@ -520,19 +520,18 @@ def source_plate_subjects(plate_id_mappings):
 def robot_subject(robot_serial_number):
     try:
         robot_mapping = app.config["BECKMAN_ROBOTS"][robot_serial_number]
-    except KeyError as e:
+    except KeyError:
         logger.error("Unable to find events information for robot:" + robot_serial_number)
         raise
-
     try:
         robot_friendly_name = robot_mapping["name"]
-    except KeyError as e:
+    except KeyError:
         logger.error("Unable to find friendly name for robot: " + robot_serial_number)
         raise
 
     try:
         robot_uuid = robot_mapping["uuid"]
-    except KeyError as e:
+    except KeyError:
         logger.error("Unable to find UUID for robot: " + robot_serial_number)
         raise
 
