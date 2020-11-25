@@ -704,3 +704,26 @@ def test_construct_robot_message_subject(app):
     }
 
     assert construct_robot_message_subject(test_robot_serial_number, test_robot_uuid) == correct_subject
+
+
+def test_construct_source_plate_message_subject(app):
+    test_source_plate_barcode = "123"
+    test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
+
+    test_sample = {
+                    FIELD_ROOT_SAMPLE_ID: "MCM001",
+                    FIELD_RNA_ID: "rna_1",
+                    FIELD_LAB_ID: "Lab 1",
+                    FIELD_RESULT: "Positive",
+                    FIELD_LH_SAMPLE_UUID: "17be6834-06e7-4ce1-8413-9d8667cb9022",
+                    "friendly_name": "MCM001__rna_1__Lab 1__Positive",
+                }
+
+    correct_subject = {
+        "role_type":"sample",
+        "subject_type":"sample",
+        "friendly_name":"MCM001__rna_1__Lab 1__Positive",
+        "uuid":"17be6834-06e7-4ce1-8413-9d8667cb9022",
+    }
+
+    assert construct_sample_message_subject(test_sample)
