@@ -684,3 +684,9 @@ def test_construct_source_plate_completed_message_creates_expected_message(app):
                             "friendly_name": sample["friendly_name"],
                             "uuid": sample[FIELD_LH_SAMPLE_UUID],
                         } in subjects
+
+
+# ---------- message subject generation tests ----------
+
+
+
