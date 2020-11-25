@@ -43,14 +43,17 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
         logger.info("Attempting to publish the constructed plate event message")
         broker = Broker()
         broker.connect()
-        broker.publish(message, routing_key)
-        broker.close_connection()
-        logger.info(f"Successfully published a '{event_type}' plate event message")
+        try:
+            broker.publish(message, routing_key)
+            broker.close_connection()
+            logger.info(f"Successfully published a '{event_type}' plate event message")
+            return ({"errors": []}, HTTPStatus.OK)
+        except Exception:
+            broker.close_connection()
+            raise
     except Exception as e:
         logger.error("Failed publishing plate event message: an unexpected error occurred")
         logger.exception(e)
         return {
             "errors": ["An unexpected error occurred attempting to publish a plate event message"]
         }, HTTPStatus.INTERNAL_SERVER_ERROR
-
-    return ({"errors": []}, HTTPStatus.OK)

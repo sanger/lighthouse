@@ -55,24 +55,25 @@ def test_get_create_plate_event_endpoint_internal_error_failed_broker_connect(cl
 
 def test_get_create_plate_event_endpoint_internal_error_failed_broker_publish(client):
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
-        with patch(
-            "lighthouse.blueprints.plate_events.Broker.publish", side_effect=Exception("Boom!")
-        ):
+        with patch("lighthouse.blueprints.plate_events.Broker") as mock_broker:
+            mock_broker().publish.side_effect = Exception("Boom!")
             mock_construct.return_value = [], Message("test message content")
 
             response = client.get("/plate-events/create?event_type=test_event_type")
 
+            mock_broker().close_connection.assert_called()
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert len(response.json["errors"]) == 1
 
 
 def test_get_create_plate_event_endpoint_success(client):
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
-        with patch("lighthouse.blueprints.plate_events.Broker"):
+        with patch("lighthouse.blueprints.plate_events.Broker") as mock_broker:
             test_message = Message("test message content")
             mock_construct.return_value = [], test_message
 
             response = client.get("/plate-events/create?event_type=test_event_type")
 
+            mock_broker().close_connection.assert_called()
             assert response.status_code == HTTPStatus.OK
             assert len(response.json["errors"]) == 0
