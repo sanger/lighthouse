@@ -423,7 +423,12 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return mapped_samples
 
 
-def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]], robot_serial_number: str, plate_id_mappings: Dict[str, str]) -> Dict[str, Any]:
+def create_cherrypicked_post_body(
+    barcode: str,
+    samples: List[Dict[str, Any]],
+    robot_serial_number: str,
+    plate_id_mappings: List[Dict[str, str]],
+) -> Dict[str, Any]:
     logger.debug(
         f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
     )
@@ -445,7 +450,16 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]], r
 
         wells_content[sample["coordinate"]] = {"content": content}
 
-    events = create_destination_event_message(samples, robot_serial_number)
+    subjects = []
+    subjects.append(robot_subject(robot_serial_number))
+    subjects.extend(source_plate_subjects(plate_id_mappings))
+    subjects.append(destination_labware_subject(barcode))
+
+    events = {
+        "event": {
+            "subjects": subjects,
+        }
+    }
 
     body = {
         "barcode": barcode,
@@ -457,47 +471,69 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]], r
 
     return {"data": {"type": "plates", "attributes": body}}
 
-def create_destination_event_message(samples, robot_serial_number):
+
+def destination_labware_subject(barcode):
+    subject = {
+        "role_type": "cherrypicking_destination_labware",
+        "subject_type": "plate",
+        "friendly_name": barcode,
+    }
+    return subject
+
+
+def source_plate_subjects(plate_id_mappings):
+    subjects = []
+    for mapping in plate_id_mappings:
+        subject = {
+            "role_type": "cherrypicking_source_labware",
+            "subject_type": "plate",
+            "friendly_name": mapping["barcode"],
+            "uuid": mapping["uuid"],
+        }
+        subjects.append(subject)
+    return subjects
+
+
+def robot_subject(robot_serial_number):
     try:
         robot_mapping = app.config["BECKMAN_ROBOTS"][robot_serial_number]
     except KeyError as e:
-        logger.error("Unable to find mapping information for robot:" + robot_serial_number)
+        logger.error("Unable to find events information for robot:" + robot_serial_number)
         raise
-    
+
     try:
         robot_friendly_name = robot_mapping["name"]
+    except:
+        logger.error("Unable to find friendly name for robot: " + robot_serial_number)
+        raise
+
+    try:
         robot_uuid = robot_mapping["uuid"]
     except:
-        logger.error("Unable to ")
+        logger.error("Unable to find UUID for robot: " + robot_serial_number)
+        raise
 
-    subjects = []
-
-    robot_subject = {
-        "role_type":"robot",
-        "subject_type":"robot",
+    subject = {
+        "role_type": "robot",
+        "subject_type": "robot",
         "friendly_name": robot_friendly_name,
-        "uuid":robot_uuid,
+        "uuid": robot_uuid,
     }
 
-    subjects.append(robot_subject)
-
-    events = {
-        "event": {
-            "subjects": subjects,
-        }
-    }
-    return events
+    return subject
 
 
 def get_source_plate_id_mappings(samples):
     barcodes = get_unique_plate_barcodes(samples)
     source_plate_documents = find_source_plates(query_for_source_plate_uuids(barcodes))
 
-    source_plate_uuids = {}
+    source_plate_uuids = []
     for plate in source_plate_documents:
-        plate_barcode = plate[FIELD_PLATE_BARCODE]
-        plate_uuid = plate[FIELD_SOURCE_PLATE_UUID]
-        source_plate_uuids[plate_barcode] = plate_uuid
+        mapping = {
+            "barcode": plate[FIELD_PLATE_BARCODE],
+            "uuid": plate[FIELD_SOURCE_PLATE_UUID],
+        }
+        source_plate_uuids.append(mapping)
 
     return source_plate_uuids
 

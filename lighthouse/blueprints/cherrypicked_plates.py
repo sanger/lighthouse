@@ -90,7 +90,9 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 "errors": ["No source plate UUIDs for samples on plate: " + barcode]
             }, HTTPStatus.BAD_REQUEST
 
-        body = create_cherrypicked_post_body(barcode, mapped_samples, robot_serial_number, plate_id_mappings)
+        body = create_cherrypicked_post_body(
+            barcode, mapped_samples, robot_serial_number, plate_id_mappings
+        )
 
         response = send_to_ss(body)
 

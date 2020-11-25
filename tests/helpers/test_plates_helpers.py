@@ -684,10 +684,10 @@ def test_create_cherrypicked_post_body(app):
 
         robot_serial_number = "BKRB0001"
 
-        plate_id_mappings = {
-            "123": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
-            "456": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
-        }
+        plate_id_mappings = [
+            {"barcode": "123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"},
+            {"barcode": "456", "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e"},
+        ]
 
         correct_body = {
             "data": {
@@ -715,21 +715,43 @@ def test_create_cherrypicked_post_body(app):
                     },
                     "events": {
                         "event": {
-                            "subjects":[
+                            "subjects": [
                                 {
-                                    "role_type":"robot",
-                                    "subject_type":"robot",
-                                    "friendly_name":"Robot 1",
-                                    "uuid":"082effc3-f769-4e83-9073-dc7aacd5f71b"
+                                    "role_type": "robot",
+                                    "subject_type": "robot",
+                                    "friendly_name": "Robot 1",
+                                    "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b",
+                                },
+                                {
+                                    "role_type": "cherrypicking_source_labware",
+                                    "subject_type": "plate",
+                                    "friendly_name": "123",
+                                    "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
+                                },
+                                {
+                                    "role_type": "cherrypicking_source_labware",
+                                    "subject_type": "plate",
+                                    "friendly_name": "456",
+                                    "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+                                },
+                                {
+                                    "role_type": "cherrypicking_destination_labware",
+                                    "subject_type": "plate",
+                                    "friendly_name": barcode,
                                 },
                             ]
                         }
-                    }
+                    },
                 },
             }
         }
 
-        assert create_cherrypicked_post_body(barcode, mapped_samples, robot_serial_number, plate_id_mappings) == correct_body
+        assert (
+            create_cherrypicked_post_body(
+                barcode, mapped_samples, robot_serial_number, plate_id_mappings
+            )
+            == correct_body
+        )
 
 
 def test_find_samples_returns_none_if_no_query_provided(app):
@@ -771,10 +793,16 @@ def test_get_source_plate_id_mappings(app, samples_different_plates, source_plat
             samples_different_plates[1],
         ]
 
-        correct_uuids = {
-            source_plates[0][FIELD_PLATE_BARCODE]: source_plates[0][FIELD_SOURCE_PLATE_UUID],
-            source_plates[1][FIELD_PLATE_BARCODE]: source_plates[1][FIELD_SOURCE_PLATE_UUID],
-        }
+        correct_uuids = [
+            {
+                "barcode": source_plates[0][FIELD_PLATE_BARCODE],
+                "uuid": source_plates[0][FIELD_SOURCE_PLATE_UUID],
+            },
+            {
+                "barcode": source_plates[1][FIELD_PLATE_BARCODE],
+                "uuid": source_plates[1][FIELD_SOURCE_PLATE_UUID],
+            },
+        ]
         source_plate_uuids = get_source_plate_id_mappings(samples)
 
         assert source_plate_uuids == correct_uuids
