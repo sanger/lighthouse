@@ -648,7 +648,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
-                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 "lab_id": "AP",
             },
         ]
@@ -680,7 +680,7 @@ def test_create_cherrypicked_post_body(app):
                 "supplier_name": "abcd",
                 "barcode": "123",
                 "coordinate": "B02",
-                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 "lab_id": "AP",
             },
         ]
@@ -712,7 +712,7 @@ def test_create_cherrypicked_post_body(app):
                                 "phenotype": "positive",
                                 "supplier_name": "abcd",
                                 "sample_description": "MCM002",
-                                "replace_uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                             }
                         },
                     },

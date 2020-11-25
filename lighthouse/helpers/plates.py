@@ -407,7 +407,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
-                mapped_sample["replace_uuid"] = mongo_row[FIELD_SAMPLE_UUID]
+                mapped_sample["uuid"] = mongo_row[FIELD_SAMPLE_UUID]
                 mapped_sample["lab_id"] = mongo_row[FIELD_LAB_ID]
 
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
@@ -447,7 +447,7 @@ def create_cherrypicked_post_body(
             content["phenotype"] = sample["phenotype"]
             content["supplier_name"] = sample["supplier_name"]
             content["sample_description"] = sample["sample_description"]
-            content["replace_uuid"] = sample["replace_uuid"]
+            content["uuid"] = sample["uuid"]
 
         wells_content[sample["coordinate"]] = {"content": content}
 
@@ -482,7 +482,7 @@ def sample_subjects(samples):
                 "role_type": "sample",
                 "subject_type": "sample",
                 "friendly_name": sample_friendly_name(sample),
-                "uuid": sample["replace_uuid"],
+                "uuid": sample["uuid"],
             }
             subjects.append(subject)
     return subjects
