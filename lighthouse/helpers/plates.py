@@ -19,13 +19,15 @@ from lighthouse.constants import (
     FIELD_DART_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_PLATE_BARCODE,
+    FIELD_BARCODE,
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
-    FIELD_SOURCE_PLATE_UUID,
-    FIELD_SAMPLE_UUID,
+    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_LH_SAMPLE_UUID,
     POSITIVE_SAMPLES_MONGODB_FILTER,
+    STAGE_MATCH_POSITIVE,
 )
 from lighthouse.exceptions import (
     DataError,
@@ -128,6 +130,12 @@ def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
+def count_samples(query: Dict[str, Any]) -> int:
+    samples = app.data.driver.db.samples
+
+    return samples.count_documents(query)
+
+
 # TODO: remove once we are sure that we dont need anything other than positives
 def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
@@ -137,12 +145,42 @@ def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
 
 
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
-    query_filter = copy.deepcopy(POSITIVE_SAMPLES_MONGODB_FILTER)
-    query_filter[FIELD_PLATE_BARCODE] = plate_barcode
+    """Get a list of documents which correspond to filtered positive samples for a specific plate.
 
-    samples_for_barcode = find_samples(query_filter)
+    Args:
+        plate_barcode (str): the barcode of the plate to get samples for.
+
+    Returns:
+        Optional[List[Dict[str, Any]]]: the list of samples for this plate.
+    """
+    samples_collection = app.data.driver.db.samples
+
+    # The pipeline defines stages which execute in sequence
+    pipeline = [
+        # 1. We are only interested in the samples for a particular plate
+        {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
+        # 2. Then run the positive match stage
+        STAGE_MATCH_POSITIVE,
+    ]
+
+    samples_for_barcode = list(samples_collection.aggregate(pipeline))
+
+    logger.info(f"Found {len(samples_for_barcode)} samples")
 
     return samples_for_barcode
+
+
+def count_positive_samples(plate_barcode: str) -> int:
+    query_filter = copy.deepcopy(POSITIVE_SAMPLES_MONGODB_FILTER)
+    query_filter[FIELD_PLATE_BARCODE] = plate_barcode
+    samples_for_barcode = count_samples(query_filter)
+
+    return samples_for_barcode
+
+
+def has_sample_data(plate_barcode: str) -> bool:
+    sample_count = count_samples({FIELD_PLATE_BARCODE: plate_barcode})
+    return sample_count > 0
 
 
 def row_is_normal_sample(row):
@@ -212,7 +250,10 @@ def add_controls_to_samples(rows, samples):
 
 def check_matching_sample_numbers(rows, samples):
     if len(samples) != len(rows_without_controls(rows)):
-        msg = "Mismatch in data present for destination plate: number of samples in DART and Mongo does not match"
+        msg = (
+            "Mismatch in data present for destination plate: number of samples in DART and Mongo "
+            "does not match"
+        )
         logger.error(msg)
         raise UnmatchedSampleError(msg)
 
@@ -407,7 +448,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
-                mapped_sample["uuid"] = mongo_row[FIELD_SAMPLE_UUID]
+                mapped_sample["uuid"] = mongo_row[FIELD_LH_SAMPLE_UUID]
                 mapped_sample["lab_id"] = mongo_row[FIELD_LAB_ID]
 
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
@@ -552,8 +593,8 @@ def get_source_plate_id_mappings(samples):
     source_plate_uuids = []
     for plate in source_plate_documents:
         mapping = {
-            "barcode": plate[FIELD_PLATE_BARCODE],
-            "uuid": plate[FIELD_SOURCE_PLATE_UUID],
+            "barcode": plate[FIELD_BARCODE],
+            "uuid": plate[FIELD_LH_SOURCE_PLATE_UUID],
         }
         source_plate_uuids.append(mapping)
 
@@ -589,7 +630,7 @@ def query_for_source_plate_uuids(barcodes):
 
     for barcode in barcodes:
         plate_query = {
-            FIELD_PLATE_BARCODE: barcode,
+            FIELD_BARCODE: barcode,
         }
         mongo_query.append(plate_query)
     return {"$or": mongo_query}

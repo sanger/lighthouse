@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from shutil import copy
 from unittest.mock import Mock, patch
 
@@ -24,6 +24,7 @@ from lighthouse.helpers.reports import (
     get_new_report_name_and_path,
     join_samples_declarations,
     map_labware_to_location,
+    report_query_window_start,
     unpad_coordinate,
 )
 
@@ -421,3 +422,16 @@ def test_join_samples_declarations_empty_collection(app, freezer, samples_no_dec
         joined = join_samples_declarations(positive_samples)
 
         assert np.array_equal(positive_samples.to_numpy(), joined.to_numpy())
+
+
+def test_report_query_window_start(app):
+    with app.app_context():
+        window_size = app.config["REPORT_WINDOW_SIZE"]
+        start = datetime.now() + timedelta(days=-window_size)
+
+        assert report_query_window_start().year == start.year
+        assert report_query_window_start().month == start.month
+        assert report_query_window_start().day == start.day
+        assert report_query_window_start().hour == 0
+        assert report_query_window_start().minute == 0
+        assert report_query_window_start().second == 0

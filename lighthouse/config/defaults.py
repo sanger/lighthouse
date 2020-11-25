@@ -2,17 +2,26 @@ from typing import Any, Dict
 
 # lighthouse config
 BARACODA_URL = "localhost:5000"
-SS_API_KEY = "develop"
-LIGHTHOUSE_API_KEY = "develop"
-SS_URL = "localhost:3000"
-LABWHERE_URL = "localhost:3010"
-SS_UUID_PLATE_PURPOSE = ""
-SS_UUID_STUDY = ""
-SS_UUID_PLATE_PURPOSE_CHERRYPICKED = ""
-SS_UUID_STUDY_CHERRYPICKED = ""
-REPORTS_DIR = "data/reports"
 DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
+LABWHERE_URL = "localhost:3010"
+LIGHTHOUSE_API_KEY = "develop"
+REPORTS_DIR = "data/reports"
+
+SS_API_KEY = "develop"
 SS_HOST = "localhost:3000"
+SS_URL = "localhost:3000"
+SS_UUID_PLATE_PURPOSE = ""
+SS_UUID_PLATE_PURPOSE_CHERRYPICKED = ""
+SS_UUID_STUDY = ""
+SS_UUID_STUDY_CHERRYPICKED = ""
+
+EVENTS_WH_DB = "events_wh_db"
+MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
+WAREHOUSES_RO_CONN_STRING = "root@localhost"
+WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
+
+# The window size when generating the positive samples report
+REPORT_WINDOW_SIZE = 2
 
 X_DOMAINS = "*"
 
@@ -52,13 +61,12 @@ SAMPLES_DECLARATIONS_SCHEMA: Dict = {
 }
 # We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
-
-DATE_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 # eg "2013-04-04T10:29:13"
+DATE_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 
-PAGINATION_LIMIT = 10000
 # allow requests to set ?max_results= to more than the default
 #  added for lighthouse-ui Imports page, to display all Imports in a table
+PAGINATION_LIMIT = 10000
 
 DOMAIN: Dict = {
     "samples": {},
@@ -71,6 +79,7 @@ DOMAIN: Dict = {
     },
     "schema": {},
 }
+
 MONGO_HOST = "localhost"
 MONGO_PORT = 27017
 MONGO_USERNAME = ""
@@ -85,9 +94,9 @@ LOGGING: Dict[str, Any] = {
     "formatters": {
         "colored": {
             "()": "colorlog.ColoredFormatter",
-            "format": "%(asctime)-15s %(name)-18s:%(lineno)s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
+            "format": "%(asctime)-15s %(name)-30s:%(lineno)s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
         },
-        "verbose": {"format": "%(asctime)-15s %(name)-18s:%(lineno)s %(levelname)-5s %(message)s"},
+        "verbose": {"format": "%(asctime)-15s %(name)-30s:%(lineno)s %(levelname)-5s %(message)s"},
     },
     "handlers": {
         "colored_stream": {
@@ -109,14 +118,19 @@ LOGGING: Dict[str, Any] = {
     },
 }
 
-WAREHOUSES_RO_CONN_STRING = "root@localhost"
-EVENTS_WH_DB = "events_wh_db"
-
-WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
-MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
-
 DART_RESULT_VIEW = "CherrypickingInfo"
 BARACODA_RETRY_ATTEMPTS = 3
+
+RMQ_HOST = "localhost"
+RMQ_PORT = 5672
+RMQ_USERNAME = "guest"
+RMQ_PASSWORD = "guest"
+RMQ_VHOST = "/"
+RMQ_DECLARE_EXCHANGE = True
+RMQ_EXCHANGE = "lighthouse.examples"
+RMQ_EXCHANGE_TYPE = "topic"
+RMQ_ROUTING_KEY = "staging.event.#"
+RMQ_LIMS_ID = "LH_LOCAL"
 
 BECKMAN_ROBOTS = {
     "BKRB0001": {"name": "Robot 1", "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b"},

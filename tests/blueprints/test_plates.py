@@ -128,3 +128,30 @@ def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses)
                     )
                 ]
             }
+
+
+def test_get_plates_endpoint_successful(app, client, samples, mocked_responses):
+    response = client.get(
+        "/plates?barcodes[]=123&barcodes[]=456",
+        content_type="application/json",
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == {
+        "plates": [
+            {"plate_barcode": "123", "plate_map": True, "number_of_positives": 3},
+            {"plate_barcode": "456", "plate_map": False, "number_of_positives": None},
+        ]
+    }
+
+
+def test_get_plates_endpoint_fail(app, client, samples, mocked_responses):
+    with patch(
+        "lighthouse.blueprints.plates.has_sample_data",
+        side_effect=Exception("Boom!"),
+    ):
+        response = client.get(
+            "/plates?barcodes[]=123&barcodes[]=456",
+            content_type="application/json",
+        )
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert response.json == {"errors": ["Failed to lookup plates: Exception"]}

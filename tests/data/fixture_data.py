@@ -1,6 +1,7 @@
 from copy import copy
 from datetime import datetime
 from typing import Any, Dict, List
+from uuid import uuid4
 
 from lighthouse.constants import (
     FIELD_CH1_CQ,
@@ -17,14 +18,16 @@ from lighthouse.constants import (
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
     FIELD_DART_SAMPLE_UUID,
+    FIELD_DATE_TESTED,
     FIELD_LAB_ID,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
-    FIELD_SOURCE_PLATE_UUID,
-    FIELD_SAMPLE_UUID,
+    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_LH_SAMPLE_UUID,
+    FIELD_BARCODE,
     MLWH_LH_SAMPLE_RESULT,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
@@ -114,6 +117,7 @@ LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
     for i in range(0, MAX_SAMPLES)
 ]
 
+DATE_TESTED_NOW = datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
 SAMPLES: List[Dict[str, Any]] = [
     {  # a positive result, no Ct values
         FIELD_COORDINATE: "A01",
@@ -123,7 +127,8 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
         FIELD_RNA_ID: "rna_1",
-        FIELD_SAMPLE_UUID: "0a53e7b6-7ce8-4ebc-95c3-02dd64942531",
+        FIELD_LH_SAMPLE_UUID: "0a53e7b6-7ce8-4ebc-95c3-02dd64942531",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  # a negative result
         FIELD_COORDINATE: "B01",
@@ -133,7 +138,8 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_1",
-        FIELD_SAMPLE_UUID: "8426ba76-e595-4475-92a6-8a60be0eee20",
+        FIELD_LH_SAMPLE_UUID: "8426ba76-e595-4475-92a6-8a60be0eee20",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  # a void result
         FIELD_COORDINATE: "C01",
@@ -143,7 +149,8 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
         FIELD_RNA_ID: "rna_1",
-        FIELD_SAMPLE_UUID: "8d809bc1-2da6-42f2-9fc8-2eb6794f316f",
+        FIELD_LH_SAMPLE_UUID: "8d809bc1-2da6-42f2-9fc8-2eb6794f316f",
+        FIELD_DATE_TESTED: "2020-05-10 07:30:00 UTC",
     },
     {  # a 'limit of detection' result
         FIELD_COORDINATE: "D01",
@@ -153,7 +160,8 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "klm",
         FIELD_ROOT_SAMPLE_ID: "MCM004",
         FIELD_RNA_ID: "rna_1",
-        FIELD_SAMPLE_UUID: "8e595a92-6798-4c93-8dc8-44f3ffb8bed3",
+        FIELD_LH_SAMPLE_UUID: "8e595a92-6798-4c93-8dc8-44f3ffb8bed3",
+        FIELD_DATE_TESTED: "2020-05-10 07:30:00 UTC",
     },
     {  #  positive, with low Ct values
         FIELD_COORDINATE: "E01",
@@ -166,7 +174,8 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: 6.12345678,
         FIELD_CH3_CQ: 7.12345678,
-        FIELD_SAMPLE_UUID: "2184f5df-fdbb-4dcb-8bec-9f86450e0c82",
+        FIELD_LH_SAMPLE_UUID: "2184f5df-fdbb-4dcb-8bec-9f86450e0c82",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  #  positive, with high Ct values
         FIELD_COORDINATE: "F01",
@@ -179,7 +188,8 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 40.12345678,
         FIELD_CH2_CQ: 41.12345678,
         FIELD_CH3_CQ: 42.12345678,
-        FIELD_SAMPLE_UUID: "16dbdac1-ffe9-4d3d-92be-3a77c1e4c65e",
+        FIELD_LH_SAMPLE_UUID: "16dbdac1-ffe9-4d3d-92be-3a77c1e4c65e",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  #  positive, with mix of Ct values
         FIELD_COORDINATE: "G01",
@@ -192,7 +202,8 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_CH1_CQ: 5.12345678,
         FIELD_CH2_CQ: None,
         FIELD_CH3_CQ: 45.12345678,
-        FIELD_SAMPLE_UUID: "502a44a7-e4b4-4ad6-8e4c-3cfae35193d8",
+        FIELD_LH_SAMPLE_UUID: "502a44a7-e4b4-4ad6-8e4c-3cfae35193d8",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {  #  positive, with disallowed Root Sample ID
         FIELD_COORDINATE: "A02",
@@ -202,7 +213,8 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_COG_BARCODE: "wxy",
         FIELD_ROOT_SAMPLE_ID: "CBIQA_MCM008",
         FIELD_RNA_ID: "rna_1",
-        FIELD_SAMPLE_UUID: "d38f7f9a-6f17-4ff4-a2f9-b49505317340",
+        FIELD_LH_SAMPLE_UUID: "d38f7f9a-6f17-4ff4-a2f9-b49505317340",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
 ]
 
@@ -216,6 +228,7 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
         FIELD_ROOT_SAMPLE_ID: "MCM001",
         FIELD_RNA_ID: "rna_1",
         FIELD_LAB_ID: "Lab 1",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {
         FIELD_COORDINATE: "A01",
@@ -226,6 +239,7 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
         FIELD_ROOT_SAMPLE_ID: "MCM002",
         FIELD_RNA_ID: "rna_2",
         FIELD_LAB_ID: "Lab 2",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
 ]
 
@@ -279,6 +293,7 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "abc",
         FIELD_ROOT_SAMPLE_ID: "MCM001",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {
         FIELD_COORDINATE: "B01",
@@ -287,6 +302,7 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "def",
         FIELD_ROOT_SAMPLE_ID: "MCM002",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {
         FIELD_COORDINATE: "C01",
@@ -295,6 +311,7 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM003",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
     {
         FIELD_COORDINATE: "D01",
@@ -303,6 +320,7 @@ SAMPLES_NO_DECLARATION: List[Dict[str, str]] = [
         FIELD_PLATE_BARCODE: "123",
         FIELD_COG_BARCODE: "hij",
         FIELD_ROOT_SAMPLE_ID: "MCM010",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
 ]
 
@@ -389,7 +407,7 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Any]] = [
     },
     {  # Non-control sample
         "sample": {
-            FIELD_SAMPLE_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
+            FIELD_LH_SAMPLE_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
             FIELD_COORDINATE: "A02",
             FIELD_SOURCE: "test2",
             FIELD_RESULT: "Positive",
@@ -549,23 +567,36 @@ EVENT_WH_DATA: Dict[str, Any] = {
 
 SOURCE_PLATES: List[Dict[str, Any]] = [
     {
-        FIELD_SOURCE_PLATE_UUID: "a17c38cd-b2df-43a7-9896-582e7855b4cc",
-        FIELD_PLATE_BARCODE: "123",
+        FIELD_LH_SOURCE_PLATE_UUID: "a17c38cd-b2df-43a7-9896-582e7855b4cc",
+        FIELD_BARCODE: "123",
         FIELD_LAB_ID: "Lab 1",
     },
     {
-        FIELD_SOURCE_PLATE_UUID: "785a87bd-6f5a-4340-b753-b05c0603fa5e",
-        FIELD_PLATE_BARCODE: "456",
+        FIELD_LH_SOURCE_PLATE_UUID: "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+        FIELD_BARCODE: "456",
         FIELD_LAB_ID: "Lab 2",
     },
     {
-        FIELD_SOURCE_PLATE_UUID: "2745095c-73da-4824-8af0-4c9d06055090",
-        FIELD_PLATE_BARCODE: "A123",
+        FIELD_LH_SOURCE_PLATE_UUID: "2745095c-73da-4824-8af0-4c9d06055090",
+        FIELD_BARCODE: "A123",
         FIELD_LAB_ID: "Lab 2",
     },
     {
-        FIELD_SOURCE_PLATE_UUID: "bba490a1-9858-49e5-a096-ee386f99fc38",
-        FIELD_PLATE_BARCODE: "A456",
+        FIELD_LH_SOURCE_PLATE_UUID: "bba490a1-9858-49e5-a096-ee386f99fc38",
+        FIELD_BARCODE: "A456",
         FIELD_LAB_ID: "Lab 3",
     },
 ]
+
+def inject_uuids(sample):
+    sample_copy = copy(sample)
+    sample_copy[FIELD_LH_SOURCE_PLATE_UUID] = next(
+        x[FIELD_LH_SOURCE_PLATE_UUID]
+        for x in SOURCE_PLATES
+        if x[FIELD_BARCODE] == sample_copy[FIELD_PLATE_BARCODE]
+    )
+    sample_copy[FIELD_LH_SAMPLE_UUID] = str(uuid4())
+    return sample_copy
+
+
+SAMPLES_WITH_UUIDS = [inject_uuids(sample) for sample in SAMPLES_WITH_LAB_ID]
