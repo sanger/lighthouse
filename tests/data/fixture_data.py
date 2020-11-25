@@ -1,6 +1,7 @@
 from copy import copy
 from datetime import datetime
 from typing import Any, Dict, List
+from uuid import uuid4
 
 from lighthouse.constants import (
     FIELD_CH1_CQ,
@@ -23,6 +24,9 @@ from lighthouse.constants import (
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
+    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_LH_SAMPLE_UUID,
+    FIELD_BARCODE,
     MLWH_LH_SAMPLE_RESULT,
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
@@ -548,3 +552,30 @@ EVENT_WH_DATA: Dict[str, Any] = {
     "subject_types": [{"id": 1, "key": "sample", "description": "stuff"}],
     "role_types": [{"id": 1, "key": "sample", "description": "stuff"}],
 }
+
+SOURCE_PLATES = [
+    {
+        FIELD_LH_SOURCE_PLATE_UUID: str(uuid4()),
+        FIELD_BARCODE: "123",
+        FIELD_LAB_ID: "LAB 1",
+    },
+    {
+        FIELD_LH_SOURCE_PLATE_UUID: str(uuid4()),
+        FIELD_BARCODE: "456",
+        FIELD_LAB_ID: "LAB 2",
+    },
+]
+
+
+def inject_uuids(sample):
+    sample_copy = copy(sample)
+    sample_copy[FIELD_LH_SOURCE_PLATE_UUID] = next(
+        x[FIELD_LH_SOURCE_PLATE_UUID]
+        for x in SOURCE_PLATES
+        if x[FIELD_BARCODE] == sample_copy[FIELD_PLATE_BARCODE]
+    )
+    sample_copy[FIELD_LH_SAMPLE_UUID] = str(uuid4())
+    return sample_copy
+
+
+SAMPLES_WITH_UUIDS = [inject_uuids(sample) for sample in SAMPLES_WITH_LAB_ID]

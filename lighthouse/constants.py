@@ -17,6 +17,9 @@ FIELD_DATE_TESTED = "Date Tested"
 FIELD_CH1_CQ = "CH1-Cq"
 FIELD_CH2_CQ = "CH2-Cq"
 FIELD_CH3_CQ = "CH3-Cq"
+FIELD_LH_SOURCE_PLATE_UUID = "lh_source_plate_uuid"
+FIELD_LH_SAMPLE_UUID = "lh_sample_uuid"
+FIELD_BARCODE = "barcode"
 
 # DART specific column names:
 FIELD_DART_DESTINATION_BARCODE = os.environ.get("FIELD_DART_DESTINATION_BARCODE", "Labware BarCode")
@@ -85,3 +88,8 @@ POSITIVE_SAMPLES_MONGODB_FILTER = {
         },
     ],
 }
+
+PLATE_EVENT_SOURCE_COMPLETED = "lh_beckman_cp_source_completed"
+PLATE_EVENT_SOURCE_NOT_RECOGNISED = "lh_beckman_cp_source_plate_unrecognised"
+PLATE_EVENT_SOURCE_NO_MAP_DATA = "lh_beckman_cp_source_no_plate_map_data"
+PLATE_EVENT_SOURCE_ALL_NEGATIVES = "lh_beckman_cp_source_all_negatives"
