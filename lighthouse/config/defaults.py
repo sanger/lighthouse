@@ -138,3 +138,9 @@ BECKMAN_ROBOTS = {
     "BKRB0003": {"name": "Robot 3", "uuid": "90d8bc7a-2f6e-4a5f-8bea-1e8d27a1ac89"},
     "BKRB0004": {"name": "Robot 4", "uuid": "675002fe-f364-47e4-b71f-4fe1bb7b5091"},
 }
+
+BECKMAN_FAILURE_TYPES = {
+    "robot_crashed": "The robot crashed",
+    "sample_contamination": "Sample contamination occurred",
+    "other": "Any other failure",
+}
