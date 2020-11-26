@@ -394,20 +394,6 @@ def event_wh_sql_engine(app):
 
 
 @pytest.fixture
-def source_plates(app):
-    with app.app_context():
-        source_plates_collection = app.data.driver.db.source_plates
-        _ = source_plates_collection.insert_many(SOURCE_PLATES)
-
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SOURCE_PLATES)
-
-    # clear up after the fixture is used
-    with app.app_context():
-        source_plates_collection.delete_many({})
-
-
-@pytest.fixture
 def samples_with_uuids(app):
     with app.app_context():
         samples_collection = app.data.driver.db.samples
