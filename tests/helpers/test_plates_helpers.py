@@ -649,6 +649,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "control_type": "positive",
                 "barcode": "d123",
                 "coordinate": "B01",
+                "supplier_name": "positive control: 123_A01",
             },
             {
                 "name": "rna_2",
@@ -679,9 +680,10 @@ def test_create_cherrypicked_post_body(app):
         mapped_samples = [
             {
                 "control": True,
-                "control_type": "positive",
+                "control_type": "Positive",
                 "barcode": "123",
                 "coordinate": "B01",
+                "supplier_name": "Positive control: 123_B01",
             },
             {
                 "name": "rna_2",
@@ -713,7 +715,8 @@ def test_create_cherrypicked_post_body(app):
                         "B01": {
                             "content": {
                                 "control": True,
-                                "control_type": "positive",
+                                "control_type": "Positive",
+                                "supplier_name": "Positive control: 123_B01",
                             }
                         },
                         "B02": {
@@ -749,6 +752,11 @@ def test_create_cherrypicked_post_body(app):
                                         "subject_type": "plate",
                                         "friendly_name": "456",
                                         "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+                                    },
+                                    {
+                                        "role_type": "control",
+                                        "subject_type": "sample",
+                                        "friendly_name": "Positive control: 123_B01",
                                     },
                                     {
                                         "role_type": "sample",

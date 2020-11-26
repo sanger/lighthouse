@@ -89,7 +89,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
         if not plate_id_mappings:
             return {
-                "errors": ["No source plate UUIDs for samples on plate: " + barcode]
+                "errors": ["No source plate UUIDs for source plates of plate: " + barcode]
             }, HTTPStatus.BAD_REQUEST
 
         body = create_cherrypicked_post_body(
