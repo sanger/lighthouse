@@ -588,6 +588,7 @@ SOURCE_PLATES: List[Dict[str, Any]] = [
     },
 ]
 
+
 def inject_uuids(sample):
     sample_copy = copy(sample)
     sample_copy[FIELD_LH_SOURCE_PLATE_UUID] = next(
