@@ -275,6 +275,7 @@ def construct_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]:
         "uuid": sample[FIELD_LH_SAMPLE_UUID],
     }
 
+
 # Private methods
 
 
