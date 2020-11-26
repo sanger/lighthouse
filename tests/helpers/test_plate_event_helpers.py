@@ -690,6 +690,29 @@ def test_construct_source_plate_completed_message_creates_expected_message(app):
                         } in subjects
 
 
+# ---------- get_robot_uuid tests ----------
+
+def test_get_robot_uuid_returns_none_no_config_option(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]
+
+        result = get_robot_uuid("BKRB0001")
+        assert result is None
+
+
+def test_get_robot_uuid_returns_none_no_matching_robot(app):
+    with app.app_context():
+        result = get_robot_uuid("no matching robot")
+        assert result is None
+
+
+def test_get_robot_uuid_returns_expected_uuid(app):
+    with app.app_context():
+        result = get_robot_uuid("BKRB0001")
+
+        assert result == "082effc3-f769-4e83-9073-dc7aacd5f71b"
+
+
 # ---------- message subject generation tests ----------
 
 

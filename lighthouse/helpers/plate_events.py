@@ -212,7 +212,7 @@ def get_robot_uuid(serial_number: str) -> Optional[str]:
     Returns:
         {str} -- The robot uuid; otherwise None if it cannot be determined.
     """
-    return app.config["BECKMAN_ROBOTS"].get(serial_number, {}).get("uuid", None)
+    return app.config.get("BECKMAN_ROBOTS", {}).get(serial_number, {}).get("uuid", None)
 
 
 def construct_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]:
