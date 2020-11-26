@@ -9,7 +9,7 @@ TESTING = True
 SCHEDULER_RUN = False
 
 # Eve config
-MONGO_HOST = "127.0.0.1"
+MONGO_HOST = f"{LOCALHOST}"
 MONGO_DBNAME = "lighthouseTestDB"
 MONGO_QUERY_BLACKLIST = ["$where"]  # not sure why this was required...
 
@@ -19,14 +19,14 @@ LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream"]  # noqa: F405
 
 REPORTS_DIR = "tests/data/reports"
 
-WAREHOUSES_RO_CONN_STRING = "root@localhost"
+WAREHOUSES_RO_CONN_STRING = f"root@{LOCALHOST}"
 ML_WH_DB = "unified_warehouse_test"
 EVENTS_WH_DB = "event_warehouse_test"
 
-WAREHOUSES_RW_CONN_STRING = "root@localhost"
+WAREHOUSES_RW_CONN_STRING = f"root@{LOCALHOST}"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 
-DART_SQL_SERVER_HOST = "localhost"
+DART_SQL_SERVER_HOST = f"{LOCALHOST}"
 DART_SQL_SERVER_DATABASE = "DartTestDB"
 DART_SQL_SERVER_USER = "SA"
 DART_SQL_SERVER_PASSWORD = "MyS3cr3tPassw0rd"
@@ -49,7 +49,7 @@ EVENT_WH_EVENT_TYPES_TABLE = "event_types"
 EVENT_WH_SUBJECT_TYPES_TABLE = "subject_types"
 EVENT_WH_ROLE_TYPES_TABLE = "role_types"
 
-RMQ_HOST = "localhost"
+RMQ_HOST = f"{LOCALHOST}"
 RMQ_PORT = 5672
 RMQ_USERNAME = "guest"
 RMQ_PASSWORD = "guest"
