@@ -25,6 +25,7 @@ from lighthouse.constants import (
     FIELD_LH_SOURCE_PLATE_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    PLATE_EVENT_DESTINATION_CREATED,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -198,6 +199,7 @@ def test_centre_prefix(app, centres, mocked_responses):
 def test_create_post_body(app, samples):
     with app.app_context():
         barcode = "12345"
+
         correct_body = {
             "data": {
                 "type": "plates",
@@ -723,43 +725,43 @@ def test_create_cherrypicked_post_body(app):
                             }
                         },
                     },
-                    "events": {
-                        "event": {
-                            "subjects": [
-                                {
-                                    "role_type": "robot",
-                                    "subject_type": "robot",
-                                    "friendly_name": "Robot 1",
-                                    "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b",
-                                },
-                                {
-                                    "role_type": "cherrypicking_source_labware",
-                                    "subject_type": "plate",
-                                    "friendly_name": "123",
-                                    "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
-                                },
-                                {
-                                    "role_type": "cherrypicking_source_labware",
-                                    "subject_type": "plate",
-                                    "friendly_name": "456",
-                                    "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
-                                },
-                                {
-                                    "role_type": "cherrypicking_destination_labware",
-                                    "subject_type": "plate",
-                                    "friendly_name": barcode,
-                                },
-                                {
-                                    "role_type": "sample",
-                                    "subject_type": "sample",
-                                    "friendly_name": "MCM002__rna_2__AP__positive",
-                                    "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
-                                },
-                            ]
-                        }
-                    },
+                    "events": [
+                        {
+                            "event": {
+                                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                                "subjects": [
+                                    {
+                                        "role_type": "robot",
+                                        "subject_type": "robot",
+                                        "friendly_name": "Robot 1",
+                                        "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b",
+                                    },
+                                    {
+                                        "role_type": "cherrypicking_source_labware",
+                                        "subject_type": "plate",
+                                        "friendly_name": "123",
+                                        "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
+                                    },
+                                    {
+                                        "role_type": "cherrypicking_source_labware",
+                                        "subject_type": "plate",
+                                        "friendly_name": "456",
+                                        "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+                                    },
+                                    {
+                                        "role_type": "sample",
+                                        "subject_type": "sample",
+                                        "friendly_name": "MCM002__rna_2__AP__positive",
+                                        "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                                    },
+                                ],
+                                "metadata": {},
+                                "lims": app.config["RMQ_LIMS_ID"],
+                            },
+                        },
+                    ],
                 },
-            }
+            },
         }
 
         assert (

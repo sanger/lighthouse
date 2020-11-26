@@ -28,7 +28,9 @@ from lighthouse.constants import (
     FIELD_LH_SAMPLE_UUID,
     POSITIVE_SAMPLES_MONGODB_FILTER,
     STAGE_MATCH_POSITIVE,
+    PLATE_EVENT_DESTINATION_CREATED,
 )
+
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -495,14 +497,19 @@ def create_cherrypicked_post_body(
     subjects = []
     subjects.append(robot_subject(robot_serial_number))
     subjects.extend(source_plate_subjects(plate_id_mappings))
-    subjects.append(destination_labware_subject(barcode))
+    # subjects.append(destination_labware_subject(barcode))
     subjects.extend(sample_subjects(samples))
 
-    events = {
-        "event": {
-            "subjects": subjects,
+    events = [
+        {
+            "event": {
+                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                "subjects": subjects,
+                "metadata": {},
+                "lims": app.config["RMQ_LIMS_ID"],
+            }
         }
-    }
+    ]
 
     body = {
         "barcode": barcode,
@@ -536,13 +543,13 @@ def sample_friendly_name(sample):
     return name
 
 
-def destination_labware_subject(barcode):
-    subject = {
-        "role_type": "cherrypicking_destination_labware",
-        "subject_type": "plate",
-        "friendly_name": barcode,
-    }
-    return subject
+# def destination_labware_subject(barcode):
+#     subject = {
+#         "role_type": "cherrypicking_destination_labware",
+#         "subject_type": "plate",
+#         "friendly_name": barcode,
+#     }
+#     return subject
 
 
 def source_plate_subjects(plate_id_mappings):
