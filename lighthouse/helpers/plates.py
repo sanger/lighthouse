@@ -468,6 +468,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 def create_cherrypicked_post_body(
+    user_id: str,
     barcode: str,
     samples: List[Dict[str, Any]],
     robot_serial_number: str,
@@ -503,6 +504,7 @@ def create_cherrypicked_post_body(
     events = [
         {
             "event": {
+                "user_identifier": user_id,
                 "event_type": PLATE_EVENT_DESTINATION_CREATED,
                 "subjects": subjects,
                 "metadata": {},

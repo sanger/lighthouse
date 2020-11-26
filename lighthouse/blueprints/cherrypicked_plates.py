@@ -29,6 +29,8 @@ CORS(bp)
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
     try:
+        user_id = request.args.get("user_id", "UNKNOWN")
+
         barcode = request.args.get("barcode", "")
         if len(barcode) == 0:
             return missing_barcode_url_error()
@@ -91,7 +93,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             }, HTTPStatus.BAD_REQUEST
 
         body = create_cherrypicked_post_body(
-            barcode, mapped_samples, robot_serial_number, plate_id_mappings
+            user_id, barcode, mapped_samples, robot_serial_number, plate_id_mappings
         )
 
         response = send_to_ss(body)

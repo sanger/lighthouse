@@ -675,6 +675,7 @@ def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
 def test_create_cherrypicked_post_body(app):
     with app.app_context():
         barcode = "123"
+        user_id = "my_user"
         mapped_samples = [
             {
                 "control": True,
@@ -728,6 +729,7 @@ def test_create_cherrypicked_post_body(app):
                     "events": [
                         {
                             "event": {
+                                "user_identifier": "my_user",
                                 "event_type": PLATE_EVENT_DESTINATION_CREATED,
                                 "subjects": [
                                     {
@@ -766,7 +768,7 @@ def test_create_cherrypicked_post_body(app):
 
         assert (
             create_cherrypicked_post_body(
-                barcode, mapped_samples, robot_serial_number, plate_id_mappings
+                user_id, barcode, mapped_samples, robot_serial_number, plate_id_mappings
             )
             == correct_body
         )
