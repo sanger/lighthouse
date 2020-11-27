@@ -17,7 +17,6 @@ from lighthouse.constants import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
-    FIELD_DART_SAMPLE_UUID,
     FIELD_DATE_TESTED,
     FIELD_LAB_ID,
     FIELD_PLATE_BARCODE,
@@ -426,7 +425,6 @@ DART_MONGO_MERGED_SAMPLES: List[Dict[str, Any]] = [
             FIELD_DART_ROOT_SAMPLE_ID: "MCM002",
             FIELD_DART_RNA_ID: "rna_2",
             FIELD_DART_LAB_ID: "AB",
-            FIELD_DART_SAMPLE_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
         },
     },
 ]
