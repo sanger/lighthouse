@@ -151,6 +151,12 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 f"'{failure_type}' is not a known cherrypicked plate failure type"
             )
 
+        dart_samples = find_dart_source_samples_rows(barcode)
+        if len(dart_samples) == 0:
+            message = f"No sample data found for plate {barcode}"
+            logger.error(f"Failed recording cherrypicking plate failure: {message}")
+            return ({"errors": [message]}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
         # TODO
         # get samples from DART for destination plate barcode
         # get matching samples from mongo?

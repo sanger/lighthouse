@@ -273,3 +273,17 @@ def test_fail_plate_from_barcode_bad_request_unrecognised_failure_type(app, clie
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert len(response.json["errors"]) == 1
+
+
+def test_fail_plate_from_barcode_internal_server_error_none_dart_samples(app, client):
+    with app.app_context():
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.find_dart_source_samples_rows",
+            return_value=[],
+        ):
+            response = client.get(
+                "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
+                "&robot=BKRB0001&failure_type=robot_crashed"
+            )
+            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+            assert len(response.json["errors"]) == 1
