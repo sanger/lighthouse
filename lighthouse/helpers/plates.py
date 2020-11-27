@@ -658,9 +658,4 @@ def query_for_source_plate_uuids(barcodes):
         return None
     mongo_query = []
 
-    for barcode in barcodes:
-        plate_query = {
-            FIELD_BARCODE: barcode,
-        }
-        mongo_query.append(plate_query)
-    return {"$or": mongo_query}
+    return {"$or": [{FIELD_BARCODE: barcode} for barcode in barcodes]}
