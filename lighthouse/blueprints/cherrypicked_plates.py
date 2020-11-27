@@ -34,16 +34,16 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
         barcode = request.args.get("barcode", "")
         if len(barcode) == 0:
-            return missing_barcode_url_error()
+            return bad_request_response_with_error("GET request needs 'barcode' in url")
 
         robot_serial_number = request.args.get("robot", "")
         if len(robot_serial_number) == 0:
-            return missing_robot_number_url_error()
+            return bad_request_response_with_error("GET request needs 'robot' in url")
 
         logger.info(f"Attempting to create a plate in SS from barcode: {barcode}")
     except (KeyError, TypeError) as e:
         logger.exception(e)
-        return invalid_url_error()
+        return bad_request_response_with_error("Missing/invalid query parameters in url")
 
     try:
         dart_samples = find_dart_source_samples_rows(barcode)
@@ -55,7 +55,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
 
         if not mongo_samples:
-            return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
+            return bad_request_response_with_error("No samples for this barcode: " + barcode)
 
         try:
             check_matching_sample_numbers(dart_samples, mongo_samples)
@@ -75,10 +75,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             centre_prefix = add_cog_barcodes(mongo_samples)
         except (Exception) as e:
             logger.exception(e)
-            return (
-                {"errors": ["Failed to add COG barcodes to plate: " + barcode]},
-                HTTPStatus.BAD_REQUEST,
-            )
+            return bad_request_response_with_error("Failed to add COG barcodes to plate: " + barcode)
 
         samples = join_rows_with_samples(dart_samples, mongo_samples)
 
@@ -141,13 +138,13 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         robot_serial_number = request.args.get("robot", "")
         failure_type = request.args.get("failure_type", "")
         if any(len(x) == 0 for x in [barcode, user_id, robot_serial_number, failure_type]):
-            return bad_request_response(
+            return bad_request_response_with_error(
                 "'barcode', 'user_id', 'robot' and 'failure_type' "
                 "are required to record a cherrypicked plate failure"
             )
 
         if failure_type not in list(app.config["BECKMAN_FAILURE_TYPES"].keys()):
-            return bad_request_response(
+            return bad_request_response_with_error(
                 f"'{failure_type}' is not a known cherrypicked plate failure type"
             )
 
@@ -175,17 +172,5 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
-def invalid_url_error():
-    return {"errors": ["Missing/invalid query parameters in url"]}, HTTPStatus.BAD_REQUEST
-
-
-def missing_barcode_url_error():
-    return {"errors": ["GET request needs 'barcode' in url"]}, HTTPStatus.BAD_REQUEST
-
-
-def missing_robot_number_url_error():
-    return {"errors": ["GET request needs 'robot' in url"]}, HTTPStatus.BAD_REQUEST
-
-
-def bad_request_response(error: str) -> Tuple[Dict[str, Any], int]:
+def bad_request_response_with_error(error):
     return {"errors": [error]}, HTTPStatus.BAD_REQUEST
