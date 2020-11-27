@@ -19,7 +19,6 @@ from lighthouse.constants import (
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
-    FIELD_PLATE_BARCODE,
     FIELD_BARCODE,
     FIELD_LH_SOURCE_PLATE_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
@@ -802,6 +801,27 @@ def test_create_cherrypicked_post_body(app):
         )
 
 
+def test_robot_subject_no_robot_mapping_in_config(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]
+        with pytest.raises(Exception):
+            robot_subject("1234")
+
+
+def test_robot_subject_no_robot_friendly_name(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]["BKRB0001"]["name"]
+        with pytest.raises(Exception):
+            robot_subject("BKRB0001")
+
+
+def test_robot_subject_no_robot_uuid(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]["BKRB0001"]["uuid"]
+        with pytest.raises(Exception):
+            robot_subject("BKRB0001")
+
+
 def test_find_samples_returns_none_if_no_query_provided(app):
     with app.app_context():
         assert find_samples(None) is None
@@ -817,7 +837,7 @@ def test_get_unique_plate_barcodes(app, samples_different_plates):
         samples_different_plates[1],
     ]
 
-    result = get_unique_plate_barcodes(samples_different_plates)
+    result = get_unique_plate_barcodes(samples)
     assert len(result) == len(correct_barcodes)
     for barcode in correct_barcodes:
         assert barcode in result

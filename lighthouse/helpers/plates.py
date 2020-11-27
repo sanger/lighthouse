@@ -635,7 +635,6 @@ def get_unique_plate_barcodes(samples):
 def query_for_source_plate_uuids(barcodes):
     if barcodes is None or (len(barcodes) == 0):
         return None
-    mongo_query = []
 
     return {"$or": [{FIELD_BARCODE: barcode} for barcode in barcodes]}
 

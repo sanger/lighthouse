@@ -755,7 +755,7 @@ def test_construct_source_plate_message_subject():
 # ---------- construct_sample_message_subject tests ----------
 
 
-def test_construct_source_plate_message_subject(app):
+def test_construct_sample_message_subject(app):
     test_sample = {
         FIELD_ROOT_SAMPLE_ID: "MCM001",
         FIELD_RNA_ID: "rna_1",
