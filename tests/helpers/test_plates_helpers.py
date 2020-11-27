@@ -838,7 +838,10 @@ def test_get_unique_plate_barcodes(app, samples_different_plates):
         samples_different_plates[1],
     ]
 
-    assert get_unique_plate_barcodes(samples_different_plates) == correct_barcodes
+    result = get_unique_plate_barcodes(samples_different_plates)
+    assert len(result) == len(correct_barcodes)
+    for barcode in correct_barcodes:
+        assert barcode in result
 
 
 def test_query_for_source_plate_uuids(app):

@@ -190,19 +190,11 @@ def row_is_normal_sample(row):
 
 
 def rows_without_controls(rows):
-    list = []
-    for row in rows:
-        if row_is_normal_sample(row):
-            list.append(row)
-    return list
+    return list(filter(lambda x: row_is_normal_sample(x), rows))
 
 
 def rows_with_controls(rows):
-    list = []
-    for row in rows:
-        if not row_is_normal_sample(row):
-            list.append(row)
-    return list
+    return list(filter(lambda x: not row_is_normal_sample(x), rows))
 
 
 def query_for_cherrypicked_samples(rows):
