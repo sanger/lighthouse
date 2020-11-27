@@ -50,7 +50,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         if len(dart_samples) == 0:
             msg = "Failed to find sample data in DART for plate barcode: " + barcode
             logger.error(msg)
-            return ({"errors": [msg]}, HTTPStatus.INTERNAL_SERVER_ERROR)
+            return internal_server_error_response_with_error(msg)
 
         mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
 
@@ -80,9 +80,9 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         plate_id_mappings = get_source_plate_id_mappings(mongo_samples)
 
         if not plate_id_mappings:
-            return {
-                "errors": ["No source plate UUIDs for source plates of plate: " + barcode]
-            }, HTTPStatus.BAD_REQUEST
+            return bad_request_response_with_error(
+                "No source plate UUIDs for source plates of plate: " + barcode
+            )
 
         body = create_cherrypicked_post_body(
             user_id, barcode, mapped_samples, robot_serial_number, plate_id_mappings
@@ -103,16 +103,9 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 update_mlwh_with_cog_uk_ids(mongo_samples)
             except (Exception) as e:
                 logger.exception(e)
-                return (
-                    {
-                        "errors": [
-                            (
-                                "Failed to update MLWH with COG UK ids. The samples should have "
-                                "been successfully inserted into Sequencescape."
-                            )
-                        ]
-                    },
-                    HTTPStatus.INTERNAL_SERVER_ERROR,
+                return internal_server_error_response_with_error(
+                    "Failed to update MLWH with COG UK ids. The samples should have "
+                    "been successfully inserted into Sequencescape."
                 )
         else:
             response_json = response.json()
@@ -121,7 +114,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         return response_json, response.status_code
     except Exception as e:
         logger.exception(e)
-        return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
+        return internal_server_error_response_with_error(type(e).__name__)
 
 
 @bp.route("/cherrypicked-plates/fail", methods=["GET"])
@@ -146,13 +139,13 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         if len(dart_samples) == 0:
             message = f"No sample data found for plate '{barcode}' in DART"
             logger.error(f"Failed recording cherrypicking plate failure: {message}")
-            return ({"errors": [message]}, HTTPStatus.INTERNAL_SERVER_ERROR)
+            return internal_server_error_response_with_error(message)
 
         mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
         if mongo_samples is None:
             message = f"No data found in Mongo matching DART samples in plate '{barcode}'"
             logger.error(f"Failed recording cherrypicking plate failure: {message}")
-            return ({"errors": [message]}, HTTPStatus.INTERNAL_SERVER_ERROR)
+            return internal_server_error_response_with_error(message)
 
         # TODO
         # verify matching mongo and DART samples?
@@ -174,3 +167,7 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
 def bad_request_response_with_error(error):
     return {"errors": [error]}, HTTPStatus.BAD_REQUEST
+
+
+def internal_server_error_response_with_error(error):
+    return {"errors": [error]}, HTTPStatus.INTERNAL_SERVER_ERROR
