@@ -250,13 +250,7 @@ def add_controls_to_samples(rows, samples):
 
 
 def check_matching_sample_numbers(rows, samples):
-    if len(samples) != len(rows_without_controls(rows)):
-        msg = (
-            "Mismatch in data present for destination plate: number of samples in DART and Mongo "
-            "does not match"
-        )
-        logger.error(msg)
-        raise UnmatchedSampleError(msg)
+    return len(samples) == len(rows_without_controls(rows))
 
 
 def row_to_dict(row):

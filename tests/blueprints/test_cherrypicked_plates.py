@@ -152,17 +152,17 @@ def test_post_plates_endpoint_mismatched_sample_numbers(
     ):
         with patch(
             "lighthouse.blueprints.cherrypicked_plates.check_matching_sample_numbers",
-            side_effect=Exception("Boom!"),
+            return_value=False,
         ):
             barcode = "plate_1"
             response = client.get(
-                "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001",
+                f"/cherrypicked-plates/create?barcode={barcode}&robot=BKRB0001",
                 content_type="application/json",
             )
 
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert response.json == {
-                "errors": ["Mismatch in destination and source sample data for plate: " + barcode]
+                "errors": [f"Mismatch in destination and source sample data for plate '{barcode}'"]
             }
 
 

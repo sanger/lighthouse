@@ -57,18 +57,10 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         if not mongo_samples:
             return bad_request_response_with_error("No samples for this barcode: " + barcode)
 
-        try:
-            check_matching_sample_numbers(dart_samples, mongo_samples)
-        except (Exception) as e:
-            logger.exception(e)
-            return (
-                {
-                    "errors": [
-                        "Mismatch in destination and source sample data for plate: " + barcode
-                    ]
-                },
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
+        if not check_matching_sample_numbers(dart_samples, mongo_samples):
+            msg = f"Mismatch in destination and source sample data for plate '{barcode}'"
+            logger.error(msg)
+            return internal_server_error_response_with_error(msg)
 
         # add COG barcodes to samples
         try:
