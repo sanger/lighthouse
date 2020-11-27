@@ -802,6 +802,27 @@ def test_create_cherrypicked_post_body(app):
         )
 
 
+def test_robot_subject_no_robot_mapping_in_config(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]
+        with pytest.raises(Exception):
+            robot_subject("1234")
+
+
+def test_robot_subject_no_robot_friendly_name(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]["BKRB0001"]["name"]
+        with pytest.raises(Exception):
+            robot_subject("BKRB0001")
+
+
+def test_robot_subject_no_robot_uuid(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]["BKRB0001"]["uuid"]
+        with pytest.raises(Exception):
+            robot_subject("BKRB0001")
+
+
 def test_find_samples_returns_none_if_no_query_provided(app):
     with app.app_context():
         assert find_samples(None) is None
