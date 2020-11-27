@@ -214,6 +214,7 @@ def query_for_cherrypicked_samples(rows):
             FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
             FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
             FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
+            FIELD_RESULT: "Positive",
         }
         mongo_query.append(sample_query)
     return {"$or": mongo_query}
