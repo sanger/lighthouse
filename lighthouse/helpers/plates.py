@@ -1,7 +1,7 @@
 import copy
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 import requests
 from flask import current_app as app
@@ -40,6 +40,7 @@ from lighthouse.helpers.dart_db import find_dart_source_samples_rows
 from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
 from sqlalchemy.sql.expression import and_  # type: ignore
 from sqlalchemy.sql.expression import bindparam  # type: ignore
+from lighthouse.messages.message import Message  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -637,3 +638,32 @@ def query_for_source_plate_uuids(barcodes):
     mongo_query = []
 
     return {"$or": [{FIELD_BARCODE: barcode} for barcode in barcodes]}
+
+
+def construct_cherrypicking_plate_failed_message(
+    barcode: str, user_id: str, robot_serial_number: str, failure_type: str
+) -> Tuple[List[str], Optional[Message]]:
+    try:
+        dart_samples = find_dart_source_samples_rows(barcode)
+        if len(dart_samples) == 0:
+            return [f"No sample data found for plate '{barcode}' in DART"], None
+
+        mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
+        if mongo_samples is None:
+            return [f"No data found in Mongo matching DART samples in plate '{barcode}'"], None
+
+        if not check_matching_sample_numbers(dart_samples, mongo_samples):
+            return [f"Mismatch in destination and source sample data for plate '{barcode}'"], None
+
+        # get controls from dart samples, create subjects for these
+        # create subjects for mongo samples
+        # get mongo plates for mongo samples, create subjects for these
+        # construct the event message dict, convert to Message
+        raise NotImplementedError()
+    except Exception as e:
+        logger.error("Failed to construct a cherrypicking plate failed message")
+        logger.exception(e)
+        return [
+            "An unexpected error occurred attempting to construct the cherrypicking plate " "
+            "failed event message"
+        ], None

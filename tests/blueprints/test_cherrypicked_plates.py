@@ -276,10 +276,10 @@ def test_fail_plate_from_barcode_bad_request_unrecognised_failure_type(app, clie
         assert len(response.json["errors"]) == 1
 
 
-def test_fail_plate_from_barcode_internal_server_error_dart_samples_error(app, client):
+def test_fail_plate_from_barcode_internal_server_error_constructing_message_failure(app, client):
     with app.app_context():
         with patch(
-            "lighthouse.blueprints.cherrypicked_plates.find_dart_source_samples_rows",
+            "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message",
             side_effect=Exception("Boom!"),
         ):
             response = client.get(
@@ -294,93 +294,17 @@ def test_fail_plate_from_barcode_internal_server_error_dart_samples_error(app, c
             )
 
 
-def test_fail_plate_from_barcode_internal_server_error_none_dart_samples(app, client):
+def test_fail_plate_from_barcode_internal_server_error_constructing_message_errors(app, client):
     with app.app_context():
+        test_error = "this is a test error"
         with patch(
-            "lighthouse.blueprints.cherrypicked_plates.find_dart_source_samples_rows",
-            return_value=[],
+            "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message",
+            return_value=([test_error], None),
         ):
-            barcode = "plate_1"
             response = client.get(
-                f"/cherrypicked-plates/fail?barcode={barcode}&user_id=test_user"
+                f"/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
                 "&robot=BKRB0001&failure_type=robot_crashed"
             )
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert len(response.json["errors"]) == 1
-            assert (
-                f"No sample data found for plate '{barcode}' in DART" in response.json["errors"][0]
-            )
-
-
-def test_fail_plate_from_barcode_internal_server_error_mongo_samples_error(app, client):
-    with app.app_context():
-        with patch(
-            "lighthouse.blueprints.cherrypicked_plates.find_samples",
-            side_effect=Exception("Boom!"),
-        ):
-            response = client.get(
-                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
-                "&robot=BKRB0001&failure_type=robot_crashed"
-            )
-            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert len(response.json["errors"]) == 1
-            assert (
-                f"An unexpected error occurred attempting to record cherrypicking plate failure"
-                in response.json["errors"][0]
-            )
-
-
-def test_fail_plate_from_barcode_internal_server_error_none_mongo_samples(app, client):
-    with app.app_context():
-        with patch(
-            "lighthouse.blueprints.cherrypicked_plates.find_samples",
-            return_value=None,
-        ):
-            barcode = "plate_1"
-            response = client.get(
-                f"/cherrypicked-plates/fail?barcode={barcode}&user_id=test_user"
-                "&robot=BKRB0001&failure_type=robot_crashed"
-            )
-            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert len(response.json["errors"]) == 1
-            assert (
-                f"No data found in Mongo matching DART samples in plate '{barcode}'"
-                in response.json["errors"][0]
-            )
-
-
-def test_fail_plate_from_barcode_internal_server_error_sample_number_matching_error(app, client):
-    with app.app_context():
-        with patch(
-            "lighthouse.blueprints.cherrypicked_plates.check_matching_sample_numbers",
-            side_effect=Exception("Boom!"),
-        ):
-            response = client.get(
-                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
-                "&robot=BKRB0001&failure_type=robot_crashed"
-            )
-            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert len(response.json["errors"]) == 1
-            assert (
-                f"An unexpected error occurred attempting to record cherrypicking plate failure"
-                in response.json["errors"][0]
-            )
-
-
-def test_fail_plate_from_barcode_internal_server_error_sample_number_matching_false(app, client):
-    with app.app_context():
-        with patch(
-            "lighthouse.blueprints.cherrypicked_plates.check_matching_sample_numbers",
-            return_value=False,
-        ):
-            barcode = "plate_1"
-            response = client.get(
-                f"/cherrypicked-plates/fail?barcode={barcode}&user_id=test_user"
-                "&robot=BKRB0001&failure_type=robot_crashed"
-            )
-            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert len(response.json["errors"]) == 1
-            assert (
-                f"Mismatch in destination and source sample data for plate '{barcode}'"
-                in response.json["errors"][0]
-            )
+            assert test_error in response.json["errors"][0]

@@ -18,6 +18,7 @@ from lighthouse.helpers.plates import (
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
     get_source_plate_id_mappings,
+    construct_cherrypicking_plate_failed_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -135,30 +136,20 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
                 f"'{failure_type}' is not a known cherrypicked plate failure type"
             )
 
-        dart_samples = find_dart_source_samples_rows(barcode)
-        if len(dart_samples) == 0:
-            message = f"No sample data found for plate '{barcode}' in DART"
-            logger.error(f"Failed recording cherrypicking plate failure: {message}")
-            return internal_server_error_response_with_error(message)
-
-        mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
-        if mongo_samples is None:
-            message = f"No data found in Mongo matching DART samples in plate '{barcode}'"
-            logger.error(f"Failed recording cherrypicking plate failure: {message}")
-            return internal_server_error_response_with_error(message)
-
-        if not check_matching_sample_numbers(dart_samples, mongo_samples):
-            msg = f"Mismatch in destination and source sample data for plate '{barcode}'"
-            logger.error(msg)
-            return internal_server_error_response_with_error(
-                f"Failed recording cherrypicking plate failure: {msg}"
+        errors, message = construct_cherrypicking_plate_failed_message(
+            barcode, user_id, robot_serial_number, failure_type
+        )
+        if len(errors) > 0:
+            logger.error(
+                "Failed recording cherrypicking plate failure: error(s) constructing event message: "
+                f"{errors}"
             )
+            return {"errors": errors}, HTTPStatus.INTERNAL_SERVER_ERROR
 
         # TODO
-        # add control samples
-        # get source plates of samples
-        # form message subjects from samples and plates
-        # send message with failure type metadata
+        # re-write tests
+        # routing key is event type
+        # send message
 
         return {"errors": ["Not implemented yet"]}, HTTPStatus.INTERNAL_SERVER_ERROR
     except Exception as e:
