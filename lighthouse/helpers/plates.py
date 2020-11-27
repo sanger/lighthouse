@@ -460,6 +460,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
+                mapped_sample["result"] = mongo_row[FIELD_RESULT]
                 mapped_sample["uuid"] = mongo_row[FIELD_LH_SAMPLE_UUID]
                 mapped_sample["lab_id"] = mongo_row[FIELD_LAB_ID]
 
@@ -558,7 +559,7 @@ def sample_subjects(samples):
 
 def sample_friendly_name(sample):
     name = "__".join(
-        [sample["sample_description"], sample["name"], sample["lab_id"], sample["phenotype"]]
+        [sample["sample_description"], sample["name"], sample["lab_id"], sample["result"]]
     )
     return name
 
