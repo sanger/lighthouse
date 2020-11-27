@@ -11,5 +11,4 @@ where Name='CherrypickingInfo') CREATE TABLE CherrypickingInfo
   [Well root_sample_id] NVARCHAR(50),
   [Well rna_id] NVARCHAR(50),
   [Well lab_id] NVARCHAR(50),
-  [Well lh_sample_uuid] NVARCHAR(50),
 );

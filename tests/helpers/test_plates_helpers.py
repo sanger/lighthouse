@@ -15,7 +15,6 @@ from lighthouse.constants import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
-    FIELD_DART_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_RESULT,
     FIELD_RNA_ID,
@@ -649,6 +648,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "control_type": "positive",
                 "barcode": "d123",
                 "coordinate": "B01",
+                "supplier_name": "positive control: 123_A01",
             },
             {
                 "name": "rna_2",
@@ -661,8 +661,9 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "lab_id": "AP",
             },
         ]
-
-        assert map_to_ss_columns(dart_mongo_merged_samples) == correct_mapped_samples
+        result = map_to_ss_columns(dart_mongo_merged_samples)
+        del result[0]["uuid"]
+        assert result == correct_mapped_samples
 
 
 def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
@@ -679,9 +680,11 @@ def test_create_cherrypicked_post_body(app):
         mapped_samples = [
             {
                 "control": True,
-                "control_type": "positive",
+                "control_type": "Positive",
                 "barcode": "123",
                 "coordinate": "B01",
+                "supplier_name": "Positive control: 123_B01",
+                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
             {
                 "name": "rna_2",
@@ -713,7 +716,9 @@ def test_create_cherrypicked_post_body(app):
                         "B01": {
                             "content": {
                                 "control": True,
-                                "control_type": "positive",
+                                "control_type": "Positive",
+                                "supplier_name": "Positive control: 123_B01",
+                                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
                         },
                         "B02": {
@@ -749,6 +754,12 @@ def test_create_cherrypicked_post_body(app):
                                         "subject_type": "plate",
                                         "friendly_name": "456",
                                         "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+                                    },
+                                    {
+                                        "role_type": "control",
+                                        "subject_type": "sample",
+                                        "friendly_name": "Positive control: 123_B01",
+                                        "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                                     },
                                     {
                                         "role_type": "sample",

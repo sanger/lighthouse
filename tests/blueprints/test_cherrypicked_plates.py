@@ -200,7 +200,7 @@ def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
             )
             assert response.status_code == HTTPStatus.BAD_REQUEST
             assert response.json == {
-                "errors": ["No source plate UUIDs for samples on plate: " + barcode]
+                "errors": ["No source plate UUIDs for source plates of plate: " + barcode]
             }
 
 # ---------- cherrypicked-plates/fail tests ----------

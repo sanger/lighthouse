@@ -7,7 +7,6 @@ from lighthouse.constants import (
     FIELD_DART_DESTINATION_BARCODE,
     FIELD_DART_LAB_ID,
     FIELD_DART_CONTROL,
-    FIELD_DART_SAMPLE_UUID,
     FIELD_DART_RNA_ID,
     FIELD_DART_ROOT_SAMPLE_ID,
 )
@@ -25,10 +24,8 @@ def get_samples_for_barcode(cnxn, barcode):
         f"SELECT * FROM {app.config['DART_RESULT_VIEW']}"
         f" WHERE [{FIELD_DART_DESTINATION_BARCODE}]='{barcode}'"
         f" AND (([{FIELD_DART_ROOT_SAMPLE_ID}] IS NOT NULL"
-        f" AND [{FIELD_DART_SAMPLE_UUID}] IS NOT NULL"
         f" AND [{FIELD_DART_RNA_ID}] IS NOT NULL"
-        f" AND [{FIELD_DART_LAB_ID}] IS NOT NULL"
-        f" AND [{FIELD_DART_SAMPLE_UUID}] IS NOT NULL)"
+        f" AND [{FIELD_DART_LAB_ID}] IS NOT NULL)"
         f" OR [{FIELD_DART_CONTROL}] IS NOT NULL);"
     )
     rows = cursor.fetchall()

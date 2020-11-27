@@ -33,7 +33,6 @@ FIELD_DART_ROOT_SAMPLE_ID = os.environ.get("FIELD_DART_ROOT_SAMPLE_ID", "Well ro
 FIELD_DART_RNA_ID = os.environ.get("FIELD_DART_RNA_ID", "Well rna_id")
 FIELD_DART_LAB_ID = os.environ.get("FIELD_DART_LAB_ID", "Well lab_id")
 FIELD_DART_RUN_ID = os.environ.get("FIELD_DART_RUN_ID", "Run-ID")
-FIELD_DART_SAMPLE_UUID = os.environ.get("FIELD_DART_SAMPLE_UUID", "Well lh_sample_uuid")
 
 #  MLWH lighthouse samples table field names
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID = "root_sample_id"

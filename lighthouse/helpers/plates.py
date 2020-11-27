@@ -2,7 +2,7 @@ import copy
 import logging
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
-
+from uuid import uuid4
 import requests
 from flask import current_app as app
 from lighthouse.constants import (
@@ -16,7 +16,6 @@ from lighthouse.constants import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
-    FIELD_DART_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_PLATE_BARCODE,
     FIELD_BARCODE,
@@ -432,6 +431,15 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             db_connection.close()
 
 
+def supplier_name_for_control(dart_row):
+    args = {
+        "control_type": dart_row[FIELD_DART_CONTROL],
+        "source_barcode": dart_row[FIELD_DART_SOURCE_BARCODE],
+        "source_coordinate": dart_row[FIELD_DART_SOURCE_COORDINATE],
+    }
+    return "{control_type} control: {source_barcode}_{source_coordinate}".format(**args)
+
+
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
@@ -443,8 +451,10 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
         try:
             if dart_row[FIELD_DART_CONTROL]:
+                mapped_sample["supplier_name"] = supplier_name_for_control(dart_row)
                 mapped_sample["control"] = True
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
+                mapped_sample["uuid"] = str(uuid4())
             else:
                 mapped_sample["name"] = mongo_row[FIELD_RNA_ID]
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
@@ -484,8 +494,10 @@ def create_cherrypicked_post_body(
         content = {}
 
         if "control" in sample:
+            content["supplier_name"] = sample["supplier_name"]
             content["control"] = sample["control"]
             content["control_type"] = sample["control_type"]
+            content["uuid"] = sample["uuid"]
         else:
             content["name"] = sample["name"]
             content["phenotype"] = sample["phenotype"]
@@ -498,7 +510,6 @@ def create_cherrypicked_post_body(
     subjects = []
     subjects.append(robot_subject(robot_serial_number))
     subjects.extend(source_plate_subjects(plate_id_mappings))
-    # subjects.append(destination_labware_subject(barcode))
     subjects.extend(sample_subjects(samples))
 
     events = [
@@ -527,14 +538,21 @@ def create_cherrypicked_post_body(
 def sample_subjects(samples):
     subjects = []
     for sample in samples:
-        if "control" not in sample:
+        if "control" in sample:
+            subject = {
+                "role_type": "control",
+                "subject_type": "sample",
+                "friendly_name": control_friendly_name(sample),
+                "uuid": sample["uuid"],
+            }
+        else:
             subject = {
                 "role_type": "sample",
                 "subject_type": "sample",
                 "friendly_name": sample_friendly_name(sample),
                 "uuid": sample["uuid"],
             }
-            subjects.append(subject)
+        subjects.append(subject)
     return subjects
 
 
@@ -543,6 +561,10 @@ def sample_friendly_name(sample):
         [sample["sample_description"], sample["name"], sample["lab_id"], sample["phenotype"]]
     )
     return name
+
+
+def control_friendly_name(sample):
+    return f"{sample['supplier_name']}"
 
 
 # def destination_labware_subject(barcode):
