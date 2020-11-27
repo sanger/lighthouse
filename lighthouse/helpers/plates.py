@@ -190,19 +190,11 @@ def row_is_normal_sample(row):
 
 
 def rows_without_controls(rows):
-    list = []
-    for row in rows:
-        if row_is_normal_sample(row):
-            list.append(row)
-    return list
+    return list(filter(lambda x: row_is_normal_sample(x), rows))
 
 
 def rows_with_controls(rows):
-    list = []
-    for row in rows:
-        if not row_is_normal_sample(row):
-            list.append(row)
-    return list
+    return list(filter(lambda x: not row_is_normal_sample(x), rows))
 
 
 def query_for_cherrypicked_samples(rows):
@@ -214,6 +206,7 @@ def query_for_cherrypicked_samples(rows):
             FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
             FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
             FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
+            FIELD_RESULT: "Positive",
         }
         mongo_query.append(sample_query)
     return {"$or": mongo_query}
@@ -560,15 +553,6 @@ def sample_friendly_name(sample):
 
 def control_friendly_name(sample):
     return f"{sample['supplier_name']}"
-
-
-# def destination_labware_subject(barcode):
-#     subject = {
-#         "role_type": "cherrypicking_destination_labware",
-#         "subject_type": "plate",
-#         "friendly_name": barcode,
-#     }
-#     return subject
 
 
 def source_plate_subjects(plate_id_mappings):

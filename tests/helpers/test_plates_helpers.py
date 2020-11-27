@@ -434,9 +434,24 @@ def test_query_for_cherrypicked_samples_generates_list(app):
 
     assert query_for_cherrypicked_samples(test) == {
         "$or": [
-            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A01", FIELD_LAB_ID: "ABC"},
-            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A02", FIELD_LAB_ID: "ABC"},
-            {FIELD_ROOT_SAMPLE_ID: "sample_2", FIELD_RNA_ID: "plate1:A03", FIELD_LAB_ID: "ABC"},
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_1",
+                FIELD_RNA_ID: "plate1:A01",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: "Positive",
+            },
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_1",
+                FIELD_RNA_ID: "plate1:A02",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: "Positive",
+            },
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_2",
+                FIELD_RNA_ID: "plate1:A03",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: "Positive",
+            },
         ]
     }
 
@@ -802,7 +817,10 @@ def test_get_unique_plate_barcodes(app, samples_different_plates):
         samples_different_plates[1],
     ]
 
-    assert get_unique_plate_barcodes(samples_different_plates) == correct_barcodes
+    result = get_unique_plate_barcodes(samples_different_plates)
+    assert len(result) == len(correct_barcodes)
+    for barcode in correct_barcodes:
+        assert barcode in result
 
 
 def test_query_for_source_plate_uuids(app):
