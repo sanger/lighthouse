@@ -28,7 +28,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
             status=HTTPStatus.OK,
         )
         response = client.get(
-            "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001",
+            "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001&user_id=test",
             content_type="application/json",
         )
 
@@ -40,7 +40,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
 
 def test_get_cherrypicked_plates_endpoint_no_barcode_in_request(app, client, samples_with_lab_id):
     response = client.get(
-        "/cherrypicked-plates/create",
+        "/cherrypicked-plates/create?user_id=test&robot=BKRB0001",
         content_type="application/json",
     )
 
@@ -52,12 +52,22 @@ def test_get_cherrypicked_plates_endpoint_no_robot_number_in_request(
     app, client, samples_with_lab_id
 ):
     response = client.get(
-        "/cherrypicked-plates/create?barcode=plate_1",
+        "/cherrypicked-plates/create?barcode=plate_1&user_id=test",
         content_type="application/json",
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {"errors": ["GET request needs 'robot' in url"]}
+
+
+def test_get_cherrypicked_plates_endpoint_no_user_id_in_request(app, client, samples_with_lab_id):
+    response = client.get(
+        "/cherrypicked-plates/create?barcode=plate_1&robot=1234",
+        content_type="application/json",
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": ["GET request needs 'user_id' in url"]}
 
 
 def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
@@ -72,7 +82,7 @@ def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
     )
 
     response = client.get(
-        "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001",
+        "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001&user_id=test",
         content_type="application/json",
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -97,7 +107,7 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
         )
 
         response = client.get(
-            "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001",
+            "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001&user_id=test",
             content_type="application/json",
         )
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -126,7 +136,7 @@ def test_get_cherrypicked_plates_mlwh_update_failure(
             )
 
             response = client.get(
-                "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001",
+                "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001&user_id=test",
                 content_type="application/json",
             )
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -153,7 +163,7 @@ def test_post_plates_endpoint_mismatched_sample_numbers(
         ):
             barcode = "plate_1"
             response = client.get(
-                "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001",
+                "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001&user_id=test",
                 content_type="application/json",
             )
 
@@ -170,7 +180,7 @@ def test_post_cherrypicked_plates_endpoint_missing_dart_data(app, client):
     ):
         barcode = "plate_1"
         response = client.get(
-            "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001",
+            "/cherrypicked-plates/create?barcode=plate_1&robot=BKRB0001&user_id=test",
             content_type="application/json",
         )
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -192,7 +202,7 @@ def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
         ):
             barcode = "plate_1"
             response = client.get(
-                f"/cherrypicked-plates/create?barcode={barcode}&robot=BKRB0001",
+                f"/cherrypicked-plates/create?barcode={barcode}&robot=BKRB0001&user_id=test",
                 content_type="application/json",
             )
             assert response.status_code == HTTPStatus.BAD_REQUEST
