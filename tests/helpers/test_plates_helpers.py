@@ -662,8 +662,9 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "lab_id": "AP",
             },
         ]
-
-        assert map_to_ss_columns(dart_mongo_merged_samples) == correct_mapped_samples
+        result = map_to_ss_columns(dart_mongo_merged_samples)
+        del result[0]["uuid"]
+        assert result == correct_mapped_samples
 
 
 def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
@@ -684,6 +685,7 @@ def test_create_cherrypicked_post_body(app):
                 "barcode": "123",
                 "coordinate": "B01",
                 "supplier_name": "Positive control: 123_B01",
+                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
             {
                 "name": "rna_2",
@@ -717,6 +719,7 @@ def test_create_cherrypicked_post_body(app):
                                 "control": True,
                                 "control_type": "Positive",
                                 "supplier_name": "Positive control: 123_B01",
+                                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
                         },
                         "B02": {
@@ -757,6 +760,7 @@ def test_create_cherrypicked_post_body(app):
                                         "role_type": "control",
                                         "subject_type": "sample",
                                         "friendly_name": "Positive control: 123_B01",
+                                        "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                                     },
                                     {
                                         "role_type": "sample",

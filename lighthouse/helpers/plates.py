@@ -2,7 +2,7 @@ import copy
 import logging
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
-
+from uuid import uuid4
 import requests
 from flask import current_app as app
 from lighthouse.constants import (
@@ -455,6 +455,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["supplier_name"] = supplier_name_for_control(dart_row)
                 mapped_sample["control"] = True
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
+                mapped_sample["uuid"] = str(uuid4())
             else:
                 mapped_sample["name"] = mongo_row[FIELD_RNA_ID]
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
@@ -497,6 +498,7 @@ def create_cherrypicked_post_body(
             content["supplier_name"] = sample["supplier_name"]
             content["control"] = sample["control"]
             content["control_type"] = sample["control_type"]
+            content["uuid"] = sample["uuid"]
         else:
             content["name"] = sample["name"]
             content["phenotype"] = sample["phenotype"]
@@ -509,7 +511,6 @@ def create_cherrypicked_post_body(
     subjects = []
     subjects.append(robot_subject(robot_serial_number))
     subjects.extend(source_plate_subjects(plate_id_mappings))
-    # subjects.append(destination_labware_subject(barcode))
     subjects.extend(sample_subjects(samples))
 
     events = [
@@ -543,6 +544,7 @@ def sample_subjects(samples):
                 "role_type": "control",
                 "subject_type": "sample",
                 "friendly_name": control_friendly_name(sample),
+                "uuid": sample["uuid"],
             }
         else:
             subject = {
