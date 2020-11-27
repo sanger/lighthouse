@@ -147,8 +147,14 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             logger.error(f"Failed recording cherrypicking plate failure: {message}")
             return internal_server_error_response_with_error(message)
 
+        if not check_matching_sample_numbers(dart_samples, mongo_samples):
+            msg = f"Mismatch in destination and source sample data for plate '{barcode}'"
+            logger.error(msg)
+            return internal_server_error_response_with_error(
+                f"Failed recording cherrypicking plate failure: {msg}"
+            )
+
         # TODO
-        # verify matching mongo and DART samples?
         # add control samples
         # get source plates of samples
         # form message subjects from samples and plates
