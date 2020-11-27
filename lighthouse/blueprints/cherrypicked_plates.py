@@ -75,7 +75,9 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             centre_prefix = add_cog_barcodes(mongo_samples)
         except (Exception) as e:
             logger.exception(e)
-            return bad_request_response_with_error("Failed to add COG barcodes to plate: " + barcode)
+            return bad_request_response_with_error(
+                "Failed to add COG barcodes to plate: " + barcode
+            )
 
         samples = join_rows_with_samples(dart_samples, mongo_samples)
 

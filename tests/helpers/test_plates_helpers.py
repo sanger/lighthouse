@@ -659,7 +659,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "coordinate": "B02",
                 "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 "lab_id": "AP",
-                "result": "Positive"
+                "result": "Positive",
             },
         ]
         result = map_to_ss_columns(dart_mongo_merged_samples)
@@ -696,7 +696,7 @@ def test_create_cherrypicked_post_body(app):
                 "coordinate": "B02",
                 "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 "lab_id": "AP",
-                "result": "Positive"
+                "result": "Positive",
             },
         ]
 
