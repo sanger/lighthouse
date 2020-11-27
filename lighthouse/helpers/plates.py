@@ -654,6 +654,10 @@ def construct_cherrypicking_plate_failed_message(
         if not check_matching_sample_numbers(dart_samples, mongo_samples):
             return [f"Mismatch in destination and source sample data for plate '{barcode}'"], None
 
+        # TODO
+        # move finding mongo samples to mongo_db so it can be mocked during testing
+
+        # TODO also
         # get controls from dart samples, create subjects for these
         # create subjects for mongo samples
         # get mongo plates for mongo samples, create subjects for these
@@ -663,6 +667,6 @@ def construct_cherrypicking_plate_failed_message(
         logger.error("Failed to construct a cherrypicking plate failed message")
         logger.exception(e)
         return [
-            "An unexpected error occurred attempting to construct the cherrypicking plate " "
+            "An unexpected error occurred attempting to construct the cherrypicking plate "
             "failed event message"
         ], None

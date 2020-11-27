@@ -3,6 +3,7 @@ from functools import partial
 from http import HTTPStatus
 
 import pytest
+from unittest.mock import patch
 import responses  # type: ignore
 from flask import current_app
 from lighthouse.constants import (
@@ -52,6 +53,7 @@ from lighthouse.helpers.plates import (
     query_for_source_plate_uuids,
     get_source_plate_id_mappings,
     robot_subject,
+    construct_cherrypicking_plate_failed_message,
 )
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
@@ -877,3 +879,36 @@ def test_get_source_plate_id_mappings(app, samples_different_plates, source_plat
         source_plate_uuids = get_source_plate_id_mappings(samples)
 
         assert source_plate_uuids == correct_uuids
+
+
+# ---------- construct_cherrypicking_plate_failed_message tests ----------
+
+
+def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure():
+    with patch(
+        "lighthouse.helpers.plates.find_dart_source_samples_rows",
+        side_effect=Exception("Boom!"),
+    ):
+        errors, message = construct_cherrypicking_plate_failed_message(
+            "plate_1", "test_user", "BKRB0001", "robot_crashed"
+        )
+
+        assert message is None
+        assert len(errors) == 1
+        assert "An unexpected error occurred attempting to construct the cherrypicking plate "
+        "failed event message" in errors
+
+
+def test_construct_cherrypicking_plate_failed_message_no_dart_samples():
+    with patch(
+        "lighthouse.helpers.plates.find_dart_source_samples_rows",
+        return_value=[],
+    ):
+        test_barcode = "plate_1"
+        errors, message = construct_cherrypicking_plate_failed_message(
+            test_barcode, "test_user", "BKRB0001", "robot_crashed"
+        )
+
+        assert message is None
+        assert len(errors) == 1
+        assert f"No sample data found for plate '{test_barcode}' in DART" in errors
