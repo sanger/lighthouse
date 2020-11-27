@@ -568,15 +568,6 @@ def control_friendly_name(sample):
     return f"{sample['supplier_name']}"
 
 
-# def destination_labware_subject(barcode):
-#     subject = {
-#         "role_type": "cherrypicking_destination_labware",
-#         "subject_type": "plate",
-#         "friendly_name": barcode,
-#     }
-#     return subject
-
-
 def source_plate_subjects(plate_id_mappings):
     subjects = []
     for mapping in plate_id_mappings:
