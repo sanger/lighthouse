@@ -19,7 +19,6 @@ from lighthouse.constants import (
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
-    FIELD_PLATE_BARCODE,
     FIELD_BARCODE,
     FIELD_LH_SOURCE_PLATE_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
@@ -838,7 +837,7 @@ def test_get_unique_plate_barcodes(app, samples_different_plates):
         samples_different_plates[1],
     ]
 
-    result = get_unique_plate_barcodes(samples_different_plates)
+    result = get_unique_plate_barcodes(samples)
     assert len(result) == len(correct_barcodes)
     for barcode in correct_barcodes:
         assert barcode in result
