@@ -156,11 +156,17 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             logger.error(f"Failed recording cherrypicking plate failure: {message}")
             return ({"errors": [message]}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
+        mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
+        if mongo_samples is None:
+            message = f"No data found in Mongo matching DART samples in plate '{barcode}'"
+            logger.error(f"Failed recording cherrypicking plate failure: {message}")
+            return ({"errors": [message]}, HTTPStatus.INTERNAL_SERVER_ERROR)
+
         # TODO
-        # get samples from DART for destination plate barcode
-        # get matching samples from mongo?
         # verify matching mongo and DART samples?
+        # add control samples
         # get source plates of samples
+        # form message subjects from samples and plates
         # send message with failure type metadata
 
         return {"errors": ["Not implemented yet"]}, HTTPStatus.INTERNAL_SERVER_ERROR

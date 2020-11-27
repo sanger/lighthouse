@@ -310,3 +310,40 @@ def test_fail_plate_from_barcode_internal_server_error_none_dart_samples(app, cl
             assert (
                 f"No sample data found for plate '{barcode}' in DART" in response.json["errors"][0]
             )
+
+
+def test_fail_plate_from_barcode_internal_server_error_mongo_samples_error(app, client):
+    with app.app_context():
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.find_samples",
+            side_effect=Exception("Boom!"),
+        ):
+            response = client.get(
+                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "&robot=BKRB0001&failure_type=robot_crashed"
+            )
+            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+            assert len(response.json["errors"]) == 1
+            assert (
+                f"An unexpected error occurred attempting to record cherrypicking plate failure"
+                in response.json["errors"][0]
+            )
+
+
+def test_fail_plate_from_barcode_internal_server_error_none_mongo_samples(app, client):
+    with app.app_context():
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.find_samples",
+            return_value=None,
+        ):
+            barcode = "plate_1"
+            response = client.get(
+                f"/cherrypicked-plates/fail?barcode={barcode}&user_id=test_user"
+                "&robot=BKRB0001&failure_type=robot_crashed"
+            )
+            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+            assert len(response.json["errors"]) == 1
+            assert (
+                f"No data found in Mongo matching DART samples in plate '{barcode}'"
+                in response.json["errors"][0]
+            )
