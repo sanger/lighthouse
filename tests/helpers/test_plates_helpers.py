@@ -52,6 +52,7 @@ from lighthouse.helpers.plates import (
     query_for_source_plate_uuids,
     get_source_plate_id_mappings,
     robot_subject,
+    find_source_plates,
 )
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
@@ -853,6 +854,17 @@ def test_query_for_source_plate_uuids(app):
     barcodes = ["123", "456"]
 
     assert query_for_source_plate_uuids(barcodes) == correct_query
+
+
+def test_query_for_source_plate_uuids_returns_none(app):
+    barcodes = []
+
+    assert query_for_source_plate_uuids(barcodes) == None
+    assert query_for_source_plate_uuids(None) == None
+
+
+def test_find_source_plates_returns_none(app):
+    assert find_source_plates(None) == None
 
 
 def test_get_source_plate_id_mappings(app, samples_different_plates, source_plates):
