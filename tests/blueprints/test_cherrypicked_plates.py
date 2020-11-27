@@ -5,6 +5,9 @@ from unittest.mock import patch
 import responses  # type: ignore
 
 
+# ---------- cherrypicked-plates/create tests ----------
+
+
 def test_get_cherrypicked_plates_endpoint_successful(
     app,
     client,
@@ -199,3 +202,74 @@ def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
             assert response.json == {
                 "errors": ["No source plate UUIDs for samples on plate: " + barcode]
             }
+
+# ---------- cherrypicked-plates/fail tests ----------
+
+
+def test_fail_plate_from_barcode_bad_request_no_barcode(client):
+    response = client.get(
+        "/cherrypicked-plates/fail?user_id=test_user&robot=BKRB0001&failure_type=robot_crashed"
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert len(response.json["errors"]) == 1
+
+    response = client.get(
+        "/cherrypicked-plates/fail?user_id=test_user&robot=BKRB0001"
+        "&failure_type=robot_crashed&barcode="
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert len(response.json["errors"]) == 1
+
+
+def test_fail_plate_from_barcode_bad_request_no_user_id(client):
+    response = client.get(
+        "/cherrypicked-plates/fail?barcode=ABC123&robot=BKRB0001&failure_type=robot_crashed"
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert len(response.json["errors"]) == 1
+
+    response = client.get(
+        "/cherrypicked-plates/fail?barcode=ABC123&robot=BKRB0001"
+        "&failure_type=robot_crashed&user_id="
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert len(response.json["errors"]) == 1
+
+
+def test_fail_plate_from_barcode_bad_request_no_robot(client):
+    response = client.get(
+        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&failure_type=robot_crashed"
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert len(response.json["errors"]) == 1
+
+    response = client.get(
+        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
+        "&failure_type=robot_crashed&robot="
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert len(response.json["errors"]) == 1
+
+
+def test_fail_plate_from_barcode_bad_request_no_failure_type(client):
+    response = client.get(
+        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&robot=BKRB0001"
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert len(response.json["errors"]) == 1
+
+    response = client.get(
+        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&robot=BKRB0001&failure_type="
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert len(response.json["errors"]) == 1
+
+
+def test_fail_plate_from_barcode_bad_request_unrecognised_failure_type(app, client):
+    with app.app_context():
+        response = client.get(
+            "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
+            "&robot=BKRB0001&failure_type=notAFailureType"
+        )
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert len(response.json["errors"]) == 1

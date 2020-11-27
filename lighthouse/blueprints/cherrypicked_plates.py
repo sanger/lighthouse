@@ -4,6 +4,7 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
+from flask import current_app as app
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_cherrypicked_post_body,
@@ -132,6 +133,42 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@bp.route("/cherrypicked-plates/fail", methods=["GET"])
+def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
+    try:
+        barcode = request.args.get("barcode", "")
+        user_id = request.args.get("user_id", "")
+        robot_serial_number = request.args.get("robot", "")
+        failure_type = request.args.get("failure_type", "")
+        if any(len(x) == 0 for x in [barcode, user_id, robot_serial_number, failure_type]):
+            return bad_request_response(
+                "'barcode', 'user_id', 'robot' and 'failure_type' "
+                "are required to record a cherrypicked plate failure"
+            )
+
+        if failure_type not in list(app.config["BECKMAN_FAILURE_TYPES"].keys()):
+            return bad_request_response(
+                f"'{failure_type}' is not a known cherrypicked plate failure type"
+            )
+
+        # TODO
+        # get samples from DART for destination plate barcode
+        # get matching samples from mongo?
+        # verify matching mongo and DART samples?
+        # get source plates of samples
+        # send message with failure type metadata
+
+        return {"errors": ["Not implemented yet"]}, HTTPStatus.INTERNAL_SERVER_ERROR
+    except Exception as e:
+        logger.error("Failed recording cherrypicking plate failure: an unexpected error occurred")
+        logger.exception(e)
+        return {
+            "errors": [
+                "An unexpected error occurred attempting to record cherrypicking plate failure"
+            ]
+        }, HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 def invalid_url_error():
     return {"errors": ["Missing/invalid query parameters in url"]}, HTTPStatus.BAD_REQUEST
 
@@ -142,3 +179,7 @@ def missing_barcode_url_error():
 
 def missing_robot_number_url_error():
     return {"errors": ["GET request needs 'robot' in url"]}, HTTPStatus.BAD_REQUEST
+
+
+def bad_request_response(error: str) -> Tuple[Dict[str, Any], int]:
+    return {"errors": [error]}, HTTPStatus.BAD_REQUEST
