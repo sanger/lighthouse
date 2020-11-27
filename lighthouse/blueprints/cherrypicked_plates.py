@@ -152,7 +152,7 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
         dart_samples = find_dart_source_samples_rows(barcode)
         if len(dart_samples) == 0:
-            message = f"No sample data found for plate {barcode} in DART"
+            message = f"No sample data found for plate '{barcode}' in DART"
             logger.error(f"Failed recording cherrypicking plate failure: {message}")
             return ({"errors": [message]}, HTTPStatus.INTERNAL_SERVER_ERROR)
 
