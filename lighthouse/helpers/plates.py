@@ -635,17 +635,18 @@ def construct_cherrypicking_plate_failed_message(
         if not check_matching_sample_numbers(dart_samples, mongo_samples):
             return [f"Mismatch in destination and source sample data for plate '{barcode}'"], None
 
-        # Construct sample subjects for control and non-control DART entries
-        dart_control_rows = [row_to_dict(row) for row in rows_with_controls(dart_samples)]
-        control_subjects = [sample_subject_for_dart_control_row(row) for row in dart_control_rows]
-        non_control_subjects = [construct_sample_message_subject for sample in mongo_samples]
+        subjects = []
 
-        # Construct source plate subjects
-        source_plates = get_source_plate_id_mappings(mongo_samples)
-        # source_plate_subjects = [construct_source_plate_message_subject(plate["barcode"]) for plate in
+        # Add sample subjects for control and non-control DART entries
+        dart_control_rows = [row_to_dict(row) for row in rows_with_controls(dart_samples)]
+        subjects.extend([sample_subject_for_dart_control_row(row) for row in dart_control_rows])
+        subjects.extend([construct_sample_message_subject for sample in mongo_samples])
+
+        # Add source plate subjects
+        source_plates = get_source_plates_for_samples(mongo_samples)
+        subjects.extend(source_plate_subjects(source_plates))
 
         # TODO also
-        # get mongo plates for mongo samples, create subjects for these
         # construct the event message dict, convert to Message
         raise NotImplementedError()
     except Exception as e:
