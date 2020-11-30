@@ -107,12 +107,14 @@ def test_construct_source_plate_not_recognised_message_errors_without_user_id():
     errors, message = construct_source_plate_not_recognised_message(test_params)
 
     assert len(errors) == 1
+    assert "user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"robot": "12345", "user_id": ""}
     errors, message = construct_source_plate_not_recognised_message(test_params)
 
     assert len(errors) == 1
+    assert "'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -121,12 +123,14 @@ def test_construct_source_plate_not_recognised_message_errors_without_robot():
     errors, message = construct_source_plate_not_recognised_message(test_params)
 
     assert len(errors) == 1
+    assert "'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"user_id": "test_user", "robot": ""}
     errors, message = construct_source_plate_not_recognised_message(test_params)
 
     assert len(errors) == 1
+    assert "'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -137,6 +141,7 @@ def test_construct_source_plate_not_recognised_message_errors_with_failure_getti
     errors, message = construct_source_plate_not_recognised_message(test_params)
 
     assert len(errors) == 1
+    assert "An unexpected error occurred" in errors[0]
     assert message is None
 
 
@@ -147,6 +152,7 @@ def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid
     errors, message = construct_source_plate_not_recognised_message(test_params)
 
     assert len(errors) == 1
+    assert "Unable to determine a uuid for robot" in errors[0]
     assert message is None
 
 
@@ -186,12 +192,14 @@ def test_construct_source_plate_no_map_data_message_errors_without_barcode():
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "", "user_id": "test user", "robot": "12345"}
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -200,12 +208,14 @@ def test_construct_source_plate_no_map_data_message_errors_without_user_id():
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "ABC123", "user_id": "", "robot": "12345"}
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -214,12 +224,14 @@ def test_construct_source_plate_no_map_data_message_errors_without_robot():
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "ABC123", "user_id": "test user", "robot": ""}
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -230,6 +242,7 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
     assert len(errors) == 1
+    assert "An unexpected error occurred" in errors[0]
     assert message is None
 
 
@@ -240,6 +253,7 @@ def test_construct_source_plate_no_map_data_message_errors_without_robot_uuid(mo
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
     assert len(errors) == 1
+    assert "Unable to determine a uuid for robot" in errors[0]
     assert message is None
 
 
@@ -250,6 +264,7 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
         errors, message = construct_source_plate_no_map_data_message(test_params)
 
         assert len(errors) == 1
+        assert "An unexpected error occurred" in errors[0]
         assert message is None
 
 
@@ -260,6 +275,7 @@ def test_construct_source_plate_no_map_data_message_errors_without_source_plate_
         errors, message = construct_source_plate_no_map_data_message(test_params)
 
         assert len(errors) == 1
+        assert "Unable to determine a uuid for source plate" in errors[0]
         assert message is None
 
 
@@ -310,12 +326,14 @@ def test_construct_source_plate_all_negatives_message_errors_without_barcode():
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "", "user_id": "test user", "robot": "12345"}
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -324,12 +342,14 @@ def test_construct_source_plate_all_negatives_message_errors_without_user_id():
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "ABC123", "user_id": "", "robot": "12345"}
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -338,12 +358,14 @@ def test_construct_source_plate_all_negatives_message_errors_without_robot():
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "ABC123", "user_id": "test user", "robot": ""}
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -354,6 +376,7 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
     assert len(errors) == 1
+    assert "An unexpected error occurred" in errors[0]
     assert message is None
 
 
@@ -364,6 +387,7 @@ def test_construct_source_plate_all_negatives_message_errors_without_robot_uuid(
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
     assert len(errors) == 1
+    assert "Unable to determine a uuid for robot" in errors[0]
     assert message is None
 
 
@@ -374,6 +398,7 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
         errors, message = construct_source_plate_all_negatives_message(test_params)
 
         assert len(errors) == 1
+        assert "An unexpected error occurred" in errors[0]
         assert message is None
 
 
@@ -384,6 +409,7 @@ def test_construct_source_plate_all_negatives_message_errors_without_source_plat
         errors, message = construct_source_plate_all_negatives_message(test_params)
 
         assert len(errors) == 1
+        assert "Unable to determine a uuid for source plate" in errors[0]
         assert message is None
 
 
@@ -434,12 +460,14 @@ def test_construct_source_plate_completed_message_errors_without_barcode():
     errors, message = construct_source_plate_completed_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "", "user_id": "test user", "robot": "12345"}
     errors, message = construct_source_plate_completed_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -448,12 +476,14 @@ def test_construct_source_plate_completed_message_errors_without_user_id():
     errors, message = construct_source_plate_completed_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "ABC123", "user_id": "", "robot": "12345"}
     errors, message = construct_source_plate_completed_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -462,12 +492,14 @@ def test_construct_source_plate_completed_message_errors_without_robot():
     errors, message = construct_source_plate_completed_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
     test_params = {"barcode": "ABC123", "user_id": "test user", "robot": ""}
     errors, message = construct_source_plate_completed_message(test_params)
 
     assert len(errors) == 1
+    assert "'barcode', 'user_id' and 'robot' are required" in errors[0]
     assert message is None
 
 
@@ -478,6 +510,7 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_ro
     errors, message = construct_source_plate_completed_message(test_params)
 
     assert len(errors) == 1
+    assert "An unexpected error occurred" in errors[0]
     assert message is None
 
 
@@ -488,17 +521,19 @@ def test_construct_source_plate_completed_message_errors_without_robot_uuid(mock
     errors, message = construct_source_plate_completed_message(test_params)
 
     assert len(errors) == 1
+    assert "Unable to determine a uuid for robot" in errors[0]
     assert message is None
 
 
 def test_construct_source_plate_completed_message_errors_with_failure_getting_plate_uuid(app, mock_robot_helpers, mock_get_source_plate_uuid):
     mock_get_source_plate_uuid.side_effect = Exception("Boom!")
     with app.app_context():
-            test_params = { "barcode": "ABC123", "user_id": "test_user", "robot": "12345" }
-            errors, message = construct_source_plate_completed_message(test_params)
+        test_params = { "barcode": "ABC123", "user_id": "test_user", "robot": "12345" }
+        errors, message = construct_source_plate_completed_message(test_params)
 
-            assert len(errors) == 1
-            assert message is None
+        assert len(errors) == 1
+        assert "An unexpected error occurred" in errors[0]
+        assert message is None
 
 
 def test_construct_source_plate_completed_message_errors_without_source_plate_uuid(app, mock_robot_helpers, mock_get_source_plate_uuid):
@@ -509,6 +544,7 @@ def test_construct_source_plate_completed_message_errors_without_source_plate_uu
             errors, message = construct_source_plate_completed_message(test_params)
 
             assert len(errors) == 1
+            assert "Unable to determine a uuid for source plate" in errors[0]
             assert message is None
 
 
@@ -527,6 +563,7 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_sa
                 errors, message = construct_source_plate_completed_message(test_params)
 
                 assert len(errors) == 1
+                assert "An unexpected error occurred" in errors[0]
                 assert message is None
 
 
@@ -544,6 +581,7 @@ def test_construct_source_plate_completed_message_errors_without_samples(app, mo
                 errors, message = construct_source_plate_completed_message(test_params)
 
                 assert len(errors) == 1
+                assert "Unable to determine samples that belong to source plate" in errors[0]
                 assert message is None
 
 
