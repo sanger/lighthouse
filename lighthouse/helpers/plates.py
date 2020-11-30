@@ -624,7 +624,7 @@ def construct_cherrypicking_plate_failed_message(
         # Add sample subjects for control and non-control DART entries
         dart_control_rows = [row_to_dict(row) for row in rows_with_controls(dart_samples)]
         subjects.extend([sample_subject_for_dart_control_row(row) for row in dart_control_rows])
-        subjects.extend([construct_sample_message_subject for sample in mongo_samples])
+        subjects.extend([construct_sample_message_subject(sample) for sample in mongo_samples])
 
         # Add source plate subjects
         source_plates = get_source_plates_for_samples(mongo_samples)
