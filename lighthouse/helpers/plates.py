@@ -193,16 +193,16 @@ def rows_with_controls(rows):
 def query_for_cherrypicked_samples(rows):
     if rows is None or (len(rows) == 0):
         return None
-    mongo_query = []
-    for row in rows_without_controls(rows):
-        sample_query = {
+    sample_queries = [
+        {
             FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
             FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
             FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
             FIELD_RESULT: "Positive",
         }
-        mongo_query.append(sample_query)
-    return {"$or": mongo_query}
+        for row in rows_without_controls(rows)
+    ]
+    return {"$or": sample_queries}
 
 
 def equal_row_and_sample(row, sample):
@@ -214,24 +214,20 @@ def equal_row_and_sample(row, sample):
 
 
 def find_sample_matching_row(row, samples):
-    for pos in range(0, len(samples)):
-        sample = samples[pos]
-        if equal_row_and_sample(row, sample):
-            return sample
-    return None
+    return next((sample for sample in samples if equal_row_and_sample(row, sample)), None)
 
 
 def join_rows_with_samples(rows, samples):
-    records = []
-    for row in rows_without_controls(rows):
-        records.append({"row": row_to_dict(row), "sample": find_sample_matching_row(row, samples)})
-    return records
+    return [
+        {"row": row_to_dict(row), "sample": find_sample_matching_row(row, samples)}
+        for row in rows_without_controls(rows)
+    ]
 
 
 def add_controls_to_samples(rows, samples):
-    control_samples = []
-    for row in rows_with_controls(rows):
-        control_samples.append({"row": row_to_dict(row), "sample": None})
+    control_samples = [
+        {"row": row_to_dict(row), "sample": None} for row in rows_with_controls(rows)
+    ]
     return samples + control_samples
 
 
@@ -549,16 +545,15 @@ def control_friendly_name(sample):
 
 
 def source_plate_subjects(plate_id_mappings):
-    subjects = []
-    for mapping in plate_id_mappings:
-        subject = {
+    return [
+        {
             "role_type": "cherrypicking_source_labware",
             "subject_type": "plate",
             "friendly_name": mapping["barcode"],
             "uuid": mapping["uuid"],
         }
-        subjects.append(subject)
-    return subjects
+        for mapping in plate_id_mappings
+    ]
 
 
 def robot_subject(robot_serial_number):
@@ -594,14 +589,13 @@ def get_source_plate_id_mappings(samples):
     source_plate_documents = find_source_plates(query_for_source_plate_uuids(barcodes))
 
     source_plate_uuids = []
-    for plate in source_plate_documents:
-        mapping = {
+    return [
+        {
             "barcode": plate[FIELD_BARCODE],
             "uuid": plate[FIELD_LH_SOURCE_PLATE_UUID],
         }
-        source_plate_uuids.append(mapping)
-
-    return source_plate_uuids
+        for plate in source_plate_documents
+    ]
 
 
 def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
