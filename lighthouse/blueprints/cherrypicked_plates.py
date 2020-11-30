@@ -17,7 +17,7 @@ from lighthouse.helpers.plates import (
     query_for_cherrypicked_samples,
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
-    get_source_plate_id_mappings,
+    get_source_plates_for_samples,
     construct_cherrypicking_plate_failed_message,
 )
 
@@ -78,15 +78,15 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
         mapped_samples = map_to_ss_columns(all_samples)
 
-        plate_id_mappings = get_source_plate_id_mappings(mongo_samples)
+        source_plates = get_source_plates_for_samples(mongo_samples)
 
-        if not plate_id_mappings:
+        if not source_plates:
             return bad_request_response_with_error(
                 "No source plate UUIDs for source plates of plate: " + barcode
             )
 
         body = create_cherrypicked_post_body(
-            user_id, barcode, mapped_samples, robot_serial_number, plate_id_mappings
+            user_id, barcode, mapped_samples, robot_serial_number, source_plates
         )
 
         response = send_to_ss(body)

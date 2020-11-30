@@ -41,7 +41,10 @@ from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_tabl
 from sqlalchemy.sql.expression import and_  # type: ignore
 from sqlalchemy.sql.expression import bindparam  # type: ignore
 from lighthouse.messages.message import Message  # type: ignore
-from lighthouse.helpers.plate_events import construct_sample_message_subject
+from lighthouse.helpers.plate_events import (
+    construct_sample_message_subject,
+    construct_source_plate_message_subject,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -463,7 +466,7 @@ def create_cherrypicked_post_body(
     barcode: str,
     samples: List[Dict[str, Any]],
     robot_serial_number: str,
-    plate_id_mappings: List[Dict[str, str]],
+    source_plates: List[Dict[str, str]],
 ) -> Dict[str, Any]:
     logger.debug(
         f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
@@ -490,7 +493,7 @@ def create_cherrypicked_post_body(
 
     subjects = []
     subjects.append(robot_subject(robot_serial_number))
-    subjects.extend(source_plate_subjects(plate_id_mappings))
+    subjects.extend(source_plate_subjects(source_plates))
     subjects.extend(sample_subjects(samples))
 
     events = [
@@ -548,15 +551,12 @@ def control_friendly_name(sample):
     return f"{sample['supplier_name']}"
 
 
-def source_plate_subjects(plate_id_mappings):
+def source_plate_subjects(source_plates):
     return [
-        {
-            "role_type": "cherrypicking_source_labware",
-            "subject_type": "plate",
-            "friendly_name": mapping["barcode"],
-            "uuid": mapping["uuid"],
-        }
-        for mapping in plate_id_mappings
+        construct_source_plate_message_subject(
+            plate[FIELD_BARCODE], plate[FIELD_LH_SOURCE_PLATE_UUID]
+        )
+        for plate in source_plates
     ]
 
 
@@ -588,18 +588,9 @@ def robot_subject(robot_serial_number):
     return subject
 
 
-def get_source_plate_id_mappings(samples):
+def get_source_plates_for_samples(samples):
     barcodes = get_unique_plate_barcodes(samples)
-    source_plate_documents = find_source_plates(query_for_source_plate_uuids(barcodes))
-
-    source_plate_uuids = []
-    return [
-        {
-            "barcode": plate[FIELD_BARCODE],
-            "uuid": plate[FIELD_LH_SOURCE_PLATE_UUID],
-        }
-        for plate in source_plate_documents
-    ]
+    return find_source_plates(query_for_source_plate_uuids(barcodes))
 
 
 def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
