@@ -1,6 +1,7 @@
 import json
 from http import HTTPStatus
 from unittest.mock import patch
+from lighthouse.messages.message import Message
 
 import responses  # type: ignore
 
@@ -308,3 +309,85 @@ def test_fail_plate_from_barcode_internal_server_error_constructing_message_erro
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert len(response.json["errors"]) == 1
             assert test_error in response.json["errors"][0]
+
+
+def test_fail_plate_from_barcode_internal_error_failed_broker_initialise(client):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
+    ) as mock_construct:
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.Broker", side_effect=Exception("Boom!")
+        ):
+            mock_construct.return_value = [], Message("test message content")
+
+            response = client.get(
+                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "&robot=BKRB0001&failure_type=robot_crashed"
+            )
+
+            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+            assert len(response.json["errors"]) == 1
+            assert (
+                f"An unexpected error occurred attempting to record cherrypicking plate failure"
+                in response.json["errors"][0]
+            )
+
+
+def test_fail_plate_from_barcode_internal_error_failed_broker_connect(client):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
+    ) as mock_construct:
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.Broker.connect",
+            side_effect=Exception("Boom!"),
+        ):
+            mock_construct.return_value = [], Message("test message content")
+
+            response = client.get(
+                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "&robot=BKRB0001&failure_type=robot_crashed"
+            )
+
+            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+            assert (
+                f"An unexpected error occurred attempting to record cherrypicking plate failure"
+                in response.json["errors"][0]
+            )
+
+
+def test_fail_plate_from_barcode_internal_error_failed_broker_publish(client):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
+    ) as mock_construct:
+        with patch("lighthouse.blueprints.cherrypicked_plates.Broker") as mock_broker:
+            mock_broker().publish.side_effect = Exception("Boom!")
+            mock_construct.return_value = [], Message("test message content")
+
+            response = client.get(
+                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "&robot=BKRB0001&failure_type=robot_crashed"
+            )
+
+            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+            assert (
+                f"An unexpected error occurred attempting to record cherrypicking plate failure"
+                in response.json["errors"][0]
+            )
+
+
+def test_fail_plate_from_barcode_success(client):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
+    ) as mock_construct:
+        with patch("lighthouse.blueprints.cherrypicked_plates.Broker") as mock_broker:
+            test_message = Message("test message content")
+            mock_construct.return_value = [], test_message
+
+            response = client.get(
+                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "&robot=BKRB0001&failure_type=robot_crashed"
+            )
+
+            mock_broker().close_connection.assert_called()
+            assert response.status_code == HTTPStatus.OK
+            assert len(response.json["errors"]) == 0

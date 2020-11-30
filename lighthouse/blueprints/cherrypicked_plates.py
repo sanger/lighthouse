@@ -20,6 +20,9 @@ from lighthouse.helpers.plates import (
     get_source_plates_for_samples,
     construct_cherrypicking_plate_failed_message,
 )
+from lighthouse.messages.broker import Broker  # type:ignore
+from lighthouse.helpers.events import get_routing_key
+from lighthouse.constants import PLATE_EVENT_DESTINATION_FAILED
 
 logger = logging.getLogger(__name__)
 
@@ -125,13 +128,16 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         user_id = request.args.get("user_id", "")
         robot_serial_number = request.args.get("robot", "")
         failure_type = request.args.get("failure_type", "")
+        logger.info(f"Attempting to publish a '{PLATE_EVENT_DESTINATION_FAILED}' message")
         if any(len(x) == 0 for x in [barcode, user_id, robot_serial_number, failure_type]):
+            logger.error("Failed recording cherrypicking plate failure: missing required inputs")
             return bad_request_response_with_error(
                 "'barcode', 'user_id', 'robot' and 'failure_type' "
                 "are required to record a cherrypicked plate failure"
             )
 
         if failure_type not in list(app.config["BECKMAN_FAILURE_TYPES"].keys()):
+            logger.error("Failed recording cherrypicking plate failure: unknown failure type")
             return bad_request_response_with_error(
                 f"'{failure_type}' is not a known cherrypicked plate failure type"
             )
@@ -146,12 +152,19 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             )
             return {"errors": errors}, HTTPStatus.INTERNAL_SERVER_ERROR
 
-        # TODO
-        # re-write tests
-        # routing key is event type
-        # send message
+        routing_key = get_routing_key(PLATE_EVENT_DESTINATION_FAILED)
 
-        return {"errors": ["Not implemented yet"]}, HTTPStatus.INTERNAL_SERVER_ERROR
+        logger.info("Attempting to publish the destination failed event message")
+        broker = Broker()
+        broker.connect()
+        try:
+            broker.publish(message, routing_key)
+            broker.close_connection()
+            logger.info(f"Successfully published a '{PLATE_EVENT_DESTINATION_FAILED}' message")
+            return {"errors": []}, HTTPStatus.OK
+        except Exception:
+            broker.close_connection()
+            raise
     except Exception as e:
         logger.error("Failed recording cherrypicking plate failure: an unexpected error occurred")
         logger.exception(e)
