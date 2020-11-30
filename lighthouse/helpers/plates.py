@@ -49,6 +49,9 @@ from lighthouse.helpers.plate_events import (
     construct_robot_message_subject,
     get_message_timestamp,
 )
+from lighthouse.helpers.events import (
+    construct_destination_plate_message_subject,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -610,7 +613,7 @@ def construct_cherrypicking_plate_failed_message(
     try:
         dart_samples = find_dart_source_samples_rows(barcode)
         if len(dart_samples) == 0:
-            return [f"No sample data found for plate '{barcode}' in DART"], None
+            return [f"No sample data found for plate '{barcode}' found in DART"], None
 
         mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
         if mongo_samples is None:
@@ -632,6 +635,9 @@ def construct_cherrypicking_plate_failed_message(
 
         # Add robot message subject
         subjects.append(robot_subject(robot_serial_number))
+
+        # Add a destination plate subjects
+        subjects.append(construct_destination_plate_message_subject(barcode))
 
         # Construct message
         message_content = {
