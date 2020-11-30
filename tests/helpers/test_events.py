@@ -1,5 +1,6 @@
 from uuid import uuid4
 from unittest.mock import patch
+from datetime import datetime
 from lighthouse.helpers.events import (
     get_routing_key,
     construct_destination_plate_message_subject,
@@ -7,6 +8,7 @@ from lighthouse.helpers.events import (
     construct_robot_message_subject,
     construct_mongo_sample_message_subject,
     construct_source_plate_message_subject,
+    get_message_timestamp,
 )
 from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
@@ -138,3 +140,17 @@ def test_construct_source_plate_message_subject():
 
     result = construct_source_plate_message_subject(test_barcode, test_uuid)
     assert result == expected_subject
+
+
+# ---------- get_message_timestamp tests ----------
+
+
+def test_get_message_timestamp_returns_expected_datetime():
+    timestamp = datetime.now()
+    with patch("lighthouse.helpers.events.datetime") as mock_datetime:
+        mock_datetime.now().isoformat.return_value = timestamp
+
+        result = get_message_timestamp()
+
+        assert result == timestamp
+        mock_datetime.now().isoformat.assert_called_with(timespec="seconds")

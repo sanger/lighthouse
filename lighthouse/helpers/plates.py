@@ -42,15 +42,13 @@ from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_tabl
 from sqlalchemy.sql.expression import and_  # type: ignore
 from sqlalchemy.sql.expression import bindparam  # type: ignore
 from lighthouse.messages.message import Message  # type: ignore
-from lighthouse.helpers.plate_events import (
-    get_message_timestamp,
-)
 from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
     get_robot_uuid,
     construct_robot_message_subject,
     construct_mongo_sample_message_subject,
     construct_source_plate_message_subject,
+    get_message_timestamp,
 )
 
 logger = logging.getLogger(__name__)

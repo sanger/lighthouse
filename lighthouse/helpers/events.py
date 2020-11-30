@@ -1,6 +1,7 @@
 from flask import current_app as app
 from typing import Dict, Optional
 from uuid import uuid4
+from datetime import datetime
 
 from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
@@ -111,3 +112,12 @@ def construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str,
         "friendly_name": barcode,
         "uuid": uuid,
     }
+
+
+def get_message_timestamp() -> str:
+    """Returns the current datetime in a format compatible with messaging.
+
+    Returns:
+        {str} -- The current datetime.
+    """
+    return datetime.now().isoformat(timespec="seconds")

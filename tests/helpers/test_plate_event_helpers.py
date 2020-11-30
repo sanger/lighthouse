@@ -1,6 +1,5 @@
 import pytest
 from unittest.mock import patch
-from datetime import datetime
 from lighthouse.messages.message import Message
 from lighthouse.helpers.plate_events import (
     construct_event_message,
@@ -9,7 +8,6 @@ from lighthouse.helpers.plate_events import (
     construct_source_plate_all_negatives_message,
     construct_source_plate_completed_message,
     construct_source_plate_message_subject,
-    get_message_timestamp,
 )
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,
@@ -597,17 +595,3 @@ def test_construct_source_plate_completed_message_creates_expected_message(app, 
                         assert test_robot_subject in subjects  # robot subject
                         assert test_source_plate_subject in subjects  # source plate subjects
                         assert subjects.count(test_sample_subject) == 2  # sample subjects
-
-
-# ---------- get_message_timestamp tests ----------
-
-
-def test_get_message_timestamp_returns_expected_datetime():
-    timestamp = datetime.now()
-    with patch("lighthouse.helpers.plate_events.datetime") as mock_datetime:
-        mock_datetime.now().isoformat.return_value = timestamp
-
-        result = get_message_timestamp()
-
-        assert result == timestamp
-        mock_datetime.now().isoformat.assert_called_with(timespec="seconds")

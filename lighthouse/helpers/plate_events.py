@@ -1,7 +1,6 @@
 import logging
 from typing import Optional, Dict, Tuple, List
 from uuid import uuid4
-from datetime import datetime
 from flask import current_app as app
 from lighthouse.messages.message import Message  # type: ignore
 from lighthouse.constants import (
@@ -19,6 +18,7 @@ from lighthouse.helpers.events import (
     construct_robot_message_subject,
     construct_mongo_sample_message_subject,
     construct_source_plate_message_subject,
+    get_message_timestamp,
 )
 
 logger = logging.getLogger(__name__)
@@ -190,15 +190,6 @@ def construct_source_plate_all_negatives_message(
     return __construct_default_source_plate_on_robot_message(
         PLATE_EVENT_SOURCE_ALL_NEGATIVES, params
     )
-
-
-def get_message_timestamp() -> str:
-    """Returns the current datetime in a format compatible with messaging.
-
-    Returns:
-        {str} -- The current datetime.
-    """
-    return datetime.now().isoformat(timespec="seconds")
 
 
 # Private methods
