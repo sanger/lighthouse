@@ -34,7 +34,9 @@ CORS(bp)
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
     try:
-        user_id = request.args.get("user_id", "UNKNOWN")
+        user_id = request.args.get("user_id", "")
+        if len(user_id) == 0:
+            return bad_request_response_with_error("GET request needs 'user_id' in url")
 
         barcode = request.args.get("barcode", "")
         if len(barcode) == 0:

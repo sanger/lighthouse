@@ -1,15 +1,22 @@
 from typing import Any, Dict
+import os
+
+# If we're running in a container, then instead of localhost
+# we want host.docker.internal, you can specify this in the
+# .env file you use for docker. eg
+# LOCALHOST=host.docker.internal
+LOCALHOST = os.environ.get("LOCALHOST", "localhost")
 
 # lighthouse config
-BARACODA_URL = "localhost:5000"
-DOWNLOAD_REPORTS_URL = "http://localhost:5000/reports"
-LABWHERE_URL = "localhost:3010"
+BARACODA_URL = f"{LOCALHOST}:5000"
+DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
+LABWHERE_URL = f"{LOCALHOST}:3010"
 LIGHTHOUSE_API_KEY = "develop"
 REPORTS_DIR = "data/reports"
 
 SS_API_KEY = "develop"
-SS_HOST = "localhost:3000"
-SS_URL = "localhost:3000"
+SS_HOST = f"{LOCALHOST}:3000"
+SS_URL = f"{LOCALHOST}:3000"
 SS_UUID_PLATE_PURPOSE = ""
 SS_UUID_PLATE_PURPOSE_CHERRYPICKED = ""
 SS_UUID_STUDY = ""
@@ -17,8 +24,8 @@ SS_UUID_STUDY_CHERRYPICKED = ""
 
 EVENTS_WH_DB = "events_wh_db"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
-WAREHOUSES_RO_CONN_STRING = "root@localhost"
-WAREHOUSES_RW_CONN_STRING = "root:root@localhost"
+WAREHOUSES_RO_CONN_STRING = f"root@{LOCALHOST}"
+WAREHOUSES_RW_CONN_STRING = f"root:root@{LOCALHOST}"
 
 # The window size when generating the positive samples report
 REPORT_WINDOW_SIZE = 2
@@ -80,7 +87,7 @@ DOMAIN: Dict = {
     "schema": {},
 }
 
-MONGO_HOST = "localhost"
+MONGO_HOST = f"{LOCALHOST}"
 MONGO_PORT = 27017
 MONGO_USERNAME = ""
 MONGO_PASSWORD = ""
@@ -121,7 +128,7 @@ LOGGING: Dict[str, Any] = {
 DART_RESULT_VIEW = "CherrypickingInfo"
 BARACODA_RETRY_ATTEMPTS = 3
 
-RMQ_HOST = "localhost"
+RMQ_HOST = f"{LOCALHOST}"
 RMQ_PORT = 5672
 RMQ_USERNAME = "guest"
 RMQ_PASSWORD = "guest"
