@@ -7,7 +7,6 @@ from lighthouse.helpers.plate_events import (
     construct_source_plate_no_map_data_message,
     construct_source_plate_all_negatives_message,
     construct_source_plate_completed_message,
-    construct_source_plate_message_subject,
 )
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,

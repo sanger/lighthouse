@@ -290,7 +290,7 @@ def test_fail_plate_from_barcode_bad_request_unrecognised_failure_type(app, clie
 def test_fail_plate_from_barcode_internal_server_error_constructing_message_failure(app, client):
     with app.app_context():
         with patch(
-            "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message",
+            "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message",  # noqa: E501
             side_effect=Exception("Boom!"),
         ):
             response = client.get(
@@ -300,7 +300,7 @@ def test_fail_plate_from_barcode_internal_server_error_constructing_message_fail
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert len(response.json["errors"]) == 1
             assert (
-                f"An unexpected error occurred attempting to record cherrypicking plate failure"
+                "An unexpected error occurred attempting to record cherrypicking plate failure"
                 in response.json["errors"][0]
             )
 
@@ -309,11 +309,11 @@ def test_fail_plate_from_barcode_internal_server_error_constructing_message_erro
     with app.app_context():
         test_error = "this is a test error"
         with patch(
-            "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message",
+            "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message",  # noqa: E501
             return_value=([test_error], None),
         ):
             response = client.get(
-                f"/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
+                "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
                 "&robot=BKRB0001&failure_type=robot_crashed"
             )
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -331,14 +331,14 @@ def test_fail_plate_from_barcode_internal_error_failed_broker_initialise(client)
             mock_construct.return_value = [], Message("test message content")
 
             response = client.get(
-                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
                 "&robot=BKRB0001&failure_type=robot_crashed"
             )
 
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert len(response.json["errors"]) == 1
             assert (
-                f"An unexpected error occurred attempting to record cherrypicking plate failure"
+                "An unexpected error occurred attempting to record cherrypicking plate failure"
                 in response.json["errors"][0]
             )
 
@@ -354,13 +354,13 @@ def test_fail_plate_from_barcode_internal_error_failed_broker_connect(client):
             mock_construct.return_value = [], Message("test message content")
 
             response = client.get(
-                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
                 "&robot=BKRB0001&failure_type=robot_crashed"
             )
 
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert (
-                f"An unexpected error occurred attempting to record cherrypicking plate failure"
+                "An unexpected error occurred attempting to record cherrypicking plate failure"
                 in response.json["errors"][0]
             )
 
@@ -374,13 +374,13 @@ def test_fail_plate_from_barcode_internal_error_failed_broker_publish(client):
             mock_construct.return_value = [], Message("test message content")
 
             response = client.get(
-                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
                 "&robot=BKRB0001&failure_type=robot_crashed"
             )
 
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert (
-                f"An unexpected error occurred attempting to record cherrypicking plate failure"
+                "An unexpected error occurred attempting to record cherrypicking plate failure"
                 in response.json["errors"][0]
             )
 
@@ -394,7 +394,7 @@ def test_fail_plate_from_barcode_success(client):
             mock_construct.return_value = [], test_message
 
             response = client.get(
-                f"/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
                 "&robot=BKRB0001&failure_type=robot_crashed"
             )
 

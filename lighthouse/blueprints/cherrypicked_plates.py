@@ -149,8 +149,8 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         )
         if len(errors) > 0:
             logger.error(
-                "Failed recording cherrypicking plate failure: error(s) constructing event message: "
-                f"{errors}"
+                "Failed recording cherrypicking plate failure: "
+                f"error(s) constructing event message: {errors}"
             )
             return {"errors": errors}, HTTPStatus.INTERNAL_SERVER_ERROR
 

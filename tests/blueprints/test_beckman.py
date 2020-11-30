@@ -1,7 +1,4 @@
 from http import HTTPStatus
-from unittest.mock import patch
-
-from lighthouse.blueprints.beckman import get_robots
 
 
 # ---------- get_robots tests ----------

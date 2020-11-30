@@ -2,7 +2,7 @@ import logging
 from http import HTTPStatus
 from typing import Any, Dict, Tuple
 
-from flask import Blueprint, request
+from flask import Blueprint
 from flask_cors import CORS  # type: ignore
 from flask import current_app as app
 

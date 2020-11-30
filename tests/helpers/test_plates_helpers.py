@@ -846,12 +846,12 @@ def test_query_for_source_plate_uuids(app):
 def test_query_for_source_plate_uuids_returns_none(app):
     barcodes = []
 
-    assert query_for_source_plate_uuids(barcodes) == None
-    assert query_for_source_plate_uuids(None) == None
+    assert query_for_source_plate_uuids(barcodes) is None
+    assert query_for_source_plate_uuids(None) is None
 
 
 def test_find_source_plates_returns_none(app):
-    assert find_source_plates(None) == None
+    assert find_source_plates(None) is None
 
 
 def test_get_source_plates_for_samples(app, samples_different_plates, source_plates):
