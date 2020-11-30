@@ -5,6 +5,14 @@ from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
     get_robot_uuid,
     construct_robot_message_subject,
+    construct_mongo_sample_message_subject,
+)
+from lighthouse.constants import (
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_RNA_ID,
+    FIELD_LAB_ID,
+    FIELD_RESULT,
+    FIELD_LH_SAMPLE_UUID,
 )
 
 
@@ -88,3 +96,26 @@ def test_construct_robot_message_subject(app):
         construct_robot_message_subject(test_robot_serial_number, test_robot_uuid)
         == correct_subject
     )
+
+
+# ---------- construct_mongo_sample_message_subject tests ----------
+
+
+def test_construct_mongo_sample_message_subject(app):
+    test_sample = {
+        FIELD_ROOT_SAMPLE_ID: "MCM001",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_LAB_ID: "Lab 1",
+        FIELD_RESULT: "Positive",
+        FIELD_LH_SAMPLE_UUID: "17be6834-06e7-4ce1-8413-9d8667cb9022",
+    }
+
+    expected_subject = {
+        "role_type": "sample",
+        "subject_type": "sample",
+        "friendly_name": "MCM001__rna_1__Lab 1__Positive",
+        "uuid": "17be6834-06e7-4ce1-8413-9d8667cb9022",
+    }
+
+    result = construct_mongo_sample_message_subject(test_sample)
+    assert result == expected_subject

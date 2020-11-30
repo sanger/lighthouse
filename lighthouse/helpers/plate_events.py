@@ -9,11 +9,6 @@ from lighthouse.constants import (
     PLATE_EVENT_SOURCE_NOT_RECOGNISED,
     PLATE_EVENT_SOURCE_NO_MAP_DATA,
     PLATE_EVENT_SOURCE_ALL_NEGATIVES,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RNA_ID,
-    FIELD_LAB_ID,
-    FIELD_RESULT,
-    FIELD_LH_SAMPLE_UUID,
 )
 from lighthouse.helpers.mongo_db import (
     get_source_plate_uuid,
@@ -22,6 +17,7 @@ from lighthouse.helpers.mongo_db import (
 from lighthouse.helpers.events import (
     get_robot_uuid,
     construct_robot_message_subject,
+    construct_mongo_sample_message_subject,
 )
 
 logger = logging.getLogger(__name__)
@@ -88,18 +84,18 @@ def construct_source_plate_completed_message(
         if samples is None:
             return [f"Unable to determine samples that belong to source plate '{barcode}'"], None
 
-        event_subjects = [
+        subjects = [
             construct_robot_message_subject(robot_serial_number, robot_uuid),
             construct_source_plate_message_subject(barcode, source_plate_uuid),
         ]
-        event_subjects.extend([construct_sample_message_subject(sample) for sample in samples])
+        subjects.extend([construct_mongo_sample_message_subject(sample) for sample in samples])
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
                 "event_type": PLATE_EVENT_SOURCE_COMPLETED,
                 "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
-                "subjects": event_subjects,
+                "subjects": subjects,
                 "metadata": {},
             },
             "lims": app.config["RMQ_LIMS_ID"],
@@ -210,31 +206,6 @@ def construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str,
         "subject_type": "plate",
         "friendly_name": barcode,
         "uuid": uuid,
-    }
-
-
-def construct_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]:
-    """Generates sample subject for a plate event message.
-
-    Arguments:
-        samples {Dict[str, str]} -- The sample for which to generate a subject.
-
-    Returns:
-        {Dict[str, str]} -- The plate message sample subject.
-    """
-    friendly_name = "__".join(
-        [
-            sample[FIELD_ROOT_SAMPLE_ID],
-            sample[FIELD_RNA_ID],
-            sample[FIELD_LAB_ID],
-            sample[FIELD_RESULT],
-        ]
-    )
-    return {
-        "role_type": "sample",
-        "subject_type": "sample",
-        "friendly_name": friendly_name,
-        "uuid": sample[FIELD_LH_SAMPLE_UUID],
     }
 
 

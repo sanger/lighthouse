@@ -2,6 +2,14 @@ from flask import current_app as app
 from typing import Dict, Optional
 from uuid import uuid4
 
+from lighthouse.constants import (
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_RNA_ID,
+    FIELD_LAB_ID,
+    FIELD_RESULT,
+    FIELD_LH_SAMPLE_UUID,
+)
+
 
 def get_routing_key(event_type: str) -> str:
     """Determines the routing key for a plate event message.
@@ -59,4 +67,29 @@ def construct_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, 
         "subject_type": "robot",
         "friendly_name": serial_number,
         "uuid": uuid,
+    }
+
+
+def construct_mongo_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]:
+    """Generates sample subject for a plate event message from a mongo sample.
+
+    Arguments:
+        samples {Dict[str, str]} -- The mongo sample for which to generate a subject.
+
+    Returns:
+        {Dict[str, str]} -- The plate message sample subject.
+    """
+    friendly_name = "__".join(
+        [
+            sample[FIELD_ROOT_SAMPLE_ID],
+            sample[FIELD_RNA_ID],
+            sample[FIELD_LAB_ID],
+            sample[FIELD_RESULT],
+        ]
+    )
+    return {
+        "role_type": "sample",
+        "subject_type": "sample",
+        "friendly_name": friendly_name,
+        "uuid": sample[FIELD_LH_SAMPLE_UUID],
     }

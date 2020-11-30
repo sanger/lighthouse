@@ -43,7 +43,6 @@ from sqlalchemy.sql.expression import and_  # type: ignore
 from sqlalchemy.sql.expression import bindparam  # type: ignore
 from lighthouse.messages.message import Message  # type: ignore
 from lighthouse.helpers.plate_events import (
-    construct_sample_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
 )
@@ -51,6 +50,7 @@ from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
     get_robot_uuid,
     construct_robot_message_subject,
+    construct_mongo_sample_message_subject
 )
 
 logger = logging.getLogger(__name__)
@@ -627,7 +627,7 @@ def construct_cherrypicking_plate_failed_message(
         # Add sample subjects for control and non-control DART entries
         dart_control_rows = [row_to_dict(row) for row in rows_with_controls(dart_samples)]
         subjects.extend([sample_subject_for_dart_control_row(row) for row in dart_control_rows])
-        subjects.extend([construct_sample_message_subject(sample) for sample in mongo_samples])
+        subjects.extend([construct_mongo_sample_message_subject(sample) for sample in mongo_samples])
 
         # Add source plate subjects
         source_plates = get_source_plates_for_samples(mongo_samples)
