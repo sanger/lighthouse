@@ -19,8 +19,11 @@ from lighthouse.constants import (
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
+    FIELD_BARCODE,
+    FIELD_LH_SOURCE_PLATE_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    PLATE_EVENT_DESTINATION_CREATED,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -45,6 +48,11 @@ from lighthouse.helpers.plates import (
     rows_with_controls,
     rows_without_controls,
     update_mlwh_with_cog_uk_ids,
+    get_unique_plate_barcodes,
+    query_for_source_plate_uuids,
+    get_source_plate_id_mappings,
+    robot_subject,
+    find_source_plates,
 )
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
@@ -190,6 +198,7 @@ def test_centre_prefix(app, centres, mocked_responses):
 def test_create_post_body(app, samples):
     with app.app_context():
         barcode = "12345"
+
         correct_body = {
             "data": {
                 "type": "plates",
@@ -425,9 +434,24 @@ def test_query_for_cherrypicked_samples_generates_list(app):
 
     assert query_for_cherrypicked_samples(test) == {
         "$or": [
-            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A01", FIELD_LAB_ID: "ABC"},
-            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A02", FIELD_LAB_ID: "ABC"},
-            {FIELD_ROOT_SAMPLE_ID: "sample_2", FIELD_RNA_ID: "plate1:A03", FIELD_LAB_ID: "ABC"},
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_1",
+                FIELD_RNA_ID: "plate1:A01",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: "Positive",
+            },
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_1",
+                FIELD_RNA_ID: "plate1:A02",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: "Positive",
+            },
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_2",
+                FIELD_RNA_ID: "plate1:A03",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: "Positive",
+            },
         ]
     }
 
@@ -639,6 +663,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "control_type": "positive",
                 "barcode": "d123",
                 "coordinate": "B01",
+                "supplier_name": "positive control: 123_A01",
             },
             {
                 "name": "rna_2",
@@ -647,10 +672,14 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "supplier_name": "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
+                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                "lab_id": "AP",
+                "result": "Positive",
             },
         ]
-
-        assert map_to_ss_columns(dart_mongo_merged_samples) == correct_mapped_samples
+        result = map_to_ss_columns(dart_mongo_merged_samples)
+        del result[0]["uuid"]
+        assert result == correct_mapped_samples
 
 
 def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
@@ -662,35 +691,51 @@ def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
 
 def test_create_cherrypicked_post_body(app):
     with app.app_context():
-        barcode = "d123"
+        barcode = "123"
+        user_id = "my_user"
         mapped_samples = [
             {
                 "control": True,
-                "control_type": "positive",
-                "barcode": "d123",
+                "control_type": "Positive",
+                "barcode": "123",
                 "coordinate": "B01",
+                "supplier_name": "Positive control: 123_B01",
+                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
             {
                 "name": "rna_2",
                 "sample_description": "MCM002",
                 "phenotype": "positive",
                 "supplier_name": "abcd",
-                "barcode": "d123",
+                "barcode": "123",
                 "coordinate": "B02",
+                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                "lab_id": "AP",
+                "result": "Positive",
             },
         ]
+
+        robot_serial_number = "BKRB0001"
+
+        plate_id_mappings = [
+            {"barcode": "123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"},
+            {"barcode": "456", "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e"},
+        ]
+
         correct_body = {
             "data": {
                 "type": "plates",
                 "attributes": {
-                    "barcode": "d123",
+                    "barcode": "123",
                     "purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
                     "study_uuid": current_app.config["SS_UUID_STUDY_CHERRYPICKED"],
                     "wells": {
                         "B01": {
                             "content": {
                                 "control": True,
-                                "control_type": "positive",
+                                "control_type": "Positive",
+                                "supplier_name": "Positive control: 123_B01",
+                                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
                         },
                         "B02": {
@@ -699,16 +744,148 @@ def test_create_cherrypicked_post_body(app):
                                 "phenotype": "positive",
                                 "supplier_name": "abcd",
                                 "sample_description": "MCM002",
+                                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                             }
                         },
                     },
+                    "events": [
+                        {
+                            "event": {
+                                "user_identifier": "my_user",
+                                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                                "subjects": [
+                                    {
+                                        "role_type": "robot",
+                                        "subject_type": "robot",
+                                        "friendly_name": "Robot 1",
+                                        "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b",
+                                    },
+                                    {
+                                        "role_type": "cherrypicking_source_labware",
+                                        "subject_type": "plate",
+                                        "friendly_name": "123",
+                                        "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
+                                    },
+                                    {
+                                        "role_type": "cherrypicking_source_labware",
+                                        "subject_type": "plate",
+                                        "friendly_name": "456",
+                                        "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+                                    },
+                                    {
+                                        "role_type": "control",
+                                        "subject_type": "sample",
+                                        "friendly_name": "Positive control: 123_B01",
+                                        "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
+                                    },
+                                    {
+                                        "role_type": "sample",
+                                        "subject_type": "sample",
+                                        "friendly_name": "MCM002__rna_2__AP__Positive",
+                                        "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                                    },
+                                ],
+                                "metadata": {},
+                                "lims": app.config["RMQ_LIMS_ID"],
+                            },
+                        },
+                    ],
                 },
-            }
+            },
         }
 
-        assert create_cherrypicked_post_body(barcode, mapped_samples) == correct_body
+        assert (
+            create_cherrypicked_post_body(
+                user_id, barcode, mapped_samples, robot_serial_number, plate_id_mappings
+            )
+            == correct_body
+        )
+
+
+def test_robot_subject_no_robot_mapping_in_config(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]
+        with pytest.raises(Exception):
+            robot_subject("1234")
+
+
+def test_robot_subject_no_robot_friendly_name(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]["BKRB0001"]["name"]
+        with pytest.raises(Exception):
+            robot_subject("BKRB0001")
+
+
+def test_robot_subject_no_robot_uuid(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]["BKRB0001"]["uuid"]
+        with pytest.raises(Exception):
+            robot_subject("BKRB0001")
 
 
 def test_find_samples_returns_none_if_no_query_provided(app):
     with app.app_context():
         assert find_samples(None) is None
+
+
+def test_get_unique_plate_barcodes(app, samples_different_plates):
+    correct_barcodes = ["123", "456"]
+
+    samples = [
+        samples_different_plates[0],
+        samples_different_plates[0],
+        samples_different_plates[1],
+        samples_different_plates[1],
+    ]
+
+    result = get_unique_plate_barcodes(samples)
+    assert len(result) == len(correct_barcodes)
+    for barcode in correct_barcodes:
+        assert barcode in result
+
+
+def test_query_for_source_plate_uuids(app):
+    correct_query = {
+        "$or": [
+            {FIELD_BARCODE: "123"},
+            {FIELD_BARCODE: "456"},
+        ]
+    }
+    barcodes = ["123", "456"]
+
+    assert query_for_source_plate_uuids(barcodes) == correct_query
+
+
+def test_query_for_source_plate_uuids_returns_none(app):
+    barcodes = []
+
+    assert query_for_source_plate_uuids(barcodes) == None
+    assert query_for_source_plate_uuids(None) == None
+
+
+def test_find_source_plates_returns_none(app):
+    assert find_source_plates(None) == None
+
+
+def test_get_source_plate_id_mappings(app, samples_different_plates, source_plates):
+    with app.app_context():
+        samples = [
+            samples_different_plates[0],
+            samples_different_plates[0],
+            samples_different_plates[1],
+            samples_different_plates[1],
+        ]
+
+        correct_uuids = [
+            {
+                "barcode": source_plates[0][FIELD_BARCODE],
+                "uuid": source_plates[0][FIELD_LH_SOURCE_PLATE_UUID],
+            },
+            {
+                "barcode": source_plates[1][FIELD_BARCODE],
+                "uuid": source_plates[1][FIELD_LH_SOURCE_PLATE_UUID],
+            },
+        ]
+        source_plate_uuids = get_source_plate_id_mappings(samples)
+
+        assert source_plate_uuids == correct_uuids

@@ -2,7 +2,7 @@ import copy
 import logging
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional
-
+from uuid import uuid4
 import requests
 from flask import current_app as app
 from lighthouse.constants import (
@@ -18,13 +18,18 @@ from lighthouse.constants import (
     FIELD_DART_SOURCE_COORDINATE,
     FIELD_LAB_ID,
     FIELD_PLATE_BARCODE,
+    FIELD_BARCODE,
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
+    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_LH_SAMPLE_UUID,
     POSITIVE_SAMPLES_MONGODB_FILTER,
     STAGE_MATCH_POSITIVE,
+    PLATE_EVENT_DESTINATION_CREATED,
 )
+
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -185,19 +190,11 @@ def row_is_normal_sample(row):
 
 
 def rows_without_controls(rows):
-    list = []
-    for row in rows:
-        if row_is_normal_sample(row):
-            list.append(row)
-    return list
+    return list(filter(lambda x: row_is_normal_sample(x), rows))
 
 
 def rows_with_controls(rows):
-    list = []
-    for row in rows:
-        if not row_is_normal_sample(row):
-            list.append(row)
-    return list
+    return list(filter(lambda x: not row_is_normal_sample(x), rows))
 
 
 def query_for_cherrypicked_samples(rows):
@@ -209,6 +206,7 @@ def query_for_cherrypicked_samples(rows):
             FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
             FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
             FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
+            FIELD_RESULT: "Positive",
         }
         mongo_query.append(sample_query)
     return {"$or": mongo_query}
@@ -426,6 +424,15 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             db_connection.close()
 
 
+def supplier_name_for_control(dart_row):
+    args = {
+        "control_type": dart_row[FIELD_DART_CONTROL],
+        "source_barcode": dart_row[FIELD_DART_SOURCE_BARCODE],
+        "source_coordinate": dart_row[FIELD_DART_SOURCE_COORDINATE],
+    }
+    return "{control_type} control: {source_barcode}_{source_coordinate}".format(**args)
+
+
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
@@ -437,13 +444,18 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
         try:
             if dart_row[FIELD_DART_CONTROL]:
+                mapped_sample["supplier_name"] = supplier_name_for_control(dart_row)
                 mapped_sample["control"] = True
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
+                mapped_sample["uuid"] = str(uuid4())
             else:
                 mapped_sample["name"] = mongo_row[FIELD_RNA_ID]
                 mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
+                mapped_sample["result"] = mongo_row[FIELD_RESULT]
+                mapped_sample["uuid"] = mongo_row[FIELD_LH_SAMPLE_UUID]
+                mapped_sample["lab_id"] = mongo_row[FIELD_LAB_ID]
 
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
             mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
@@ -459,7 +471,13 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return mapped_samples
 
 
-def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -> Dict[str, Any]:
+def create_cherrypicked_post_body(
+    user_id: str,
+    barcode: str,
+    samples: List[Dict[str, Any]],
+    robot_serial_number: str,
+    plate_id_mappings: List[Dict[str, str]],
+) -> Dict[str, Any]:
     logger.debug(
         f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
     )
@@ -470,21 +488,157 @@ def create_cherrypicked_post_body(barcode: str, samples: List[Dict[str, Any]]) -
         content = {}
 
         if "control" in sample:
+            content["supplier_name"] = sample["supplier_name"]
             content["control"] = sample["control"]
             content["control_type"] = sample["control_type"]
+            content["uuid"] = sample["uuid"]
         else:
             content["name"] = sample["name"]
             content["phenotype"] = sample["phenotype"]
             content["supplier_name"] = sample["supplier_name"]
             content["sample_description"] = sample["sample_description"]
+            content["uuid"] = sample["uuid"]
 
         wells_content[sample["coordinate"]] = {"content": content}
+
+    subjects = []
+    subjects.append(robot_subject(robot_serial_number))
+    subjects.extend(source_plate_subjects(plate_id_mappings))
+    subjects.extend(sample_subjects(samples))
+
+    events = [
+        {
+            "event": {
+                "user_identifier": user_id,
+                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                "subjects": subjects,
+                "metadata": {},
+                "lims": app.config["RMQ_LIMS_ID"],
+            }
+        }
+    ]
 
     body = {
         "barcode": barcode,
         "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
         "study_uuid": app.config["SS_UUID_STUDY_CHERRYPICKED"],
         "wells": wells_content,
+        "events": events,
     }
 
     return {"data": {"type": "plates", "attributes": body}}
+
+
+def sample_subjects(samples):
+    subjects = []
+    for sample in samples:
+        if "control" in sample:
+            subject = {
+                "role_type": "control",
+                "subject_type": "sample",
+                "friendly_name": control_friendly_name(sample),
+                "uuid": sample["uuid"],
+            }
+        else:
+            subject = {
+                "role_type": "sample",
+                "subject_type": "sample",
+                "friendly_name": sample_friendly_name(sample),
+                "uuid": sample["uuid"],
+            }
+        subjects.append(subject)
+    return subjects
+
+
+def sample_friendly_name(sample):
+    name = "__".join(
+        [sample["sample_description"], sample["name"], sample["lab_id"], sample["result"]]
+    )
+    return name
+
+
+def control_friendly_name(sample):
+    return f"{sample['supplier_name']}"
+
+
+def source_plate_subjects(plate_id_mappings):
+    subjects = []
+    for mapping in plate_id_mappings:
+        subject = {
+            "role_type": "cherrypicking_source_labware",
+            "subject_type": "plate",
+            "friendly_name": mapping["barcode"],
+            "uuid": mapping["uuid"],
+        }
+        subjects.append(subject)
+    return subjects
+
+
+def robot_subject(robot_serial_number):
+    try:
+        robot_mapping = app.config["BECKMAN_ROBOTS"][robot_serial_number]
+    except KeyError:
+        logger.error("Unable to find events information for robot:" + robot_serial_number)
+        raise
+    try:
+        robot_friendly_name = robot_mapping["name"]
+    except KeyError:
+        logger.error("Unable to find friendly name for robot: " + robot_serial_number)
+        raise
+
+    try:
+        robot_uuid = robot_mapping["uuid"]
+    except KeyError:
+        logger.error("Unable to find UUID for robot: " + robot_serial_number)
+        raise
+
+    subject = {
+        "role_type": "robot",
+        "subject_type": "robot",
+        "friendly_name": robot_friendly_name,
+        "uuid": robot_uuid,
+    }
+
+    return subject
+
+
+def get_source_plate_id_mappings(samples):
+    barcodes = get_unique_plate_barcodes(samples)
+    source_plate_documents = find_source_plates(query_for_source_plate_uuids(barcodes))
+
+    source_plate_uuids = []
+    for plate in source_plate_documents:
+        mapping = {
+            "barcode": plate[FIELD_BARCODE],
+            "uuid": plate[FIELD_LH_SOURCE_PLATE_UUID],
+        }
+        source_plate_uuids.append(mapping)
+
+    return source_plate_uuids
+
+
+def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+    if query is None:
+        return None
+
+    source_plates = app.data.driver.db.source_plates
+
+    source_plate_documents = list(source_plates.find(query))
+
+    logger.info(f"Found {len(source_plate_documents)} source plates")
+
+    return source_plate_documents
+
+
+def get_unique_plate_barcodes(samples):
+    barcodes = set()
+    for sample in samples:
+        barcodes.add(sample[FIELD_PLATE_BARCODE])
+    return list(barcodes)
+
+
+def query_for_source_plate_uuids(barcodes):
+    if barcodes is None or (len(barcodes) == 0):
+        return None
+
+    return {"$or": [{FIELD_BARCODE: barcode} for barcode in barcodes]}

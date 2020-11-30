@@ -7,6 +7,10 @@ from lighthouse.helpers.plate_events import (
     construct_source_plate_no_map_data_message,
     construct_source_plate_all_negatives_message,
     construct_source_plate_completed_message,
+    get_robot_uuid,
+    construct_robot_message_subject,
+    construct_source_plate_message_subject,
+    construct_sample_message_subject,
 )
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,
@@ -684,3 +688,88 @@ def test_construct_source_plate_completed_message_creates_expected_message(app):
                             "friendly_name": sample["friendly_name"],
                             "uuid": sample[FIELD_LH_SAMPLE_UUID],
                         } in subjects
+
+
+# ---------- get_robot_uuid tests ----------
+
+
+def test_get_robot_uuid_returns_none_no_config_option(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]
+
+        result = get_robot_uuid("BKRB0001")
+        assert result is None
+
+
+def test_get_robot_uuid_returns_none_no_matching_robot(app):
+    with app.app_context():
+        result = get_robot_uuid("no matching robot")
+        assert result is None
+
+
+def test_get_robot_uuid_returns_expected_uuid(app):
+    with app.app_context():
+        test_robot_serial_number, test_robot_uuid = any_robot_info(app)
+        result = get_robot_uuid(test_robot_serial_number)
+
+        assert result == test_robot_uuid
+
+
+# ---------- construct_robot_message_subject tests ----------
+
+
+def test_construct_robot_message_subject(app):
+    test_robot_serial_number, test_robot_uuid = any_robot_info(app)
+
+    correct_subject = {
+        "role_type": "robot",
+        "subject_type": "robot",
+        "friendly_name": test_robot_serial_number,
+        "uuid": test_robot_uuid,
+    }
+
+    assert (
+        construct_robot_message_subject(test_robot_serial_number, test_robot_uuid)
+        == correct_subject
+    )
+
+
+# ---------- construct_source_plate_message_subject tests ----------
+
+
+def test_construct_source_plate_message_subject():
+    test_barcode = "BAC123"
+    test_uuid = "17be6834-06e7-4ce1-8413-9d8667cb9022"
+
+    expected_subject = {
+        "role_type": "cherrypicking_source_labware",
+        "subject_type": "plate",
+        "friendly_name": test_barcode,
+        "uuid": test_uuid,
+    }
+
+    result = construct_source_plate_message_subject(test_barcode, test_uuid)
+    assert result == expected_subject
+
+
+# ---------- construct_sample_message_subject tests ----------
+
+
+def test_construct_sample_message_subject(app):
+    test_sample = {
+        FIELD_ROOT_SAMPLE_ID: "MCM001",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_LAB_ID: "Lab 1",
+        FIELD_RESULT: "Positive",
+        FIELD_LH_SAMPLE_UUID: "17be6834-06e7-4ce1-8413-9d8667cb9022",
+    }
+
+    expected_subject = {
+        "role_type": "sample",
+        "subject_type": "sample",
+        "friendly_name": "MCM001__rna_1__Lab 1__Positive",
+        "uuid": "17be6834-06e7-4ce1-8413-9d8667cb9022",
+    }
+
+    result = construct_sample_message_subject(test_sample)
+    assert result == expected_subject

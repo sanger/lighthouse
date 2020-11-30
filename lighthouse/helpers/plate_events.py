@@ -84,7 +84,7 @@ def construct_source_plate_completed_message(
                 f"{PLATE_EVENT_SOURCE_COMPLETED} event message"
             ], None
 
-        robot_uuid = __get_robot_uuid(robot_serial_number)
+        robot_uuid = get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
@@ -97,10 +97,10 @@ def construct_source_plate_completed_message(
             return [f"Unable to determine samples that belong to source plate '{barcode}'"], None
 
         event_subjects = [
-            __construct_robot_message_subject(robot_serial_number, robot_uuid),
-            __construct_source_plate_message_subject(barcode, source_plate_uuid),
+            construct_robot_message_subject(robot_serial_number, robot_uuid),
+            construct_source_plate_message_subject(barcode, source_plate_uuid),
         ]
-        event_subjects.extend([__construct_sample_message_subject(sample) for sample in samples])
+        event_subjects.extend([construct_sample_message_subject(sample) for sample in samples])
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
@@ -144,7 +144,7 @@ def construct_source_plate_not_recognised_message(
                 f"{PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
             ], None
 
-        robot_uuid = __get_robot_uuid(robot_serial_number)
+        robot_uuid = get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
@@ -154,7 +154,7 @@ def construct_source_plate_not_recognised_message(
                 "event_type": PLATE_EVENT_SOURCE_NOT_RECOGNISED,
                 "occured_at": __get_current_datetime(),
                 "user_identifier": user_id,
-                "subjects": [__construct_robot_message_subject(robot_serial_number, robot_uuid)],
+                "subjects": [construct_robot_message_subject(robot_serial_number, robot_uuid)],
                 "metadata": {},
             },
             "lims": app.config["RMQ_LIMS_ID"],
@@ -203,6 +203,79 @@ def construct_source_plate_all_negatives_message(
     )
 
 
+def get_robot_uuid(serial_number: str) -> Optional[str]:
+    """Maps a robot serial number to a uuid.
+
+    Arguments:
+        serial_number {str} -- The robot serial number.
+
+    Returns:
+        {str} -- The robot uuid; otherwise None if it cannot be determined.
+    """
+    return app.config.get("BECKMAN_ROBOTS", {}).get(serial_number, {}).get("uuid", None)
+
+
+def construct_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]:
+    """Generates a robot subject for a plate event message.
+
+    Arguments:
+        serial_number {str} -- The robot serial number.
+        uuid {str} -- The robot uuid.
+
+    Returns:
+        {Dict[str, str]} -- The robot message subject.
+    """
+    return {
+        "role_type": "robot",
+        "subject_type": "robot",
+        "friendly_name": serial_number,
+        "uuid": uuid,
+    }
+
+
+def construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str, str]:
+    """Generates a source plate subject for a plate event message.
+
+    Arguments:
+        barcode {str} -- The source plate barcode.
+        uuid {str} -- The robot uuid.
+
+    Returns:
+        {Dict[str, str]} -- The source plate message subject.
+    """
+    return {
+        "role_type": "cherrypicking_source_labware",
+        "subject_type": "plate",
+        "friendly_name": barcode,
+        "uuid": uuid,
+    }
+
+
+def construct_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]:
+    """Generates sample subject for a plate event message.
+
+    Arguments:
+        samples {Dict[str, str]} -- The sample for which to generate a subject.
+
+    Returns:
+        {Dict[str, str]} -- The plate message sample subject.
+    """
+    friendly_name = "__".join(
+        [
+            sample[FIELD_ROOT_SAMPLE_ID],
+            sample[FIELD_RNA_ID],
+            sample[FIELD_LAB_ID],
+            sample[FIELD_RESULT],
+        ]
+    )
+    return {
+        "role_type": "sample",
+        "subject_type": "sample",
+        "friendly_name": friendly_name,
+        "uuid": sample[FIELD_LH_SAMPLE_UUID],
+    }
+
+
 # Private methods
 
 
@@ -213,18 +286,6 @@ def __get_current_datetime() -> str:
         {str} -- The current datetime.
     """
     return datetime.now().isoformat(timespec="seconds")
-
-
-def __get_robot_uuid(serial_number: str) -> Optional[str]:
-    """Maps a robot serial number to a uuid.
-
-    Arguments:
-        serial_number {str} -- The robot serial number.
-
-    Returns:
-        {str} -- The robot uuid; otherwise None if it cannot be determined.
-    """
-    return app.config["BECKMAN_ROBOTS"].get(serial_number, {}).get("uuid", None)
 
 
 def __construct_default_source_plate_on_robot_message(
@@ -251,7 +312,7 @@ def __construct_default_source_plate_on_robot_message(
                 f"{event_type} event message"
             ], None
 
-        robot_uuid = __get_robot_uuid(robot_serial_number)
+        robot_uuid = get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
@@ -266,8 +327,8 @@ def __construct_default_source_plate_on_robot_message(
                 "occured_at": __get_current_datetime(),
                 "user_identifier": user_id,
                 "subjects": [
-                    __construct_robot_message_subject(robot_serial_number, robot_uuid),
-                    __construct_source_plate_message_subject(barcode, source_plate_uuid),
+                    construct_robot_message_subject(robot_serial_number, robot_uuid),
+                    construct_source_plate_message_subject(barcode, source_plate_uuid),
                 ],
                 "metadata": {},
             },
@@ -280,64 +341,3 @@ def __construct_default_source_plate_on_robot_message(
         return [
             f"An unexpected error occurred attempting to construct the {event_type} event message"
         ], None
-
-
-def __construct_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]:
-    """Generates a robot subject for a plate event message.
-
-    Arguments:
-        serial_number {str} -- The robot serial number.
-        uuid {str} -- The robot uuid.
-
-    Returns:
-        {Dict[str, str]} -- The robot message subject.
-    """
-    return {
-        "role_type": "robot",
-        "subject_type": "robot",
-        "friendly_name": serial_number,
-        "uuid": uuid,
-    }
-
-
-def __construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str, str]:
-    """Generates a source plate subject for a plate event message.
-
-    Arguments:
-        barcode {str} -- The source plate barcode.
-        uuid {str} -- The robot uuid.
-
-    Returns:
-        {Dict[str, str]} -- The source plate message subject.
-    """
-    return {
-        "role_type": "cherrypicking_source_labware",
-        "subject_type": "plate",
-        "friendly_name": barcode,
-        "uuid": uuid,
-    }
-
-
-def __construct_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]:
-    """Generates sample subject for a plate event message.
-
-    Arguments:
-        samples {Dict[str, str]} -- The sample for which to generate a subject.
-
-    Returns:
-        {Dict[str, str]} -- The plate message sample subject.
-    """
-    friendly_name = "__".join(
-        [
-            sample[FIELD_ROOT_SAMPLE_ID],
-            sample[FIELD_RNA_ID],
-            sample[FIELD_LAB_ID],
-            sample[FIELD_RESULT],
-        ]
-    )
-    return {
-        "role_type": "sample",
-        "subject_type": "sample",
-        "friendly_name": friendly_name,
-        "uuid": sample[FIELD_LH_SAMPLE_UUID],
-    }
