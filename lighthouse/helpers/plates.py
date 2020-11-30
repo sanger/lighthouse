@@ -193,16 +193,18 @@ def rows_with_controls(rows):
 def query_for_cherrypicked_samples(rows):
     if rows is None or (len(rows) == 0):
         return None
-    sample_queries = [
-        {
-            FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
-            FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
-            FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
-            FIELD_RESULT: "Positive",
-        }
-        for row in rows_without_controls(rows)
-    ]
-    return {"$or": sample_queries}
+
+    return {
+        "$or": [
+            {
+                FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
+                FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
+                FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
+                FIELD_RESULT: "Positive",
+            }
+            for row in rows_without_controls(rows)
+        ]
+    }
 
 
 def equal_row_and_sample(row, sample):
