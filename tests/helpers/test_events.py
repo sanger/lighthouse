@@ -3,7 +3,18 @@ from unittest.mock import patch
 from lighthouse.helpers.events import (
     get_routing_key,
     construct_destination_plate_message_subject,
+    get_robot_uuid,
+    construct_robot_message_subject,
 )
+
+
+# ---------- tests helpers ----------
+
+
+def any_robot_info(app):
+    serial_number = list(app.config["BECKMAN_ROBOTS"].keys())[0]
+    uuid = app.config["BECKMAN_ROBOTS"][serial_number]["uuid"]
+    return serial_number, uuid
 
 
 # ---------- get_routing_key tests ----------
@@ -35,3 +46,45 @@ def test_construct_destination_plate_message_subject():
         assert result == expected_subject
         
 
+# ---------- get_robot_uuid tests ----------
+
+
+def test_get_robot_uuid_returns_none_no_config_option(app):
+    with app.app_context():
+        del app.config["BECKMAN_ROBOTS"]
+
+        result = get_robot_uuid("BKRB0001")
+        assert result is None
+
+
+def test_get_robot_uuid_returns_none_no_matching_robot(app):
+    with app.app_context():
+        result = get_robot_uuid("no matching robot")
+        assert result is None
+
+
+def test_get_robot_uuid_returns_expected_uuid(app):
+    with app.app_context():
+        test_robot_serial_number, test_robot_uuid = any_robot_info(app)
+        result = get_robot_uuid(test_robot_serial_number)
+
+        assert result == test_robot_uuid
+
+
+# ---------- construct_robot_message_subject tests ----------
+
+
+def test_construct_robot_message_subject(app):
+    test_robot_serial_number, test_robot_uuid = any_robot_info(app)
+
+    correct_subject = {
+        "role_type": "robot",
+        "subject_type": "robot",
+        "friendly_name": test_robot_serial_number,
+        "uuid": test_robot_uuid,
+    }
+
+    assert (
+        construct_robot_message_subject(test_robot_serial_number, test_robot_uuid)
+        == correct_subject
+    )

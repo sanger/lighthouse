@@ -19,6 +19,10 @@ from lighthouse.helpers.mongo_db import (
     get_source_plate_uuid,
     get_samples_in_source_plate,
 )
+from lighthouse.helpers.events import (
+    get_robot_uuid,
+    construct_robot_message_subject,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -189,36 +193,6 @@ def construct_source_plate_all_negatives_message(
     return __construct_default_source_plate_on_robot_message(
         PLATE_EVENT_SOURCE_ALL_NEGATIVES, params
     )
-
-
-def get_robot_uuid(serial_number: str) -> Optional[str]:
-    """Maps a robot serial number to a uuid.
-
-    Arguments:
-        serial_number {str} -- The robot serial number.
-
-    Returns:
-        {str} -- The robot uuid; otherwise None if it cannot be determined.
-    """
-    return app.config.get("BECKMAN_ROBOTS", {}).get(serial_number, {}).get("uuid", None)
-
-
-def construct_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]:
-    """Generates a robot subject for a plate event message.
-
-    Arguments:
-        serial_number {str} -- The robot serial number.
-        uuid {str} -- The robot uuid.
-
-    Returns:
-        {Dict[str, str]} -- The robot message subject.
-    """
-    return {
-        "role_type": "robot",
-        "subject_type": "robot",
-        "friendly_name": serial_number,
-        "uuid": uuid,
-    }
 
 
 def construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str, str]:

@@ -45,12 +45,12 @@ from lighthouse.messages.message import Message  # type: ignore
 from lighthouse.helpers.plate_events import (
     construct_sample_message_subject,
     construct_source_plate_message_subject,
-    get_robot_uuid,
-    construct_robot_message_subject,
     get_message_timestamp,
 )
 from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
+    get_robot_uuid,
+    construct_robot_message_subject,
 )
 
 logger = logging.getLogger(__name__)

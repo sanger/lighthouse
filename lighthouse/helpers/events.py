@@ -1,5 +1,5 @@
 from flask import current_app as app
-from typing import Dict
+from typing import Dict, Optional
 from uuid import uuid4
 
 
@@ -29,4 +29,34 @@ def construct_destination_plate_message_subject(barcode: str) -> Dict[str, str]:
         "subject_type": "plate",
         "friendly_name": barcode,
         "uuid": str(uuid4()),
+    }
+
+
+def get_robot_uuid(serial_number: str) -> Optional[str]:
+    """Maps a robot serial number to a uuid.
+
+    Arguments:
+        serial_number {str} -- The robot serial number.
+
+    Returns:
+        {str} -- The robot uuid; otherwise None if it cannot be determined.
+    """
+    return app.config.get("BECKMAN_ROBOTS", {}).get(serial_number, {}).get("uuid", None)
+
+
+def construct_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, str]:
+    """Generates a robot subject for a plate event message.
+
+    Arguments:
+        serial_number {str} -- The robot serial number.
+        uuid {str} -- The robot uuid.
+
+    Returns:
+        {Dict[str, str]} -- The robot message subject.
+    """
+    return {
+        "role_type": "robot",
+        "subject_type": "robot",
+        "friendly_name": serial_number,
+        "uuid": uuid,
     }

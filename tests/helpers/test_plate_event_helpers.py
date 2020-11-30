@@ -1,3 +1,4 @@
+import pytest
 from unittest.mock import patch
 from datetime import datetime
 from lighthouse.messages.message import Message
@@ -7,8 +8,6 @@ from lighthouse.helpers.plate_events import (
     construct_source_plate_no_map_data_message,
     construct_source_plate_all_negatives_message,
     construct_source_plate_completed_message,
-    get_robot_uuid,
-    construct_robot_message_subject,
     construct_source_plate_message_subject,
     construct_sample_message_subject,
     get_message_timestamp,
@@ -29,10 +28,12 @@ from lighthouse.constants import (
 # ---------- test helpers ----------
 
 
-def any_robot_info(app):
-    serial_number = list(app.config["BECKMAN_ROBOTS"].keys())[0]
-    uuid = app.config["BECKMAN_ROBOTS"][serial_number]["uuid"]
-    return serial_number, uuid
+@pytest.fixture
+def mock_robot_helpers():
+    with patch("lighthouse.helpers.plate_events.construct_robot_message_subject") as mock_construct:
+        with patch("lighthouse.helpers.plate_events.get_robot_uuid") as mock_get:
+            yield mock_get, mock_construct
+
 
 
 # ---------- construct_event_messages tests ----------
@@ -132,8 +133,9 @@ def test_construct_source_plate_not_recognised_message_errors_without_robot():
     assert message is None
 
 
-def test_construct_source_plate_not_recognised_message_errors_with_failure_getting_robot_uuid():
-    # don't provide an app config to query
+def test_construct_source_plate_not_recognised_message_errors_with_failure_getting_robot_uuid(mock_robot_helpers):
+    mock_get_uuid, _ = mock_robot_helpers
+    mock_get_uuid.side_effect = Exception("Boom!")
     test_params = {"user_id": "test_user", "robot": "12345"}
     errors, message = construct_source_plate_not_recognised_message(test_params)
 
@@ -141,21 +143,24 @@ def test_construct_source_plate_not_recognised_message_errors_with_failure_getti
     assert message is None
 
 
-def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid(app):
+def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid(mock_robot_helpers):
+    mock_get_uuid, _ = mock_robot_helpers
+    mock_get_uuid.return_value = None
+    test_params = {"user_id": "test_user", "robot": "12345"}
+    errors, message = construct_source_plate_not_recognised_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+
+def test_construct_source_plate_not_recognised_message_creates_expected_message(app, mock_robot_helpers):
+    _, mock_construct = mock_robot_helpers
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_construct.return_value=test_robot_subject
     with app.app_context():
-        test_params = {"user_id": "test_user", "robot": "12345"}
-        errors, message = construct_source_plate_not_recognised_message(test_params)
-
-        assert len(errors) == 1
-        assert message is None
-
-
-def test_construct_source_plate_not_recognised_message_creates_expected_message(app):
-    with app.app_context():
-        test_robot_serial_number, test_robot_uuid = any_robot_info(app)
         with patch("lighthouse.helpers.plate_events.Message") as mock_message:
             test_user_id = "test_user"
-            test_params = {"user_id": test_user_id, "robot": test_robot_serial_number}
+            test_params = {"user_id": test_user_id, "robot": "12345"}
             errors, _ = construct_source_plate_not_recognised_message(test_params)
 
             assert len(errors) == 0
@@ -173,12 +178,7 @@ def test_construct_source_plate_not_recognised_message_creates_expected_message(
 
             subjects = event["subjects"]
             assert len(subjects) == 1
-            assert {  # robot subject
-                "role_type": "robot",
-                "subject_type": "robot",
-                "friendly_name": test_robot_serial_number,
-                "uuid": test_robot_uuid,
-            } in subjects
+            assert test_robot_subject in subjects  # robot subject
 
 
 # ---------- construct_source_plate_no_map_data_message tests ----------
@@ -226,8 +226,9 @@ def test_construct_source_plate_no_map_data_message_errors_without_robot():
     assert message is None
 
 
-def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_robot_uuid():
-    # don't provide an app config to query
+def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_robot_uuid(mock_robot_helpers):
+    mock_get_uuid, _ = mock_robot_helpers
+    mock_get_uuid.side_effect = Exception("Boom!")
     test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
@@ -235,18 +236,18 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
     assert message is None
 
 
-def test_construct_source_plate_no_map_data_message_errors_without_robot_uuid(app):
+def test_construct_source_plate_no_map_data_message_errors_without_robot_uuid(mock_robot_helpers):
+    mock_get_uuid, _ = mock_robot_helpers
+    mock_get_uuid.return_value = None
+    test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
+    errors, message = construct_source_plate_no_map_data_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+
+def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_plate_uuid(app, mock_robot_helpers):
     with app.app_context():
-        test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
-        errors, message = construct_source_plate_no_map_data_message(test_params)
-
-        assert len(errors) == 1
-        assert message is None
-
-
-def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_plate_uuid(app):
-    with app.app_context():
-        test_robot_serial_number, _ = any_robot_info(app)
         with patch(
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
             side_effect=Exception("Boom!"),
@@ -254,7 +255,7 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
             test_params = {
                 "barcode": "ABC123",
                 "user_id": "test_user",
-                "robot": test_robot_serial_number,
+                "robot": "12345",
             }
             errors, message = construct_source_plate_no_map_data_message(test_params)
 
@@ -262,14 +263,13 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
             assert message is None
 
 
-def test_construct_source_plate_no_map_data_message_errors_without_source_plate_uuid(app):
+def test_construct_source_plate_no_map_data_message_errors_without_source_plate_uuid(app, mock_robot_helpers):
     with app.app_context():
-        test_robot_serial_number, _ = any_robot_info(app)
         with patch("lighthouse.helpers.plate_events.get_source_plate_uuid", return_value=None):
             test_params = {
                 "barcode": "ABC123",
                 "user_id": "test_user",
-                "robot": test_robot_serial_number,
+                "robot": "12345",
             }
             errors, message = construct_source_plate_no_map_data_message(test_params)
 
@@ -277,9 +277,11 @@ def test_construct_source_plate_no_map_data_message_errors_without_source_plate_
             assert message is None
 
 
-def test_construct_source_plate_no_map_data_message_creates_expected_message(app):
+def test_construct_source_plate_no_map_data_message_creates_expected_message(app, mock_robot_helpers):
+    _, mock_construct = mock_robot_helpers
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_construct.return_value=test_robot_subject
     with app.app_context():
-        test_robot_serial_number, test_robot_uuid = any_robot_info(app)
         test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
         with patch(
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
@@ -291,7 +293,7 @@ def test_construct_source_plate_no_map_data_message_creates_expected_message(app
                 test_params = {
                     "barcode": test_barcode,
                     "user_id": test_user_id,
-                    "robot": test_robot_serial_number,
+                    "robot": "12345",
                 }
                 errors, _ = construct_source_plate_no_map_data_message(test_params)
 
@@ -310,12 +312,7 @@ def test_construct_source_plate_no_map_data_message_creates_expected_message(app
 
                 subjects = event["subjects"]
                 assert len(subjects) == 2
-                assert {  # robot subject
-                    "role_type": "robot",
-                    "subject_type": "robot",
-                    "friendly_name": test_robot_serial_number,
-                    "uuid": test_robot_uuid,
-                } in subjects
+                assert test_robot_subject in subjects  # robot subject
                 assert {  # source plate subject
                     "role_type": "cherrypicking_source_labware",
                     "subject_type": "plate",
@@ -369,8 +366,9 @@ def test_construct_source_plate_all_negatives_message_errors_without_robot():
     assert message is None
 
 
-def test_construct_source_plate_all_negatives_message_errors_with_failure_getting_robot_uuid():
-    # don't provide an app config to query
+def test_construct_source_plate_all_negatives_message_errors_with_failure_getting_robot_uuid(mock_robot_helpers):
+    mock_get_uuid, _ = mock_robot_helpers
+    mock_get_uuid.side_effect = Exception("Boom!")
     test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
@@ -378,18 +376,18 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
     assert message is None
 
 
-def test_construct_source_plate_all_negatives_message_errors_without_robot_uuid(app):
+def test_construct_source_plate_all_negatives_message_errors_without_robot_uuid(mock_robot_helpers):
+    mock_get_uuid, _ = mock_robot_helpers
+    mock_get_uuid.return_value = None
+    test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
+    errors, message = construct_source_plate_all_negatives_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+
+def test_construct_source_plate_all_negatives_message_errors_with_failure_getting_plate_uuid(app, mock_robot_helpers):
     with app.app_context():
-        test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
-        errors, message = construct_source_plate_all_negatives_message(test_params)
-
-        assert len(errors) == 1
-        assert message is None
-
-
-def test_construct_source_plate_all_negatives_message_errors_with_failure_getting_plate_uuid(app):
-    with app.app_context():
-        test_robot_serial_number, _ = any_robot_info(app)
         with patch(
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
             side_effect=Exception("Boom!"),
@@ -397,7 +395,7 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
             test_params = {
                 "barcode": "ABC123",
                 "user_id": "test_user",
-                "robot": test_robot_serial_number,
+                "robot": "12345",
             }
             errors, message = construct_source_plate_all_negatives_message(test_params)
 
@@ -405,14 +403,13 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
             assert message is None
 
 
-def test_construct_source_plate_all_negatives_message_errors_without_source_plate_uuid(app):
+def test_construct_source_plate_all_negatives_message_errors_without_source_plate_uuid(app, mock_robot_helpers):
     with app.app_context():
-        test_robot_serial_number, _ = any_robot_info(app)
         with patch("lighthouse.helpers.plate_events.get_source_plate_uuid", return_value=None):
             test_params = {
                 "barcode": "ABC123",
                 "user_id": "test_user",
-                "robot": test_robot_serial_number,
+                "robot": "12345",
             }
             errors, message = construct_source_plate_all_negatives_message(test_params)
 
@@ -420,9 +417,11 @@ def test_construct_source_plate_all_negatives_message_errors_without_source_plat
             assert message is None
 
 
-def test_construct_source_plate_all_negatives_message_creates_expected_message(app):
+def test_construct_source_plate_all_negatives_message_creates_expected_message(app, mock_robot_helpers):
+    _, mock_construct = mock_robot_helpers
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_construct.return_value=test_robot_subject
     with app.app_context():
-        test_robot_serial_number, test_robot_uuid = any_robot_info(app)
         test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
         with patch(
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
@@ -434,7 +433,7 @@ def test_construct_source_plate_all_negatives_message_creates_expected_message(a
                 test_params = {
                     "barcode": test_barcode,
                     "user_id": test_user_id,
-                    "robot": test_robot_serial_number,
+                    "robot": "12345",
                 }
                 errors, _ = construct_source_plate_all_negatives_message(test_params)
 
@@ -453,12 +452,7 @@ def test_construct_source_plate_all_negatives_message_creates_expected_message(a
 
                 subjects = event["subjects"]
                 assert len(subjects) == 2
-                assert {  # robot subject
-                    "role_type": "robot",
-                    "subject_type": "robot",
-                    "friendly_name": test_robot_serial_number,
-                    "uuid": test_robot_uuid,
-                } in subjects
+                assert test_robot_subject in subjects  # robot subject
                 assert {  # source plate subject
                     "role_type": "cherrypicking_source_labware",
                     "subject_type": "plate",
@@ -512,8 +506,9 @@ def test_construct_source_plate_completed_message_errors_without_robot():
     assert message is None
 
 
-def test_construct_source_plate_completed_message_errors_with_failure_getting_robot_uuid():
-    # don't provide an app config to query
+def test_construct_source_plate_completed_message_errors_with_failure_getting_robot_uuid(mock_robot_helpers):
+    mock_get_uuid, _ = mock_robot_helpers
+    mock_get_uuid.side_effect = Exception("Boom!")
     test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
     errors, message = construct_source_plate_completed_message(test_params)
 
@@ -521,18 +516,18 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_ro
     assert message is None
 
 
-def test_construct_source_plate_completed_message_errors_without_robot_uuid(app):
+def test_construct_source_plate_completed_message_errors_without_robot_uuid(mock_robot_helpers):
+    mock_get_uuid, _ = mock_robot_helpers
+    mock_get_uuid.return_value = None
+    test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
+    errors, message = construct_source_plate_completed_message(test_params)
+
+    assert len(errors) == 1
+    assert message is None
+
+
+def test_construct_source_plate_completed_message_errors_with_failure_getting_plate_uuid(app, mock_robot_helpers):
     with app.app_context():
-        test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
-        errors, message = construct_source_plate_completed_message(test_params)
-
-        assert len(errors) == 1
-        assert message is None
-
-
-def test_construct_source_plate_completed_message_errors_with_failure_getting_plate_uuid(app):
-    with app.app_context():
-        test_robot_serial_number, _ = any_robot_info(app)
         with patch(
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
             side_effect=Exception("Boom!"),
@@ -540,7 +535,7 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_pl
             test_params = {
                 "barcode": "ABC123",
                 "user_id": "test_user",
-                "robot": test_robot_serial_number,
+                "robot": "12345",
             }
             errors, message = construct_source_plate_completed_message(test_params)
 
@@ -548,14 +543,13 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_pl
             assert message is None
 
 
-def test_construct_source_plate_completed_message_errors_without_source_plate_uuid(app):
+def test_construct_source_plate_completed_message_errors_without_source_plate_uuid(app, mock_robot_helpers):
     with app.app_context():
-        test_robot_serial_number, _ = any_robot_info(app)
         with patch("lighthouse.helpers.plate_events.get_source_plate_uuid", return_value=None):
             test_params = {
                 "barcode": "ABC123",
                 "user_id": "test_user",
-                "robot": test_robot_serial_number,
+                "robot": "12345",
             }
             errors, message = construct_source_plate_completed_message(test_params)
 
@@ -563,9 +557,8 @@ def test_construct_source_plate_completed_message_errors_without_source_plate_uu
             assert message is None
 
 
-def test_construct_source_plate_completed_message_errors_with_failure_getting_samples(app):
+def test_construct_source_plate_completed_message_errors_with_failure_getting_samples(app, mock_robot_helpers):
     with app.app_context():
-        test_robot_serial_number, _ = any_robot_info(app)
         test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
         with patch(
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
@@ -578,7 +571,7 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_sa
                 test_params = {
                     "barcode": "ABC123",
                     "user_id": "test_user",
-                    "robot": test_robot_serial_number,
+                    "robot": "12345",
                 }
                 errors, message = construct_source_plate_completed_message(test_params)
 
@@ -586,9 +579,8 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_sa
                 assert message is None
 
 
-def test_construct_source_plate_completed_message_errors_without_samples(app):
+def test_construct_source_plate_completed_message_errors_without_samples(app, mock_robot_helpers):
     with app.app_context():
-        test_robot_serial_number, _ = any_robot_info(app)
         test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
         with patch(
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
@@ -600,7 +592,7 @@ def test_construct_source_plate_completed_message_errors_without_samples(app):
                 test_params = {
                     "barcode": "ABC123",
                     "user_id": "test_user",
-                    "robot": test_robot_serial_number,
+                    "robot": "12345",
                 }
                 errors, message = construct_source_plate_completed_message(test_params)
 
@@ -608,9 +600,11 @@ def test_construct_source_plate_completed_message_errors_without_samples(app):
                 assert message is None
 
 
-def test_construct_source_plate_completed_message_creates_expected_message(app):
+def test_construct_source_plate_completed_message_creates_expected_message(app, mock_robot_helpers):
+    _, mock_construct = mock_robot_helpers
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_construct.return_value = test_robot_subject
     with app.app_context():
-        test_robot_serial_number, test_robot_uuid = any_robot_info(app)
         test_source_plate_uuid = "3a06a935-0029-49ea-81bc-e5d8eeb1319e"
         with patch(
             "lighthouse.helpers.plate_events.get_source_plate_uuid",
@@ -644,7 +638,7 @@ def test_construct_source_plate_completed_message_creates_expected_message(app):
                     test_params = {
                         "barcode": test_barcode,
                         "user_id": test_user_id,
-                        "robot": test_robot_serial_number,
+                        "robot": "12345",
                     }
                     errors, _ = construct_source_plate_completed_message(test_params)
 
@@ -663,12 +657,7 @@ def test_construct_source_plate_completed_message_creates_expected_message(app):
 
                     subjects = event["subjects"]
                     assert len(subjects) == 4
-                    assert {  # robot subject
-                        "role_type": "robot",
-                        "subject_type": "robot",
-                        "friendly_name": test_robot_serial_number,
-                        "uuid": test_robot_uuid,
-                    } in subjects
+                    assert test_robot_subject in subjects  # robot subject
                     assert {  # source plate subject
                         "role_type": "cherrypicking_source_labware",
                         "subject_type": "plate",
@@ -684,50 +673,6 @@ def test_construct_source_plate_completed_message_creates_expected_message(app):
                             "friendly_name": sample["friendly_name"],
                             "uuid": sample[FIELD_LH_SAMPLE_UUID],
                         } in subjects
-
-
-# ---------- get_robot_uuid tests ----------
-
-
-def test_get_robot_uuid_returns_none_no_config_option(app):
-    with app.app_context():
-        del app.config["BECKMAN_ROBOTS"]
-
-        result = get_robot_uuid("BKRB0001")
-        assert result is None
-
-
-def test_get_robot_uuid_returns_none_no_matching_robot(app):
-    with app.app_context():
-        result = get_robot_uuid("no matching robot")
-        assert result is None
-
-
-def test_get_robot_uuid_returns_expected_uuid(app):
-    with app.app_context():
-        test_robot_serial_number, test_robot_uuid = any_robot_info(app)
-        result = get_robot_uuid(test_robot_serial_number)
-
-        assert result == test_robot_uuid
-
-
-# ---------- construct_robot_message_subject tests ----------
-
-
-def test_construct_robot_message_subject(app):
-    test_robot_serial_number, test_robot_uuid = any_robot_info(app)
-
-    correct_subject = {
-        "role_type": "robot",
-        "subject_type": "robot",
-        "friendly_name": test_robot_serial_number,
-        "uuid": test_robot_uuid,
-    }
-
-    assert (
-        construct_robot_message_subject(test_robot_serial_number, test_robot_uuid)
-        == correct_subject
-    )
 
 
 # ---------- construct_source_plate_message_subject tests ----------
