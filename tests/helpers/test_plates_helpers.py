@@ -903,4 +903,4 @@ def test_construct_cherrypicking_plate_failed_message_no_dart_samples():
 
         assert message is None
         assert len(errors) == 1
-        assert f"No sample data found for plate '{test_barcode}' in DART" in errors
+        assert f"No sample data found for plate '{test_barcode}' found in DART" in errors
