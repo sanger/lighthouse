@@ -634,7 +634,7 @@ def construct_cherrypicking_plate_failed_message(
         # Add robot message subject
         subjects.append(robot_subject(robot_serial_number))
 
-        # Add a destination plate subjects
+        # Add a destination plate subject
         subjects.append(construct_destination_plate_message_subject(barcode))
 
         # Construct message
