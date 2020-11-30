@@ -210,6 +210,7 @@ def equal_row_and_sample(row, sample):
         (sample[FIELD_ROOT_SAMPLE_ID] == getattr(row, FIELD_DART_ROOT_SAMPLE_ID))
         and (sample[FIELD_RNA_ID] == getattr(row, FIELD_DART_RNA_ID))
         and (sample[FIELD_LAB_ID] == getattr(row, FIELD_DART_LAB_ID))
+        and sample[FIELD_RESULT] == "Positive"
     )
 
 
