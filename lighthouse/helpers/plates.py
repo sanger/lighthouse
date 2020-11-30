@@ -138,14 +138,6 @@ def count_samples(query: Dict[str, Any]) -> int:
     return samples.count_documents(query)
 
 
-# TODO: remove once we are sure that we dont need anything other than positives
-def get_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
-
-    samples_for_barcode = find_samples({FIELD_PLATE_BARCODE: plate_barcode})
-
-    return samples_for_barcode
-
-
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     """Get a list of documents which correspond to filtered positive samples for a specific plate.
 

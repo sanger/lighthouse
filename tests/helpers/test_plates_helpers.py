@@ -40,7 +40,6 @@ from lighthouse.helpers.plates import (
     get_cherrypicked_samples_records,
     get_positive_samples,
     count_positive_samples,
-    get_samples,
     join_rows_with_samples,
     map_to_ss_columns,
     query_for_cherrypicked_samples,
@@ -271,10 +270,6 @@ def test_create_post_body(app, samples):
 
         assert create_post_body(barcode, samples) == correct_body
 
-
-def test_get_samples(app, samples):
-    with app.app_context():
-        assert len(get_samples("123")) == 8
 
 
 def test_get_positive_samples(app, samples):
