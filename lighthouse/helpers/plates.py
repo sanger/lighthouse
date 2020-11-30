@@ -28,6 +28,7 @@ from lighthouse.constants import (
     POSITIVE_SAMPLES_MONGODB_FILTER,
     STAGE_MATCH_POSITIVE,
     PLATE_EVENT_DESTINATION_CREATED,
+    PLATE_EVENT_DESTINATION_FAILED,
 )
 
 from lighthouse.exceptions import (
@@ -46,6 +47,7 @@ from lighthouse.helpers.plate_events import (
     construct_source_plate_message_subject,
     get_robot_uuid,
     construct_robot_message_subject,
+    get_message_timestamp,
 )
 
 logger = logging.getLogger(__name__)
@@ -628,9 +630,22 @@ def construct_cherrypicking_plate_failed_message(
         source_plates = get_source_plates_for_samples(mongo_samples)
         subjects.extend(source_plate_subjects(source_plates))
 
-        # TODO also
-        # construct the event message dict, convert to Message
-        raise NotImplementedError()
+        # Add robot message subject
+        subjects.append(robot_subject(robot_serial_number))
+
+        # Construct message
+        message_content = {
+            "event": {
+                "uuid": str(uuid4()),
+                "event_type": PLATE_EVENT_DESTINATION_FAILED,
+                "occured_at": get_message_timestamp(),
+                "user_identifier": user_id,
+                "subjects": subjects,
+                "metadata": {"failure_type": failure_type},
+            },
+            "lims": app.config["RMQ_LIMS_ID"],
+        }
+        return [], Message(message_content)
     except Exception as e:
         logger.error("Failed to construct a cherrypicking plate failed message")
         logger.exception(e)
