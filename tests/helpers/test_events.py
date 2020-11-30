@@ -6,6 +6,7 @@ from lighthouse.helpers.events import (
     get_robot_uuid,
     construct_robot_message_subject,
     construct_mongo_sample_message_subject,
+    construct_source_plate_message_subject,
 )
 from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
@@ -118,4 +119,22 @@ def test_construct_mongo_sample_message_subject(app):
     }
 
     result = construct_mongo_sample_message_subject(test_sample)
+    assert result == expected_subject
+
+
+# ---------- construct_source_plate_message_subject tests ----------
+
+
+def test_construct_source_plate_message_subject():
+    test_barcode = "BAC123"
+    test_uuid = "17be6834-06e7-4ce1-8413-9d8667cb9022"
+
+    expected_subject = {
+        "role_type": "cherrypicking_source_labware",
+        "subject_type": "plate",
+        "friendly_name": test_barcode,
+        "uuid": test_uuid,
+    }
+
+    result = construct_source_plate_message_subject(test_barcode, test_uuid)
     assert result == expected_subject

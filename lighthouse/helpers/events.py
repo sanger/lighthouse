@@ -93,3 +93,21 @@ def construct_mongo_sample_message_subject(sample: Dict[str, str]) -> Dict[str, 
         "friendly_name": friendly_name,
         "uuid": sample[FIELD_LH_SAMPLE_UUID],
     }
+
+
+def construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str, str]:
+    """Generates a source plate subject for a plate event message.
+
+    Arguments:
+        barcode {str} -- The source plate barcode.
+        uuid {str} -- The robot uuid.
+
+    Returns:
+        {Dict[str, str]} -- The source plate message subject.
+    """
+    return {
+        "role_type": "cherrypicking_source_labware",
+        "subject_type": "plate",
+        "friendly_name": barcode,
+        "uuid": uuid,
+    }

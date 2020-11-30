@@ -18,6 +18,7 @@ from lighthouse.helpers.events import (
     get_robot_uuid,
     construct_robot_message_subject,
     construct_mongo_sample_message_subject,
+    construct_source_plate_message_subject,
 )
 
 logger = logging.getLogger(__name__)
@@ -189,24 +190,6 @@ def construct_source_plate_all_negatives_message(
     return __construct_default_source_plate_on_robot_message(
         PLATE_EVENT_SOURCE_ALL_NEGATIVES, params
     )
-
-
-def construct_source_plate_message_subject(barcode: str, uuid: str) -> Dict[str, str]:
-    """Generates a source plate subject for a plate event message.
-
-    Arguments:
-        barcode {str} -- The source plate barcode.
-        uuid {str} -- The robot uuid.
-
-    Returns:
-        {Dict[str, str]} -- The source plate message subject.
-    """
-    return {
-        "role_type": "cherrypicking_source_labware",
-        "subject_type": "plate",
-        "friendly_name": barcode,
-        "uuid": uuid,
-    }
 
 
 def get_message_timestamp() -> str:
