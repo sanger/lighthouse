@@ -55,7 +55,7 @@ def test_construct_destination_plate_message_subject():
 
         result = construct_destination_plate_message_subject(barcode)
         assert result == expected_subject
-        
+
 
 # ---------- get_robot_uuid tests ----------
 
