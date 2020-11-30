@@ -59,3 +59,9 @@ RMQ_EXCHANGE = "lighthouse.test.examples"
 RMQ_EXCHANGE_TYPE = "topic"
 RMQ_ROUTING_KEY = "test.event.#"
 RMQ_LIMS_ID = "LH_TEST"
+
+BECKMAN_FAILURE_TYPES = {
+    "robot_crashed": "The robot crashed",
+    "sample_contamination": "Sample contamination occurred",
+    "other": "Any other failure",
+}
