@@ -105,7 +105,7 @@ def construct_source_plate_completed_message(
             "event": {
                 "uuid": str(uuid4()),
                 "event_type": PLATE_EVENT_SOURCE_COMPLETED,
-                "occured_at": __get_current_datetime(),
+                "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
                 "subjects": event_subjects,
                 "metadata": {},
@@ -152,7 +152,7 @@ def construct_source_plate_not_recognised_message(
             "event": {
                 "uuid": str(uuid4()),
                 "event_type": PLATE_EVENT_SOURCE_NOT_RECOGNISED,
-                "occured_at": __get_current_datetime(),
+                "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
                 "subjects": [construct_robot_message_subject(robot_serial_number, robot_uuid)],
                 "metadata": {},
@@ -276,16 +276,16 @@ def construct_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]:
     }
 
 
-# Private methods
-
-
-def __get_current_datetime() -> str:
+def get_message_timestamp() -> str:
     """Returns the current datetime in a format compatible with messaging.
 
     Returns:
         {str} -- The current datetime.
     """
     return datetime.now().isoformat(timespec="seconds")
+
+
+# Private methods
 
 
 def __construct_default_source_plate_on_robot_message(
@@ -324,7 +324,7 @@ def __construct_default_source_plate_on_robot_message(
             "event": {
                 "uuid": str(uuid4()),
                 "event_type": event_type,
-                "occured_at": __get_current_datetime(),
+                "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
                 "subjects": [
                     construct_robot_message_subject(robot_serial_number, robot_uuid),
