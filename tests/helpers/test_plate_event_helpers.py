@@ -3,7 +3,6 @@ from datetime import datetime
 from lighthouse.messages.message import Message
 from lighthouse.helpers.plate_events import (
     construct_event_message,
-    get_routing_key,
     construct_source_plate_not_recognised_message,
     construct_source_plate_no_map_data_message,
     construct_source_plate_all_negatives_message,
@@ -100,17 +99,6 @@ def test_construct_event_message_source_all_negatives():
 
         mock_construct_source_all_negatives_message.assert_called_with(test_params)
         assert result == test_return_value
-
-
-# ---------- get_routing_key tests ----------
-
-
-def test_get_routing_key(app):
-    with app.app_context():
-        test_event_type = "test_event_type"
-        result = get_routing_key(test_event_type)
-
-        assert result == f"test.event.{test_event_type}"
 
 
 # ---------- construct_source_plate_not_recognised_message tests ----------
