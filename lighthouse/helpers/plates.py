@@ -41,6 +41,7 @@ from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_tabl
 from sqlalchemy.sql.expression import and_  # type: ignore
 from sqlalchemy.sql.expression import bindparam  # type: ignore
 from lighthouse.messages.message import Message  # type: ignore
+from lighthouse.helpers.plate_events import construct_sample_message_subject
 
 logger = logging.getLogger(__name__)
 
@@ -643,12 +644,16 @@ def construct_cherrypicking_plate_failed_message(
         if not check_matching_sample_numbers(dart_samples, mongo_samples):
             return [f"Mismatch in destination and source sample data for plate '{barcode}'"], None
 
-        # TODO
-        # move finding mongo samples to mongo_db so it can be mocked during testing
+        # Construct sample subjects for control and non-control DART entries
+        dart_control_rows = [row_to_dict(row) for row in rows_with_controls(dart_samples)]
+        control_subjects = [sample_subject_for_dart_control_row(row) for row in dart_control_rows]
+        non_control_subjects = [construct_sample_message_subject for sample in mongo_samples]
+
+        # Construct source plate subjects
+        source_plates = get_source_plate_id_mappings(mongo_samples)
+        # source_plate_subjects = [construct_source_plate_message_subject(plate["barcode"]) for plate in
 
         # TODO also
-        # get controls from dart samples, create subjects for these
-        # create subjects for mongo samples
         # get mongo plates for mongo samples, create subjects for these
         # construct the event message dict, convert to Message
         raise NotImplementedError()
@@ -659,3 +664,12 @@ def construct_cherrypicking_plate_failed_message(
             "An unexpected error occurred attempting to construct the cherrypicking plate "
             "failed event message"
         ], None
+
+
+def sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> Dict[str, str]:
+    return {
+        "role_type": "control",
+        "subject_type": "sample",
+        "friendly_name": supplier_name_for_control(dart_control_row),
+        "uuid": str(uuid4()),
+    }
