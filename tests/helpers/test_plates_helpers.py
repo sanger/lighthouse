@@ -758,7 +758,7 @@ def test_create_cherrypicked_post_body(app):
                                     {
                                         "role_type": "robot",
                                         "subject_type": "robot",
-                                        "friendly_name": "Robot 1",
+                                        "friendly_name": "BKRB0001",
                                         "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b",
                                     },
                                     {
@@ -808,13 +808,6 @@ def test_robot_subject_no_robot_mapping_in_config(app):
         del app.config["BECKMAN_ROBOTS"]
         with pytest.raises(Exception):
             robot_subject("1234")
-
-
-def test_robot_subject_no_robot_friendly_name(app):
-    with app.app_context():
-        del app.config["BECKMAN_ROBOTS"]["BKRB0001"]["name"]
-        with pytest.raises(Exception):
-            robot_subject("BKRB0001")
 
 
 def test_robot_subject_no_robot_uuid(app):

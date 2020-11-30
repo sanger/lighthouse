@@ -44,6 +44,8 @@ from lighthouse.messages.message import Message  # type: ignore
 from lighthouse.helpers.plate_events import (
     construct_sample_message_subject,
     construct_source_plate_message_subject,
+    get_robot_uuid,
+    construct_robot_message_subject,
 )
 
 logger = logging.getLogger(__name__)
@@ -561,31 +563,11 @@ def source_plate_subjects(source_plates):
 
 
 def robot_subject(robot_serial_number):
-    try:
-        robot_mapping = app.config["BECKMAN_ROBOTS"][robot_serial_number]
-    except KeyError:
-        logger.error("Unable to find events information for robot:" + robot_serial_number)
-        raise
-    try:
-        robot_friendly_name = robot_mapping["name"]
-    except KeyError:
-        logger.error("Unable to find friendly name for robot: " + robot_serial_number)
-        raise
+    robot_uuid = get_robot_uuid(robot_serial_number)
+    if robot_uuid is None:
+        raise KeyError(f"Unable to find events information for robot: {robot_serial_number}")
 
-    try:
-        robot_uuid = robot_mapping["uuid"]
-    except KeyError:
-        logger.error("Unable to find UUID for robot: " + robot_serial_number)
-        raise
-
-    subject = {
-        "role_type": "robot",
-        "subject_type": "robot",
-        "friendly_name": robot_friendly_name,
-        "uuid": robot_uuid,
-    }
-
-    return subject
+    return construct_robot_message_subject(robot_serial_number, robot_uuid)
 
 
 def get_source_plates_for_samples(samples):
