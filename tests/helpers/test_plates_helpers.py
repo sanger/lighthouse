@@ -6,6 +6,7 @@ import pytest
 from unittest.mock import patch
 import responses  # type: ignore
 from flask import current_app
+from datetime import datetime
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
     FIELD_DART_CONTROL,
@@ -25,6 +26,7 @@ from lighthouse.constants import (
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     PLATE_EVENT_DESTINATION_CREATED,
+    PLATE_EVENT_DESTINATION_FAILED,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -55,6 +57,41 @@ from lighthouse.helpers.plates import (
 )
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
+
+
+# ---------- test helpers ----------
+
+
+@pytest.fixture
+def mock_event_helpers():
+    root = "lighthouse.helpers.plates"
+    with patch(f"{root}.get_robot_uuid") as mock_get_uuid:
+        with patch(f"{root}.construct_robot_message_subject") as mock_construct_robot:
+            with patch(
+                f"{root}.construct_destination_plate_message_subject"
+            ) as mock_construct_dest:
+                with patch(
+                    f"{root}.construct_mongo_sample_message_subject"
+                ) as mock_construct_sample:
+                    with patch(
+                        f"{root}.construct_source_plate_message_subject"
+                    ) as mock_construct_source:
+                        with patch(f"{root}.get_message_timestamp") as mock_get_timestamp:
+                            yield (
+                                mock_get_uuid,
+                                mock_construct_robot,
+                                mock_construct_dest,
+                                mock_construct_sample,
+                                mock_construct_source,
+                                mock_get_timestamp,
+                            )
+
+
+def any_failure_type(app):
+    return list(app.config["BECKMAN_FAILURE_TYPES"].keys())[0]
+
+
+# ---------- tests ----------
 
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
@@ -842,16 +879,136 @@ def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure():
         "failed event message" in errors
 
 
-def test_construct_cherrypicking_plate_failed_message_no_dart_samples():
-    with patch(
-        "lighthouse.helpers.plates.find_dart_source_samples_rows",
-        return_value=[],
-    ):
-        test_barcode = "plate_1"
-        errors, message = construct_cherrypicking_plate_failed_message(
-            test_barcode, "test_user", "BKRB0001", "robot_crashed"
-        )
+def test_construct_cherrypicking_plate_failed_message_failed_dart_connection(app, mock_event_helpers):
+    _, mock_robot_subject, mock_dest_subject, _, _, _mock_get_timestamp = mock_event_helpers
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_robot_subject.return_value = test_robot_subject
+    test_dest_subject = {"test dest plate": "this is a destination plate"}
+    mock_dest_subject.return_value = test_dest_subject
+    test_timestamp = datetime.now()
+    mock_get_timestamp = test_timestamp
+    with app.app_context():
+        with patch("lighthouse.helpers.plates.find_dart_source_samples_rows", return_value=None):
+            with patch("lighthouse.helpers.plates.Message") as mock_message:
+                test_user = "test_user_id"
+                test_failure_type = any_failure_type(app)
+                errors, _ = construct_cherrypicking_plate_failed_message(
+                    "plate_1", test_user, "12345", test_failure_type
+                )
 
-        assert message is None
-        assert len(errors) == 1
-        assert f"No sample data found for plate '{test_barcode}' found in DART" in errors
+                assert len(errors) == 1
+                args, _ = mock_message.call_args
+                message_content = args[0]
+
+                assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+
+                event = message_content["event"]
+                assert event["uuid"] is not None
+                assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                assert event["occured_at"] is not None
+                assert event["user_identifier"] == test_user
+
+                subjects = event["subjects"]
+                assert len(subjects) == 2
+                assert test_robot_subject in subjects  # robot subject
+                assert test_dest_subject in subjects  # destination plate subject
+
+                metadata = event["metadata"]
+                assert metadata == { "failure_type": test_failure_type }
+
+
+# def test_construct_cherrypicking_plate_failed_message_mongo_fetch_failure(app):
+#     with app.app_context():
+#         with patch(
+#             "lighthouse.helpers.plates.app.data.driver.db.samples",
+#             side_effect=Exception("Boom!"),
+#         ):
+#             errors, message = construct_cherrypicking_plate_failed_message(
+#                 "plate_1", "test_user", "BKRB0001", "robot_crashed"
+#             )
+
+#             assert message is None
+#             assert len(errors) == 1
+#             assert "An unexpected error occurred attempting to construct the cherrypicking plate "
+#             "failed event message" in errors
+
+
+# def test_construct_cherrypicking_plate_failed_message_samples_not_in_mongo(
+#     app, dart_samples_for_bp_test
+# ):
+#     with app.app_context():
+#         with patch(
+#             "lighthouse.helpers.plates.app.data.driver.db.samples",
+#             return_value=[],
+#         ):
+#             barcode = "plate_1"
+#             errors, message = construct_cherrypicking_plate_failed_message(
+#                 barcode, "test_user", "BKRB0001", "robot_crashed"
+#             )
+
+#             assert message is None
+#             assert len(errors) == 1
+#             assert f"Mismatch in destination and source sample data for plate '{barcode}'" in errors
+
+
+# def test_construct_cherrypicking_plate_failed_message_success(
+#     app, dart_samples_for_bp_test, samples_with_uuids, source_plates
+# ):
+#     with app.app_context():
+#         with patch("lighthouse.helpers.plates.Message") as mock_message:
+#             test_user = "test_user_id"
+#             test_robot_serial_number = "BKRB0001"
+#             errors, _ = construct_cherrypicking_plate_failed_message(
+#                 "plate_1", test_user, test_robot_serial_number, "robot_crashed"
+#             )
+
+#             assert len(errors) == 0
+#             args, _ = mock_message.call_args
+#             message_content = args[0]
+
+#             assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+
+#             event = message_content["event"]
+#             assert event["uuid"] is not None
+#             assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+#             assert event["occured_at"] is not None
+#             assert event["user_identifier"] == test_user
+
+#             subjects = event["subjects"]
+#             assert len(subjects) == 6
+#             # assert {  # robot subject
+#             #     "role_type": "robot",
+#             #     "subject_type": "robot",
+#             #     "friendly_name": test_robot_serial_number,
+#             #     "uuid": test_robot_uuid,
+#             # } in subjects
+#             # assert {  # source plate subject
+#             #     "role_type": "cherrypicking_source_labware",
+#             #     "subject_type": "plate",
+#             #     "friendly_name": test_barcode,
+#             #     "uuid": test_source_plate_uuid,
+#             # } in subjects
+
+#             # # sample subjects
+#             # for sample in test_samples:
+#             #     assert {
+#             #         "role_type": "sample",
+#             #         "subject_type": "sample",
+#             #         "friendly_name": sample["friendly_name"],
+#             #         "uuid": sample[FIELD_LH_SAMPLE_UUID],
+#             #     } in subjects
+
+
+# # TODO add tests when code refactored to allow mocking off:
+# # - None DART samples -> message with just robot and dest plate, maybe some extra info
+# # - No DART samples -> message with just robot and dest plate, maybe some extra info
+# # - mongo samples returning None -> returns 'known' error
+# # - mongo source plates failure -> returns unexpected error
+# # - mongo source plates returning None -> returns 'known' error
+# # - unknown robot -> 'known' or unknown error?
+# # - success test, with as much mocking as possible
+
+
+# # TODO integration tests with event warehouse
+
+# # TODO
