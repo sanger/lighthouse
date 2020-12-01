@@ -102,6 +102,7 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
     return centre_prefix
 
 
+# TODO - Make private and test as part of calling method
 def get_centre_prefix(centre_name: str) -> Optional[str]:
     logger.debug(f"Getting the prefix for '{centre_name}'")
     try:
@@ -128,6 +129,7 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
         raise DataError("Multiple centres with the same name")
 
 
+# TODO - move to mongo_db helper
 def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
@@ -141,12 +143,14 @@ def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
+# TODO - move to mongo_db helper
 def count_samples(query: Dict[str, Any]) -> int:
     samples = app.data.driver.db.samples
 
     return samples.count_documents(query)
 
 
+# TODO - move non-pipeline generation logic to mongo_db helper
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     """Get a list of documents which correspond to filtered positive samples for a specific plate.
 
@@ -173,6 +177,7 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
+# TODO - update to also use filtered positive fields?
 def count_positive_samples(plate_barcode: str) -> int:
     query_filter = copy.deepcopy(POSITIVE_SAMPLES_MONGODB_FILTER)
     query_filter[FIELD_PLATE_BARCODE] = plate_barcode
@@ -186,15 +191,18 @@ def has_sample_data(plate_barcode: str) -> bool:
     return sample_count > 0
 
 
+# TODO - make private and test as part of calling method?
 def row_is_normal_sample(row):
     control_value = getattr(row, FIELD_DART_CONTROL)
     return control_value is None or control_value == "NULL" or control_value == ""
 
 
+# TODO - make private and test as part of calling method?
 def rows_without_controls(rows):
     return list(filter(lambda x: row_is_normal_sample(x), rows))
 
 
+# TODO - make private and test as part of calling method?
 def rows_with_controls(rows):
     return list(filter(lambda x: not row_is_normal_sample(x), rows))
 
@@ -216,6 +224,7 @@ def query_for_cherrypicked_samples(rows):
     }
 
 
+# TODO - make private and test as part of calling method?
 def equal_row_and_sample(row, sample):
     return (
         (sample[FIELD_ROOT_SAMPLE_ID] == getattr(row, FIELD_DART_ROOT_SAMPLE_ID))
@@ -225,6 +234,7 @@ def equal_row_and_sample(row, sample):
     )
 
 
+# TODO - make private and test as part of calling method?
 def find_sample_matching_row(row, samples):
     return next((sample for sample in samples if equal_row_and_sample(row, sample)), None)
 
@@ -247,6 +257,7 @@ def check_matching_sample_numbers(rows, samples):
     return len(samples) == len(rows_without_controls(rows))
 
 
+# TODO - make private and test as part of calling method?
 def row_to_dict(row):
     columns = [
         FIELD_DART_DESTINATION_BARCODE,
@@ -483,6 +494,7 @@ def get_source_plates_for_samples(samples):
     return find_source_plates(query_for_source_plate_uuids(barcodes))
 
 
+# TODO - move to mongo_db helper
 def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
@@ -496,6 +508,7 @@ def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     return source_plate_documents
 
 
+# TODO - make private/merge with public get_source_plates_for_sample
 def get_unique_plate_barcodes(samples):
     barcodes = set()
     for sample in samples:
@@ -503,6 +516,7 @@ def get_unique_plate_barcodes(samples):
     return list(barcodes)
 
 
+# TODO - make private/merge with public get_source_plates_for_sample
 def query_for_source_plate_uuids(barcodes):
     if barcodes is None or (len(barcodes) == 0):
         return None
