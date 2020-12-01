@@ -597,7 +597,7 @@ def construct_cherrypicking_plate_failed_message(
         logger.exception(e)
         return [
             "An unexpected error occurred attempting to construct the cherrypicking plate "
-            "failed event message"
+            f"failed event message: {e}"
         ], None
 
 
