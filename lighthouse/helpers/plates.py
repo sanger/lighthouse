@@ -532,6 +532,12 @@ def construct_cherrypicking_plate_failed_message(
 ) -> Tuple[List[str], Optional[Message]]:
     try:
         subjects, errors = [], []
+
+        # Add robot and destination plate subjects
+        subjects.append(__robot_subject(robot_serial_number))
+        subjects.append(construct_destination_plate_message_subject(barcode))
+
+        # Try to add sample and source plate subjects
         dart_samples = find_dart_source_samples_rows(barcode)
         if dart_samples is None:
             # still send message, but inform caller that DART connection could not be made
@@ -564,11 +570,9 @@ def construct_cherrypicking_plate_failed_message(
 
             # Add source plate subjects
             source_plates = get_source_plates_for_samples(mongo_samples)
-            subjects.extend(__mongo_source_plate_subjects(source_plates))
+            if source_plates is None:
 
-        # Add robot and destination plate subjects
-        subjects.append(__robot_subject(robot_serial_number))
-        subjects.append(construct_destination_plate_message_subject(barcode))
+            subjects.extend(__mongo_source_plate_subjects(source_plates))
 
         # Construct message
         message_content = {
