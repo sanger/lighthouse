@@ -129,7 +129,8 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
         raise DataError("Multiple centres with the same name")
 
 
-# TODO - move to mongo_db helper
+# TODO - move to mongo_db helper: in refactoring this be careful not to lose the distributed
+# functionality where None or empty dart rows returns None
 def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
@@ -489,6 +490,8 @@ def create_cherrypicked_post_body(
     return {"data": {"type": "plates", "attributes": body}}
 
 
+# TODO - in refactoring the methods this calls, be careful not to lose the distributed
+# functionality where None or empty samples returns None
 def get_source_plates_for_samples(samples):
     barcodes = get_unique_plate_barcodes(samples)
     return find_source_plates(query_for_source_plate_uuids(barcodes))
