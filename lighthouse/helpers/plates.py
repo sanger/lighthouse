@@ -556,7 +556,9 @@ def construct_cherrypicking_plate_failed_message(
         else:
             mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
             if mongo_samples is None:
-                return [f"No data found in Mongo matching DART samples in plate '{barcode}'"], None
+                return [
+                    f"No sample data found in Mongo matching DART samples in plate '{barcode}'"
+                ], None
 
             if not check_matching_sample_numbers(dart_samples, mongo_samples):
                 return [
@@ -570,7 +572,10 @@ def construct_cherrypicking_plate_failed_message(
 
             # Add source plate subjects
             source_plates = get_source_plates_for_samples(mongo_samples)
-            if source_plates is None:
+            if source_plates is None or len(source_plates) == 0:
+                return [
+                    f"No source plate data found in Mongo for DART samples in plate '{barcode}'"
+                ], None
 
             subjects.extend(__mongo_source_plate_subjects(source_plates))
 
