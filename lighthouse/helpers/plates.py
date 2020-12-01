@@ -528,34 +528,43 @@ def construct_cherrypicking_plate_failed_message(
     barcode: str, user_id: str, robot_serial_number: str, failure_type: str
 ) -> Tuple[List[str], Optional[Message]]:
     try:
+        subjects, errors = [], []
         dart_samples = find_dart_source_samples_rows(barcode)
-        if len(dart_samples) == 0:
-            return [f"No sample data found for plate '{barcode}' found in DART"], None
+        if dart_samples is None:
+            # still send message, but inform caller that DART connection could not be made
+            errors.append(
+                "There was an error connecting to DART. As this may be due to the failure you're \
+                reporting, a destination plate failure has still been recorded, but without \
+                sample and source plate information"
+            )
+        elif len(dart_samples) == 0:
+            # still send message, but inform caller that no samples were in the destination plate
+            errors.append(
+                "No samples were found in DART for this destination plate. As this may be due to \
+                the failure you're reporting, a destination plate failure has still been \
+                recorded, but without sample and source plate information"
+            )
+        else:
+            mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
+            if mongo_samples is None:
+                return [f"No data found in Mongo matching DART samples in plate '{barcode}'"], None
 
-        mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
-        if mongo_samples is None:
-            return [f"No data found in Mongo matching DART samples in plate '{barcode}'"], None
+            if not check_matching_sample_numbers(dart_samples, mongo_samples):
+                return [
+                    f"Mismatch in destination and source sample data for plate '{barcode}'"
+                ], None
 
-        if not check_matching_sample_numbers(dart_samples, mongo_samples):
-            return [f"Mismatch in destination and source sample data for plate '{barcode}'"], None
+            # Add sample subjects for control and non-control DART entries
+            dart_control_rows = [row_to_dict(row) for row in rows_with_controls(dart_samples)]
+            subjects.extend([__sample_subject_for_dart_control_row(r) for r in dart_control_rows])
+            subjects.extend([construct_mongo_sample_message_subject(s) for s in mongo_samples])
 
-        subjects = []
+            # Add source plate subjects
+            source_plates = get_source_plates_for_samples(mongo_samples)
+            subjects.extend(__mongo_source_plate_subjects(source_plates))
 
-        # Add sample subjects for control and non-control DART entries
-        dart_control_rows = [row_to_dict(row) for row in rows_with_controls(dart_samples)]
-        subjects.extend([sample_subject_for_dart_control_row(row) for row in dart_control_rows])
-        subjects.extend(
-            [construct_mongo_sample_message_subject(sample) for sample in mongo_samples]
-        )
-
-        # Add source plate subjects
-        source_plates = get_source_plates_for_samples(mongo_samples)
-        subjects.extend(source_plate_subjects(source_plates))
-
-        # Add robot message subject
-        subjects.append(robot_subject(robot_serial_number))
-
-        # Add a destination plate subject
+        # Add robot and destination plate subjects
+        subjects.append(__robot_subject(robot_serial_number))
         subjects.append(construct_destination_plate_message_subject(barcode))
 
         # Construct message
@@ -570,7 +579,7 @@ def construct_cherrypicking_plate_failed_message(
             },
             "lims": app.config["RMQ_LIMS_ID"],
         }
-        return [], Message(message_content)
+        return errors, Message(message_content)
     except Exception as e:
         logger.error("Failed to construct a cherrypicking plate failed message")
         logger.exception(e)
@@ -578,15 +587,6 @@ def construct_cherrypicking_plate_failed_message(
             "An unexpected error occurred attempting to construct the cherrypicking plate "
             "failed event message"
         ], None
-
-
-def sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> Dict[str, str]:
-    return {
-        "role_type": "control",
-        "subject_type": "sample",
-        "friendly_name": __supplier_name_for_dart_control(dart_control_row),
-        "uuid": str(uuid4()),
-    }
 
 
 # Private methods
@@ -678,3 +678,12 @@ def __confirm_centre(samples: List[Dict[str, str]]) -> str:
             raise MultipleCentresError()
 
     return centre_set.pop()
+
+
+def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> Dict[str, str]:
+    return {
+        "role_type": "control",
+        "subject_type": "sample",
+        "friendly_name": __supplier_name_for_dart_control(dart_control_row),
+        "uuid": str(uuid4()),
+    }
