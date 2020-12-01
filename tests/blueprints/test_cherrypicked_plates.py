@@ -389,15 +389,20 @@ def test_fail_plate_from_barcode_success(client):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
     ) as mock_construct:
-        with patch("lighthouse.blueprints.cherrypicked_plates.Broker") as mock_broker:
-            test_message = Message("test message content")
-            mock_construct.return_value = [], test_message
+        routing_key = "test.routing.key"
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.get_routing_key", return_value=routing_key
+        ):
+            with patch("lighthouse.blueprints.cherrypicked_plates.Broker") as mock_broker:
+                test_message = Message("test message content")
+                mock_construct.return_value = [], test_message
 
-            response = client.get(
-                "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
-                "&robot=BKRB0001&failure_type=robot_crashed"
-            )
+                response = client.get(
+                    "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
+                    "&robot=BKRB0001&failure_type=robot_crashed"
+                )
 
-            mock_broker().close_connection.assert_called()
-            assert response.status_code == HTTPStatus.OK
-            assert len(response.json["errors"]) == 0
+                mock_broker().publish.assert_called_with(test_message, routing_key)
+                mock_broker().close_connection.assert_called()
+                assert response.status_code == HTTPStatus.OK
+                assert len(response.json["errors"]) == 0
