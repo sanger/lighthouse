@@ -101,9 +101,15 @@ Option B (in Docker):
    source code of the project from your hosting machine (You can replace `pwd` with your actual directory).
    The container will map your port 5000 with the port 5000 of Docker.
 
-5. Initialize the development database for sqlserver:
+4. Inside the docker container, you may also need to run
+
+        pipenv install
+        pipenv shell
+
+5. Initialize the development database for sqlserver inside `pipenv shell`:
 
         python ./setup_sqlserver_test_db.py
+        python ./setup_test_db.py
 
 
 6. Now that you are inside the container, start the app in port 5000 of Docker using:
