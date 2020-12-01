@@ -13,6 +13,9 @@ MONGO_HOST = f"{LOCALHOST}"
 MONGO_DBNAME = "lighthouseTestDB"
 MONGO_QUERY_BLACKLIST = ["$where"]  # not sure why this was required...
 
+# Labwhere Config
+LABWHERE_DESTROYED_BARCODE = "heron-bin"
+
 # logging config
 LOGGING["loggers"]["lighthouse"]["level"] = "DEBUG"  # noqa: F405
 LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream"]  # noqa: F405

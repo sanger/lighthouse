@@ -11,6 +11,9 @@ LOCALHOST = os.environ.get("LOCALHOST", "localhost")
 BARACODA_URL = f"{LOCALHOST}:5000"
 DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
 LABWHERE_URL = f"{LOCALHOST}:3010"
+LABWHERE_DESTROYED_BARCODE = os.environ.get(
+    "LABWHERE_DESTROYED_BARCODE", "lw-heron-destroyed-17338"
+)
 LIGHTHOUSE_API_KEY = "develop"
 REPORTS_DIR = "data/reports"
 
