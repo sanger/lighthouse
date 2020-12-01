@@ -6,9 +6,9 @@ import re
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Dict, List, Tuple
+from lighthouse.helpers.labwhere import get_locations_from_labwhere
 
 import pandas as pd  # type: ignore
-import requests
 import sqlalchemy  # type: ignore
 from flask import current_app as app
 from lighthouse.constants import (
@@ -161,18 +161,6 @@ def map_labware_to_location(labware_barcodes):
     pretty(logger, labware_to_location_barcode_df)
 
     return labware_to_location_barcode_df
-
-
-def get_locations_from_labwhere(labware_barcodes):
-    """
-    Example record from labwhere:
-    { 'barcode': 'GLA001024R', 'location_barcode': 'lw-uk-biocentre-box-gsw--98-14813'}
-    """
-
-    return requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode",
-        json={"barcodes": labware_barcodes},
-    )
 
 
 def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
