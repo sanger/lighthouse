@@ -37,7 +37,6 @@ from lighthouse.helpers.plates import (
     find_sample_matching_row,
     find_samples,
     get_centre_prefix,
-    get_cherrypicked_samples_records,
     get_positive_samples,
     count_positive_samples,
     join_rows_with_samples,
@@ -51,7 +50,6 @@ from lighthouse.helpers.plates import (
     get_unique_plate_barcodes,
     query_for_source_plate_uuids,
     get_source_plates_for_samples,
-    robot_subject,
     construct_cherrypicking_plate_failed_message,
     find_source_plates,
 )
@@ -610,47 +608,6 @@ def test_check_matching_sample_numbers_returns_true_match(app, samples_different
     assert result is True
 
 
-def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_different_plates):
-    with app.app_context():
-
-        result = get_cherrypicked_samples_records("test1")
-
-        samples_different_plates[0]["_id"] = result[0]["sample"]["_id"]
-        samples_different_plates[1]["_id"] = result[1]["sample"]["_id"]
-
-        assert result[0]["sample"] == samples_different_plates[0]
-        assert result[1]["sample"] == samples_different_plates[1]
-
-        assert result == [
-            {
-                "row": {
-                    FIELD_DART_DESTINATION_BARCODE: "test1",
-                    FIELD_DART_DESTINATION_COORDINATE: "A01",
-                    FIELD_DART_SOURCE_BARCODE: "123",
-                    FIELD_DART_SOURCE_COORDINATE: "A01",
-                    FIELD_DART_CONTROL: None,
-                    FIELD_DART_ROOT_SAMPLE_ID: "MCM001",
-                    FIELD_DART_RNA_ID: "rna_1",
-                    FIELD_DART_LAB_ID: "Lab 1",
-                },
-                "sample": samples_different_plates[0],
-            },
-            {
-                "row": {
-                    FIELD_DART_DESTINATION_BARCODE: "test1",
-                    FIELD_DART_DESTINATION_COORDINATE: "B01",
-                    FIELD_DART_SOURCE_BARCODE: "456",
-                    FIELD_DART_SOURCE_COORDINATE: "A01",
-                    FIELD_DART_CONTROL: None,
-                    FIELD_DART_ROOT_SAMPLE_ID: "MCM002",
-                    FIELD_DART_RNA_ID: "rna_2",
-                    FIELD_DART_LAB_ID: "Lab 2",
-                },
-                "sample": samples_different_plates[1],
-            },
-        ]
-
-
 def test_map_to_ss_columns(app, dart_mongo_merged_samples):
     with app.app_context():
         correct_mapped_samples = [
@@ -802,12 +759,6 @@ def test_create_cherrypicked_post_body(app):
             )
             == correct_body
         )
-
-
-def test_robot_subject_no_robot_uuid():
-    with patch("lighthouse.helpers.plates.get_robot_uuid", return_value=None):
-        with pytest.raises(Exception):
-            robot_subject("1234")
 
 
 def test_find_samples_returns_none_if_no_query_provided(app):
