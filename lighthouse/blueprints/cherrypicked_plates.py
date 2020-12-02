@@ -148,7 +148,7 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         errors, message = construct_cherrypicking_plate_failed_message(
             barcode, user_id, robot_serial_number, failure_type
         )
-        if len(errors) > 0:
+        if message is None:
             logger.error(
                 "Failed recording cherrypicking plate failure: "
                 f"error(s) constructing event message: {errors}"
@@ -164,7 +164,7 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
             broker.publish(message, routing_key)
             broker.close_connection()
             logger.info(f"Successfully published a '{PLATE_EVENT_DESTINATION_FAILED}' message")
-            return {"errors": []}, HTTPStatus.OK
+            return {"errors": errors}, HTTPStatus.OK
         except Exception:
             broker.close_connection()
             raise
