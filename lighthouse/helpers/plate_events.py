@@ -144,7 +144,7 @@ def construct_source_plate_all_negatives_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return __construct_default_source_plate_on_robot_message(
+    return __construct_source_plate_with_samples_on_robot_message(
         PLATE_EVENT_SOURCE_ALL_NEGATIVES, params
     )
 
