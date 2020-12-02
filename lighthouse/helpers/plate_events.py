@@ -128,7 +128,45 @@ def construct_source_plate_no_map_data_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return __construct_default_source_plate_on_robot_message(PLATE_EVENT_SOURCE_NO_MAP_DATA, params)
+    try:
+        barcode = params.get("barcode", "")
+        user_id = params.get("user_id", "")
+        robot_serial_number = params.get("robot", "")
+        if len(barcode) == 0 or len(user_id) == 0 or len(robot_serial_number) == 0:
+            return [
+                "'barcode', 'user_id' and 'robot' are required to construct a "
+                f"{PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
+            ], None
+
+        robot_uuid = get_robot_uuid(robot_serial_number)
+        if robot_uuid is None:
+            return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
+
+        source_plate_uuid = get_source_plate_uuid(barcode)
+        if source_plate_uuid is None:
+            return [f"Unable to determine a uuid for source plate '{barcode}'"], None
+
+        message_content = {
+            "event": {
+                "uuid": str(uuid4()),
+                "event_type": PLATE_EVENT_SOURCE_NO_MAP_DATA,
+                "occured_at": get_message_timestamp(),
+                "user_identifier": user_id,
+                "subjects": [
+                    construct_robot_message_subject(robot_serial_number, robot_uuid),
+                    construct_source_plate_message_subject(barcode, source_plate_uuid),
+                ],
+                "metadata": {},
+            },
+            "lims": app.config["RMQ_LIMS_ID"],
+        }
+        return [], Message(message_content)
+    except Exception as e:
+        logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_NO_MAP_DATA} message")
+        logger.exception(e)
+        return [
+            f"An unexpected error occurred attempting to construct the {PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
+        ], None
 
 
 def construct_source_plate_all_negatives_message(
@@ -150,61 +188,6 @@ def construct_source_plate_all_negatives_message(
 
 
 # Private methods
-
-
-def __construct_default_source_plate_on_robot_message(
-    event_type: str, params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
-    """Constructs a default message representing a source plate event on a robot, without samples;
-    otherwise returns appropriate errors.
-
-    Arguments:
-        event_type {str} -- The type of event to create.
-        params {Dict[str, str]} -- All parameters of the plate event message request.
-
-    Returns:
-        {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
-        {Message} -- The constructed message; otherwise None if there are any errors.
-    """
-    try:
-        barcode = params.get("barcode", "")
-        user_id = params.get("user_id", "")
-        robot_serial_number = params.get("robot", "")
-        if len(barcode) == 0 or len(user_id) == 0 or len(robot_serial_number) == 0:
-            return [
-                "'barcode', 'user_id' and 'robot' are required to construct a "
-                f"{event_type} event message"
-            ], None
-
-        robot_uuid = get_robot_uuid(robot_serial_number)
-        if robot_uuid is None:
-            return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
-
-        source_plate_uuid = get_source_plate_uuid(barcode)
-        if source_plate_uuid is None:
-            return [f"Unable to determine a uuid for source plate '{barcode}'"], None
-
-        message_content = {
-            "event": {
-                "uuid": str(uuid4()),
-                "event_type": event_type,
-                "occured_at": get_message_timestamp(),
-                "user_identifier": user_id,
-                "subjects": [
-                    construct_robot_message_subject(robot_serial_number, robot_uuid),
-                    construct_source_plate_message_subject(barcode, source_plate_uuid),
-                ],
-                "metadata": {},
-            },
-            "lims": app.config["RMQ_LIMS_ID"],
-        }
-        return [], Message(message_content)
-    except Exception as e:
-        logger.error(f"Failed to construct a {event_type} message")
-        logger.exception(e)
-        return [
-            f"An unexpected error occurred attempting to construct the {event_type} event message"
-        ], None
 
 
 def __construct_source_plate_with_samples_on_robot_message(
