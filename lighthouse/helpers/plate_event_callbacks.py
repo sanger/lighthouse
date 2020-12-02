@@ -72,7 +72,7 @@ def _labwhere_transfer_to_bin(event: Message) -> Tuple[bool, List]:
 
 
 def _labwhere_destroyed_barcode() -> str:
-    """The barcode associated with the detroyed labware location in labwhere
+    """The barcode associated with the destroyed labware location in labwhere
 
     As this value can vary between environments, it is part of the app context
     and is configures in config/defaults.py or the appropriate environment file.
