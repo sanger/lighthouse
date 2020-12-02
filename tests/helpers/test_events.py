@@ -23,9 +23,9 @@ from lighthouse.constants import (
 
 
 def any_robot_info(app):
-    serial_number = list(app.config["BECKMAN_ROBOTS"].keys())[0]
-    uuid = app.config["BECKMAN_ROBOTS"][serial_number]["uuid"]
-    return serial_number, uuid
+    return next(
+        (serial_num, robot["uuid"]) for serial_num, robot in app.config["BECKMAN_ROBOTS"].items()
+    )
 
 
 # ---------- get_routing_key tests ----------
