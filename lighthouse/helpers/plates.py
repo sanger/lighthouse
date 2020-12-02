@@ -549,16 +549,16 @@ def construct_cherrypicking_plate_failed_message(
         if dart_samples is None:
             # still send message, but inform caller that DART connection could not be made
             errors.append(
-                "There was an error connecting to DART. As this may be due to the failure you're \
-                reporting, a destination plate failure has still been recorded, but without \
-                sample and source plate information"
+                "There was an error connecting to DART. As this may be due to the failure you're "
+                "reporting, a destination plate failure has still been recorded, but without " 
+                "sample and source plate information"
             )
         elif len(dart_samples) == 0:
             # still send message, but inform caller that no samples were in the destination plate
             errors.append(
-                "No samples were found in DART for this destination plate. As this may be due to \
-                the failure you're reporting, a destination plate failure has still been \
-                recorded, but without sample and source plate information"
+                "No samples were found in DART for this destination plate. As this may be due to "
+                "the failure you're reporting, a destination plate failure has still been "
+                "recorded, but without sample and source plate information"
             )
         else:
             mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
