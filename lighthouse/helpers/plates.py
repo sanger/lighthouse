@@ -535,7 +535,7 @@ def construct_cherrypicking_plate_failed_message(
         dart_samples = None
         try:
             dart_samples = find_dart_source_samples_rows(barcode)
-        except:
+        except Exception:
             # a failed DART connection is valid:
             # it may be caused by the failure the user is trying to record
             pass
