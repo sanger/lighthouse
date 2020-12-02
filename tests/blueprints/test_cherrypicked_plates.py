@@ -279,12 +279,15 @@ def test_fail_plate_from_barcode_bad_request_no_failure_type(client):
 
 def test_fail_plate_from_barcode_bad_request_unrecognised_failure_type(app, client):
     with app.app_context():
+        failure_type = "notAFailureType"
         response = client.get(
             "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
-            "&robot=BKRB0001&failure_type=notAFailureType"
+            f"&robot=BKRB0001&failure_type={failure_type}"
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert len(response.json["errors"]) == 1
+        errors = response.json["errors"]
+        assert len(errors) == 1
+        assert f"'{failure_type}' is not a known cherrypicked plate failure type" in errors
 
 
 def test_fail_plate_from_barcode_internal_server_error_constructing_message_failure(app, client):
