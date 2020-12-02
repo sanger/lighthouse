@@ -878,19 +878,64 @@ def test_construct_cherrypicking_plate_failed_message_unknown_robot_fails(mock_e
     "failed event message" in errors
 
 
-def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure(mock_event_helpers):
-    with patch(
-        "lighthouse.helpers.plates.find_dart_source_samples_rows",
-        side_effect=Exception("Boom!"),
-    ):
-        errors, message = construct_cherrypicking_plate_failed_message(
-            "plate_1", "test_user", "BKRB0001", "robot_crashed"
-        )
+def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure(app, mock_event_helpers):
+    (
+        mock_get_uuid,
+        mock_robot_subject,
+        mock_dest_subject,
+        _,
+        _,
+        mock_get_timestamp,
+    ) = mock_event_helpers
+    test_robot_uuid = "test robot uuid"
+    mock_get_uuid.return_value = test_robot_uuid
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_robot_subject.return_value = test_robot_subject
+    test_dest_subject = {"test dest plate": "this is a destination plate"}
+    mock_dest_subject.return_value = test_dest_subject
+    test_timestamp = datetime.now()
+    mock_get_timestamp.return_value = test_timestamp
+    with app.app_context():
+        test_uuid = uuid4()
+        with patch("lighthouse.helpers.plates.uuid4", return_value=test_uuid):
+            with patch(
+                "lighthouse.helpers.plates.find_dart_source_samples_rows",
+                side_effect=Exception("Boom!"),
+            ):
+                with patch("lighthouse.helpers.plates.Message") as mock_message:
+                    test_barcode = "plate_1"
+                    test_user = "test_user_id"
+                    test_robot_serial_number = "12345"
+                    test_failure_type = any_failure_type(app)
+                    errors, _ = construct_cherrypicking_plate_failed_message(
+                        test_barcode, test_user, test_robot_serial_number, test_failure_type
+                    )
 
-        assert message is None
-        assert len(errors) == 1
-        assert "An unexpected error occurred attempting to construct the cherrypicking plate "
-        "failed event message" in errors
+                    # assert expected calls
+                    mock_robot_subject.assert_called_with(test_robot_serial_number, test_robot_uuid)
+                    mock_dest_subject.assert_called_with(test_barcode)
+
+                    # assert expected return values
+                    assert len(errors) == 1
+                    assert "There was an error connecting to DART" in errors[0]
+                    args, _ = mock_message.call_args
+                    message_content = args[0]
+
+                    assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+
+                    event = message_content["event"]
+                    assert event["uuid"] == str(test_uuid)
+                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["occured_at"] == test_timestamp
+                    assert event["user_identifier"] == test_user
+
+                    subjects = event["subjects"]
+                    assert len(subjects) == 2
+                    assert test_robot_subject in subjects  # robot subject
+                    assert test_dest_subject in subjects  # destination plate subject
+
+                    metadata = event["metadata"]
+                    assert metadata == {"failure_type": test_failure_type}
 
 
 def test_construct_cherrypicking_plate_failed_message_none_dart_samples(app, mock_event_helpers):

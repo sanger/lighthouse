@@ -538,7 +538,14 @@ def construct_cherrypicking_plate_failed_message(
         subjects.append(construct_destination_plate_message_subject(barcode))
 
         # Try to add sample and source plate subjects
-        dart_samples = find_dart_source_samples_rows(barcode)
+        dart_samples = None
+        try:
+            dart_samples = find_dart_source_samples_rows(barcode)
+        except:
+            # a failed DART connection is valid:
+            # it may be caused by the failure the user is trying to record
+            pass
+        
         if dart_samples is None:
             # still send message, but inform caller that DART connection could not be made
             errors.append(
