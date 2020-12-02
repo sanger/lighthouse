@@ -11,7 +11,7 @@ from lighthouse.constants import (
 )
 from lighthouse.helpers.mongo_db import (
     get_source_plate_uuid,
-    get_samples_in_source_plate,
+    get_positive_samples_in_source_plate,
 )
 from lighthouse.helpers.events import (
     get_robot_uuid,
@@ -81,7 +81,7 @@ def construct_source_plate_completed_message(
         if source_plate_uuid is None:
             return [f"Unable to determine a uuid for source plate '{barcode}'"], None
 
-        samples = get_samples_in_source_plate(source_plate_uuid)
+        samples = get_positive_samples_in_source_plate(source_plate_uuid)
         if samples is None:
             return [f"Unable to determine samples that belong to source plate '{barcode}'"], None
 

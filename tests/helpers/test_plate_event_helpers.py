@@ -585,7 +585,7 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_sa
             return_value=test_source_plate_uuid,
         ):
             with patch(
-                "lighthouse.helpers.plate_events.get_samples_in_source_plate",
+                "lighthouse.helpers.plate_events.get_positive_samples_in_source_plate",
                 side_effect=Exception("Boom!"),
             ):
                 test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
@@ -606,7 +606,8 @@ def test_construct_source_plate_completed_message_errors_without_samples(
             return_value=test_source_plate_uuid,
         ):
             with patch(
-                "lighthouse.helpers.plate_events.get_samples_in_source_plate", return_value=None
+                "lighthouse.helpers.plate_events.get_positive_samples_in_source_plate",
+                return_value=None,
             ):
                 test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
                 errors, message = construct_source_plate_completed_message(test_params)
@@ -638,7 +639,7 @@ def test_construct_source_plate_completed_message_creates_expected_message(
                     {"test key": "test sample 2"},
                 ]
                 with patch(
-                    "lighthouse.helpers.plate_events.get_samples_in_source_plate",
+                    "lighthouse.helpers.plate_events.get_positive_samples_in_source_plate",
                     return_value=test_samples,
                 ):
                     with patch("lighthouse.helpers.plate_events.Message") as mock_message:
