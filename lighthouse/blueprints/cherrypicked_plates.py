@@ -30,6 +30,7 @@ bp = Blueprint("cherrypicked-plates", __name__)
 CORS(bp)
 
 
+# TODO - reduce method length/complexity
 @bp.route("/cherrypicked-plates/create", methods=["GET"])
 def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
