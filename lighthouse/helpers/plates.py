@@ -29,6 +29,17 @@ from lighthouse.constants import (
     STAGE_MATCH_POSITIVE,
     PLATE_EVENT_DESTINATION_CREATED,
     PLATE_EVENT_DESTINATION_FAILED,
+    FIELD_SS_LAB_ID,
+    FIELD_SS_NAME,
+    FIELD_SS_RESULT,
+    FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_PHENOTYPE,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_UUID,
+    FIELD_SS_COORDINATE,
+    FIELD_SS_BARCODE,
 )
 
 from lighthouse.exceptions import (
@@ -218,7 +229,7 @@ def query_for_cherrypicked_samples(rows):
                 FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
                 FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
                 FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
-                FIELD_RESULT: "Positive",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             }
             for row in rows_without_controls(rows)
         ]
@@ -230,7 +241,7 @@ def equal_row_and_sample(row, sample):
         (sample[FIELD_ROOT_SAMPLE_ID] == getattr(row, FIELD_DART_ROOT_SAMPLE_ID))
         and (sample[FIELD_RNA_ID] == getattr(row, FIELD_DART_RNA_ID))
         and (sample[FIELD_LAB_ID] == getattr(row, FIELD_DART_LAB_ID))
-        and sample[FIELD_RESULT] == "Positive"
+        and sample[FIELD_RESULT].lower() == "positive"
     )
 
 
@@ -290,9 +301,9 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
 
         well = {
             "content": {
-                "phenotype": phenotype.strip().lower(),
-                "supplier_name": sample[FIELD_COG_BARCODE],
-                "sample_description": description,
+                FIELD_SS_PHENOTYPE: phenotype.strip().lower(),
+                FIELD_SS_SUPPLIER_NAME: sample[FIELD_COG_BARCODE],
+                FIELD_SS_SAMPLE_DESCRIPTION: description,
             }
         }
         wells_content[sample[FIELD_COORDINATE]] = well
@@ -402,21 +413,21 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
         try:
             if dart_row[FIELD_DART_CONTROL]:
-                mapped_sample["supplier_name"] = __supplier_name_for_dart_control(dart_row)
-                mapped_sample["control"] = True
-                mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
-                mapped_sample["uuid"] = str(uuid4())
+                mapped_sample[FIELD_SS_SUPPLIER_NAME] = __supplier_name_for_dart_control(dart_row)
+                mapped_sample[FIELD_SS_CONTROL] = True
+                mapped_sample[FIELD_SS_CONTROL_TYPE] = dart_row[FIELD_DART_CONTROL]
+                mapped_sample[FIELD_SS_UUID] = str(uuid4())
             else:
-                mapped_sample["name"] = mongo_row[FIELD_RNA_ID]
-                mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
-                mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
-                mapped_sample["phenotype"] = "positive"
-                mapped_sample["result"] = mongo_row[FIELD_RESULT]
-                mapped_sample["uuid"] = mongo_row[FIELD_LH_SAMPLE_UUID]
-                mapped_sample["lab_id"] = mongo_row[FIELD_LAB_ID]
+                mapped_sample[FIELD_SS_NAME] = mongo_row[FIELD_RNA_ID]
+                mapped_sample[FIELD_SS_SAMPLE_DESCRIPTION] = mongo_row[FIELD_ROOT_SAMPLE_ID]
+                mapped_sample[FIELD_SS_SUPPLIER_NAME] = mongo_row[FIELD_COG_BARCODE]
+                mapped_sample[FIELD_SS_PHENOTYPE] = "positive"
+                mapped_sample[FIELD_SS_RESULT] = mongo_row[FIELD_RESULT]
+                mapped_sample[FIELD_SS_UUID] = mongo_row[FIELD_LH_SAMPLE_UUID]
+                mapped_sample[FIELD_SS_LAB_ID] = mongo_row[FIELD_LAB_ID]
 
-            mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
-            mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
+            mapped_sample[FIELD_SS_COORDINATE] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
+            mapped_sample[FIELD_SS_BARCODE] = dart_row[FIELD_DART_DESTINATION_BARCODE]
         except KeyError as e:
             msg = f"""
             Error while mapping database columns to Sequencescape columns for sample
@@ -445,19 +456,19 @@ def create_cherrypicked_post_body(
 
         content = {}
 
-        if "control" in sample:
-            content["supplier_name"] = sample["supplier_name"]
-            content["control"] = sample["control"]
-            content["control_type"] = sample["control_type"]
-            content["uuid"] = sample["uuid"]
+        if FIELD_SS_CONTROL in sample:
+            content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
+            content[FIELD_SS_CONTROL] = sample[FIELD_SS_CONTROL]
+            content[FIELD_SS_CONTROL_TYPE] = sample[FIELD_SS_CONTROL_TYPE]
+            content[FIELD_SS_UUID] = sample[FIELD_SS_UUID]
         else:
-            content["name"] = sample["name"]
-            content["phenotype"] = sample["phenotype"]
-            content["supplier_name"] = sample["supplier_name"]
-            content["sample_description"] = sample["sample_description"]
-            content["uuid"] = sample["uuid"]
+            content[FIELD_SS_NAME] = sample[FIELD_SS_NAME]
+            content[FIELD_SS_PHENOTYPE] = sample[FIELD_SS_PHENOTYPE]
+            content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
+            content[FIELD_SS_SAMPLE_DESCRIPTION] = sample[FIELD_SS_SAMPLE_DESCRIPTION]
+            content[FIELD_SS_UUID] = sample[FIELD_SS_UUID]
 
-        wells_content[sample["coordinate"]] = {"content": content}
+        wells_content[sample[FIELD_SS_COORDINATE]] = {"content": content}
 
     subjects = []
     subjects.append(__robot_subject(robot_serial_number))
@@ -508,14 +519,11 @@ def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
 
 
 def get_unique_plate_barcodes(samples):
-    barcodes = set()
-    for sample in samples:
-        barcodes.add(sample[FIELD_PLATE_BARCODE])
-    return list(barcodes)
+    return list({sample[FIELD_PLATE_BARCODE] for sample in samples})
 
 
 def query_for_source_plate_uuids(barcodes):
-    if barcodes is None or (len(barcodes) == 0):
+    if not barcodes:  # checks for None and empty list
         return None
 
     return {"$or": [{FIELD_BARCODE: barcode} for barcode in barcodes]}
@@ -535,25 +543,29 @@ def construct_cherrypicking_plate_failed_message(
         dart_samples = None
         try:
             dart_samples = find_dart_source_samples_rows(barcode)
-        except Exception:
+        except Exception as e:
             # a failed DART connection is valid:
             # it may be caused by the failure the user is trying to record
-            pass
+            logger.info(f"Failed to connect to DART: {e}")
 
         if dart_samples is None:
             # still send message, but inform caller that DART connection could not be made
-            errors.append(
-                "There was an error connecting to DART. As this may be due to the failure you're "
-                "reporting, a destination plate failure has still been recorded, but without "
-                "sample and source plate information"
+            msg = (
+                f"There was an error connecting to DART for destination plate '{barcode}'. "
+                "As this may be due to the failure you are reporting, a destination plate failure "
+                "has still been recorded, but without sample and source plate information"
             )
+            logger.info(msg)
+            errors.append(msg)
         elif len(dart_samples) == 0:
             # still send message, but inform caller that no samples were in the destination plate
-            errors.append(
-                "No samples were found in DART for this destination plate. As this may be due to "
-                "the failure you're reporting, a destination plate failure has still been "
+            msg = (
+                f"No samples were found in DART for destination plate '{barcode}'. As this may be "
+                "due to the failure you are reporting, a destination plate failure has still been "
                 "recorded, but without sample and source plate information"
             )
+            logger.info(msg)
+            errors.append(msg)
         else:
             mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
             if mongo_samples is None:
@@ -573,7 +585,7 @@ def construct_cherrypicking_plate_failed_message(
 
             # Add source plate subjects
             source_plates = get_source_plates_for_samples(mongo_samples)
-            if source_plates is None or len(source_plates) == 0:
+            if not source_plates:
                 return [
                     f"No source plate data found in Mongo for DART samples in plate '{barcode}'"
                 ], None
@@ -608,42 +620,44 @@ def construct_cherrypicking_plate_failed_message(
 def __ss_sample_subjects(samples):
     subjects = []
     for sample in samples:
-        if "control" in sample:
+        if FIELD_SS_CONTROL in sample:
             subject = {
                 "role_type": "control",
                 "subject_type": "sample",
                 "friendly_name": __ss_control_friendly_name(sample),
-                "uuid": sample["uuid"],
+                "uuid": sample[FIELD_SS_UUID],
             }
         else:
             subject = {
                 "role_type": "sample",
                 "subject_type": "sample",
                 "friendly_name": __ss_sample_friendly_name(sample),
-                "uuid": sample["uuid"],
+                "uuid": sample[FIELD_SS_UUID],
             }
         subjects.append(subject)
     return subjects
 
 
 def __ss_control_friendly_name(sample):
-    return f"{sample['supplier_name']}"
+    return f"{sample[FIELD_SS_SUPPLIER_NAME]}"
 
 
 def __ss_sample_friendly_name(sample):
-    name = "__".join(
-        [sample["sample_description"], sample["name"], sample["lab_id"], sample["result"]]
+    return "__".join(
+        [
+            sample[FIELD_SS_SAMPLE_DESCRIPTION],
+            sample[FIELD_SS_NAME],
+            sample[FIELD_SS_LAB_ID],
+            sample[FIELD_SS_RESULT],
+        ]
     )
-    return name
 
 
 def __supplier_name_for_dart_control(dart_row):
-    args = {
-        "control_type": dart_row[FIELD_DART_CONTROL],
-        "source_barcode": dart_row[FIELD_DART_SOURCE_BARCODE],
-        "source_coordinate": dart_row[FIELD_DART_SOURCE_COORDINATE],
-    }
-    return "{control_type} control: {source_barcode}_{source_coordinate}".format(**args)
+    return (
+        f"{dart_row[FIELD_DART_CONTROL]} control: {dart_row[FIELD_DART_SOURCE_BARCODE]}_"
+        f"{dart_row[FIELD_DART_SOURCE_COORDINATE]}"
+    )
 
 
 def __mongo_source_plate_subjects(source_plates):
@@ -657,7 +671,7 @@ def __mongo_source_plate_subjects(source_plates):
 
 def __robot_subject(robot_serial_number):
     robot_uuid = get_robot_uuid(robot_serial_number)
-    if robot_uuid is None:
+    if not robot_uuid:
         raise KeyError(f"Unable to find events information for robot: {robot_serial_number}")
 
     return construct_robot_message_subject(robot_serial_number, robot_uuid)

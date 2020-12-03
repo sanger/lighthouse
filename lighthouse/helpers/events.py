@@ -1,5 +1,5 @@
 from flask import current_app as app
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 from uuid import uuid4
 from datetime import datetime
 
@@ -71,11 +71,11 @@ def construct_robot_message_subject(serial_number: str, uuid: str) -> Dict[str, 
     }
 
 
-def construct_mongo_sample_message_subject(sample: Dict[str, str]) -> Dict[str, str]:
+def construct_mongo_sample_message_subject(sample: Dict[str, Any]) -> Dict[str, str]:
     """Generates sample subject for a plate event message from a mongo sample.
 
     Arguments:
-        samples {Dict[str, str]} -- The mongo sample for which to generate a subject.
+        samples {Dict[str, Any]} -- The mongo sample for which to generate a subject.
 
     Returns:
         {Dict[str, str]} -- The plate message sample subject.

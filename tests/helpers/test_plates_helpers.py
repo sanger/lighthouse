@@ -28,6 +28,17 @@ from lighthouse.constants import (
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     PLATE_EVENT_DESTINATION_CREATED,
     PLATE_EVENT_DESTINATION_FAILED,
+    FIELD_SS_LAB_ID,
+    FIELD_SS_NAME,
+    FIELD_SS_RESULT,
+    FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_PHENOTYPE,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_UUID,
+    FIELD_SS_BARCODE,
+    FIELD_SS_COORDINATE,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -246,58 +257,58 @@ def test_create_post_body(app, samples):
                     "wells": {
                         "A01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "abc",
-                                "sample_description": "MCM001",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "abc",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM001",
                             }
                         },
                         "B01": {
                             "content": {
-                                "phenotype": "negative",
-                                "supplier_name": "def",
-                                "sample_description": "MCM002",
+                                FIELD_SS_PHENOTYPE: "negative",
+                                FIELD_SS_SUPPLIER_NAME: "def",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                             }
                         },
                         "C01": {
                             "content": {
-                                "phenotype": "void",
-                                "supplier_name": "hij",
-                                "sample_description": "MCM003",
+                                FIELD_SS_PHENOTYPE: "void",
+                                FIELD_SS_SUPPLIER_NAME: "hij",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM003",
                             }
                         },
                         "D01": {
                             "content": {
-                                "phenotype": "limit of detection",
-                                "supplier_name": "klm",
-                                "sample_description": "MCM004",
+                                FIELD_SS_PHENOTYPE: "limit of detection",
+                                FIELD_SS_SUPPLIER_NAME: "klm",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM004",
                             }
                         },
                         "E01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "nop",
-                                "sample_description": "MCM005",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "nop",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM005",
                             }
                         },
                         "F01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "qrs",
-                                "sample_description": "MCM006",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "qrs",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM006",
                             }
                         },
                         "G01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "tuv",
-                                "sample_description": "MCM007",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "tuv",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM007",
                             }
                         },
                         "A02": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "wxy",
-                                "sample_description": "CBIQA_MCM008",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "wxy",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "CBIQA_MCM008",
                             }
                         },
                     },
@@ -470,19 +481,19 @@ def test_query_for_cherrypicked_samples_generates_list(app):
                 FIELD_ROOT_SAMPLE_ID: "sample_1",
                 FIELD_RNA_ID: "plate1:A01",
                 FIELD_LAB_ID: "ABC",
-                FIELD_RESULT: "Positive",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             },
             {
                 FIELD_ROOT_SAMPLE_ID: "sample_1",
                 FIELD_RNA_ID: "plate1:A02",
                 FIELD_LAB_ID: "ABC",
-                FIELD_RESULT: "Positive",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             },
             {
                 FIELD_ROOT_SAMPLE_ID: "sample_2",
                 FIELD_RNA_ID: "plate1:A03",
                 FIELD_LAB_ID: "ABC",
-                FIELD_RESULT: "Positive",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             },
         ]
     }
@@ -650,26 +661,26 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
     with app.app_context():
         correct_mapped_samples = [
             {
-                "control": True,
-                "control_type": "positive",
-                "barcode": "d123",
-                "coordinate": "B01",
-                "supplier_name": "positive control: 123_A01",
+                FIELD_SS_CONTROL: True,
+                FIELD_SS_CONTROL_TYPE: "positive",
+                FIELD_SS_BARCODE: "d123",
+                FIELD_SS_COORDINATE: "B01",
+                FIELD_SS_SUPPLIER_NAME: "positive control: 123_A01",
             },
             {
-                "name": "rna_2",
-                "sample_description": "MCM002",
-                "phenotype": "positive",
-                "supplier_name": "abcd",
-                "barcode": "d123",
-                "coordinate": "B02",
-                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
-                "lab_id": "AP",
-                "result": "Positive",
+                FIELD_SS_NAME: "rna_2",
+                FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
+                FIELD_SS_PHENOTYPE: "positive",
+                FIELD_SS_SUPPLIER_NAME: "abcd",
+                FIELD_SS_BARCODE: "d123",
+                FIELD_SS_COORDINATE: "B02",
+                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                FIELD_SS_LAB_ID: "AP",
+                FIELD_SS_RESULT: "Positive",
             },
         ]
         result = map_to_ss_columns(dart_mongo_merged_samples)
-        del result[0]["uuid"]
+        del result[0][FIELD_SS_UUID]
         assert result == correct_mapped_samples
 
 
@@ -686,23 +697,23 @@ def test_create_cherrypicked_post_body(app):
         user_id = "my_user"
         mapped_samples = [
             {
-                "control": True,
-                "control_type": "Positive",
-                "barcode": "123",
-                "coordinate": "B01",
-                "supplier_name": "Positive control: 123_B01",
-                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
+                FIELD_SS_CONTROL: True,
+                FIELD_SS_CONTROL_TYPE: "Positive",
+                FIELD_SS_BARCODE: "123",
+                FIELD_SS_COORDINATE: "B01",
+                FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
+                FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
             {
-                "name": "rna_2",
-                "sample_description": "MCM002",
-                "phenotype": "positive",
-                "supplier_name": "abcd",
-                "barcode": "123",
-                "coordinate": "B02",
-                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
-                "lab_id": "AP",
-                "result": "Positive",
+                FIELD_SS_NAME: "rna_2",
+                FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
+                FIELD_SS_PHENOTYPE: "positive",
+                FIELD_SS_SUPPLIER_NAME: "abcd",
+                FIELD_SS_BARCODE: "123",
+                FIELD_SS_COORDINATE: "B02",
+                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                FIELD_SS_LAB_ID: "AP",
+                FIELD_SS_RESULT: "Positive",
             },
         ]
 
@@ -729,19 +740,19 @@ def test_create_cherrypicked_post_body(app):
                     "wells": {
                         "B01": {
                             "content": {
-                                "control": True,
-                                "control_type": "Positive",
-                                "supplier_name": "Positive control: 123_B01",
-                                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
+                                FIELD_SS_CONTROL: True,
+                                FIELD_SS_CONTROL_TYPE: "Positive",
+                                FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
+                                FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
                         },
                         "B02": {
                             "content": {
-                                "name": "rna_2",
-                                "phenotype": "positive",
-                                "supplier_name": "abcd",
-                                "sample_description": "MCM002",
-                                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                                FIELD_SS_NAME: "rna_2",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "abcd",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
+                                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                             }
                         },
                     },
@@ -917,7 +928,12 @@ def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure(app, mo
 
                     # assert expected return values
                     assert len(errors) == 1
-                    assert "There was an error connecting to DART" in errors[0]
+                    assert (
+                        "There was an error connecting to DART for destination plate "
+                        f"'{test_barcode}'. As this may be due to the failure you are reporting, "
+                        "a destination plate failure has still been recorded, but without sample "
+                        "and source plate information"
+                    ) in errors[0]
                     args, _ = mock_message.call_args
                     message_content = args[0]
 
@@ -976,7 +992,12 @@ def test_construct_cherrypicking_plate_failed_message_none_dart_samples(app, moc
 
                     # assert expected return values
                     assert len(errors) == 1
-                    assert "There was an error connecting to DART" in errors[0]
+                    assert (
+                        "There was an error connecting to DART for destination plate "
+                        f"'{test_barcode}'. As this may be due to the failure you are reporting, "
+                        "a destination plate failure has still been recorded, but without sample "
+                        "and source plate information"
+                    ) in errors[0]
                     args, _ = mock_message.call_args
                     message_content = args[0]
 
@@ -1033,7 +1054,12 @@ def test_construct_cherrypicking_plate_failed_message_empty_dart_samples(app, mo
 
                     # assert expected return values
                     assert len(errors) == 1
-                    assert "No samples were found in DART for this destination plate" in errors[0]
+                    assert (
+                        f"No samples were found in DART for destination plate '{test_barcode}'. "
+                        "As this may be due to the failure you are reporting, a destination plate "
+                        "failure has still been recorded, but without sample and source plate "
+                        "information"
+                    ) in errors[0]
                     args, _ = mock_message.call_args
                     message_content = args[0]
 
