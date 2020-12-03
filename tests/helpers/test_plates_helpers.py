@@ -470,19 +470,19 @@ def test_query_for_cherrypicked_samples_generates_list(app):
                 FIELD_ROOT_SAMPLE_ID: "sample_1",
                 FIELD_RNA_ID: "plate1:A01",
                 FIELD_LAB_ID: "ABC",
-                FIELD_RESULT: "Positive",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             },
             {
                 FIELD_ROOT_SAMPLE_ID: "sample_1",
                 FIELD_RNA_ID: "plate1:A02",
                 FIELD_LAB_ID: "ABC",
-                FIELD_RESULT: "Positive",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             },
             {
                 FIELD_ROOT_SAMPLE_ID: "sample_2",
                 FIELD_RNA_ID: "plate1:A03",
                 FIELD_LAB_ID: "ABC",
-                FIELD_RESULT: "Positive",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             },
         ]
     }
