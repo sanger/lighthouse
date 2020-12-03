@@ -512,7 +512,7 @@ def get_unique_plate_barcodes(samples):
 
 
 def query_for_source_plate_uuids(barcodes):
-    if barcodes is None or (len(barcodes) == 0):
+    if not barcodes:  # checks for None and empty list
         return None
 
     return {"$or": [{FIELD_BARCODE: barcode} for barcode in barcodes]}
@@ -570,7 +570,7 @@ def construct_cherrypicking_plate_failed_message(
 
             # Add source plate subjects
             source_plates = get_source_plates_for_samples(mongo_samples)
-            if source_plates is None or len(source_plates) == 0:
+            if not source_plates:
                 return [
                     f"No source plate data found in Mongo for DART samples in plate '{barcode}'"
                 ], None
