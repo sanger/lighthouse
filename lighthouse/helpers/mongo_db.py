@@ -44,7 +44,7 @@ def get_positive_samples_in_source_plate(source_plate_uuid: str) -> Optional[Lis
         samples_collection = app.data.driver.db.samples
         query = {
             FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid,
-            FIELD_RESULT: "Positive",
+            FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
         }
         return list(samples_collection.find(query))
     except Exception as e:
