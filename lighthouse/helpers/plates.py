@@ -29,6 +29,10 @@ from lighthouse.constants import (
     STAGE_MATCH_POSITIVE,
     PLATE_EVENT_DESTINATION_CREATED,
     PLATE_EVENT_DESTINATION_FAILED,
+    FIELD_SS_LAB_ID,
+    FIELD_SS_NAME,
+    FIELD_SS_RESULT,
+    FIELD_SS_SAMPLE_DESCRIPTION,
 )
 
 from lighthouse.exceptions import (
@@ -292,7 +296,7 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
             "content": {
                 "phenotype": phenotype.strip().lower(),
                 "supplier_name": sample[FIELD_COG_BARCODE],
-                "sample_description": description,
+                FIELD_SS_SAMPLE_DESCRIPTION: description,
             }
         }
         wells_content[sample[FIELD_COORDINATE]] = well
@@ -407,13 +411,13 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
                 mapped_sample["uuid"] = str(uuid4())
             else:
-                mapped_sample["name"] = mongo_row[FIELD_RNA_ID]
-                mapped_sample["sample_description"] = mongo_row[FIELD_ROOT_SAMPLE_ID]
+                mapped_sample[FIELD_SS_NAME] = mongo_row[FIELD_RNA_ID]
+                mapped_sample[FIELD_SS_SAMPLE_DESCRIPTION] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
-                mapped_sample["result"] = mongo_row[FIELD_RESULT]
+                mapped_sample[FIELD_SS_RESULT] = mongo_row[FIELD_RESULT]
                 mapped_sample["uuid"] = mongo_row[FIELD_LH_SAMPLE_UUID]
-                mapped_sample["lab_id"] = mongo_row[FIELD_LAB_ID]
+                mapped_sample[FIELD_SS_LAB_ID] = mongo_row[FIELD_LAB_ID]
 
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
             mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
@@ -451,10 +455,10 @@ def create_cherrypicked_post_body(
             content["control_type"] = sample["control_type"]
             content["uuid"] = sample["uuid"]
         else:
-            content["name"] = sample["name"]
+            content[FIELD_SS_NAME] = sample[FIELD_SS_NAME]
             content["phenotype"] = sample["phenotype"]
             content["supplier_name"] = sample["supplier_name"]
-            content["sample_description"] = sample["sample_description"]
+            content[FIELD_SS_SAMPLE_DESCRIPTION] = sample[FIELD_SS_SAMPLE_DESCRIPTION]
             content["uuid"] = sample["uuid"]
 
         wells_content[sample["coordinate"]] = {"content": content}
@@ -633,7 +637,12 @@ def __ss_control_friendly_name(sample):
 
 def __ss_sample_friendly_name(sample):
     return "__".join(
-        [sample["sample_description"], sample["name"], sample["lab_id"], sample["result"]]
+        [
+            sample[FIELD_SS_SAMPLE_DESCRIPTION],
+            sample[FIELD_SS_NAME],
+            sample[FIELD_SS_LAB_ID],
+            sample[FIELD_SS_RESULT],
+        ]
     )
 
 
