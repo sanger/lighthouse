@@ -37,7 +37,7 @@ def get_samples_in_source_plate(source_plate_uuid: str) -> Optional[List[Dict[st
         source_plate_uuid {str} -- The source plate uuid for which to get samples.
 
     Returns:
-        {List[Dict[str, str]]} -- A list of all samples on the source plate;
+        {List[Dict[str, Any]]} -- A list of all samples on the source plate;
         otherwise None if they cannot be determined
     """
     try:
