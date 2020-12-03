@@ -32,6 +32,7 @@ from lighthouse.constants import (
     FIELD_SS_NAME,
     FIELD_SS_RESULT,
     FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_SS_SUPPLIER_NAME,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -251,56 +252,56 @@ def test_create_post_body(app, samples):
                         "A01": {
                             "content": {
                                 "phenotype": "positive",
-                                "supplier_name": "abc",
+                                FIELD_SS_SUPPLIER_NAME: "abc",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM001",
                             }
                         },
                         "B01": {
                             "content": {
                                 "phenotype": "negative",
-                                "supplier_name": "def",
+                                FIELD_SS_SUPPLIER_NAME: "def",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                             }
                         },
                         "C01": {
                             "content": {
                                 "phenotype": "void",
-                                "supplier_name": "hij",
+                                FIELD_SS_SUPPLIER_NAME: "hij",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM003",
                             }
                         },
                         "D01": {
                             "content": {
                                 "phenotype": "limit of detection",
-                                "supplier_name": "klm",
+                                FIELD_SS_SUPPLIER_NAME: "klm",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM004",
                             }
                         },
                         "E01": {
                             "content": {
                                 "phenotype": "positive",
-                                "supplier_name": "nop",
+                                FIELD_SS_SUPPLIER_NAME: "nop",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM005",
                             }
                         },
                         "F01": {
                             "content": {
                                 "phenotype": "positive",
-                                "supplier_name": "qrs",
+                                FIELD_SS_SUPPLIER_NAME: "qrs",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM006",
                             }
                         },
                         "G01": {
                             "content": {
                                 "phenotype": "positive",
-                                "supplier_name": "tuv",
+                                FIELD_SS_SUPPLIER_NAME: "tuv",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM007",
                             }
                         },
                         "A02": {
                             "content": {
                                 "phenotype": "positive",
-                                "supplier_name": "wxy",
+                                FIELD_SS_SUPPLIER_NAME: "wxy",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "CBIQA_MCM008",
                             }
                         },
@@ -658,13 +659,13 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 "control_type": "positive",
                 "barcode": "d123",
                 "coordinate": "B01",
-                "supplier_name": "positive control: 123_A01",
+                FIELD_SS_SUPPLIER_NAME: "positive control: 123_A01",
             },
             {
                 FIELD_SS_NAME: "rna_2",
                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                 "phenotype": "positive",
-                "supplier_name": "abcd",
+                FIELD_SS_SUPPLIER_NAME: "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
                 "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
@@ -694,14 +695,14 @@ def test_create_cherrypicked_post_body(app):
                 "control_type": "Positive",
                 "barcode": "123",
                 "coordinate": "B01",
-                "supplier_name": "Positive control: 123_B01",
+                FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
                 "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
             {
                 FIELD_SS_NAME: "rna_2",
                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                 "phenotype": "positive",
-                "supplier_name": "abcd",
+                FIELD_SS_SUPPLIER_NAME: "abcd",
                 "barcode": "123",
                 "coordinate": "B02",
                 "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
@@ -735,7 +736,7 @@ def test_create_cherrypicked_post_body(app):
                             "content": {
                                 "control": True,
                                 "control_type": "Positive",
-                                "supplier_name": "Positive control: 123_B01",
+                                FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
                                 "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
                         },
@@ -743,7 +744,7 @@ def test_create_cherrypicked_post_body(app):
                             "content": {
                                 FIELD_SS_NAME: "rna_2",
                                 "phenotype": "positive",
-                                "supplier_name": "abcd",
+                                FIELD_SS_SUPPLIER_NAME: "abcd",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                                 "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                             }

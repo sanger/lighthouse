@@ -33,6 +33,7 @@ from lighthouse.constants import (
     FIELD_SS_NAME,
     FIELD_SS_RESULT,
     FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_SS_SUPPLIER_NAME,
 )
 
 from lighthouse.exceptions import (
@@ -295,7 +296,7 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
         well = {
             "content": {
                 "phenotype": phenotype.strip().lower(),
-                "supplier_name": sample[FIELD_COG_BARCODE],
+                FIELD_SS_SUPPLIER_NAME: sample[FIELD_COG_BARCODE],
                 FIELD_SS_SAMPLE_DESCRIPTION: description,
             }
         }
@@ -406,14 +407,14 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
         try:
             if dart_row[FIELD_DART_CONTROL]:
-                mapped_sample["supplier_name"] = __supplier_name_for_dart_control(dart_row)
+                mapped_sample[FIELD_SS_SUPPLIER_NAME] = __supplier_name_for_dart_control(dart_row)
                 mapped_sample["control"] = True
                 mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
                 mapped_sample["uuid"] = str(uuid4())
             else:
                 mapped_sample[FIELD_SS_NAME] = mongo_row[FIELD_RNA_ID]
                 mapped_sample[FIELD_SS_SAMPLE_DESCRIPTION] = mongo_row[FIELD_ROOT_SAMPLE_ID]
-                mapped_sample["supplier_name"] = mongo_row[FIELD_COG_BARCODE]
+                mapped_sample[FIELD_SS_SUPPLIER_NAME] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample["phenotype"] = "positive"
                 mapped_sample[FIELD_SS_RESULT] = mongo_row[FIELD_RESULT]
                 mapped_sample["uuid"] = mongo_row[FIELD_LH_SAMPLE_UUID]
@@ -450,14 +451,14 @@ def create_cherrypicked_post_body(
         content = {}
 
         if "control" in sample:
-            content["supplier_name"] = sample["supplier_name"]
+            content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
             content["control"] = sample["control"]
             content["control_type"] = sample["control_type"]
             content["uuid"] = sample["uuid"]
         else:
             content[FIELD_SS_NAME] = sample[FIELD_SS_NAME]
             content["phenotype"] = sample["phenotype"]
-            content["supplier_name"] = sample["supplier_name"]
+            content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
             content[FIELD_SS_SAMPLE_DESCRIPTION] = sample[FIELD_SS_SAMPLE_DESCRIPTION]
             content["uuid"] = sample["uuid"]
 
@@ -632,7 +633,7 @@ def __ss_sample_subjects(samples):
 
 
 def __ss_control_friendly_name(sample):
-    return f"{sample['supplier_name']}"
+    return f"{sample[FIELD_SS_SUPPLIER_NAME]}"
 
 
 def __ss_sample_friendly_name(sample):
