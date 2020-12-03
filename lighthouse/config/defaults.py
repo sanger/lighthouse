@@ -150,7 +150,7 @@ BECKMAN_FAILURE_TYPES = {
     "robot_crashed": "The robot crashed",
     "sample_contamination": "Sample contamination occurred",
     "power_failure": "Power loss to instrument",
-    "network_failure": "Can't retrieve sample data",
+    "network_failure": "Cannot retrieve sample data",
     "SILAS_error": "Internal communication error in Beckman system",
     "instrument_loaded_incorrectly": "Labware has been incorrectly loaded onto instrument",
     "other": "Any other failure",
