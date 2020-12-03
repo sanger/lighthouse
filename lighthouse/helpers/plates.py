@@ -508,10 +508,7 @@ def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
 
 
 def get_unique_plate_barcodes(samples):
-    barcodes = set()
-    for sample in samples:
-        barcodes.add(sample[FIELD_PLATE_BARCODE])
-    return list(barcodes)
+    return list({sample[FIELD_PLATE_BARCODE] for sample in samples})
 
 
 def query_for_source_plate_uuids(barcodes):
