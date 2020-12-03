@@ -917,7 +917,12 @@ def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure(app, mo
 
                     # assert expected return values
                     assert len(errors) == 1
-                    assert "There was an error connecting to DART" in errors[0]
+                    assert (
+                        "There was an error connecting to DART for destination plate "
+                        f"'{test_barcode}'. As this may be due to the failure you are reporting, "
+                        "a destination plate failure has still been recorded, but without sample "
+                        "and source plate information"
+                    ) in errors[0]
                     args, _ = mock_message.call_args
                     message_content = args[0]
 
@@ -976,7 +981,12 @@ def test_construct_cherrypicking_plate_failed_message_none_dart_samples(app, moc
 
                     # assert expected return values
                     assert len(errors) == 1
-                    assert "There was an error connecting to DART" in errors[0]
+                    assert (
+                        "There was an error connecting to DART for destination plate "
+                        f"'{test_barcode}'. As this may be due to the failure you are reporting, "
+                        "a destination plate failure has still been recorded, but without sample "
+                        "and source plate information"
+                    ) in errors[0]
                     args, _ = mock_message.call_args
                     message_content = args[0]
 
@@ -1033,7 +1043,12 @@ def test_construct_cherrypicking_plate_failed_message_empty_dart_samples(app, mo
 
                     # assert expected return values
                     assert len(errors) == 1
-                    assert "No samples were found in DART for this destination plate" in errors[0]
+                    assert (
+                        f"No samples were found in DART for destination plate '{test_barcode}'. "
+                        "As this may be due to the failure you are reporting, a destination plate "
+                        "failure has still been recorded, but without sample and source plate "
+                        "information"
+                    ) in errors[0]
                     args, _ = mock_message.call_args
                     message_content = args[0]
 

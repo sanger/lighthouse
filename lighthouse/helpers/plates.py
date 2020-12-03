@@ -532,25 +532,29 @@ def construct_cherrypicking_plate_failed_message(
         dart_samples = None
         try:
             dart_samples = find_dart_source_samples_rows(barcode)
-        except Exception:
+        except Exception as e:
             # a failed DART connection is valid:
             # it may be caused by the failure the user is trying to record
-            pass
+            logger.info(f"Failed to connect to DART: {e}")
 
         if dart_samples is None:
             # still send message, but inform caller that DART connection could not be made
-            errors.append(
-                "There was an error connecting to DART. As this may be due to the failure you are "
-                "reporting, a destination plate failure has still been recorded, but without "
-                "sample and source plate information"
+            msg = (
+                f"There was an error connecting to DART for destination plate '{barcode}'. "
+                "As this may be due to the failure you are reporting, a destination plate failure "
+                "has still been recorded, but without sample and source plate information"
             )
+            logger.info(msg)
+            errors.append(msg)
         elif len(dart_samples) == 0:
             # still send message, but inform caller that no samples were in the destination plate
-            errors.append(
-                "No samples were found in DART for this destination plate. As this may be due to "
-                "the failure you are reporting, a destination plate failure has still been "
+            msg = (
+                f"No samples were found in DART for destination plate '{barcode}'. As this may be "
+                "due to the failure you are reporting, a destination plate failure has still been "
                 "recorded, but without sample and source plate information"
             )
+            logger.info(msg)
+            errors.append(msg)
         else:
             mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
             if mongo_samples is None:
