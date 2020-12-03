@@ -82,9 +82,9 @@ def construct_source_plate_not_recognised_message(
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
     try:
-        user_id = params.get("user_id", "")
-        robot_serial_number = params.get("robot", "")
-        if len(user_id) == 0 or len(robot_serial_number) == 0:
+        user_id = params.get("user_id")
+        robot_serial_number = params.get("robot")
+        if not user_id or not robot_serial_number:
             return [
                 "'user_id' and 'robot' are required to construct a "
                 f"{PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
@@ -129,10 +129,10 @@ def construct_source_plate_no_map_data_message(
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
     try:
-        barcode = params.get("barcode", "")
-        user_id = params.get("user_id", "")
-        robot_serial_number = params.get("robot", "")
-        if len(barcode) == 0 or len(user_id) == 0 or len(robot_serial_number) == 0:
+        barcode = params.get("barcode")
+        user_id = params.get("user_id")
+        robot_serial_number = params.get("robot")
+        if not barcode or not user_id or not robot_serial_number:
             return [
                 "'barcode', 'user_id' and 'robot' are required to construct a "
                 f"{PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
@@ -205,10 +205,10 @@ def __construct_source_plate_with_samples_on_robot_message(
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
     try:
-        barcode = params.get("barcode", "")
-        user_id = params.get("user_id", "")
-        robot_serial_number = params.get("robot", "")
-        if len(barcode) == 0 or len(user_id) == 0 or len(robot_serial_number) == 0:
+        barcode = params.get("barcode")
+        user_id = params.get("user_id")
+        robot_serial_number = params.get("robot")
+        if not barcode or not user_id or not robot_serial_number:
             return [
                 "'barcode', 'user_id' and 'robot' are required to construct a "
                 f"{event_type} event message"
