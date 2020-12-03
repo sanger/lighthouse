@@ -543,7 +543,7 @@ def construct_cherrypicking_plate_failed_message(
         if dart_samples is None:
             # still send message, but inform caller that DART connection could not be made
             errors.append(
-                "There was an error connecting to DART. As this may be due to the failure you're "
+                "There was an error connecting to DART. As this may be due to the failure you are "
                 "reporting, a destination plate failure has still been recorded, but without "
                 "sample and source plate information"
             )
