@@ -628,10 +628,9 @@ def __ss_control_friendly_name(sample):
 
 
 def __ss_sample_friendly_name(sample):
-    name = "__".join(
+    return "__".join(
         [sample["sample_description"], sample["name"], sample["lab_id"], sample["result"]]
     )
-    return name
 
 
 def __supplier_name_for_dart_control(dart_row):
