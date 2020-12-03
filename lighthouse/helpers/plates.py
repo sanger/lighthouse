@@ -38,6 +38,8 @@ from lighthouse.constants import (
     FIELD_SS_CONTROL,
     FIELD_SS_CONTROL_TYPE,
     FIELD_SS_UUID,
+    FIELD_SS_COORDINATE,
+    FIELD_SS_BARCODE,
 )
 
 from lighthouse.exceptions import (
@@ -424,8 +426,8 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample[FIELD_SS_UUID] = mongo_row[FIELD_LH_SAMPLE_UUID]
                 mapped_sample[FIELD_SS_LAB_ID] = mongo_row[FIELD_LAB_ID]
 
-            mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
-            mapped_sample["barcode"] = dart_row[FIELD_DART_DESTINATION_BARCODE]
+            mapped_sample[FIELD_SS_COORDINATE] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
+            mapped_sample[FIELD_SS_BARCODE] = dart_row[FIELD_DART_DESTINATION_BARCODE]
         except KeyError as e:
             msg = f"""
             Error while mapping database columns to Sequencescape columns for sample
@@ -466,7 +468,7 @@ def create_cherrypicked_post_body(
             content[FIELD_SS_SAMPLE_DESCRIPTION] = sample[FIELD_SS_SAMPLE_DESCRIPTION]
             content[FIELD_SS_UUID] = sample[FIELD_SS_UUID]
 
-        wells_content[sample["coordinate"]] = {"content": content}
+        wells_content[sample[FIELD_SS_COORDINATE]] = {"content": content}
 
     subjects = []
     subjects.append(__robot_subject(robot_serial_number))

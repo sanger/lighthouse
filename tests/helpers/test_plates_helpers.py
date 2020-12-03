@@ -37,6 +37,8 @@ from lighthouse.constants import (
     FIELD_SS_CONTROL,
     FIELD_SS_CONTROL_TYPE,
     FIELD_SS_UUID,
+    FIELD_SS_BARCODE,
+    FIELD_SS_COORDINATE,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -661,8 +663,8 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
             {
                 FIELD_SS_CONTROL: True,
                 FIELD_SS_CONTROL_TYPE: "positive",
-                "barcode": "d123",
-                "coordinate": "B01",
+                FIELD_SS_BARCODE: "d123",
+                FIELD_SS_COORDINATE: "B01",
                 FIELD_SS_SUPPLIER_NAME: "positive control: 123_A01",
             },
             {
@@ -670,8 +672,8 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                 FIELD_SS_PHENOTYPE: "positive",
                 FIELD_SS_SUPPLIER_NAME: "abcd",
-                "barcode": "d123",
-                "coordinate": "B02",
+                FIELD_SS_BARCODE: "d123",
+                FIELD_SS_COORDINATE: "B02",
                 FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 FIELD_SS_LAB_ID: "AP",
                 FIELD_SS_RESULT: "Positive",
@@ -697,8 +699,8 @@ def test_create_cherrypicked_post_body(app):
             {
                 FIELD_SS_CONTROL: True,
                 FIELD_SS_CONTROL_TYPE: "Positive",
-                "barcode": "123",
-                "coordinate": "B01",
+                FIELD_SS_BARCODE: "123",
+                FIELD_SS_COORDINATE: "B01",
                 FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
                 FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
@@ -707,8 +709,8 @@ def test_create_cherrypicked_post_body(app):
                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                 FIELD_SS_PHENOTYPE: "positive",
                 FIELD_SS_SUPPLIER_NAME: "abcd",
-                "barcode": "123",
-                "coordinate": "B02",
+                FIELD_SS_BARCODE: "123",
+                FIELD_SS_COORDINATE: "B02",
                 FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 FIELD_SS_LAB_ID: "AP",
                 FIELD_SS_RESULT: "Positive",
