@@ -551,7 +551,7 @@ def construct_cherrypicking_plate_failed_message(
             # still send message, but inform caller that no samples were in the destination plate
             errors.append(
                 "No samples were found in DART for this destination plate. As this may be due to "
-                "the failure you're reporting, a destination plate failure has still been "
+                "the failure you are reporting, a destination plate failure has still been "
                 "recorded, but without sample and source plate information"
             )
         else:
