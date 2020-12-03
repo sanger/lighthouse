@@ -37,6 +37,7 @@ from lighthouse.constants import (
     FIELD_SS_PHENOTYPE,
     FIELD_SS_CONTROL,
     FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_UUID,
 )
 
 from lighthouse.exceptions import (
@@ -413,14 +414,14 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample[FIELD_SS_SUPPLIER_NAME] = __supplier_name_for_dart_control(dart_row)
                 mapped_sample[FIELD_SS_CONTROL] = True
                 mapped_sample[FIELD_SS_CONTROL_TYPE] = dart_row[FIELD_DART_CONTROL]
-                mapped_sample["uuid"] = str(uuid4())
+                mapped_sample[FIELD_SS_UUID] = str(uuid4())
             else:
                 mapped_sample[FIELD_SS_NAME] = mongo_row[FIELD_RNA_ID]
                 mapped_sample[FIELD_SS_SAMPLE_DESCRIPTION] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample[FIELD_SS_SUPPLIER_NAME] = mongo_row[FIELD_COG_BARCODE]
                 mapped_sample[FIELD_SS_PHENOTYPE] = "positive"
                 mapped_sample[FIELD_SS_RESULT] = mongo_row[FIELD_RESULT]
-                mapped_sample["uuid"] = mongo_row[FIELD_LH_SAMPLE_UUID]
+                mapped_sample[FIELD_SS_UUID] = mongo_row[FIELD_LH_SAMPLE_UUID]
                 mapped_sample[FIELD_SS_LAB_ID] = mongo_row[FIELD_LAB_ID]
 
             mapped_sample["coordinate"] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
@@ -457,13 +458,13 @@ def create_cherrypicked_post_body(
             content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
             content[FIELD_SS_CONTROL] = sample[FIELD_SS_CONTROL]
             content[FIELD_SS_CONTROL_TYPE] = sample[FIELD_SS_CONTROL_TYPE]
-            content["uuid"] = sample["uuid"]
+            content[FIELD_SS_UUID] = sample[FIELD_SS_UUID]
         else:
             content[FIELD_SS_NAME] = sample[FIELD_SS_NAME]
             content[FIELD_SS_PHENOTYPE] = sample[FIELD_SS_PHENOTYPE]
             content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
             content[FIELD_SS_SAMPLE_DESCRIPTION] = sample[FIELD_SS_SAMPLE_DESCRIPTION]
-            content["uuid"] = sample["uuid"]
+            content[FIELD_SS_UUID] = sample[FIELD_SS_UUID]
 
         wells_content[sample["coordinate"]] = {"content": content}
 
@@ -622,14 +623,14 @@ def __ss_sample_subjects(samples):
                 "role_type": "control",
                 "subject_type": "sample",
                 "friendly_name": __ss_control_friendly_name(sample),
-                "uuid": sample["uuid"],
+                "uuid": sample[FIELD_SS_UUID],
             }
         else:
             subject = {
                 "role_type": "sample",
                 "subject_type": "sample",
                 "friendly_name": __ss_sample_friendly_name(sample),
-                "uuid": sample["uuid"],
+                "uuid": sample[FIELD_SS_UUID],
             }
         subjects.append(subject)
     return subjects

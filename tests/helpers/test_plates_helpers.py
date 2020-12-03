@@ -36,6 +36,7 @@ from lighthouse.constants import (
     FIELD_SS_PHENOTYPE,
     FIELD_SS_CONTROL,
     FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_UUID,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -671,13 +672,13 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 FIELD_SS_SUPPLIER_NAME: "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
-                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 FIELD_SS_LAB_ID: "AP",
                 FIELD_SS_RESULT: "Positive",
             },
         ]
         result = map_to_ss_columns(dart_mongo_merged_samples)
-        del result[0]["uuid"]
+        del result[0][FIELD_SS_UUID]
         assert result == correct_mapped_samples
 
 
@@ -699,7 +700,7 @@ def test_create_cherrypicked_post_body(app):
                 "barcode": "123",
                 "coordinate": "B01",
                 FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
-                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
+                FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
             {
                 FIELD_SS_NAME: "rna_2",
@@ -708,7 +709,7 @@ def test_create_cherrypicked_post_body(app):
                 FIELD_SS_SUPPLIER_NAME: "abcd",
                 "barcode": "123",
                 "coordinate": "B02",
-                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 FIELD_SS_LAB_ID: "AP",
                 FIELD_SS_RESULT: "Positive",
             },
@@ -740,7 +741,7 @@ def test_create_cherrypicked_post_body(app):
                                 FIELD_SS_CONTROL: True,
                                 FIELD_SS_CONTROL_TYPE: "Positive",
                                 FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
-                                "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
+                                FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
                         },
                         "B02": {
@@ -749,7 +750,7 @@ def test_create_cherrypicked_post_body(app):
                                 FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "abcd",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
-                                "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                             }
                         },
                     },
