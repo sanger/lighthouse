@@ -30,14 +30,14 @@ def get_source_plate_uuid(barcode: str) -> Optional[str]:
         return None
 
 
-def get_samples(source_plate_uuid: str) -> Optional[List[Dict[str, Any]]]:
+def get_samples_in_source_plate(source_plate_uuid: str) -> Optional[List[Dict[str, Any]]]:
     """Attempt to get a source plate's samples.
 
     Arguments:
         source_plate_uuid {str} -- The source plate uuid for which to get samples.
 
     Returns:
-        {List[Dict[str, str]]} -- A list of all samples on the source plate;
+        {List[Dict[str, Any]]} -- A list of all samples on the source plate;
         otherwise None if they cannot be determined
     """
     try:

@@ -6,10 +6,8 @@ from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
 
 from lighthouse.messages.broker import Broker  # type: ignore
-from lighthouse.helpers.plate_events import (
-    construct_event_message,
-    get_routing_key,
-)
+from lighthouse.helpers.plate_events import construct_event_message
+from lighthouse.helpers.events import get_routing_key
 
 logger = logging.getLogger(__name__)
 

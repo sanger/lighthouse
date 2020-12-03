@@ -89,8 +89,23 @@ POSITIVE_SAMPLES_MONGODB_FILTER = {
     ],
 }
 
+# Cherrypicking source and destination plate events
 PLATE_EVENT_SOURCE_COMPLETED = "lh_beckman_cp_source_completed"
 PLATE_EVENT_SOURCE_NOT_RECOGNISED = "lh_beckman_cp_source_plate_unrecognised"
 PLATE_EVENT_SOURCE_NO_MAP_DATA = "lh_beckman_cp_source_no_plate_map_data"
 PLATE_EVENT_SOURCE_ALL_NEGATIVES = "lh_beckman_cp_source_all_negatives"
 PLATE_EVENT_DESTINATION_CREATED = "lh_beckman_cp_destination_created"
+PLATE_EVENT_DESTINATION_FAILED = "lh_beckman_cp_destination_failed"
+
+# SequenceScape sampel field names
+FIELD_SS_SAMPLE_DESCRIPTION = "sample_description"
+FIELD_SS_NAME = "name"
+FIELD_SS_LAB_ID = "lab_id"
+FIELD_SS_RESULT = "result"
+FIELD_SS_SUPPLIER_NAME = "supplier_name"
+FIELD_SS_PHENOTYPE = "phenotype"
+FIELD_SS_CONTROL = "control"
+FIELD_SS_CONTROL_TYPE = "control_type"
+FIELD_SS_UUID = "uuid"
+FIELD_SS_COORDINATE = "coordinate"
+FIELD_SS_BARCODE = "barcode"
