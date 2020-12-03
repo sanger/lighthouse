@@ -34,6 +34,8 @@ from lighthouse.constants import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_PHENOTYPE,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -656,8 +658,8 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
     with app.app_context():
         correct_mapped_samples = [
             {
-                "control": True,
-                "control_type": "positive",
+                FIELD_SS_CONTROL: True,
+                FIELD_SS_CONTROL_TYPE: "positive",
                 "barcode": "d123",
                 "coordinate": "B01",
                 FIELD_SS_SUPPLIER_NAME: "positive control: 123_A01",
@@ -692,8 +694,8 @@ def test_create_cherrypicked_post_body(app):
         user_id = "my_user"
         mapped_samples = [
             {
-                "control": True,
-                "control_type": "Positive",
+                FIELD_SS_CONTROL: True,
+                FIELD_SS_CONTROL_TYPE: "Positive",
                 "barcode": "123",
                 "coordinate": "B01",
                 FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
@@ -735,8 +737,8 @@ def test_create_cherrypicked_post_body(app):
                     "wells": {
                         "B01": {
                             "content": {
-                                "control": True,
-                                "control_type": "Positive",
+                                FIELD_SS_CONTROL: True,
+                                FIELD_SS_CONTROL_TYPE: "Positive",
                                 FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
                                 "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }

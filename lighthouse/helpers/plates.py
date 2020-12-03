@@ -35,6 +35,8 @@ from lighthouse.constants import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_PHENOTYPE,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
 )
 
 from lighthouse.exceptions import (
@@ -409,8 +411,8 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         try:
             if dart_row[FIELD_DART_CONTROL]:
                 mapped_sample[FIELD_SS_SUPPLIER_NAME] = __supplier_name_for_dart_control(dart_row)
-                mapped_sample["control"] = True
-                mapped_sample["control_type"] = dart_row[FIELD_DART_CONTROL]
+                mapped_sample[FIELD_SS_CONTROL] = True
+                mapped_sample[FIELD_SS_CONTROL_TYPE] = dart_row[FIELD_DART_CONTROL]
                 mapped_sample["uuid"] = str(uuid4())
             else:
                 mapped_sample[FIELD_SS_NAME] = mongo_row[FIELD_RNA_ID]
@@ -451,10 +453,10 @@ def create_cherrypicked_post_body(
 
         content = {}
 
-        if "control" in sample:
+        if FIELD_SS_CONTROL in sample:
             content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
-            content["control"] = sample["control"]
-            content["control_type"] = sample["control_type"]
+            content[FIELD_SS_CONTROL] = sample[FIELD_SS_CONTROL]
+            content[FIELD_SS_CONTROL_TYPE] = sample[FIELD_SS_CONTROL_TYPE]
             content["uuid"] = sample["uuid"]
         else:
             content[FIELD_SS_NAME] = sample[FIELD_SS_NAME]
@@ -615,7 +617,7 @@ def construct_cherrypicking_plate_failed_message(
 def __ss_sample_subjects(samples):
     subjects = []
     for sample in samples:
-        if "control" in sample:
+        if FIELD_SS_CONTROL in sample:
             subject = {
                 "role_type": "control",
                 "subject_type": "sample",
