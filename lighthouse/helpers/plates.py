@@ -653,7 +653,7 @@ def __mongo_source_plate_subjects(source_plates):
 
 def __robot_subject(robot_serial_number):
     robot_uuid = get_robot_uuid(robot_serial_number)
-    if robot_uuid is None:
+    if not robot_uuid:
         raise KeyError(f"Unable to find events information for robot: {robot_serial_number}")
 
     return construct_robot_message_subject(robot_serial_number, robot_uuid)
