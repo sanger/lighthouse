@@ -34,6 +34,7 @@ from lighthouse.constants import (
     FIELD_SS_RESULT,
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_PHENOTYPE,
 )
 
 from lighthouse.exceptions import (
@@ -295,7 +296,7 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
 
         well = {
             "content": {
-                "phenotype": phenotype.strip().lower(),
+                FIELD_SS_PHENOTYPE: phenotype.strip().lower(),
                 FIELD_SS_SUPPLIER_NAME: sample[FIELD_COG_BARCODE],
                 FIELD_SS_SAMPLE_DESCRIPTION: description,
             }
@@ -415,7 +416,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample[FIELD_SS_NAME] = mongo_row[FIELD_RNA_ID]
                 mapped_sample[FIELD_SS_SAMPLE_DESCRIPTION] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample[FIELD_SS_SUPPLIER_NAME] = mongo_row[FIELD_COG_BARCODE]
-                mapped_sample["phenotype"] = "positive"
+                mapped_sample[FIELD_SS_PHENOTYPE] = "positive"
                 mapped_sample[FIELD_SS_RESULT] = mongo_row[FIELD_RESULT]
                 mapped_sample["uuid"] = mongo_row[FIELD_LH_SAMPLE_UUID]
                 mapped_sample[FIELD_SS_LAB_ID] = mongo_row[FIELD_LAB_ID]
@@ -457,7 +458,7 @@ def create_cherrypicked_post_body(
             content["uuid"] = sample["uuid"]
         else:
             content[FIELD_SS_NAME] = sample[FIELD_SS_NAME]
-            content["phenotype"] = sample["phenotype"]
+            content[FIELD_SS_PHENOTYPE] = sample[FIELD_SS_PHENOTYPE]
             content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
             content[FIELD_SS_SAMPLE_DESCRIPTION] = sample[FIELD_SS_SAMPLE_DESCRIPTION]
             content["uuid"] = sample["uuid"]

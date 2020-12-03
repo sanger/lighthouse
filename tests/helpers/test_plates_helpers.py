@@ -33,6 +33,7 @@ from lighthouse.constants import (
     FIELD_SS_RESULT,
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_PHENOTYPE,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -251,56 +252,56 @@ def test_create_post_body(app, samples):
                     "wells": {
                         "A01": {
                             "content": {
-                                "phenotype": "positive",
+                                FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "abc",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM001",
                             }
                         },
                         "B01": {
                             "content": {
-                                "phenotype": "negative",
+                                FIELD_SS_PHENOTYPE: "negative",
                                 FIELD_SS_SUPPLIER_NAME: "def",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                             }
                         },
                         "C01": {
                             "content": {
-                                "phenotype": "void",
+                                FIELD_SS_PHENOTYPE: "void",
                                 FIELD_SS_SUPPLIER_NAME: "hij",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM003",
                             }
                         },
                         "D01": {
                             "content": {
-                                "phenotype": "limit of detection",
+                                FIELD_SS_PHENOTYPE: "limit of detection",
                                 FIELD_SS_SUPPLIER_NAME: "klm",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM004",
                             }
                         },
                         "E01": {
                             "content": {
-                                "phenotype": "positive",
+                                FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "nop",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM005",
                             }
                         },
                         "F01": {
                             "content": {
-                                "phenotype": "positive",
+                                FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "qrs",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM006",
                             }
                         },
                         "G01": {
                             "content": {
-                                "phenotype": "positive",
+                                FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "tuv",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM007",
                             }
                         },
                         "A02": {
                             "content": {
-                                "phenotype": "positive",
+                                FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "wxy",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "CBIQA_MCM008",
                             }
@@ -664,7 +665,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
             {
                 FIELD_SS_NAME: "rna_2",
                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
-                "phenotype": "positive",
+                FIELD_SS_PHENOTYPE: "positive",
                 FIELD_SS_SUPPLIER_NAME: "abcd",
                 "barcode": "d123",
                 "coordinate": "B02",
@@ -701,7 +702,7 @@ def test_create_cherrypicked_post_body(app):
             {
                 FIELD_SS_NAME: "rna_2",
                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
-                "phenotype": "positive",
+                FIELD_SS_PHENOTYPE: "positive",
                 FIELD_SS_SUPPLIER_NAME: "abcd",
                 "barcode": "123",
                 "coordinate": "B02",
@@ -743,7 +744,7 @@ def test_create_cherrypicked_post_body(app):
                         "B02": {
                             "content": {
                                 FIELD_SS_NAME: "rna_2",
-                                "phenotype": "positive",
+                                FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "abcd",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                                 "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
