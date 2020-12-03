@@ -634,12 +634,10 @@ def __ss_sample_friendly_name(sample):
 
 
 def __supplier_name_for_dart_control(dart_row):
-    args = {
-        "control_type": dart_row[FIELD_DART_CONTROL],
-        "source_barcode": dart_row[FIELD_DART_SOURCE_BARCODE],
-        "source_coordinate": dart_row[FIELD_DART_SOURCE_COORDINATE],
-    }
-    return "{control_type} control: {source_barcode}_{source_coordinate}".format(**args)
+    return (
+        f"{dart_row[FIELD_DART_CONTROL]} control: {dart_row[FIELD_DART_SOURCE_BARCODE]}_"
+        f"{dart_row[FIELD_DART_SOURCE_COORDINATE]}"
+    )
 
 
 def __mongo_source_plate_subjects(source_plates):
