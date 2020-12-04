@@ -38,7 +38,7 @@ def set_locations_in_labwhere(
     Arguments:
         labware_barcodes {List[str]} - The source plate barcodes
         location_barcode {str} - The barcode of the locations to which the labwares have been transferred.
-        user_barcode {str} - The swipecard/barcode for the user or robot associate with the scan.
+        user_barcode {str} - The swipecard/barcode for the user or robot associated with the scan.
 
 
     Returns:

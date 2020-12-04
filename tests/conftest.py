@@ -32,7 +32,6 @@ from .data.fixture_data import (
 
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,
-    PLATE_EVENT_SOURCE_NO_MAP_DATA,
     PLATE_EVENT_SOURCE_ALL_NEGATIVES,
 )
 from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table

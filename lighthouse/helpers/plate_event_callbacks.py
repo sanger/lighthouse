@@ -21,7 +21,7 @@ This file contains the following functions:
 """
 
 import logging
-from lighthouse.messages.message import Message
+from lighthouse.messages.message import Message # type: ignore
 from typing import Tuple, List
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,
@@ -48,13 +48,13 @@ def fire_callbacks(event: Message) -> Tuple[bool, List[str]]:
     return callback(event)
 
 
-def _no_callback(event: Message) -> Tuple[bool, List]:
+def _no_callback(event: Message) -> Tuple[bool, List[str]]:
     """Do nothing, but return a success"""
     logger.debug("_no_callback")
     return True, []
 
 
-def _labwhere_transfer_to_bin(event: Message) -> Tuple[bool, List]:
+def _labwhere_transfer_to_bin(event: Message) -> Tuple[bool, List[str]]:
     """Record a transfer of the cherrypicking_source_labware to the bin"""
     logger.debug("_labwhere_transfer_to_bin")
     try:
