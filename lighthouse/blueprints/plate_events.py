@@ -6,11 +6,10 @@ from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
 
 from lighthouse.messages.broker import Broker  # type: ignore
-from lighthouse.helpers.plate_events import (
-    construct_event_message,
-    get_routing_key,
-)
+from lighthouse.helpers.plate_events import construct_event_message
 from lighthouse.helpers.plate_event_callbacks import fire_callbacks
+from lighthouse.helpers.events import get_routing_key
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,14 +20,14 @@ CORS(bp)
 @bp.route("/plate-events/create", methods=["GET"])
 def create_plate_event() -> Tuple[Dict[str, Any], int]:
     try:
-        event_type = request.args.get("event_type", "")
-        logger.info(f"Attempting to publish an '{event_type}' plate event message")
-        if len(event_type) == 0:
+        event_type = request.args.get("event_type")
+        if not event_type:
             logger.error(
                 "Failed publishing plate event message: missing required 'event_type' parameter"
             )
             return {"errors": ["'event_type' is a required parameter"]}, HTTPStatus.BAD_REQUEST
 
+        logger.info(f"Attempting to publish an '{event_type}' plate event message")
         logger.info("Attempting to construct the plate event message")
         errors, message = construct_event_message(event_type, request.args)
         if len(errors) > 0:

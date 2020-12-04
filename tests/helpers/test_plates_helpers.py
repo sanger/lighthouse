@@ -3,8 +3,11 @@ from functools import partial
 from http import HTTPStatus
 
 import pytest
+from unittest.mock import patch
 import responses  # type: ignore
 from flask import current_app
+from datetime import datetime
+from uuid import uuid4
 from lighthouse.constants import (
     FIELD_COG_BARCODE,
     FIELD_DART_CONTROL,
@@ -19,8 +22,23 @@ from lighthouse.constants import (
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
+    FIELD_BARCODE,
+    FIELD_LH_SOURCE_PLATE_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    PLATE_EVENT_DESTINATION_CREATED,
+    PLATE_EVENT_DESTINATION_FAILED,
+    FIELD_SS_LAB_ID,
+    FIELD_SS_NAME,
+    FIELD_SS_RESULT,
+    FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_PHENOTYPE,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_UUID,
+    FIELD_SS_BARCODE,
+    FIELD_SS_COORDINATE,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
@@ -33,10 +51,8 @@ from lighthouse.helpers.plates import (
     find_sample_matching_row,
     find_samples,
     get_centre_prefix,
-    get_cherrypicked_samples_records,
     get_positive_samples,
     count_positive_samples,
-    get_samples,
     join_rows_with_samples,
     map_to_ss_columns,
     query_for_cherrypicked_samples,
@@ -45,9 +61,49 @@ from lighthouse.helpers.plates import (
     rows_with_controls,
     rows_without_controls,
     update_mlwh_with_cog_uk_ids,
+    get_unique_plate_barcodes,
+    query_for_source_plate_uuids,
+    get_source_plates_for_samples,
+    construct_cherrypicking_plate_failed_message,
+    find_source_plates,
 )
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
+
+
+# ---------- test helpers ----------
+
+
+@pytest.fixture
+def mock_event_helpers():
+    root = "lighthouse.helpers.plates"
+    with patch(f"{root}.get_robot_uuid") as mock_get_uuid:
+        with patch(f"{root}.construct_robot_message_subject") as mock_construct_robot:
+            with patch(
+                f"{root}.construct_destination_plate_message_subject"
+            ) as mock_construct_dest:
+                with patch(
+                    f"{root}.construct_mongo_sample_message_subject"
+                ) as mock_construct_sample:
+                    with patch(
+                        f"{root}.construct_source_plate_message_subject"
+                    ) as mock_construct_source:
+                        with patch(f"{root}.get_message_timestamp") as mock_get_timestamp:
+                            yield (
+                                mock_get_uuid,
+                                mock_construct_robot,
+                                mock_construct_dest,
+                                mock_construct_sample,
+                                mock_construct_source,
+                                mock_get_timestamp,
+                            )
+
+
+def any_failure_type(app):
+    return list(app.config["BECKMAN_FAILURE_TYPES"].keys())[0]
+
+
+# ---------- tests ----------
 
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
@@ -190,6 +246,7 @@ def test_centre_prefix(app, centres, mocked_responses):
 def test_create_post_body(app, samples):
     with app.app_context():
         barcode = "12345"
+
         correct_body = {
             "data": {
                 "type": "plates",
@@ -200,58 +257,58 @@ def test_create_post_body(app, samples):
                     "wells": {
                         "A01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "abc",
-                                "sample_description": "MCM001",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "abc",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM001",
                             }
                         },
                         "B01": {
                             "content": {
-                                "phenotype": "negative",
-                                "supplier_name": "def",
-                                "sample_description": "MCM002",
+                                FIELD_SS_PHENOTYPE: "negative",
+                                FIELD_SS_SUPPLIER_NAME: "def",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
                             }
                         },
                         "C01": {
                             "content": {
-                                "phenotype": "void",
-                                "supplier_name": "hij",
-                                "sample_description": "MCM003",
+                                FIELD_SS_PHENOTYPE: "void",
+                                FIELD_SS_SUPPLIER_NAME: "hij",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM003",
                             }
                         },
                         "D01": {
                             "content": {
-                                "phenotype": "limit of detection",
-                                "supplier_name": "klm",
-                                "sample_description": "MCM004",
+                                FIELD_SS_PHENOTYPE: "limit of detection",
+                                FIELD_SS_SUPPLIER_NAME: "klm",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM004",
                             }
                         },
                         "E01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "nop",
-                                "sample_description": "MCM005",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "nop",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM005",
                             }
                         },
                         "F01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "qrs",
-                                "sample_description": "MCM006",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "qrs",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM006",
                             }
                         },
                         "G01": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "tuv",
-                                "sample_description": "MCM007",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "tuv",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM007",
                             }
                         },
                         "A02": {
                             "content": {
-                                "phenotype": "positive",
-                                "supplier_name": "wxy",
-                                "sample_description": "CBIQA_MCM008",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "wxy",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "CBIQA_MCM008",
                             }
                         },
                     },
@@ -260,11 +317,6 @@ def test_create_post_body(app, samples):
         }
 
         assert create_post_body(barcode, samples) == correct_body
-
-
-def test_get_samples(app, samples):
-    with app.app_context():
-        assert len(get_samples("123")) == 8
 
 
 def test_get_positive_samples(app, samples):
@@ -425,9 +477,24 @@ def test_query_for_cherrypicked_samples_generates_list(app):
 
     assert query_for_cherrypicked_samples(test) == {
         "$or": [
-            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A01", FIELD_LAB_ID: "ABC"},
-            {FIELD_ROOT_SAMPLE_ID: "sample_1", FIELD_RNA_ID: "plate1:A02", FIELD_LAB_ID: "ABC"},
-            {FIELD_ROOT_SAMPLE_ID: "sample_2", FIELD_RNA_ID: "plate1:A03", FIELD_LAB_ID: "ABC"},
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_1",
+                FIELD_RNA_ID: "plate1:A01",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
+            },
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_1",
+                FIELD_RNA_ID: "plate1:A02",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
+            },
+            {
+                FIELD_ROOT_SAMPLE_ID: "sample_2",
+                FIELD_RNA_ID: "plate1:A03",
+                FIELD_LAB_ID: "ABC",
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
+            },
         ]
     }
 
@@ -563,23 +630,22 @@ def test_add_controls_to_samples(app, samples_different_plates):
     ]
 
 
-def test_check_matching_sample_numbers_raises_error(app, samples_different_plates):
-    with pytest.raises(UnmatchedSampleError):
+def test_check_matching_sample_numbers_returns_false_mismatch(app, samples_different_plates):
+    rows = [
+        DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow("DN1111", "A04", "DN2222", "C07", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow("DN1111", "A05", "DN2222", "C08", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
+        DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
+    ]
 
-        rows = [
-            DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-            DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-            DartRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
-            DartRow("DN1111", "A04", "DN2222", "C07", None, "sample_2", "plate1:A03", "ABC"),
-            DartRow("DN1111", "A05", "DN2222", "C08", None, "sample_2", "plate1:A03", "ABC"),
-            DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
-            DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
-        ]
-
-        check_matching_sample_numbers(rows, samples_different_plates)
+    result = check_matching_sample_numbers(rows, samples_different_plates)
+    assert result is False
 
 
-def test_check_matching_sample_numbers_passes(app, samples_different_plates):
+def test_check_matching_sample_numbers_returns_true_match(app, samples_different_plates):
     rows = [
         DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
         DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
@@ -587,70 +653,35 @@ def test_check_matching_sample_numbers_passes(app, samples_different_plates):
         DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
     ]
 
-    check_matching_sample_numbers(rows, samples_different_plates)
-
-
-def test_get_cherrypicked_samples_records(app, dart_seed_reset, samples_different_plates):
-    with app.app_context():
-
-        result = get_cherrypicked_samples_records("test1")
-
-        samples_different_plates[0]["_id"] = result[0]["sample"]["_id"]
-        samples_different_plates[1]["_id"] = result[1]["sample"]["_id"]
-
-        assert result[0]["sample"] == samples_different_plates[0]
-        assert result[1]["sample"] == samples_different_plates[1]
-
-        assert result == [
-            {
-                "row": {
-                    FIELD_DART_DESTINATION_BARCODE: "test1",
-                    FIELD_DART_DESTINATION_COORDINATE: "A01",
-                    FIELD_DART_SOURCE_BARCODE: "123",
-                    FIELD_DART_SOURCE_COORDINATE: "A01",
-                    FIELD_DART_CONTROL: None,
-                    FIELD_DART_ROOT_SAMPLE_ID: "MCM001",
-                    FIELD_DART_RNA_ID: "rna_1",
-                    FIELD_DART_LAB_ID: "Lab 1",
-                },
-                "sample": samples_different_plates[0],
-            },
-            {
-                "row": {
-                    FIELD_DART_DESTINATION_BARCODE: "test1",
-                    FIELD_DART_DESTINATION_COORDINATE: "B01",
-                    FIELD_DART_SOURCE_BARCODE: "456",
-                    FIELD_DART_SOURCE_COORDINATE: "A01",
-                    FIELD_DART_CONTROL: None,
-                    FIELD_DART_ROOT_SAMPLE_ID: "MCM002",
-                    FIELD_DART_RNA_ID: "rna_2",
-                    FIELD_DART_LAB_ID: "Lab 2",
-                },
-                "sample": samples_different_plates[1],
-            },
-        ]
+    result = check_matching_sample_numbers(rows, samples_different_plates)
+    assert result is True
 
 
 def test_map_to_ss_columns(app, dart_mongo_merged_samples):
     with app.app_context():
         correct_mapped_samples = [
             {
-                "control": True,
-                "control_type": "positive",
-                "barcode": "d123",
-                "coordinate": "B01",
+                FIELD_SS_CONTROL: True,
+                FIELD_SS_CONTROL_TYPE: "positive",
+                FIELD_SS_BARCODE: "d123",
+                FIELD_SS_COORDINATE: "B01",
+                FIELD_SS_SUPPLIER_NAME: "positive control: 123_A01",
             },
             {
-                "name": "rna_2",
-                "sample_description": "MCM002",
-                "phenotype": "positive",
-                "supplier_name": "abcd",
-                "barcode": "d123",
-                "coordinate": "B02",
+                FIELD_SS_NAME: "rna_2",
+                FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
+                FIELD_SS_PHENOTYPE: "positive",
+                FIELD_SS_SUPPLIER_NAME: "abcd",
+                FIELD_SS_BARCODE: "d123",
+                FIELD_SS_COORDINATE: "B02",
+                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                FIELD_SS_LAB_ID: "AP",
+                FIELD_SS_RESULT: "Positive",
             },
         ]
-
-        assert map_to_ss_columns(dart_mongo_merged_samples) == correct_mapped_samples
+        result = map_to_ss_columns(dart_mongo_merged_samples)
+        del result[0][FIELD_SS_UUID]
+        assert result == correct_mapped_samples
 
 
 def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
@@ -662,53 +693,575 @@ def test_map_to_ss_columns_missing_value(app, dart_mongo_merged_samples):
 
 def test_create_cherrypicked_post_body(app):
     with app.app_context():
-        barcode = "d123"
+        barcode = "123"
+        user_id = "my_user"
         mapped_samples = [
             {
-                "control": True,
-                "control_type": "positive",
-                "barcode": "d123",
-                "coordinate": "B01",
+                FIELD_SS_CONTROL: True,
+                FIELD_SS_CONTROL_TYPE: "Positive",
+                FIELD_SS_BARCODE: "123",
+                FIELD_SS_COORDINATE: "B01",
+                FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
+                FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
             {
-                "name": "rna_2",
-                "sample_description": "MCM002",
-                "phenotype": "positive",
-                "supplier_name": "abcd",
-                "barcode": "d123",
-                "coordinate": "B02",
+                FIELD_SS_NAME: "rna_2",
+                FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
+                FIELD_SS_PHENOTYPE: "positive",
+                FIELD_SS_SUPPLIER_NAME: "abcd",
+                FIELD_SS_BARCODE: "123",
+                FIELD_SS_COORDINATE: "B02",
+                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                FIELD_SS_LAB_ID: "AP",
+                FIELD_SS_RESULT: "Positive",
             },
         ]
+
+        robot_serial_number = "BKRB0001"
+
+        source_plates = [
+            {
+                FIELD_BARCODE: "123",
+                FIELD_LH_SOURCE_PLATE_UUID: "a17c38cd-b2df-43a7-9896-582e7855b4cc",
+            },
+            {
+                FIELD_BARCODE: "456",
+                FIELD_LH_SOURCE_PLATE_UUID: "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+            },
+        ]
+
         correct_body = {
             "data": {
                 "type": "plates",
                 "attributes": {
-                    "barcode": "d123",
+                    "barcode": "123",
                     "purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
                     "study_uuid": current_app.config["SS_UUID_STUDY_CHERRYPICKED"],
                     "wells": {
                         "B01": {
                             "content": {
-                                "control": True,
-                                "control_type": "positive",
+                                FIELD_SS_CONTROL: True,
+                                FIELD_SS_CONTROL_TYPE: "Positive",
+                                FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
+                                FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
                         },
                         "B02": {
                             "content": {
-                                "name": "rna_2",
-                                "phenotype": "positive",
-                                "supplier_name": "abcd",
-                                "sample_description": "MCM002",
+                                FIELD_SS_NAME: "rna_2",
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "abcd",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
+                                FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                             }
                         },
                     },
+                    "events": [
+                        {
+                            "event": {
+                                "user_identifier": "my_user",
+                                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                                "subjects": [
+                                    {
+                                        "role_type": "robot",
+                                        "subject_type": "robot",
+                                        "friendly_name": "BKRB0001",
+                                        "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b",
+                                    },
+                                    {
+                                        "role_type": "cherrypicking_source_labware",
+                                        "subject_type": "plate",
+                                        "friendly_name": "123",
+                                        "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
+                                    },
+                                    {
+                                        "role_type": "cherrypicking_source_labware",
+                                        "subject_type": "plate",
+                                        "friendly_name": "456",
+                                        "uuid": "785a87bd-6f5a-4340-b753-b05c0603fa5e",
+                                    },
+                                    {
+                                        "role_type": "control",
+                                        "subject_type": "sample",
+                                        "friendly_name": "Positive control: 123_B01",
+                                        "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
+                                    },
+                                    {
+                                        "role_type": "sample",
+                                        "subject_type": "sample",
+                                        "friendly_name": "MCM002__rna_2__AP__Positive",
+                                        "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
+                                    },
+                                ],
+                                "metadata": {},
+                                "lims": app.config["RMQ_LIMS_ID"],
+                            },
+                        },
+                    ],
                 },
-            }
+            },
         }
 
-        assert create_cherrypicked_post_body(barcode, mapped_samples) == correct_body
+        assert (
+            create_cherrypicked_post_body(
+                user_id, barcode, mapped_samples, robot_serial_number, source_plates
+            )
+            == correct_body
+        )
 
 
 def test_find_samples_returns_none_if_no_query_provided(app):
     with app.app_context():
         assert find_samples(None) is None
+
+
+def test_get_unique_plate_barcodes(app, samples_different_plates):
+    correct_barcodes = ["123", "456"]
+
+    samples = [
+        samples_different_plates[0],
+        samples_different_plates[0],
+        samples_different_plates[1],
+        samples_different_plates[1],
+    ]
+
+    result = get_unique_plate_barcodes(samples)
+    assert len(result) == len(correct_barcodes)
+    for barcode in correct_barcodes:
+        assert barcode in result
+
+
+def test_query_for_source_plate_uuids(app):
+    correct_query = {
+        "$or": [
+            {FIELD_BARCODE: "123"},
+            {FIELD_BARCODE: "456"},
+        ]
+    }
+    barcodes = ["123", "456"]
+
+    assert query_for_source_plate_uuids(barcodes) == correct_query
+
+
+def test_query_for_source_plate_uuids_returns_none(app):
+    barcodes = []
+
+    assert query_for_source_plate_uuids(barcodes) is None
+    assert query_for_source_plate_uuids(None) is None
+
+
+def test_find_source_plates_returns_none(app):
+    assert find_source_plates(None) is None
+
+
+def test_get_source_plates_for_samples(app, samples_different_plates, source_plates):
+    with app.app_context():
+        samples = [
+            samples_different_plates[0],
+            samples_different_plates[0],
+            samples_different_plates[1],
+            samples_different_plates[1],
+        ]
+
+        results = get_source_plates_for_samples(samples)
+        assert len(results) == 2
+        for result in results:
+            source_plate = next(
+                plate for plate in source_plates if result[FIELD_BARCODE] == plate[FIELD_BARCODE]
+            )
+            assert source_plate is not None
+            assert source_plate[FIELD_LH_SOURCE_PLATE_UUID] == result[FIELD_LH_SOURCE_PLATE_UUID]
+
+
+# ---------- construct_cherrypicking_plate_failed_message tests ----------
+
+
+def test_construct_cherrypicking_plate_failed_message_unknown_robot_fails(mock_event_helpers):
+    mock_get_uuid, _, _, _, _, _ = mock_event_helpers
+    mock_get_uuid.return_value = None
+    errors, message = construct_cherrypicking_plate_failed_message(
+        "plate_1", "test_user", "BKRB0001", "robot_crashed"
+    )
+
+    assert message is None
+    assert len(errors) == 1
+    assert "An unexpected error occurred attempting to construct the cherrypicking plate "
+    "failed event message" in errors
+
+
+def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure(app, mock_event_helpers):
+    (
+        mock_get_uuid,
+        mock_robot_subject,
+        mock_dest_subject,
+        _,
+        _,
+        mock_get_timestamp,
+    ) = mock_event_helpers
+    test_robot_uuid = "test robot uuid"
+    mock_get_uuid.return_value = test_robot_uuid
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_robot_subject.return_value = test_robot_subject
+    test_dest_subject = {"test dest plate": "this is a destination plate"}
+    mock_dest_subject.return_value = test_dest_subject
+    test_timestamp = datetime.now()
+    mock_get_timestamp.return_value = test_timestamp
+    with app.app_context():
+        test_uuid = uuid4()
+        with patch("lighthouse.helpers.plates.uuid4", return_value=test_uuid):
+            with patch(
+                "lighthouse.helpers.plates.find_dart_source_samples_rows",
+                side_effect=Exception("Boom!"),
+            ):
+                with patch("lighthouse.helpers.plates.Message") as mock_message:
+                    test_barcode = "plate_1"
+                    test_user = "test_user_id"
+                    test_robot_serial_number = "12345"
+                    test_failure_type = any_failure_type(app)
+                    errors, _ = construct_cherrypicking_plate_failed_message(
+                        test_barcode, test_user, test_robot_serial_number, test_failure_type
+                    )
+
+                    # assert expected calls
+                    mock_robot_subject.assert_called_with(test_robot_serial_number, test_robot_uuid)
+                    mock_dest_subject.assert_called_with(test_barcode)
+
+                    # assert expected return values
+                    assert len(errors) == 1
+                    assert (
+                        "There was an error connecting to DART for destination plate "
+                        f"'{test_barcode}'. As this may be due to the failure you are reporting, "
+                        "a destination plate failure has still been recorded, but without sample "
+                        "and source plate information"
+                    ) in errors[0]
+                    args, _ = mock_message.call_args
+                    message_content = args[0]
+
+                    assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+
+                    event = message_content["event"]
+                    assert event["uuid"] == str(test_uuid)
+                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["occured_at"] == test_timestamp
+                    assert event["user_identifier"] == test_user
+
+                    subjects = event["subjects"]
+                    assert len(subjects) == 2
+                    assert test_robot_subject in subjects  # robot subject
+                    assert test_dest_subject in subjects  # destination plate subject
+
+                    metadata = event["metadata"]
+                    assert metadata == {"failure_type": test_failure_type}
+
+
+def test_construct_cherrypicking_plate_failed_message_none_dart_samples(app, mock_event_helpers):
+    (
+        mock_get_uuid,
+        mock_robot_subject,
+        mock_dest_subject,
+        _,
+        _,
+        mock_get_timestamp,
+    ) = mock_event_helpers
+    test_robot_uuid = "test robot uuid"
+    mock_get_uuid.return_value = test_robot_uuid
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_robot_subject.return_value = test_robot_subject
+    test_dest_subject = {"test dest plate": "this is a destination plate"}
+    mock_dest_subject.return_value = test_dest_subject
+    test_timestamp = datetime.now()
+    mock_get_timestamp.return_value = test_timestamp
+    with app.app_context():
+        test_uuid = uuid4()
+        with patch("lighthouse.helpers.plates.uuid4", return_value=test_uuid):
+            with patch(
+                "lighthouse.helpers.plates.find_dart_source_samples_rows", return_value=None
+            ):
+                with patch("lighthouse.helpers.plates.Message") as mock_message:
+                    test_barcode = "plate_1"
+                    test_user = "test_user_id"
+                    test_robot_serial_number = "12345"
+                    test_failure_type = any_failure_type(app)
+                    errors, _ = construct_cherrypicking_plate_failed_message(
+                        test_barcode, test_user, test_robot_serial_number, test_failure_type
+                    )
+
+                    # assert expected calls
+                    mock_robot_subject.assert_called_with(test_robot_serial_number, test_robot_uuid)
+                    mock_dest_subject.assert_called_with(test_barcode)
+
+                    # assert expected return values
+                    assert len(errors) == 1
+                    assert (
+                        "There was an error connecting to DART for destination plate "
+                        f"'{test_barcode}'. As this may be due to the failure you are reporting, "
+                        "a destination plate failure has still been recorded, but without sample "
+                        "and source plate information"
+                    ) in errors[0]
+                    args, _ = mock_message.call_args
+                    message_content = args[0]
+
+                    assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+
+                    event = message_content["event"]
+                    assert event["uuid"] == str(test_uuid)
+                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["occured_at"] == test_timestamp
+                    assert event["user_identifier"] == test_user
+
+                    subjects = event["subjects"]
+                    assert len(subjects) == 2
+                    assert test_robot_subject in subjects  # robot subject
+                    assert test_dest_subject in subjects  # destination plate subject
+
+                    metadata = event["metadata"]
+                    assert metadata == {"failure_type": test_failure_type}
+
+
+def test_construct_cherrypicking_plate_failed_message_empty_dart_samples(app, mock_event_helpers):
+    (
+        mock_get_uuid,
+        mock_robot_subject,
+        mock_dest_subject,
+        _,
+        _,
+        mock_get_timestamp,
+    ) = mock_event_helpers
+    test_robot_uuid = "test robot uuid"
+    mock_get_uuid.return_value = test_robot_uuid
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_robot_subject.return_value = test_robot_subject
+    test_dest_subject = {"test dest plate": "this is a destination plate"}
+    mock_dest_subject.return_value = test_dest_subject
+    test_timestamp = datetime.now()
+    mock_get_timestamp.return_value = test_timestamp
+    with app.app_context():
+        test_uuid = uuid4()
+        with patch("lighthouse.helpers.plates.uuid4", return_value=test_uuid):
+            with patch("lighthouse.helpers.plates.find_dart_source_samples_rows", return_value=[]):
+                with patch("lighthouse.helpers.plates.Message") as mock_message:
+                    test_barcode = "plate_1"
+                    test_user = "test_user_id"
+                    test_robot_serial_number = "12345"
+                    test_failure_type = any_failure_type(app)
+                    errors, _ = construct_cherrypicking_plate_failed_message(
+                        test_barcode, test_user, test_robot_serial_number, test_failure_type
+                    )
+
+                    # assert expected calls
+                    mock_robot_subject.assert_called_with(test_robot_serial_number, test_robot_uuid)
+                    mock_dest_subject.assert_called_with(test_barcode)
+
+                    # assert expected return values
+                    assert len(errors) == 1
+                    assert (
+                        f"No samples were found in DART for destination plate '{test_barcode}'. "
+                        "As this may be due to the failure you are reporting, a destination plate "
+                        "failure has still been recorded, but without sample and source plate "
+                        "information"
+                    ) in errors[0]
+                    args, _ = mock_message.call_args
+                    message_content = args[0]
+
+                    assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+
+                    event = message_content["event"]
+                    assert event["uuid"] == str(test_uuid)
+                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["occured_at"] == test_timestamp
+                    assert event["user_identifier"] == test_user
+
+                    subjects = event["subjects"]
+                    assert len(subjects) == 2
+                    assert test_robot_subject in subjects  # robot subject
+                    assert test_dest_subject in subjects  # destination plate subject
+
+                    metadata = event["metadata"]
+                    assert metadata == {"failure_type": test_failure_type}
+
+
+def test_construct_cherrypicking_plate_failed_message_mongo_samples_fetch_failure(
+    app, dart_samples_for_bp_test, mock_event_helpers
+):
+    with app.app_context():
+        with patch("lighthouse.helpers.plates.app.data.driver.db.samples") as samples_collection:
+            samples_collection.find.side_effect = Exception("Boom!")
+            errors, message = construct_cherrypicking_plate_failed_message(
+                "plate_1", "test_user", "12345", "robot_crashed"
+            )
+
+            assert message is None
+            assert len(errors) == 1
+            assert "An unexpected error occurred attempting to construct the cherrypicking plate "
+            "failed event message" in errors
+
+
+def test_construct_cherrypicking_plate_failed_message_none_mongo_samples(
+    app, dart_samples_for_bp_test, mock_event_helpers
+):
+    with app.app_context():
+        with patch("lighthouse.helpers.plates.query_for_cherrypicked_samples", return_value=None):
+            barcode = "plate_1"
+            errors, message = construct_cherrypicking_plate_failed_message(
+                barcode, "test_user", "12345", "robot_crashed"
+            )
+
+            assert message is None
+            assert len(errors) == 1
+            assert (
+                f"No sample data found in Mongo matching DART samples in plate '{barcode}'"
+                in errors
+            )
+
+
+def test_construct_cherrypicking_plate_failed_message_samples_not_in_mongo(
+    app, dart_samples_for_bp_test, mock_event_helpers
+):
+    with app.app_context():
+        with patch("lighthouse.helpers.plates.app.data.driver.db.samples") as samples_collection:
+            samples_collection.find.return_value = []
+            barcode = "plate_1"
+            errors, message = construct_cherrypicking_plate_failed_message(
+                barcode, "test_user", "BKRB0001", "robot_crashed"
+            )
+
+            assert message is None
+            assert len(errors) == 1
+            assert f"Mismatch in destination and source sample data for plate '{barcode}'" in errors
+
+
+def test_construct_cherrypicking_plate_failed_message_mongo_source_plates_fetch_failure(
+    app, dart_samples_for_bp_test, samples_with_uuids, mock_event_helpers
+):
+    with app.app_context():
+        with patch(
+            "lighthouse.helpers.plates.app.data.driver.db.source_plates"
+        ) as source_plates_collection:
+            source_plates_collection.find.side_effect = Exception("Boom!")
+            errors, message = construct_cherrypicking_plate_failed_message(
+                "plate_1", "test_user", "12345", "robot_crashed"
+            )
+
+            assert message is None
+            assert len(errors) == 1
+            assert "An unexpected error occurred attempting to construct the cherrypicking plate "
+            "failed event message" in errors
+
+
+def test_construct_cherrypicking_plate_failed_message_none_mongo_source_plates(
+    app, dart_samples_for_bp_test, samples_with_uuids, mock_event_helpers
+):
+    with app.app_context():
+        with patch("lighthouse.helpers.plates.query_for_source_plate_uuids", return_value=None):
+            barcode = "plate_1"
+            errors, message = construct_cherrypicking_plate_failed_message(
+                barcode, "test_user", "BKRB0001", "robot_crashed"
+            )
+
+            assert message is None
+            assert len(errors) == 1
+            assert (
+                f"No source plate data found in Mongo for DART samples in plate '{barcode}'"
+                in errors
+            )
+
+
+def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo(
+    app, dart_samples_for_bp_test, samples_with_uuids, mock_event_helpers
+):
+    with app.app_context():
+        with patch(
+            "lighthouse.helpers.plates.app.data.driver.db.source_plates"
+        ) as source_plates_collection:
+            source_plates_collection.find.return_value = []
+            barcode = "plate_1"
+            errors, message = construct_cherrypicking_plate_failed_message(
+                barcode, "test_user", "BKRB0001", "robot_crashed"
+            )
+
+            assert message is None
+            assert len(errors) == 1
+            assert (
+                f"No source plate data found in Mongo for DART samples in plate '{barcode}'"
+                in errors
+            )
+
+
+def test_construct_cherrypicking_plate_failed_message_success(
+    app, dart_samples_for_bp_test, samples_with_uuids, source_plates, mock_event_helpers
+):
+    (
+        mock_get_uuid,
+        mock_robot_subject,
+        mock_dest_subject,
+        mock_sample_subject,
+        mock_source_subject,
+        mock_get_timestamp,
+    ) = mock_event_helpers
+    test_robot_uuid = "test robot uuid"
+    mock_get_uuid.return_value = test_robot_uuid
+    test_robot_subject = {"test robot": "this is a robot"}
+    mock_robot_subject.return_value = test_robot_subject
+    test_dest_subject = {"test dest plate": "this is a destination plate"}
+    mock_dest_subject.return_value = test_dest_subject
+    test_sample_subject = {"test sample": "this is a sample subject"}
+    mock_sample_subject.return_value = test_sample_subject
+    test_source_subject = {"test source plate": "this is a source plate subject"}
+    mock_source_subject.return_value = test_source_subject
+    test_timestamp = datetime.now()
+    mock_get_timestamp.return_value = test_timestamp
+    with app.app_context():
+        test_uuid = uuid4()
+        with patch("lighthouse.helpers.plates.uuid4", return_value=test_uuid):
+            with patch("lighthouse.helpers.plates.Message") as mock_message:
+                test_barcode = "plate_1"
+                test_user = "test_user_id"
+                test_robot_serial_number = "12345"
+                test_failure_type = any_failure_type(app)
+                errors, _ = construct_cherrypicking_plate_failed_message(
+                    test_barcode, test_user, test_robot_serial_number, test_failure_type
+                )
+
+                # assert expected calls
+                mock_robot_subject.assert_called_with(test_robot_serial_number, test_robot_uuid)
+                mock_dest_subject.assert_called_with(test_barcode)
+                mock_source_subject.assert_called_with(
+                    "123", "a17c38cd-b2df-43a7-9896-582e7855b4cc"
+                )
+
+                root_sample_ids = ["MCM001", "MCM006"]
+                expected_samples = list(
+                    filter(lambda x: x[FIELD_ROOT_SAMPLE_ID] in root_sample_ids, samples_with_uuids)
+                )
+                assert len(root_sample_ids) == len(expected_samples)  # sanity check
+                for args, _ in mock_sample_subject.call_args_list:
+                    assert args[0] in expected_samples
+
+                # assert expected return values
+                assert len(errors) == 0
+                args, _ = mock_message.call_args
+                message_content = args[0]
+
+                assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+
+                event = message_content["event"]
+                assert event["uuid"] == str(test_uuid)
+                assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                assert event["occured_at"] == test_timestamp
+                assert event["user_identifier"] == test_user
+
+                subjects = event["subjects"]
+                assert len(subjects) == 6
+                assert test_robot_subject in subjects  # robot subject
+                assert test_dest_subject in subjects  # destination plate subject
+                assert {  # control sample subject
+                    "role_type": "control",
+                    "subject_type": "sample",
+                    "friendly_name": "positive control: 789_B01",
+                    "uuid": str(test_uuid),
+                } in subjects
+                assert subjects.count(test_sample_subject) == 2  # sample subjects
+                assert test_source_subject in subjects  # source plate subject
+
+                metadata = event["metadata"]
+                assert metadata == {"failure_type": test_failure_type}

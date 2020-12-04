@@ -83,14 +83,17 @@ def test_get_create_plate_event_endpoint_internal_error_failed_callback(client):
 
 def test_get_create_plate_event_endpoint_success(client):
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
-        with patch("lighthouse.blueprints.plate_events.Broker") as mock_broker:
-            with patch("lighthouse.blueprints.plate_events.fire_callbacks") as mock_callback:
-                test_message = Message("test message content")
-                mock_construct.return_value = [], test_message
-                mock_callback.return_value = True, []
+        routing_key = "test.routing.key"
+        with patch("lighthouse.blueprints.plate_events.get_routing_key", return_value=routing_key):
+            with patch("lighthouse.blueprints.plate_events.Broker") as mock_broker:
+                with patch("lighthouse.blueprints.plate_events.fire_callbacks") as mock_callback:
+                    test_message = Message("test message content")
+                    mock_construct.return_value = [], test_message
+                    mock_callback.return_value = True, []
 
-                response = client.get("/plate-events/create?event_type=test_event_type")
+                    response = client.get("/plate-events/create?event_type=test_event_type")
 
-                mock_broker().close_connection.assert_called()
-                assert response.status_code == HTTPStatus.OK
-                assert len(response.json["errors"]) == 0
+                    mock_broker().publish.assert_called_with(test_message, routing_key)
+                    mock_broker().close_connection.assert_called()
+                    assert response.status_code == HTTPStatus.OK
+                    assert len(response.json["errors"]) == 0

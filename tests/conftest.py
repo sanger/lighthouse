@@ -174,6 +174,20 @@ def samples_no_declaration(app):
 
 
 @pytest.fixture
+def source_plates(app):
+    with app.app_context():
+        source_plates_collection = app.data.driver.db.source_plates
+        _ = source_plates_collection.insert_many(SOURCE_PLATES)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SOURCE_PLATES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        source_plates_collection.delete_many({})
+
+
+@pytest.fixture
 def mocked_responses():
     with responses.RequestsMock() as rsps:
         yield rsps
@@ -384,20 +398,6 @@ def event_wh_sql_engine(app):
     return create_mysql_connection_engine(
         app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"]
     )
-
-
-@pytest.fixture
-def source_plates(app):
-    with app.app_context():
-        source_plates_collection = app.data.driver.db.source_plates
-        _ = source_plates_collection.insert_many(SOURCE_PLATES)
-
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SOURCE_PLATES)
-
-    # clear up after the fixture is used
-    with app.app_context():
-        source_plates_collection.delete_many({})
 
 
 @pytest.fixture
