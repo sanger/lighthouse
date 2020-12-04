@@ -170,7 +170,7 @@ def get_locations_from_labwhere(labware_barcodes):
     """
 
     return requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode",
+        f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode?known=true",
         json={"barcodes": labware_barcodes},
     )
 
