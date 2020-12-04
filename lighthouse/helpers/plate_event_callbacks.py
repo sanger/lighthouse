@@ -21,7 +21,7 @@ This file contains the following functions:
 """
 
 import logging
-from lighthouse.messages.message import Message # type: ignore
+from lighthouse.messages.message import Message  # type: ignore
 from typing import Tuple, List
 from lighthouse.constants import (
     PLATE_EVENT_SOURCE_COMPLETED,

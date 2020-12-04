@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from unittest.mock import patch
-from lighthouse.messages.message import Message # type: ignore
+from lighthouse.messages.message import Message  # type: ignore
 
 
 def test_get_create_plate_event_endpoint_bad_request_no_event_type(client):

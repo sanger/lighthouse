@@ -2,7 +2,8 @@
 
 This file contains the following functions:
 
-  * get_locations_from_labwhere - Make an API call to labwhere
+  * get_locations_from_labwhere - Make an API call to labwhere to get locations
+  * set_locations_in_labwhere - Make an API call to labwhere to update locations
 """
 
 import requests
