@@ -277,7 +277,7 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
         assert message is None
 
 
-def test_construct_source_plate_no_map_data_message_errors_without_source_plate_uuid(
+def test_construct_source_plate_no_map_data_message_source_plate_uuid_is_optional(
     app, mock_robot_helpers, mock_get_source_plate_uuid
 ):
     mock_get_source_plate_uuid.return_value = None
@@ -285,9 +285,15 @@ def test_construct_source_plate_no_map_data_message_errors_without_source_plate_
         test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
         errors, message = construct_source_plate_no_map_data_message(test_params)
 
-        assert len(errors) == 1
-        assert "Unable to determine a uuid for source plate" in errors[0]
-        assert message is None
+        assert len(errors) == 0
+        event = message["event"]
+        assert event["uuid"] is not None
+        assert event["event_type"] == PLATE_EVENT_SOURCE_NO_MAP_DATA
+        assert event["occured_at"] is not None
+        assert event["user_identifier"] == "test_user"
+
+        subjects = event["subjects"]
+        assert len(subjects) == 2
 
 
 def test_construct_source_plate_no_map_data_message_creates_expected_message(
