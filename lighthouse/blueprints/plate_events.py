@@ -7,7 +7,9 @@ from flask_cors import CORS  # type: ignore
 
 from lighthouse.messages.broker import Broker  # type: ignore
 from lighthouse.helpers.plate_events import construct_event_message
+from lighthouse.helpers.plate_event_callbacks import fire_callbacks
 from lighthouse.helpers.events import get_routing_key
+
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +47,16 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
             broker.publish(message, routing_key)
             broker.close_connection()
             logger.info(f"Successfully published a '{event_type}' plate event message")
-            return ({"errors": []}, HTTPStatus.OK)
+            success, messages = fire_callbacks(message)
+            if success:
+                return ({"errors": []}, HTTPStatus.OK)
+            else:
+                logger.error("Failed to update labwhere", messages)
+                return ({"errors": messages}, HTTPStatus.INTERNAL_SERVER_ERROR)
         except Exception:
             broker.close_connection()
             raise
+
     except Exception as e:
         logger.error("Failed publishing plate event message: an unexpected error occurred")
         logger.exception(e)
