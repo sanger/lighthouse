@@ -142,10 +142,6 @@ def construct_source_plate_no_map_data_message(
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
-        source_plate_uuid = get_source_plate_uuid(barcode)
-        if source_plate_uuid is None:
-            return [f"Unable to determine a uuid for source plate '{barcode}'"], None
-
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
@@ -154,9 +150,8 @@ def construct_source_plate_no_map_data_message(
                 "user_identifier": user_id,
                 "subjects": [
                     construct_robot_message_subject(robot_serial_number, robot_uuid),
-                    construct_source_plate_message_subject(barcode, source_plate_uuid),
                 ],
-                "metadata": {},
+                "metadata": {"source_plate_barcode": barcode},
             },
             "lims": app.config["RMQ_LIMS_ID"],
         }

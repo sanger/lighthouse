@@ -264,32 +264,6 @@ def test_construct_source_plate_no_map_data_message_errors_without_robot_uuid(mo
     assert message is None
 
 
-def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_plate_uuid(
-    app, mock_robot_helpers, mock_get_source_plate_uuid
-):
-    mock_get_source_plate_uuid.side_effect = Exception("Boom!")
-    with app.app_context():
-        test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
-        errors, message = construct_source_plate_no_map_data_message(test_params)
-
-        assert len(errors) == 1
-        assert "An unexpected error occurred" in errors[0]
-        assert message is None
-
-
-def test_construct_source_plate_no_map_data_message_errors_without_source_plate_uuid(
-    app, mock_robot_helpers, mock_get_source_plate_uuid
-):
-    mock_get_source_plate_uuid.return_value = None
-    with app.app_context():
-        test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
-        errors, message = construct_source_plate_no_map_data_message(test_params)
-
-        assert len(errors) == 1
-        assert "Unable to determine a uuid for source plate" in errors[0]
-        assert message is None
-
-
 def test_construct_source_plate_no_map_data_message_creates_expected_message(
     app, mock_robot_helpers, mock_get_source_plate_uuid
 ):
@@ -297,38 +271,35 @@ def test_construct_source_plate_no_map_data_message_creates_expected_message(
     test_robot_subject = {"test robot": "this is a robot"}
     mock_construct.return_value = test_robot_subject
     with app.app_context():
-        test_source_plate_subject = {"test source plate": "this is a source plate"}
-        with patch(
-            "lighthouse.helpers.plate_events.construct_source_plate_message_subject",
-            return_value=test_source_plate_subject,
-        ):
-            with patch("lighthouse.helpers.plate_events.Message") as mock_message:
-                test_barcode = "ABC123"
-                test_user_id = "test_user"
-                test_params = {
-                    "barcode": test_barcode,
-                    "user_id": test_user_id,
-                    "robot": "12345",
-                }
-                errors, _ = construct_source_plate_no_map_data_message(test_params)
+        with patch("lighthouse.helpers.plate_events.Message") as mock_message:
+            test_barcode = "ABC123"
+            test_user_id = "test_user"
+            test_params = {
+                "barcode": test_barcode,
+                "user_id": test_user_id,
+                "robot": "12345",
+            }
+            errors, _ = construct_source_plate_no_map_data_message(test_params)
 
-                assert len(errors) == 0
+            assert len(errors) == 0
 
-                args, _ = mock_message.call_args
-                message_content = args[0]
+            args, _ = mock_message.call_args
+            message_content = args[0]
 
-                assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
+            assert message_content["lims"] == app.config["RMQ_LIMS_ID"]
 
-                event = message_content["event"]
-                assert event["uuid"] is not None
-                assert event["event_type"] == PLATE_EVENT_SOURCE_NO_MAP_DATA
-                assert event["occured_at"] is not None
-                assert event["user_identifier"] == test_user_id
+            event = message_content["event"]
+            assert event["uuid"] is not None
+            assert event["event_type"] == PLATE_EVENT_SOURCE_NO_MAP_DATA
+            assert event["occured_at"] is not None
+            assert event["user_identifier"] == test_user_id
 
-                subjects = event["subjects"]
-                assert len(subjects) == 2
-                assert test_robot_subject in subjects  # robot subject
-                assert test_source_plate_subject in subjects  # source plate subject
+            subjects = event["subjects"]
+            assert len(subjects) == 1
+            assert test_robot_subject in subjects  # robot subject
+
+            metadata = event["metadata"]
+            assert metadata == {"source_plate_barcode": test_barcode}
 
 
 # ---------- construct_source_plate_all_negatives_message tests ----------
