@@ -2,7 +2,12 @@ from http import HTTPStatus
 from unittest.mock import patch
 
 import pandas as pd
-from lighthouse.constants import FIELD_COORDINATE, FIELD_PLATE_BARCODE, FIELD_ROOT_SAMPLE_ID
+from lighthouse.constants import (
+    FIELD_COORDINATE,
+    FIELD_PLATE_BARCODE,
+    FIELD_ROOT_SAMPLE_ID,
+    REPORT_COLUMNS,
+)
 
 
 def test_get_reports_endpoint(client):
@@ -49,6 +54,27 @@ def test_create_report(
                 ):
                     response = client.post("/reports/new")
                     assert response.json == {"reports": "Some details of a report"}
+
+
+def test_report_columns(
+    client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations
+):
+    with app.app_context():
+        test_xlsx = "test.xlsx"
+        test_path = f"{tmp_path}/{test_xlsx}"
+        with patch(
+            "lighthouse.jobs.reports.get_new_report_name_and_path",
+            return_value=[test_xlsx, test_path],
+        ):
+            with patch(
+                "lighthouse.blueprints.reports.get_reports_details",
+                return_value=(report_details := "Some details of a report"),
+            ):
+                response = client.post("/reports/new")
+                assert response.json == {"reports": report_details}
+
+                data_frame = pd.read_excel(test_path)
+                assert sorted(data_frame.columns) == sorted(REPORT_COLUMNS)
 
 
 def test_delete_reports_endpoint(client):

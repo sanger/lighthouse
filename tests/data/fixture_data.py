@@ -162,7 +162,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_LH_SAMPLE_UUID: "8e595a92-6798-4c93-8dc8-44f3ffb8bed3",
         FIELD_DATE_TESTED: "2020-05-10 07:30:00 UTC",
     },
-    {  #  positive, with low Ct values
+    {  #  positive, with low Ct values
         FIELD_COORDINATE: "E01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
@@ -176,7 +176,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_LH_SAMPLE_UUID: "2184f5df-fdbb-4dcb-8bec-9f86450e0c82",
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
-    {  #  positive, with high Ct values
+    {  #  positive, with high Ct values
         FIELD_COORDINATE: "F01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
@@ -190,7 +190,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_LH_SAMPLE_UUID: "16dbdac1-ffe9-4d3d-92be-3a77c1e4c65e",
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
-    {  #  positive, with mix of Ct values
+    {  #  positive, with mix of Ct values
         FIELD_COORDINATE: "G01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
@@ -204,7 +204,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_LH_SAMPLE_UUID: "502a44a7-e4b4-4ad6-8e4c-3cfae35193d8",
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
-    {  #  positive, with disallowed Root Sample ID
+    {  #  positive, with disallowed Root Sample ID
         FIELD_COORDINATE: "A02",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",

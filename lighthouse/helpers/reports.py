@@ -3,13 +3,20 @@ import math
 import os
 import pathlib
 import re
+import pandas as pd  # type: ignore
+
+
+# we only need the create_engine method
+# but that can't be mocked
+# can't seem to mock it at the top because
+# it is outside the app context
+import sqlalchemy  # type: ignore
+
 from datetime import datetime, timedelta
-from http import HTTPStatus
 from typing import Dict, List, Tuple
+from http import HTTPStatus
 from lighthouse.helpers.labwhere import get_locations_from_labwhere
 
-import pandas as pd  # type: ignore
-import sqlalchemy  # type: ignore
 from flask import current_app as app
 from lighthouse.constants import (
     FIELD_COORDINATE,
@@ -406,7 +413,6 @@ def join_samples_declarations(positive_samples):
 
 def report_query_window_start() -> datetime:
     """Return the start date for the report window.
-
     Returns:
         datetime: start date for the report window
     """

@@ -14,6 +14,7 @@ pytest-cov = "*"
 black = "*"
 responses = "*"
 pytest-freezegun = "*"
+v = {version = "*",editable = true}
 
 [packages]
 eve = "~=1.1"
@@ -29,6 +30,7 @@ pymysql = "~=0.10"
 sqlalchemy = "~=1.3"
 pyodbc = "~=4.0"
 pika = "*"
+xlrd = "~=1.2"
 
 [requires]
 python_version = "3.8"
