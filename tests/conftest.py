@@ -320,7 +320,9 @@ def event_wh_data(app, event_wh_sql_engine):
         roles_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLES_TABLE"])
         events_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENTS_TABLE"])
         event_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENT_TYPES_TABLE"])
-        subject_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"])
+        subject_types_table = get_table(
+            event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"]
+        )
         role_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLE_TYPES_TABLE"])
 
         def delete_event_warehouse_data():
