@@ -158,3 +158,5 @@ BECKMAN_FAILURE_TYPES = {
     "instrument_loaded_incorrectly": "Labware has been incorrectly loaded onto instrument",
     "other": "Any other failure",
 }
+
+BECKMAN_ENABLE = True
