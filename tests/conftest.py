@@ -315,33 +315,37 @@ def delete_from_mlwh(app, data, mlwh_sql_engine, table_name):
 
 @pytest.fixture
 def event_wh_data(app, event_wh_sql_engine):
-    insert_data_into_events_warehouse_tables(app, EVENT_WH_DATA, event_wh_sql_engine)
+    try:
+        subjects_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECTS_TABLE"])
+        roles_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLES_TABLE"])
+        events_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENTS_TABLE"])
+        event_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENT_TYPES_TABLE"])
+        subject_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"])
+        role_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLE_TYPES_TABLE"])
 
+        def delete_event_warehouse_data():
+            with event_wh_sql_engine.begin() as connection:
+                connection.execute(roles_table.delete())
+                connection.execute(subjects_table.delete())
+                connection.execute(events_table.delete())
+                connection.execute(event_types_table.delete())
+                connection.execute(subject_types_table.delete())
+                connection.execute(role_types_table.delete())
 
-def insert_data_into_events_warehouse_tables(app, data, event_wh_sql_engine):
-    subjects_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECTS_TABLE"])
-    roles_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLES_TABLE"])
-    events_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENTS_TABLE"])
-    event_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENT_TYPES_TABLE"])
-    subject_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"])
-    role_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLE_TYPES_TABLE"])
+        delete_event_warehouse_data()
 
-    with event_wh_sql_engine.begin() as connection:
-        # delete all rows from each table
-        connection.execute(roles_table.delete())
-        connection.execute(subjects_table.delete())
-        connection.execute(events_table.delete())
-        connection.execute(event_types_table.delete())
-        connection.execute(subject_types_table.delete())
-        connection.execute(role_types_table.delete())
+        with event_wh_sql_engine.begin() as connection:
+            print("Inserting Events Warehouse test data")
+            connection.execute(role_types_table.insert(), EVENT_WH_DATA["role_types"])
+            connection.execute(event_types_table.insert(), EVENT_WH_DATA["event_types"])
+            connection.execute(subject_types_table.insert(), EVENT_WH_DATA["subject_types"])
+            connection.execute(subjects_table.insert(), EVENT_WH_DATA["subjects"])
+            connection.execute(events_table.insert(), EVENT_WH_DATA["events"])
+            connection.execute(roles_table.insert(), EVENT_WH_DATA["roles"])
 
-        print("Inserting Events Warehouse test data")
-        connection.execute(role_types_table.insert(), data["role_types"])
-        connection.execute(event_types_table.insert(), data["event_types"])
-        connection.execute(subject_types_table.insert(), data["subject_types"])
-        connection.execute(subjects_table.insert(), data["subjects"])
-        connection.execute(events_table.insert(), data["events"])
-        connection.execute(roles_table.insert(), data["roles"])
+        yield
+    finally:
+        delete_event_warehouse_data()
 
 
 @pytest.fixture
