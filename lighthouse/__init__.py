@@ -29,10 +29,12 @@ def create_app() -> Eve:
     from lighthouse.blueprints import beckman
 
     app.register_blueprint(plates.bp)
-    app.register_blueprint(cherrypicked_plates.bp)
     app.register_blueprint(reports.bp)
-    app.register_blueprint(plate_events.bp)
-    app.register_blueprint(beckman.bp)
+
+    if app.config.get("BECKMAN_ENABLE", False):
+        app.register_blueprint(beckman.bp)
+        app.register_blueprint(cherrypicked_plates.bp)
+        app.register_blueprint(plate_events.bp)
 
     if app.config.get("SCHEDULER_RUN", False):
         scheduler.init_app(app)
