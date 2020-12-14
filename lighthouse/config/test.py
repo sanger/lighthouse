@@ -68,3 +68,5 @@ BECKMAN_FAILURE_TYPES = {
     "sample_contamination": "Sample contamination occurred",
     "other": "Any other failure",
 }
+
+BECKMAN_ENABLE = True
