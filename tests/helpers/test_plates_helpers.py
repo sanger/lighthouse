@@ -116,7 +116,7 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "814", "761")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -145,7 +145,7 @@ def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_respo
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "814", "761")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -173,7 +173,7 @@ def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "814", "761")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -203,7 +203,7 @@ def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "814", "761")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -309,6 +309,20 @@ def test_create_post_body(app, samples):
                                 FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "wxy",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "CBIQA_MCM008",
+                            }
+                        },
+                        "D02": {
+                            "content": {
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "wxy",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "QC0MCM008",
+                            }
+                        },
+                        "F02": {
+                            "content": {
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "wxy",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "ZZA000MCM008",
                             }
                         },
                     },
