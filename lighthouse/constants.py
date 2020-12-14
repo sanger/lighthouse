@@ -49,7 +49,7 @@ STAGE_MATCH_POSITIVE = {
         #  1. We are only interested in positive samples
         FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
         # 2. We are not interested in controls
-        FIELD_ROOT_SAMPLE_ID: {"$not": {"$regex": "^CBIQA_"}},
+        FIELD_ROOT_SAMPLE_ID: {"$not": {"$regex": "^(?:CBIQA_|QC0|ZZA000)"}},
         # 3. Further filter the positive samples
         # TODO: needs to align with the crawler changes
         "$or": [
@@ -76,7 +76,7 @@ STAGE_MATCH_POSITIVE = {
 # TODO: use the stage above and an aggregate intead
 POSITIVE_SAMPLES_MONGODB_FILTER = {
     FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
-    FIELD_ROOT_SAMPLE_ID: {"$not": re.compile("^CBIQA_")},
+    FIELD_ROOT_SAMPLE_ID: {"$not": re.compile("^(?:CBIQA_|QC0|ZZA000)")},
     "$or": [
         {"$and": [{FIELD_CH1_CQ: None}, {FIELD_CH2_CQ: None}, {FIELD_CH3_CQ: None}]},
         {
