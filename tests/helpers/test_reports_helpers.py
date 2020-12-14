@@ -14,7 +14,6 @@ from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
 )
-from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.reports import (
     add_cherrypicked_column,
     delete_reports,

@@ -35,6 +35,9 @@ REPORT_WINDOW_SIZE = 2
 
 X_DOMAINS = "*"
 
+# The window size when generating the positive samples report
+REPORT_WINDOW_SIZE = 84
+
 # APScheduler config
 SCHEDULER_RUN = True
 JOBS = [
@@ -104,9 +107,11 @@ LOGGING: Dict[str, Any] = {
     "formatters": {
         "colored": {
             "()": "colorlog.ColoredFormatter",
-            "format": "%(asctime)-15s %(name)-30s:%(lineno)s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
+            "format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
         },
-        "verbose": {"format": "%(asctime)-15s %(name)-30s:%(lineno)s %(levelname)-5s %(message)s"},
+        "verbose": {
+            "format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(levelname)-5s %(message)s"
+        },
     },
     "handlers": {
         "colored_stream": {

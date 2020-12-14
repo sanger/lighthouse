@@ -116,3 +116,15 @@ FIELD_SS_CONTROL_TYPE = "control_type"
 FIELD_SS_UUID = "uuid"
 FIELD_SS_COORDINATE = "coordinate"
 FIELD_SS_BARCODE = "barcode"
+
+REPORT_COLUMNS = [
+    "Date Tested",
+    "Root Sample ID",
+    "Result",
+    "source",
+    "plate_barcode",
+    "coordinate",
+    "plate and well",
+    "location_barcode",
+    "LIMS submission",
+]
