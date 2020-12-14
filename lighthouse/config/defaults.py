@@ -159,4 +159,4 @@ BECKMAN_FAILURE_TYPES = {
     "other": "Any other failure",
 }
 
-BECKMAN_ENABLE = False
+BECKMAN_ENABLE = True
