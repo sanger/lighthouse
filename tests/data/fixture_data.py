@@ -215,6 +215,28 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_LH_SAMPLE_UUID: "d38f7f9a-6f17-4ff4-a2f9-b49505317340",
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
     },
+    {  #  positive, with disallowed Root Sample ID
+        FIELD_COORDINATE: "D02",
+        FIELD_SOURCE: "test1",
+        FIELD_RESULT: "Positive",
+        FIELD_PLATE_BARCODE: "123",
+        FIELD_COG_BARCODE: "wxy",
+        FIELD_ROOT_SAMPLE_ID: "QC0MCM008",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_LH_SAMPLE_UUID: "fa9a36a9-f1de-4924-8a4f-bd72db911960",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
+    },
+    {  #  positive, with disallowed Root Sample ID
+        FIELD_COORDINATE: "F02",
+        FIELD_SOURCE: "test1",
+        FIELD_RESULT: "Positive",
+        FIELD_PLATE_BARCODE: "123",
+        FIELD_COG_BARCODE: "wxy",
+        FIELD_ROOT_SAMPLE_ID: "ZZA000MCM008",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_LH_SAMPLE_UUID: "247144c3-b43b-489f-ad8d-78fab1417e91",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
+    },
 ]
 
 SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
