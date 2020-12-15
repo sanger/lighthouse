@@ -3,10 +3,8 @@ import math
 import os
 import pathlib
 import re
-import requests
 import pandas as pd  # type: ignore
 
-import pymysql
 
 # we only need the create_engine method
 # but that can't be mocked
@@ -17,23 +15,22 @@ import sqlalchemy  # type: ignore
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 from http import HTTPStatus
-
-from lighthouse.exceptions import ReportCreationError
-from lighthouse.utils import pretty
+from lighthouse.helpers.labwhere import get_locations_from_labwhere
 
 from flask import current_app as app
-
 from lighthouse.constants import (
-    FIELD_SOURCE,
-    FIELD_PLATE_BARCODE,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RESULT,
-    FIELD_DATE_TESTED,
     FIELD_COORDINATE,
-    CT_VALUE_LIMIT,
-    POSITIVE_SAMPLES_MONGODB_FILTER,
-    STAGE_MATCH_POSITIVE
+    FIELD_DATE_TESTED,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
+    STAGE_MATCH_POSITIVE,
 )
+from lighthouse.exceptions import ReportCreationError
+from lighthouse.utils import pretty
+from pandas import DataFrame
+from pymongo.collection import Collection  # type: ignore
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
@@ -173,18 +170,6 @@ def map_labware_to_location(labware_barcodes):
     return labware_to_location_barcode_df
 
 
-def get_locations_from_labwhere(labware_barcodes):
-    """
-    Example record from labwhere:
-    { 'barcode': 'GLA001024R', 'location_barcode': 'lw-uk-biocentre-box-gsw--98-14813'}
-    """
-
-    return requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode",
-        json={"barcodes": labware_barcodes},
-    )
-
-
 def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
     # Find which samples have been cherrypicked using MLWH & Events warehouse
     # Returns dataframe with 4 columns: those needed to uniquely identify the sample
@@ -197,7 +182,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         concat_frame = pd.DataFrame()
 
         chunk_root_sample_ids = [
-            root_sample_ids[x : (x + chunk_size)]
+            root_sample_ids[x : (x + chunk_size)]  # noqa: E203
             for x in range(0, len(root_sample_ids), chunk_size)
         ]
 
@@ -211,18 +196,18 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
 
         for chunk_root_sample_id in chunk_root_sample_ids:
             sql = (
-                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"
-                f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"
+                f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"  # noqa: E501
+                f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"  # noqa: E501
                 f" FROM {ml_wh_db}.sample as mlwh_sample"
-                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"
-                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"
-                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"
-                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"
-                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"
+                f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"  # noqa: E501
+                f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"  # noqa: E501
+                f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"  # noqa: E501
+                f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"  # noqa: E501
+                f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"  # noqa: E501
                 f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
                 f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
                 " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
-                " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"
+                " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"  # noqa: E501
             )
 
             frame = pd.read_sql(
@@ -234,9 +219,10 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 },
             )
 
-            # drop_duplicates is needed because the same 'root sample id' could pop up in two different batches,
-            # and then it would retrieve the same rows for that root sample id twice
-            # do reset_index after dropping duplicates to make sure the rows are numbered in a way that makes sense
+            # drop_duplicates is needed because the same 'root sample id' could pop up in two
+            # different batches, and then it would retrieve the same rows for that root sample id
+            # twice do reset_index after dropping duplicates to make sure the rows are numbered in
+            # a way that makes sense
             concat_frame = concat_frame.append(frame).drop_duplicates().reset_index(drop=True)
 
         return concat_frame
@@ -247,10 +233,12 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         db_connection.close()
 
 
-def get_all_positive_samples(samples_collection):
+def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
     """Get all the positive samples from mongo from a specific date.
+
     Args:
         samples_collection (Collection): the samples collection.
+
     Returns:
         DataFrame: a pandas DataFrame with the positive samples.
     """

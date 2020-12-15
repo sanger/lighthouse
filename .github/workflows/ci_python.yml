@@ -6,7 +6,7 @@ on:
       - "README.md"
 
 jobs:
-  build_and_test_job:
+  test_job:
     runs-on: ubuntu-18.04
     services:
       mongodb:
@@ -18,8 +18,16 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: null
           MYSQL_DATABASE: unified_warehouse_test
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: MyS3cr3tPassw0rd
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -39,20 +47,27 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv install --dev --ignore-pipfile --system --deploy
+      - name: Check format with black
+        run: |
+          # stop the build if there are black formatting errors
+          python -m black --check .
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          flake8 . --count --exit-zero --max-complexity=15 --max-line-length=100 --statistics
       - name: Run mypy
         run: |
-          mypy .
+          python -m mypy .
+      - name: Create SQL Server testing database
+        run: |
+          python setup_sqlserver_test_db.py
       - name: Setup the test MLWH and Events databases
         run: |
           python setup_test_db.py
       - name: Test with pytest
         run: |
-          python -m pytest -vsx
+          python -m pytest -x
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
