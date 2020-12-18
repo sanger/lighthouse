@@ -459,7 +459,7 @@ def create_cherrypicked_post_body(
         if FIELD_SS_CONTROL in sample:
             content[FIELD_SS_SUPPLIER_NAME] = sample[FIELD_SS_SUPPLIER_NAME]
             content[FIELD_SS_CONTROL] = sample[FIELD_SS_CONTROL]
-            content[FIELD_SS_CONTROL_TYPE] = sample[FIELD_SS_CONTROL_TYPE]
+            content[FIELD_SS_CONTROL_TYPE] = sample[FIELD_SS_CONTROL_TYPE].lower()
             content[FIELD_SS_UUID] = sample[FIELD_SS_UUID]
         else:
             content[FIELD_SS_NAME] = sample[FIELD_SS_NAME]
