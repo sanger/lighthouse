@@ -755,7 +755,7 @@ def test_create_cherrypicked_post_body(app):
                         "B01": {
                             "content": {
                                 FIELD_SS_CONTROL: True,
-                                FIELD_SS_CONTROL_TYPE: "Positive",
+                                FIELD_SS_CONTROL_TYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
                                 FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
