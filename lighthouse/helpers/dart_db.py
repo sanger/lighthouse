@@ -29,11 +29,7 @@ def get_samples_for_barcode(cnxn, barcode):
         f" AND [{FIELD_DART_RNA_ID}]<>''"
         f" AND [{FIELD_DART_LAB_ID}] IS NOT NULL"
         f" AND [{FIELD_DART_LAB_ID}]<>'')"
-        f" OR ([{FIELD_DART_CONTROL}] IS NOT NULL AND [{FIELD_DART_CONTROL}]<>''))"
-        f" AND [{FIELD_DART_RUN_ID}]=("
-        f"  SELECT MAX([{FIELD_DART_RUN_ID}])"
-        f"  FROM {app.config['DART_RESULT_VIEW']}"
-        f"  WHERE [{FIELD_DART_DESTINATION_BARCODE}]='{barcode}');"
+        f" OR ([{FIELD_DART_CONTROL}] IS NOT NULL AND [{FIELD_DART_CONTROL}]<>''));"
     )
     rows = cursor.fetchall()
     return rows
