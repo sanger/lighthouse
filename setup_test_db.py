@@ -41,11 +41,14 @@ CREATE TABLE `{config.ML_WH_DB}`.`lighthouse_sample` (
 `date_tested` datetime DEFAULT NULL COMMENT 'date_tested_string in date format',
 `source` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Lighthouse centre that the sample came from',
 `lab_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Id of the lab, within the Lighthouse centre',
+`lh_sample_uuid` varchar(36) DEFAULT NULL COMMENT 'Lighthouse sample unique identifier',
+`lh_source_plate_uuid` varchar(36) DEFAULT NULL COMMENT 'Lighthouse source plate unique identifier',
 `created_at` datetime DEFAULT NULL COMMENT 'When this record was inserted',
 `updated_at` datetime DEFAULT NULL COMMENT 'When this record was last updated',
 PRIMARY KEY (`id`),
 UNIQUE KEY `index_lighthouse_sample_on_root_sample_id_and_rna_id_and_result` (`root_sample_id`,`rna_id`,`result`),
 UNIQUE KEY `index_lighthouse_sample_on_mongodb_id` (`mongodb_id`),
+UNIQUE KEY `index_lighthouse_sample_on_lh_sample_uuid` (`lh_sample_uuid`),
 KEY `index_lighthouse_sample_on_date_tested` (`date_tested`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 """
