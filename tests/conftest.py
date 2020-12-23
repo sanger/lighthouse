@@ -296,10 +296,16 @@ def mlwh_sample_lighthouse_sample(app, mlwh_sql_engine):
 
     # inserts
     insert_into_mlwh(
-        app, MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["lighthouse_sample"], mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
+        app,
+        MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["lighthouse_sample"],
+        mlwh_sql_engine,
+        app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"],
     )
     insert_into_mlwh(
-        app, MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
+        app,
+        MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"],
+        mlwh_sql_engine,
+        app.config["MLWH_SAMPLE_TABLE"],
     )
 
 
