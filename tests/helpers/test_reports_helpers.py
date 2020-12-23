@@ -303,13 +303,15 @@ def test_get_cherrypicked_samples_repeat_tests_sentinel_and_beckman(
 ):
     # the following come from MLWH_SAMPLE_STOCK_RESOURCE and 
     # MLWH_SAMPLE_LIGHTHOUSE_SAMPLE in fixture_data
-    root_sample_ids = ["root_1", "root_2", "root_4", "root_5"]
-    plate_barcodes = ["pb_1", "pb_2", "pb_4", "pb_5"]
+    root_sample_ids = ["root_1", "root_2", "root_3", "root_4", "root_5"]
+    plate_barcodes = ["pb_1", "pb_2", "pb_3", "pb_4", "pb_5", "pb_6", "pb_7", "pb_8"]
 
-    # root_1 will match 2 samples, but only one of those will match an event (on sample uuid)
-    # therefore we only get 1 of the samples called 'root_4' back (the one on plate 'pb_4')
-    # this also checks we don't get a duplicate row for root_4 / pb_4, despite it cropped up in 2
-    # different 'chunks'
+    # root_1 will match 2 samples, but only one of those will match a Sentinel event (on pb_1)
+    # root_2 will match a single sample with a matching Sentinel event (on pb_2)
+    # root_3 will match 2 samples, but not match either a Sentinel or Beckman event
+    # root_4 will match 2 samples, but only one of those will match a Beckman event (on pb_4)
+    # root_5 will match a single sample with a matching Beckman event (on pb_5)
+    # We also chunk to further test different scenarios
     expected_rows = [["root_1", "pb_1", "positive", "A1"], ["root_2", "pb_2", "positive", "A1"], ["root_4", "pb_4", "positive", "A1"], ["root_5", "pb_5", "positive", "A1"]]
     expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE]
     expected = pd.DataFrame(np.array(expected_rows), columns=expected_columns, index=[0, 1, 2, 3])
