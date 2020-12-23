@@ -276,10 +276,16 @@ def mlwh_sentinel_cherrypicked(app, mlwh_sql_engine):
 
         # inserts
         insert_into_mlwh(
-            app, MLWH_SAMPLE_STOCK_RESOURCE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
+            app,
+            MLWH_SAMPLE_STOCK_RESOURCE["sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_SAMPLE_TABLE"],
         )
         insert_into_mlwh(
-            app, MLWH_SAMPLE_STOCK_RESOURCE["study"], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"]
+            app,
+            MLWH_SAMPLE_STOCK_RESOURCE["study"],
+            mlwh_sql_engine,
+            app.config["MLWH_STUDY_TABLE"],
         )
         insert_into_mlwh(
             app,
@@ -341,10 +347,16 @@ def mlwh_sentinel_and_beckman_cherrypicking(app, mlwh_sql_engine):
             app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"],
         )
         insert_into_mlwh(
-            app, MLWH_SAMPLE_STOCK_RESOURCE["sample"] + MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
+            app,
+            MLWH_SAMPLE_STOCK_RESOURCE["sample"] + MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_SAMPLE_TABLE"],
         )
         insert_into_mlwh(
-            app, MLWH_SAMPLE_STOCK_RESOURCE["study"], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"]
+            app,
+            MLWH_SAMPLE_STOCK_RESOURCE["study"],
+            mlwh_sql_engine,
+            app.config["MLWH_STUDY_TABLE"],
         )
         insert_into_mlwh(
             app,
