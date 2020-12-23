@@ -87,7 +87,6 @@ def test_delete_reports(app, freezer):
 
 
 def test_get_cherrypicked_samples_no_beckman(app, freezer):
-
     expected = [
         pd.DataFrame(
             ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
@@ -110,7 +109,6 @@ def test_get_cherrypicked_samples_no_beckman(app, freezer):
 
 
 def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
-
     # Note: This represents the results of three different (Sentinel, Beckman) sets of
     # database queries, each Sentinel query getting indexed from 0. Do not changes the
     # indicies here unless you have modified the behaviour of the query.
@@ -163,7 +161,6 @@ def test_get_cherrypicked_samples_repeat_tests_no_beckman(
 
 
 def test_get_cherrypicked_samples_no_sentinel(app, freezer):
-
     expected = [
         pd.DataFrame([]),  # Sentinel query response
         pd.DataFrame(
@@ -186,7 +183,6 @@ def test_get_cherrypicked_samples_no_sentinel(app, freezer):
 
 
 def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
-
     # Note: This represents the results of three different (Sentinel, Beckman) sets of
     # database queries, each Sentinel query getting indexed from 0. Do not changes the
     # indicies here unless you have modified the behaviour of the query.
@@ -224,7 +220,7 @@ def test_get_cherrypicked_samples_repeat_tests_no_sentinel(
     root_sample_ids = ["root_4", "root_5", "root_4"]
     plate_barcodes = ["pb_4", "pb_5", "pb_6"]
 
-    # root_1 will match 2 samples, but only one of those will match an event (on sample uuid)
+    # root_4 will match 2 samples, but only one of those will match an event (on sample uuid)
     # therefore we only get 1 of the samples called 'root_4' back (the one on plate 'pb_4')
     # this also checks we don't get a duplicate row for root_4 / pb_4, despite it cropped up in 2
     # different 'chunks'
@@ -239,7 +235,6 @@ def test_get_cherrypicked_samples_repeat_tests_no_sentinel(
 
 
 def test_get_cherrypicked_samples_sentinel_and_beckman(app, freezer):
-
     expected = [
         pd.DataFrame(
             ["MCM001", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]
@@ -265,7 +260,6 @@ def test_get_cherrypicked_samples_sentinel_and_beckman(app, freezer):
 
 
 def test_get_cherrypicked_samples_chunking_sentinel_and_beckman(app, freezer):
-
     # Note: This represents the results of three different (Sentinel, Beckman) sets of
     # database queries, each query getting indexed from 0. Do not changes the
     # indicies here unless you have modified the behaviour of the query.
