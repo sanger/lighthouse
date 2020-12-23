@@ -27,6 +27,9 @@ from lighthouse.helpers.reports import (
 )
 
 
+# ----- get_new_report_name_and_path tests -----
+
+
 def test_get_new_report_name_and_path(app, freezer):
     report_date = datetime.now().strftime("%y%m%d_%H%M")
 
@@ -34,6 +37,9 @@ def test_get_new_report_name_and_path(app, freezer):
         report_name, report_path = get_new_report_name_and_path()
 
         assert report_name == f"{report_date}_positives_with_locations.xlsx"
+
+
+# ----- unpad_coordinate tests -----
 
 
 def test_unpad_coordinate_A01(app, freezer):
@@ -50,6 +56,9 @@ def test_unpad_coordinate_A10(app, freezer):
 
 def test_unpad_coordinate_B01010(app, freezer):
     assert unpad_coordinate("B01010") == "B1010"
+
+
+# ----- delete_reports tests -----
 
 
 def test_delete_reports(app, freezer):
@@ -72,6 +81,9 @@ def test_delete_reports(app, freezer):
 
     for filename in filenames:
         assert os.path.isfile(f"{app.config['REPORTS_DIR']}/{filename}") is False
+
+
+# ----- get_cherrypicked_samples tests -----
 
 
 def test_get_cherrypicked_samples_no_beckman(app, freezer):
@@ -150,6 +162,9 @@ def test_get_cherrypicked_samples_repeat_tests_no_beckman(
         pd.testing.assert_frame_equal(expected, returned_samples)
 
 
+# ----- get_all_positive_samples tests -----
+
+
 def test_get_all_positive_samples(app, freezer, samples):
 
     with app.app_context():
@@ -168,13 +183,7 @@ def test_get_all_positive_samples(app, freezer, samples):
         assert positive_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "MCM007"
 
 
-def test_query_by_ct_limit(app, freezer, samples_ct_values):
-    # Just testing how mongo queries work with 'less than' comparisons and nulls
-    with app.app_context():
-        samples = app.data.driver.db.samples
-        ct_less_than_limit = samples.count_documents({FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}})
-
-        assert ct_less_than_limit == 1  # 'MCM003'
+# ----- add_cherrypicked_column tests -----
 
 
 def test_add_cherrypicked_column(app, freezer):
@@ -371,12 +380,18 @@ def test_add_cherrypicked_column_no_rows(app, freezer):
     assert np.array_equal(new_dataframe.to_numpy(), expected_data)
 
 
+# ----- get_distinct_plate_barcodes tests -----
+
+
 def test_get_distinct_plate_barcodes(app, freezer, samples):
 
     with app.app_context():
         samples = app.data.driver.db.samples
 
         assert get_distinct_plate_barcodes(samples)[0] == "123"
+
+
+# ----- join_samples_declarations tests -----
 
 
 def test_join_samples_declarations(app, freezer, samples_declarations, samples_no_declaration):
@@ -399,6 +414,18 @@ def test_join_samples_declarations_empty_collection(app, freezer, samples_no_dec
         joined = join_samples_declarations(positive_samples)
 
         assert np.array_equal(positive_samples.to_numpy(), joined.to_numpy())
+
+
+# ----- misc tests -----
+
+
+def test_query_by_ct_limit(app, freezer, samples_ct_values):
+    # Just testing how mongo queries work with 'less than' comparisons and nulls
+    with app.app_context():
+        samples = app.data.driver.db.samples
+        ct_less_than_limit = samples.count_documents({FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}})
+
+        assert ct_less_than_limit == 1  # 'MCM003'
 
 
 def test_report_query_window_start(app):
