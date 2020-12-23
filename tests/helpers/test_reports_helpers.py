@@ -238,6 +238,64 @@ def test_get_cherrypicked_samples_repeat_tests_no_sentinel(
         pd.testing.assert_frame_equal(expected, returned_samples)
 
 
+def test_get_cherrypicked_samples_sentinel_and_beckman(app, freezer):
+
+    expected = [
+        pd.DataFrame(
+            ["MCM001", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]
+        ),  # Sentinel query response
+        pd.DataFrame(
+            ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
+        ),  # Beckman query response
+    ]
+    samples = ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005", "MCM006"]
+    plate_barcodes = ["123", "456"]
+
+    with app.app_context():
+        with patch("sqlalchemy.create_engine", return_value=Mock()):
+            with patch(
+                "pandas.read_sql",
+                side_effect=expected,
+            ):
+                returned_samples = get_cherrypicked_samples(samples, plate_barcodes)
+                assert returned_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "MCM001"
+                assert returned_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "MCM006"
+                assert returned_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "MCM003"
+                assert returned_samples.at[3, FIELD_ROOT_SAMPLE_ID] == "MCM005"
+
+
+def test_get_cherrypicked_samples_chunking_sentinel_and_beckman(app, freezer):
+
+    # Note: This represents the results of three different (Sentinel, Beckman) sets of
+    # database queries, each query getting indexed from 0. Do not changes the
+    # indicies here unless you have modified the behaviour of the query.
+    query_results = [
+        pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
+        pd.DataFrame(["MCM001", "MCM002"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),
+        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
+        pd.DataFrame(["MCM003", "MCM004"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),
+        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
+        pd.DataFrame(["MCM005", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),
+    ]
+    expected = pd.DataFrame(
+        ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005", "MCM006"],
+        columns=[FIELD_ROOT_SAMPLE_ID],
+        index=[0, 1, 2, 3, 4, 5],
+    )
+
+    samples = ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005"]
+    plate_barcodes = ["123", "456"]
+
+    with app.app_context():
+        with patch("sqlalchemy.create_engine", return_value=Mock()):
+            with patch(
+                "pandas.read_sql",
+                side_effect=query_results,
+            ):
+                returned_samples = get_cherrypicked_samples(samples, plate_barcodes, 2)
+                pd.testing.assert_frame_equal(expected, returned_samples)
+
+
 # ----- get_all_positive_samples tests -----
 
 
