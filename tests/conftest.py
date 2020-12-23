@@ -269,18 +269,9 @@ def mlwh_lh_samples_multiple(app, mlwh_sql_engine):
 @pytest.fixture
 def mlwh_sample_stock_resource(app, mlwh_sql_engine):
     # deletes
-    delete_from_mlwh(
-        app,
-        MLWH_SAMPLE_STOCK_RESOURCE["stock_resource"],
-        mlwh_sql_engine,
-        app.config["MLWH_STOCK_RESOURCES_TABLE"],
-    )
-    delete_from_mlwh(
-        app, MLWH_SAMPLE_STOCK_RESOURCE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
-    )
-    delete_from_mlwh(
-        app, MLWH_SAMPLE_STOCK_RESOURCE["study"], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"]
-    )
+    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
+    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
 
     # inserts
     insert_into_mlwh(
@@ -300,12 +291,8 @@ def mlwh_sample_stock_resource(app, mlwh_sql_engine):
 @pytest.fixture
 def mlwh_sample_lighthouse_sample(app, mlwh_sql_engine):
     # deletes
-    delete_from_mlwh(
-        app, MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
-    )
-    delete_from_mlwh(
-        app, MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["lighthouse_sample"], mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
-    )
+    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
     # inserts
     insert_into_mlwh(
@@ -325,7 +312,7 @@ def insert_into_mlwh(app, data, mlwh_sql_engine, table_name):
         connection.execute(table.insert(), data)
 
 
-def delete_from_mlwh(app, data, mlwh_sql_engine, table_name):
+def delete_from_mlwh(app, mlwh_sql_engine, table_name):
     table = get_table(mlwh_sql_engine, table_name)
 
     with mlwh_sql_engine.begin() as connection:
