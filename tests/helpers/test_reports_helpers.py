@@ -296,6 +296,30 @@ def test_get_cherrypicked_samples_chunking_sentinel_and_beckman(app, freezer):
                 pd.testing.assert_frame_equal(expected, returned_samples)
 
 
+# test scenario where there have been multiple lighthouse tests for a sample with the same Root
+# Sample ID uses actual databases rather than mocking to make sure the query is correct
+def test_get_cherrypicked_samples_repeat_tests_sentinel_and_beckman(
+    app, freezer, mlwh_sentinel_and_beckman_cherrypicking, event_wh_data
+):
+    # the following come from MLWH_SAMPLE_STOCK_RESOURCE and 
+    # MLWH_SAMPLE_LIGHTHOUSE_SAMPLE in fixture_data
+    root_sample_ids = ["root_1", "root_2", "root_4", "root_5"]
+    plate_barcodes = ["pb_1", "pb_2", "pb_4", "pb_5"]
+
+    # root_1 will match 2 samples, but only one of those will match an event (on sample uuid)
+    # therefore we only get 1 of the samples called 'root_4' back (the one on plate 'pb_4')
+    # this also checks we don't get a duplicate row for root_4 / pb_4, despite it cropped up in 2
+    # different 'chunks'
+    expected_rows = [["root_1", "pb_1", "positive", "A1"], ["root_2", "pb_2", "positive", "A1"], ["root_4", "pb_4", "positive", "A1"], ["root_5", "pb_5", "positive", "A1"]]
+    expected_columns = [FIELD_ROOT_SAMPLE_ID, FIELD_PLATE_BARCODE, "Result_lower", FIELD_COORDINATE]
+    expected = pd.DataFrame(np.array(expected_rows), columns=expected_columns, index=[0, 1, 2, 3])
+
+    with app.app_context():
+        chunk_size = 2
+        returned_samples = get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size)
+        pd.testing.assert_frame_equal(expected, returned_samples)
+
+
 # ----- get_all_positive_samples tests -----
 
 

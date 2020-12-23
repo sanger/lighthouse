@@ -324,6 +324,44 @@ def mlwh_beckman_cherrypicked(app, mlwh_sql_engine):
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
 
+@pytest.fixture
+def mlwh_sentinel_and_beckman_cherrypicking(app, mlwh_sql_engine):
+    try:
+        # deletes
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+
+        # inserts
+        insert_into_mlwh(
+            app,
+            MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["lighthouse_sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"],
+        )
+        insert_into_mlwh(
+            app, MLWH_SAMPLE_STOCK_RESOURCE["sample"] + MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
+        )
+        insert_into_mlwh(
+            app, MLWH_SAMPLE_STOCK_RESOURCE["study"], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"]
+        )
+        insert_into_mlwh(
+            app,
+            MLWH_SAMPLE_STOCK_RESOURCE["stock_resource"],
+            mlwh_sql_engine,
+            app.config["MLWH_STOCK_RESOURCES_TABLE"],
+        )
+
+        yield
+    finally:
+        # deletes
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+
+
 def insert_into_mlwh(app, data, mlwh_sql_engine, table_name):
     table = get_table(mlwh_sql_engine, table_name)
 
