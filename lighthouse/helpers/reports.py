@@ -26,6 +26,7 @@ from lighthouse.constants import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
     STAGE_MATCH_POSITIVE,
+    PLATE_EVENT_DESTINATION_CREATED,
 )
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.utils import pretty
@@ -238,8 +239,8 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 f" JOIN {events_wh_db}.event_types AS mlwh_events_event_types ON (mlwh_events_event_types.id = mlwh_events_events.event_type_id)"  # noqa: E501
                 f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
                 f" AND mlwh_lh_sample.plate_barcode IN %(plate_barcodes)s"
-                f" AND mlwh_events_event_types.key = 'lh_beckman_cp_destination_created'"
-                f" GROUP BY mlwh_sample.description, mlwh_lh_sample.plate_barcode, mlwh_sample.phenotype, mlwh_lh_sample.coordinate;"  # noqa: E501
+                f" AND mlwh_events_event_types.key = '{PLATE_EVENT_DESTINATION_CREATED}'"
+                " GROUP BY mlwh_sample.description, mlwh_lh_sample.plate_barcode, mlwh_sample.phenotype, mlwh_lh_sample.coordinate;"  # noqa: E501
             )
 
             beckman_frame = pd.read_sql(
