@@ -142,7 +142,7 @@ def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
 # test scenario where there have been multiple lighthouse tests for a sample with the same Root
 # Sample ID uses actual databases rather than mocking to make sure the query is correct
 def test_get_cherrypicked_samples_repeat_tests_no_beckman(
-    app, freezer, mlwh_sample_stock_resource, event_wh_data
+    app, freezer, mlwh_sentinel_cherrypicked, event_wh_data
 ):
     # the following come from MLWH_SAMPLE_STOCK_RESOURCE in fixture_data
     root_sample_ids = ["root_1", "root_2", "root_1"]
@@ -218,7 +218,7 @@ def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
 # test scenario where there have been multiple lighthouse tests for a sample with the same Root
 # Sample ID uses actual databases rather than mocking to make sure the query is correct
 def test_get_cherrypicked_samples_repeat_tests_no_sentinel(
-    app, freezer, mlwh_sample_lighthouse_sample, event_wh_data
+    app, freezer, mlwh_beckman_cherrypicked, event_wh_data
 ):
     # the following come from MLWH_SAMPLE_LIGHTHOUSE_SAMPLE in fixture_data
     root_sample_ids = ["root_4", "root_5", "root_4"]

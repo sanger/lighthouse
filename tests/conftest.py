@@ -267,7 +267,7 @@ def mlwh_lh_samples_multiple(app, mlwh_sql_engine):
 
 
 @pytest.fixture
-def mlwh_sample_stock_resource(app, mlwh_sql_engine):
+def mlwh_sentinel_cherrypicked(app, mlwh_sql_engine):
     # deletes
     delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
     delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
@@ -289,7 +289,7 @@ def mlwh_sample_stock_resource(app, mlwh_sql_engine):
 
 
 @pytest.fixture
-def mlwh_sample_lighthouse_sample(app, mlwh_sql_engine):
+def mlwh_beckman_cherrypicked(app, mlwh_sql_engine):
     # deletes
     delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
     delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
