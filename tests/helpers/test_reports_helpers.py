@@ -298,7 +298,7 @@ def test_get_cherrypicked_samples_repeat_tests_sentinel_and_beckman(
     # the following come from MLWH_SAMPLE_STOCK_RESOURCE and
     # MLWH_SAMPLE_LIGHTHOUSE_SAMPLE in fixture_data
     root_sample_ids = ["root_1", "root_2", "root_3", "root_4", "root_5"]
-    plate_barcodes = ["pb_1", "pb_2", "pb_3", "pb_4", "pb_5", "pb_6", "pb_7", "pb_8"]
+    plate_barcodes = ["pb_1", "pb_2", "pb_3", "pb_4", "pb_5", "pb_6"]
 
     # root_1 will match 2 samples, but only one of those will match a Sentinel event (on pb_1)
     # root_2 will match a single sample with a matching Sentinel event (on pb_2)
