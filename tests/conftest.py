@@ -336,7 +336,7 @@ def mlwh_sentinel_and_beckman_cherrypicking(app, mlwh_sql_engine):
         # deletes
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
         # inserts
@@ -370,7 +370,7 @@ def mlwh_sentinel_and_beckman_cherrypicking(app, mlwh_sql_engine):
         # deletes
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
 
