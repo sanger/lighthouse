@@ -27,6 +27,7 @@ from .data.fixture_data import (
     SAMPLES_WITH_UUIDS,
     EVENT_WH_DATA,
     MLWH_SAMPLE_STOCK_RESOURCE,
+    MLWH_SAMPLE_LIGHTHOUSE_SAMPLE,
     SOURCE_PLATES,
 )
 
@@ -293,6 +294,25 @@ def mlwh_sample_stock_resource(app, mlwh_sql_engine):
         MLWH_SAMPLE_STOCK_RESOURCE["stock_resource"],
         mlwh_sql_engine,
         app.config["MLWH_STOCK_RESOURCES_TABLE"],
+    )
+
+
+@pytest.fixture
+def mlwh_sample_lighthouse_sample(app, mlwh_sql_engine):
+    # deletes
+    delete_from_mlwh(
+        app, MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
+    )
+    delete_from_mlwh(
+        app, MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["lighthouse_sample"], mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
+    )
+
+    # inserts
+    insert_into_mlwh(
+        app, MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["lighthouse_sample"], mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
+    )
+    insert_into_mlwh(
+        app, MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
     )
 
 
