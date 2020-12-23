@@ -499,6 +499,7 @@ MLWH_SAMPLE_STOCK_RESOURCE: Dict[str, Any] = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
+            "uuid_sample_lims": "3",
         },
     ],
     "stock_resource": [

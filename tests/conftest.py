@@ -268,45 +268,60 @@ def mlwh_lh_samples_multiple(app, mlwh_sql_engine):
 
 @pytest.fixture
 def mlwh_sentinel_cherrypicked(app, mlwh_sql_engine):
-    # deletes
-    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
-    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
+    try:
+        # deletes
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
 
-    # inserts
-    insert_into_mlwh(
-        app, MLWH_SAMPLE_STOCK_RESOURCE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
-    )
-    insert_into_mlwh(
-        app, MLWH_SAMPLE_STOCK_RESOURCE["study"], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"]
-    )
-    insert_into_mlwh(
-        app,
-        MLWH_SAMPLE_STOCK_RESOURCE["stock_resource"],
-        mlwh_sql_engine,
-        app.config["MLWH_STOCK_RESOURCES_TABLE"],
-    )
+        # inserts
+        insert_into_mlwh(
+            app, MLWH_SAMPLE_STOCK_RESOURCE["sample"], mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"]
+        )
+        insert_into_mlwh(
+            app, MLWH_SAMPLE_STOCK_RESOURCE["study"], mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"]
+        )
+        insert_into_mlwh(
+            app,
+            MLWH_SAMPLE_STOCK_RESOURCE["stock_resource"],
+            mlwh_sql_engine,
+            app.config["MLWH_STOCK_RESOURCES_TABLE"],
+        )
+
+        yield
+    finally:
+        # deletes
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
 
 
 @pytest.fixture
 def mlwh_beckman_cherrypicked(app, mlwh_sql_engine):
-    # deletes
-    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-    delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+    try:
+        # deletes
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
-    # inserts
-    insert_into_mlwh(
-        app,
-        MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["lighthouse_sample"],
-        mlwh_sql_engine,
-        app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"],
-    )
-    insert_into_mlwh(
-        app,
-        MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"],
-        mlwh_sql_engine,
-        app.config["MLWH_SAMPLE_TABLE"],
-    )
+        # inserts
+        insert_into_mlwh(
+            app,
+            MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["lighthouse_sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"],
+        )
+        insert_into_mlwh(
+            app,
+            MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_SAMPLE_TABLE"],
+        )
+
+        yield
+    finally:
+        # deletes
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
 
 def insert_into_mlwh(app, data, mlwh_sql_engine, table_name):
