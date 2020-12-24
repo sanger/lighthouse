@@ -113,12 +113,12 @@ def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
     # database queries, each Sentinel query getting indexed from 0. Do not change the
     # indices here unless you have modified the behaviour of the query.
     query_results = [
-        pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame([]),
-        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame([]),
-        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame([]),
+        pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Sentinel query resp.
+        pd.DataFrame([]),  # Beckman query response
+        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Sentinel query resp.
+        pd.DataFrame([]),  # Beckman query response
+        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Sentinel query resp.
+        pd.DataFrame([]),  # Beckman query response
     ]
     expected = pd.DataFrame(
         ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
@@ -187,12 +187,12 @@ def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
     # database queries, each Sentinel query getting indexed from 0. Do not change the
     # indices here unless you have modified the behaviour of the query.
     query_results = [
-        pd.DataFrame([]),
-        pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame([]),
-        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame([]),
-        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
+        pd.DataFrame([]),  # Sentinel query resp.
+        pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Beckman query resp.
+        pd.DataFrame([]),  # Sentinel query resp.
+        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Beckman query resp.
+        pd.DataFrame([]),  # Sentinel query resp.
+        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Beckman query resp.
     ]
     expected = pd.DataFrame(
         ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
@@ -264,12 +264,12 @@ def test_get_cherrypicked_samples_chunking_sentinel_and_beckman(app, freezer):
     # database queries, each query getting indexed from 0. Do not changes the
     # indicies here unless you have modified the behaviour of the query.
     query_results = [
-        pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame(["MCM001", "MCM002"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),
-        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame(["MCM003", "MCM004"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),
-        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
-        pd.DataFrame(["MCM005", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),
+        pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Sentinel
+        pd.DataFrame(["MCM001", "MCM002"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),  # Beckman
+        pd.DataFrame(["MCM003"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Sentinel
+        pd.DataFrame(["MCM003", "MCM004"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),  # Beckman
+        pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Sentinel
+        pd.DataFrame(["MCM005", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),  # Beckman
     ]
     expected = pd.DataFrame(
         ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005", "MCM006"],
