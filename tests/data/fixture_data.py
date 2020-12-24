@@ -31,6 +31,7 @@ from lighthouse.constants import (
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     PLATE_EVENT_DESTINATION_CREATED,
+    EVENT_CHERRYPICK_LAYOUT_SET,
 )
 
 CENTRES: List[Dict[str, str]] = [
@@ -743,7 +744,7 @@ EVENT_WH_DATA: Dict[str, Any] = {
         },
     ],
     "event_types": [
-        {"id": 1, "key": "cherrypick_layout_set", "description": "stuff"},
+        {"id": 1, "key": EVENT_CHERRYPICK_LAYOUT_SET, "description": "stuff"},
         {"id": 2, "key": PLATE_EVENT_DESTINATION_CREATED, "description": "stuff"},
     ],
     "subject_types": [{"id": 1, "key": "sample", "description": "stuff"}],

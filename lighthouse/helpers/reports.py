@@ -27,6 +27,7 @@ from lighthouse.constants import (
     FIELD_SOURCE,
     STAGE_MATCH_POSITIVE,
     PLATE_EVENT_DESTINATION_CREATED,
+    EVENT_CHERRYPICK_LAYOUT_SET,
 )
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.utils import pretty
@@ -444,7 +445,7 @@ def __sentinel_cherrypicked_samples_query(ml_wh_db: str, events_wh_db: str) -> s
         f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"  # noqa: E501
         f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
         f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
-        " AND mlwh_events_event_types.key = 'cherrypick_layout_set'"
+        F" AND mlwh_events_event_types.key = '{EVENT_CHERRYPICK_LAYOUT_SET}'"
         " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"  # noqa: E501
     )
 
