@@ -268,11 +268,13 @@ def mlwh_lh_samples_multiple(app, mlwh_sql_engine):
 
 @pytest.fixture
 def mlwh_sentinel_cherrypicked(app, mlwh_sql_engine):
-    try:
-        # deletes
+    def delete_data():
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
+
+    try:
+        delete_data()
 
         # inserts
         insert_into_mlwh(
@@ -296,18 +298,17 @@ def mlwh_sentinel_cherrypicked(app, mlwh_sql_engine):
 
         yield
     finally:
-        # deletes
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
+        delete_data()
 
 
 @pytest.fixture
 def mlwh_beckman_cherrypicked(app, mlwh_sql_engine):
-    try:
-        # deletes
+    def delete_data():
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+
+    try:
+        delete_data()
 
         # inserts
         insert_into_mlwh(
@@ -325,19 +326,19 @@ def mlwh_beckman_cherrypicked(app, mlwh_sql_engine):
 
         yield
     finally:
-        # deletes
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+        delete_data()
 
 
 @pytest.fixture
 def mlwh_sentinel_and_beckman_cherrypicking(app, mlwh_sql_engine):
-    try:
-        # deletes
+    def delete_data():
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+
+    try:
+        delete_data()
 
         # inserts
         insert_into_mlwh(
@@ -367,11 +368,7 @@ def mlwh_sentinel_and_beckman_cherrypicking(app, mlwh_sql_engine):
 
         yield
     finally:
-        # deletes
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STUDY_TABLE"])
-        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+        delete_data()
 
 
 def insert_into_mlwh(app, data, mlwh_sql_engine, table_name):
