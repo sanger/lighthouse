@@ -330,7 +330,7 @@ def mlwh_beckman_cherrypicked(app, mlwh_sql_engine):
 
 
 @pytest.fixture
-def mlwh_sentinel_and_beckman_cherrypicking(app, mlwh_sql_engine):
+def mlwh_sentinel_and_beckman_cherrypicked(app, mlwh_sql_engine):
     def delete_data():
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_STOCK_RESOURCES_TABLE"])
         delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
