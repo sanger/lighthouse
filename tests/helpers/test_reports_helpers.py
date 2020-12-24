@@ -110,8 +110,8 @@ def test_get_cherrypicked_samples_no_beckman(app, freezer):
 
 def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
     # Note: This represents the results of three different (Sentinel, Beckman) sets of
-    # database queries, each Sentinel query getting indexed from 0. Do not changes the
-    # indicies here unless you have modified the behaviour of the query.
+    # database queries, each Sentinel query getting indexed from 0. Do not change the
+    # indices here unless you have modified the behaviour of the query.
     query_results = [
         pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
         pd.DataFrame([]),
@@ -184,8 +184,8 @@ def test_get_cherrypicked_samples_no_sentinel(app, freezer):
 
 def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
     # Note: This represents the results of three different (Sentinel, Beckman) sets of
-    # database queries, each Sentinel query getting indexed from 0. Do not changes the
-    # indicies here unless you have modified the behaviour of the query.
+    # database queries, each Sentinel query getting indexed from 0. Do not change the
+    # indices here unless you have modified the behaviour of the query.
     query_results = [
         pd.DataFrame([]),
         pd.DataFrame(["MCM001"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),
