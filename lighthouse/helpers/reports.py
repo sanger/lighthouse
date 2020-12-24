@@ -66,7 +66,7 @@ def get_reports_details(filename: str = None) -> List[Dict[str, str]]:
     return [
         {
             "filename": filename,
-            "size": get_file_size(REPORTS_PATH.joinpath(filename)),
+            "size": __get_file_size(REPORTS_PATH.joinpath(filename)),
             "created": datetime.fromtimestamp(
                 os.path.getmtime(REPORTS_PATH.joinpath(filename))
             ).strftime("%c"),
@@ -74,42 +74,6 @@ def get_reports_details(filename: str = None) -> List[Dict[str, str]]:
         }
         for filename in reports
     ]
-
-
-def get_file_size(file_path: pathlib.PurePath) -> str:
-    """Get the size of a file in a human friendly format.
-
-    Arguments:
-        file_path {pathlib.PurePath} -- path to the file in question
-
-    Returns:
-        str -- file size in human friendly format
-    """
-    size_in_bytes = os.path.getsize(file_path)
-
-    return convert_size(size_in_bytes)
-
-
-def convert_size(size_in_bytes: int) -> str:
-    """Converts the size of a file (in bytes) to a human friendly format.
-
-    Based on: https://stackoverflow.com/a/14822210
-
-    Arguments:
-        size_in_bytes {int} -- size of file in bytes
-
-    Returns:
-        str -- file size in human friendly format
-    """
-    if size_in_bytes == 0:
-        return "0B"
-
-    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-    i = int(math.floor(math.log(size_in_bytes, 1024)))
-    p = math.pow(1024, i)
-    s = round(size_in_bytes / p, 2)
-
-    return f"{s} {size_name[i]}"
 
 
 def get_new_report_name_and_path() -> Tuple[str, pathlib.PurePath]:
@@ -455,3 +419,42 @@ def report_query_window_start() -> datetime:
     logger.info(f"Report starting from: {start.strftime('%d/%m/%Y')}")
 
     return datetime(year=start.year, month=start.month, day=start.day)
+
+
+# Private, not explicitly tested methods
+
+
+def __get_file_size(file_path: pathlib.PurePath) -> str:
+    """Get the size of a file in a human friendly format.
+
+    Arguments:
+        file_path {pathlib.PurePath} -- path to the file in question
+
+    Returns:
+        str -- file size in human friendly format
+    """
+    size_in_bytes = os.path.getsize(file_path)
+
+    return __convert_size(size_in_bytes)
+
+
+def __convert_size(size_in_bytes: int) -> str:
+    """Converts the size of a file (in bytes) to a human friendly format.
+
+    Based on: https://stackoverflow.com/a/14822210
+
+    Arguments:
+        size_in_bytes {int} -- size of file in bytes
+
+    Returns:
+        str -- file size in human friendly format
+    """
+    if size_in_bytes == 0:
+        return "0B"
+
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size_in_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_in_bytes / p, 2)
+
+    return f"{s} {size_name[i]}"
