@@ -252,10 +252,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 },
             )
 
-            # drop_duplicates is needed because the same 'root sample id' could pop up in two
-            # different batches, and then it would retrieve the same rows for that root sample id
-            # twice do reset_index after dropping duplicates to make sure the rows are numbered in
-            # a way that makes sense
+            # again we concatenate dropping duplicates here (same reason as outlined above)
             concat_frame = (
                 concat_frame.append(beckman_frame).drop_duplicates().reset_index(drop=True)
             )
