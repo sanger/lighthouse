@@ -91,6 +91,9 @@ POSITIVE_SAMPLES_MONGODB_FILTER = {
     ],
 }
 
+# Sentinel workflow event to help determine sample cherrypicked status
+EVENT_CHERRYPICK_LAYOUT_SET = "cherrypick_layout_set"
+
 # Events detailed in https://ssg-confluence.internal.sanger.ac.uk/display/PSDPUB/Cherrypicking+Events
 # Source plate has had all pickable wells cherrypicked into destination plates, and the plate is put into the output stacks.
 # Cherrypicking source and destination plate events
