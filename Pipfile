@@ -18,7 +18,7 @@ v = {version = "*",editable = true}
 
 [packages]
 eve = "~=1.1"
-colorlog = "~=4.1"
+colorlog = "~=4.7"
 requests = "~=2.23"
 slackclient = "~=2.5"
 gunicorn = "~=20.0"
