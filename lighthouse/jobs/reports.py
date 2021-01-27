@@ -1,7 +1,7 @@
 import logging
 import time
 
-import pandas as pd  # type: ignore
+import pandas as pd
 from flask import current_app as app
 from lighthouse import scheduler
 from lighthouse.constants import FIELD_PLATE_BARCODE, REPORT_COLUMNS

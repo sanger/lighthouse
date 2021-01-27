@@ -1,44 +1,37 @@
 import copy
-import os
 import json
-
-import pytest  # type: ignore
-import responses  # type: ignore
+import os
 from http import HTTPStatus
 
+import pytest
+import responses
 from lighthouse import create_app
+from lighthouse.constants import PLATE_EVENT_SOURCE_ALL_NEGATIVES, PLATE_EVENT_SOURCE_COMPLETED
+from lighthouse.helpers.dart_db import create_dart_connection, load_sql_server_script
+from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
+from lighthouse.messages.message import Message
 
 from .data.fixture_data import (
     CENTRES,
-    SAMPLES,
-    SAMPLES_DECLARATIONS,
+    COG_UK_IDS,
+    DART_MONGO_MERGED_SAMPLES,
+    EVENT_WH_DATA,
     LOTS_OF_SAMPLES,
     LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
-    MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
-    SAMPLES_NO_DECLARATION,
-    SAMPLES_FOR_MLWH_UPDATE,
-    COG_UK_IDS,
     MLWH_LH_SAMPLES,
     MLWH_LH_SAMPLES_MULTIPLE,
-    SAMPLES_CT_VALUES,
+    MLWH_SAMPLE_LIGHTHOUSE_SAMPLE,
+    MLWH_SAMPLE_STOCK_RESOURCE,
+    MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
+    SAMPLES,
+    SAMPLES_DECLARATIONS,
     SAMPLES_DIFFERENT_PLATES,
-    DART_MONGO_MERGED_SAMPLES,
+    SAMPLES_FOR_MLWH_UPDATE,
+    SAMPLES_NO_DECLARATION,
     SAMPLES_WITH_LAB_ID,
     SAMPLES_WITH_UUIDS,
-    EVENT_WH_DATA,
-    MLWH_SAMPLE_STOCK_RESOURCE,
-    MLWH_SAMPLE_LIGHTHOUSE_SAMPLE,
     SOURCE_PLATES,
 )
-
-from lighthouse.constants import (
-    PLATE_EVENT_SOURCE_COMPLETED,
-    PLATE_EVENT_SOURCE_ALL_NEGATIVES,
-)
-from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
-from lighthouse.helpers.dart_db import create_dart_connection, load_sql_server_script
-
-from lighthouse.messages.message import Message  # type: ignore
 
 
 @pytest.fixture
@@ -140,20 +133,6 @@ def samples_different_plates(app):
 
     #  yield a copy of that the test change it however it wants
     yield copy.deepcopy(SAMPLES_DIFFERENT_PLATES)
-
-    # clear up after the fixture is used
-    with app.app_context():
-        samples_collection.delete_many({})
-
-
-@pytest.fixture
-def samples_ct_values(app):
-    with app.app_context():
-        samples_collection = app.data.driver.db.samples
-        _ = samples_collection.insert_many(SAMPLES_CT_VALUES)
-
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SAMPLES_CT_VALUES)
 
     # clear up after the fixture is used
     with app.app_context():
@@ -428,13 +407,13 @@ def event_wh_data(app, event_wh_sql_engine):
 @pytest.fixture
 def mlwh_sql_engine(app):
     return create_mysql_connection_engine(
-        app.config["WAREHOUSES_RW_CONN_STRING"], app.config["ML_WH_DB"]
+        app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"]
     )
 
 
 @pytest.fixture
 def dart_connection(app):
-    return create_dart_connection(app)
+    return create_dart_connection()
 
 
 @pytest.fixture

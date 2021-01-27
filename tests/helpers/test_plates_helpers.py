@@ -1,14 +1,15 @@
 import json
+from datetime import datetime
 from functools import partial
 from http import HTTPStatus
+from unittest.mock import patch
+from uuid import uuid4
 
 import pytest
-from unittest.mock import patch
-import responses  # type: ignore
+import responses
 from flask import current_app
-from datetime import datetime
-from uuid import uuid4
 from lighthouse.constants import (
+    FIELD_BARCODE,
     FIELD_COG_BARCODE,
     FIELD_DART_CONTROL,
     FIELD_DART_DESTINATION_BARCODE,
@@ -19,57 +20,55 @@ from lighthouse.constants import (
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
     FIELD_LAB_ID,
+    FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
-    FIELD_BARCODE,
-    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_SS_BARCODE,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_COORDINATE,
+    FIELD_SS_LAB_ID,
+    FIELD_SS_NAME,
+    FIELD_SS_PHENOTYPE,
+    FIELD_SS_RESULT,
+    FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
     PLATE_EVENT_DESTINATION_CREATED,
     PLATE_EVENT_DESTINATION_FAILED,
-    FIELD_SS_LAB_ID,
-    FIELD_SS_NAME,
-    FIELD_SS_RESULT,
-    FIELD_SS_SAMPLE_DESCRIPTION,
-    FIELD_SS_SUPPLIER_NAME,
-    FIELD_SS_PHENOTYPE,
-    FIELD_SS_CONTROL,
-    FIELD_SS_CONTROL_TYPE,
-    FIELD_SS_UUID,
-    FIELD_SS_BARCODE,
-    FIELD_SS_COORDINATE,
 )
 from lighthouse.helpers.plates import (
     UnmatchedSampleError,
     add_cog_barcodes,
     add_controls_to_samples,
     check_matching_sample_numbers,
+    construct_cherrypicking_plate_failed_message,
     create_cherrypicked_post_body,
     create_post_body,
     equal_row_and_sample,
     find_sample_matching_row,
     find_samples,
+    find_source_plates,
     get_centre_prefix,
     get_positive_samples,
-    count_positive_samples,
+    get_positive_samples_count,
+    get_source_plates_for_samples,
+    get_unique_plate_barcodes,
     join_rows_with_samples,
     map_to_ss_columns,
     query_for_cherrypicked_samples,
+    query_for_source_plate_uuids,
     row_is_normal_sample,
     row_to_dict,
     rows_with_controls,
     rows_without_controls,
     update_mlwh_with_cog_uk_ids,
-    get_unique_plate_barcodes,
-    query_for_source_plate_uuids,
-    get_source_plates_for_samples,
-    construct_cherrypicking_plate_failed_message,
-    find_source_plates,
 )
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
-
 
 # ---------- test helpers ----------
 
@@ -343,14 +342,19 @@ def test_get_positive_samples_different_plates(app, samples_different_plates):
         assert len(get_positive_samples("123")) == 1
 
 
-def test_count_positive_samples(app, samples):
+def test_get_positive_samples_count_valid_barcode(app, samples):
     with app.app_context():
-        assert count_positive_samples("123") == 3
+        assert get_positive_samples_count("123") == 3
 
 
-def test_count_positive_samples_different_plates(app, samples_different_plates):
+def test_get_positive_samples_count_invalid_barcode(app, samples):
     with app.app_context():
-        assert count_positive_samples("123") == 1
+        assert get_positive_samples_count("abc") is None
+
+
+def test_get_positive_samples_count_different_plates(app, samples_different_plates):
+    with app.app_context():
+        assert get_positive_samples_count("123456789") is None
 
 
 def test_update_mlwh_with_cog_uk_ids(
@@ -899,8 +903,11 @@ def test_construct_cherrypicking_plate_failed_message_unknown_robot_fails(mock_e
 
     assert message is None
     assert len(errors) == 1
-    assert "An unexpected error occurred attempting to construct the cherrypicking plate "
-    "failed event message" in errors
+    msg = (
+        "An unexpected error occurred attempting to construct the cherrypicking plate failed "
+        "event message"
+    )
+    assert msg in errors[0]
 
 
 def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure(app, mock_event_helpers):
@@ -1106,8 +1113,11 @@ def test_construct_cherrypicking_plate_failed_message_mongo_samples_fetch_failur
 
             assert message is None
             assert len(errors) == 1
-            assert "An unexpected error occurred attempting to construct the cherrypicking plate "
-            "failed event message" in errors
+            msg = (
+                "An unexpected error occurred attempting to construct the cherrypicking plate "
+                "failed event message"
+            )
+            assert msg in errors[0]
 
 
 def test_construct_cherrypicking_plate_failed_message_none_mongo_samples(
@@ -1158,8 +1168,11 @@ def test_construct_cherrypicking_plate_failed_message_mongo_source_plates_fetch_
 
             assert message is None
             assert len(errors) == 1
-            assert "An unexpected error occurred attempting to construct the cherrypicking plate "
-            "failed event message" in errors
+            msg = (
+                "An unexpected error occurred attempting to construct the cherrypicking plate "
+                "failed event message"
+            )
+            assert msg in errors[0]
 
 
 def test_construct_cherrypicking_plate_failed_message_none_mongo_source_plates(

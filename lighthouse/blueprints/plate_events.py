@@ -4,12 +4,10 @@ from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
 from flask_cors import CORS  # type: ignore
-
-from lighthouse.messages.broker import Broker  # type: ignore
-from lighthouse.helpers.plate_events import construct_event_message
-from lighthouse.helpers.plate_event_callbacks import fire_callbacks
 from lighthouse.helpers.events import get_routing_key
-
+from lighthouse.helpers.plate_event_callbacks import fire_callbacks
+from lighthouse.helpers.plate_events import construct_event_message
+from lighthouse.messages.broker import Broker
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +28,7 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
         logger.info(f"Attempting to publish an '{event_type}' plate event message")
         logger.info("Attempting to construct the plate event message")
         errors, message = construct_event_message(event_type, request.args)
-        if len(errors) > 0:
+        if len(errors) > 0 or message is None:
             logger.error(
                 "Failed publishing plate event message: error(s) constructing event message: "
                 f"{errors}"

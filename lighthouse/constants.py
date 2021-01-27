@@ -1,10 +1,18 @@
 import os
-import re
 
 DUPLICATE_SAMPLES = "DuplicateSamples"
 NON_EXISTING_SAMPLE = "NonExistingSample"
 
+# ???
+FIELD_BARCODE = "barcode"
+
+# Fields for baracoda
+FIELD_COG_BARCODE = "cog_barcode"
+
+###
 # MongoDB field names
+###
+# general fields
 FIELD_ROOT_SAMPLE_ID = "Root Sample ID"
 FIELD_RNA_ID = "RNA ID"
 FIELD_RESULT = "Result"
@@ -12,16 +20,18 @@ FIELD_COORDINATE = "coordinate"
 FIELD_SOURCE = "source"
 FIELD_LAB_ID = "Lab ID"
 FIELD_PLATE_BARCODE = "plate_barcode"
-FIELD_COG_BARCODE = "cog_barcode"
 FIELD_DATE_TESTED = "Date Tested"
-FIELD_CH1_CQ = "CH1-Cq"
-FIELD_CH2_CQ = "CH2-Cq"
-FIELD_CH3_CQ = "CH3-Cq"
+
+# UUID fields
 FIELD_LH_SOURCE_PLATE_UUID = "lh_source_plate_uuid"
 FIELD_LH_SAMPLE_UUID = "lh_sample_uuid"
-FIELD_BARCODE = "barcode"
 
+# Filtered positive fields
+FIELD_FILTERED_POSITIVE = "filtered_positive"
+
+###
 # DART specific column names:
+###
 FIELD_DART_DESTINATION_BARCODE = os.environ.get(
     "FIELD_DART_DESTINATION_BARCODE", "destination_barcode"
 )
@@ -36,80 +46,52 @@ FIELD_DART_RNA_ID = os.environ.get("FIELD_DART_RNA_ID", "rna_id")
 FIELD_DART_LAB_ID = os.environ.get("FIELD_DART_LAB_ID", "lab_id")
 FIELD_DART_RUN_ID = os.environ.get("FIELD_DART_RUN_ID", "dart_run_id")
 
-#  MLWH lighthouse samples table field names
+###
+# MLWH lighthouse samples table field names
+###
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID = "root_sample_id"
 MLWH_LH_SAMPLE_COG_UK_ID = "cog_uk_id"
 MLWH_LH_SAMPLE_RNA_ID = "rna_id"
 MLWH_LH_SAMPLE_RESULT = "result"
 
-# Used for filtering positive results
-CT_VALUE_LIMIT = 30
-
 # Stage for mongo aggregation pipeline
-STAGE_MATCH_POSITIVE = {
+STAGE_MATCH_FILTERED_POSITIVE = {
     "$match": {
-        #  1. We are only interested in positive samples
-        FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
-        # 2. We are not interested in controls
-        FIELD_ROOT_SAMPLE_ID: {"$not": {"$regex": "^(?:CBIQA_|QC0|ZZA000)"}},
-        # 3. Further filter the positive samples
-        # TODO: needs to align with the crawler changes
-        "$or": [
-            {
-                "$and": [
-                    {FIELD_CH1_CQ: {"$exists": False}},
-                    {FIELD_CH2_CQ: {"$exists": False}},
-                    {FIELD_CH3_CQ: {"$exists": False}},
-                ],
-            },
-            {
-                "$or": [
-                    {FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}},
-                    {FIELD_CH2_CQ: {"$lte": CT_VALUE_LIMIT}},
-                    {FIELD_CH3_CQ: {"$lte": CT_VALUE_LIMIT}},
-                ],
-            },
-        ],
-        # 4. We are only interested in documents which have a valid date
+        # 1. We are only interested filtered positive samples
+        FIELD_FILTERED_POSITIVE: True,
+        # 2. We are only interested in documents which have a valid date
         FIELD_DATE_TESTED: {"$exists": True, "$nin": [None, ""]},
     }
-}
-
-# TODO: use the stage above and an aggregate intead
-POSITIVE_SAMPLES_MONGODB_FILTER = {
-    FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
-    FIELD_ROOT_SAMPLE_ID: {"$not": re.compile("^(?:CBIQA_|QC0|ZZA000)")},
-    "$or": [
-        {"$and": [{FIELD_CH1_CQ: None}, {FIELD_CH2_CQ: None}, {FIELD_CH3_CQ: None}]},
-        {
-            "$or": [
-                {FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}},
-                {FIELD_CH2_CQ: {"$lte": CT_VALUE_LIMIT}},
-                {FIELD_CH3_CQ: {"$lte": CT_VALUE_LIMIT}},
-            ]
-        },
-    ],
 }
 
 # Sentinel workflow event to help determine sample cherrypicked status
 EVENT_CHERRYPICK_LAYOUT_SET = "cherrypick_layout_set"
 
-# Events detailed in https://ssg-confluence.internal.sanger.ac.uk/display/PSDPUB/Cherrypicking+Events
-# Source plate has had all pickable wells cherrypicked into destination plates, and the plate is put into the output stacks.
+###
+# Events detailed: https://ssg-confluence.internal.sanger.ac.uk/display/PSDPUB/Cherrypicking+Events
+# Source plate has had all pickable wells cherrypicked into destination plates, and the plate is
+# put into the output stacks.
 # Cherrypicking source and destination plate events
+###
 PLATE_EVENT_SOURCE_COMPLETED = "lh_beckman_cp_source_completed"
-# Source plate barcode cannot be read (damaged or missing), and the plate is put into the output stacks.
+# Source plate barcode cannot be read (damaged or missing), and the plate is put into the output
+# stacks.
 PLATE_EVENT_SOURCE_NOT_RECOGNISED = "lh_beckman_cp_source_plate_unrecognised"
-# Source plate has no related plate map data, cannot be cherrypicked (yet), and the plate is returned to the input stacks.
+# Source plate has no related plate map data, cannot be cherrypicked (yet), and the plate is
+# returned to the input
+# stacks.
 PLATE_EVENT_SOURCE_NO_MAP_DATA = "lh_beckman_cp_source_no_plate_map_data"
-# Source plate only contains negatives, nothing to cherrypick, and the plate is put into the output stacks.
+# Source plate only contains negatives, nothing to cherrypick, and the plate is put into the output
+# stacks.
 PLATE_EVENT_SOURCE_ALL_NEGATIVES = "lh_beckman_cp_source_all_negatives"
 # Destination plate has been created successfully
 PLATE_EVENT_DESTINATION_CREATED = "lh_beckman_cp_destination_created"
 # Destination plate has failed to be created successfully
 PLATE_EVENT_DESTINATION_FAILED = "lh_beckman_cp_destination_failed"
 
-# SequenceScape sampel field names
+###
+# SequenceScape sample field names
+###
 FIELD_SS_SAMPLE_DESCRIPTION = "sample_description"
 FIELD_SS_NAME = "name"
 FIELD_SS_LAB_ID = "lab_id"
@@ -122,6 +104,8 @@ FIELD_SS_UUID = "uuid"
 FIELD_SS_COORDINATE = "coordinate"
 FIELD_SS_BARCODE = "barcode"
 
+# Columns that should appear in the filtered positive samples report and the order in which they
+# will appear
 REPORT_COLUMNS = [
     "Date Tested",
     "Root Sample ID",

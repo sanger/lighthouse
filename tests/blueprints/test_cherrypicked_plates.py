@@ -1,10 +1,9 @@
 import json
 from http import HTTPStatus
 from unittest.mock import patch
+
+import responses
 from lighthouse.messages.message import Message
-
-import responses  # type: ignore
-
 
 # ---------- cherrypicked-plates/create tests ----------
 
