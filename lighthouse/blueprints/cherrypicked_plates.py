@@ -33,7 +33,7 @@ CORS(bp)
 
 # TODO - reduce method length/complexity
 @bp.route("/cherrypicked-plates/create", methods=["GET"])
-def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
+def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:  # noqa: C901
     try:
         user_id = request.args.get("user_id", "")
         if len(user_id) == 0:
