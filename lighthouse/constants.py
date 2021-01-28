@@ -3,7 +3,7 @@ import os
 DUPLICATE_SAMPLES = "DuplicateSamples"
 NON_EXISTING_SAMPLE = "NonExistingSample"
 
-# ???
+# Plate barcode in the source_plates collection
 FIELD_BARCODE = "barcode"
 
 # Fields for baracoda
