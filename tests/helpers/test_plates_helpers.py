@@ -354,7 +354,7 @@ def test_get_positive_samples_count_invalid_barcode(app, samples):
 
 def test_get_positive_samples_count_different_plates(app, samples_different_plates):
     with app.app_context():
-        assert get_positive_samples_count("123456789") is None
+        assert get_positive_samples_count("123") is 1
 
 
 def test_update_mlwh_with_cog_uk_ids(
