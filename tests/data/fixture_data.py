@@ -166,7 +166,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_DATE_TESTED: "2020-05-10 07:30:00 UTC",
         FIELD_FILTERED_POSITIVE: False,
     },
-    {  # positive, with low Ct values
+    {  # filtered_positive: True
         FIELD_COORDINATE: "E01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
@@ -178,7 +178,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
         FIELD_FILTERED_POSITIVE: True,
     },
-    {  # positive, with high Ct values
+    {  # filtered_positive: False
         FIELD_COORDINATE: "F01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
@@ -190,7 +190,7 @@ SAMPLES: List[Dict[str, Any]] = [
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
         FIELD_FILTERED_POSITIVE: False,
     },
-    {  # positive, with mix of Ct values
+    {  # filtered_positive: True
         FIELD_COORDINATE: "G01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",
