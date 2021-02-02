@@ -164,24 +164,35 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 "plate_barcodes": tuple(plate_barcodes),
             }
 
-            sentinel_sql = __sentinel_cherrypicked_samples_query(mlwh_db, events_wh_db)
-            sentinel_frame = pd.read_sql(sentinel_sql, db_connection, params=params)
+            cherrypicked_sql = __cherrypicked_samples_query()
+            cherrypicked_frame = pd.read_sql(cherrypicked_sql, db_connection, params=params)
 
             # drop_duplicates is needed because the same 'root sample id' could pop up in two
             # different batches, and then it would retrieve the same rows for that root sample id
             # twice do reset_index after dropping duplicates to make sure the rows are numbered in
             # a way that makes sense
             concat_frame = (
-                concat_frame.append(sentinel_frame).drop_duplicates().reset_index(drop=True)
+                concat_frame.append(cherrypicked_frame).drop_duplicates().reset_index(drop=True)
             )
 
-            beckman_sql = __beckman_cherrypicked_samples_query(mlwh_db, events_wh_db)
-            beckman_frame = pd.read_sql(beckman_sql, db_connection, params=params)
+            # sentinel_sql = __sentinel_cherrypicked_samples_query(mlwh_db, events_wh_db)
+            # sentinel_frame = pd.read_sql(sentinel_sql, db_connection, params=params)
 
-            # again we concatenate dropping duplicates here (same reason as outlined above)
-            concat_frame = (
-                concat_frame.append(beckman_frame).drop_duplicates().reset_index(drop=True)
-            )
+            # # drop_duplicates is needed because the same 'root sample id' could pop up in two
+            # # different batches, and then it would retrieve the same rows for that root sample id
+            # # twice do reset_index after dropping duplicates to make sure the rows are numbered in
+            # # a way that makes sense
+            # concat_frame = (
+            #     concat_frame.append(sentinel_frame).drop_duplicates().reset_index(drop=True)
+            # )
+
+            # beckman_sql = __beckman_cherrypicked_samples_query(mlwh_db, events_wh_db)
+            # beckman_frame = pd.read_sql(beckman_sql, db_connection, params=params)
+
+            # # again we concatenate dropping duplicates here (same reason as outlined above)
+            # concat_frame = (
+            #     concat_frame.append(beckman_frame).drop_duplicates().reset_index(drop=True)
+            # )
 
         return concat_frame
     except Exception as e:
@@ -420,6 +431,15 @@ def __convert_size(size_in_bytes: int) -> str:
     s = round(size_in_bytes / p, 2)
 
     return f"{s} {size_name[i]}"
+
+
+def __cherrypicked_samples_query() -> str:
+    return (
+        f"select `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`,phenotype as `Result_lower`, `{FIELD_COORDINATE}`"
+        f" FROM cherrypicked_samples"
+        f" WHERE {FIELD_ROOT_SAMPLE_ID} IN %(root_sample_ids)s"
+        f" AND {FIELD_PLATE_BARCODE} IN %(plate_barcodes)s"
+    )
 
 
 def __sentinel_cherrypicked_samples_query(mlwh_db: str, events_wh_db: str) -> str:
