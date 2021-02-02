@@ -1,25 +1,23 @@
 import logging
-from typing import Optional, Dict, Tuple, List
+from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
+
 from flask import current_app as app
-from lighthouse.messages.message import Message  # type: ignore
 from lighthouse.constants import (
-    PLATE_EVENT_SOURCE_COMPLETED,
-    PLATE_EVENT_SOURCE_NOT_RECOGNISED,
-    PLATE_EVENT_SOURCE_NO_MAP_DATA,
     PLATE_EVENT_SOURCE_ALL_NEGATIVES,
-)
-from lighthouse.helpers.mongo_db import (
-    get_source_plate_uuid,
-    get_positive_samples_in_source_plate,
+    PLATE_EVENT_SOURCE_COMPLETED,
+    PLATE_EVENT_SOURCE_NO_MAP_DATA,
+    PLATE_EVENT_SOURCE_NOT_RECOGNISED,
 )
 from lighthouse.helpers.events import (
-    get_robot_uuid,
-    construct_robot_message_subject,
     construct_mongo_sample_message_subject,
+    construct_robot_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
+    get_robot_uuid,
 )
+from lighthouse.helpers.mongo_db import get_positive_samples_in_source_plate, get_source_plate_uuid
+from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
 
@@ -159,9 +157,11 @@ def construct_source_plate_no_map_data_message(
     except Exception as e:
         logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_NO_MAP_DATA} message")
         logger.exception(e)
-        return [
-            f"An unexpected error occurred attempting to construct the {PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
-        ], None
+        msg = (
+            "An unexpected error occurred attempting to construct the "
+            f"{PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
+        )
+        return [msg], None
 
 
 def construct_source_plate_all_negatives_message(

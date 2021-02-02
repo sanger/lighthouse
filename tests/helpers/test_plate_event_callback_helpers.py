@@ -1,6 +1,6 @@
-from lighthouse.messages.message import Message  # type: ignore
+from unittest.mock import patch
+
 from lighthouse.helpers.plate_event_callbacks import fire_callbacks
-from unittest.mock import patch, MagicMock
 
 
 def test_fire_callbacks_unrecognised_event(app, message_unknown):
@@ -16,7 +16,7 @@ def test_fire_callbacks_with_failure(app, message_source_all_negative):
         with patch(
             "lighthouse.helpers.plate_event_callbacks.set_locations_in_labwhere",
             side_effect=Exception("Labwhere was down"),
-        ) as mock_set_locations_in_labwhere:
+        ):
             success, errors = fire_callbacks(message_source_all_negative)
 
             assert len(errors) == 1

@@ -21,14 +21,12 @@ This file contains the following functions:
 """
 
 import logging
-from lighthouse.messages.message import Message  # type: ignore
-from typing import Tuple, List
-from lighthouse.constants import (
-    PLATE_EVENT_SOURCE_COMPLETED,
-    PLATE_EVENT_SOURCE_ALL_NEGATIVES,
-)
-from lighthouse.helpers.labwhere import set_locations_in_labwhere
+from typing import List, Tuple
+
 from flask import current_app as app
+from lighthouse.constants import PLATE_EVENT_SOURCE_ALL_NEGATIVES, PLATE_EVENT_SOURCE_COMPLETED
+from lighthouse.helpers.labwhere import set_locations_in_labwhere
+from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
 

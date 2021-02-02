@@ -1,6 +1,7 @@
+from unittest.mock import MagicMock, patch
+
+import pytest
 from lighthouse.messages.broker import Broker
-import pytest  # type: ignore
-from unittest.mock import patch, MagicMock
 
 
 def test_broker_connect_connects(app, mock_pika):

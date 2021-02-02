@@ -6,9 +6,10 @@ This file contains the following functions:
   * set_locations_in_labwhere - Make an API call to labwhere to update locations
 """
 
+from typing import List
+
 import requests
 from flask import current_app as app
-from typing import List
 
 
 def get_locations_from_labwhere(labware_barcodes):
@@ -38,7 +39,8 @@ def set_locations_in_labwhere(
 
     Arguments:
         labware_barcodes {List[str]} - The source plate barcodes
-        location_barcode {str} - The barcode of the locations to which the labwares have been transferred.
+        location_barcode {str} - The barcode of the locations to which the labwares have been
+                                 transferred.
         user_barcode {str} - The swipecard/barcode for the user or robot associated with the scan.
 
 

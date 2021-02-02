@@ -6,8 +6,6 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pandas as pd
 from lighthouse.constants import (
-    CT_VALUE_LIMIT,
-    FIELD_CH1_CQ,
     FIELD_COORDINATE,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
@@ -25,7 +23,6 @@ from lighthouse.helpers.reports import (
     report_query_window_start,
     unpad_coordinate,
 )
-
 
 # ----- get_new_report_name_and_path tests -----
 
@@ -615,15 +612,6 @@ def test_join_samples_declarations_empty_collection(app, freezer, samples_no_dec
 
 
 # ----- misc tests -----
-
-
-def test_query_by_ct_limit(app, freezer, samples_ct_values):
-    # Just testing how mongo queries work with 'less than' comparisons and nulls
-    with app.app_context():
-        samples = app.data.driver.db.samples
-        ct_less_than_limit = samples.count_documents({FIELD_CH1_CQ: {"$lte": CT_VALUE_LIMIT}})
-
-        assert ct_less_than_limit == 1  # 'MCM003'
 
 
 def test_report_query_window_start(app):

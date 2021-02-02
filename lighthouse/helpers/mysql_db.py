@@ -1,6 +1,6 @@
-import sqlalchemy  # type: ignore
-from sqlalchemy import MetaData  # type: ignore
-from sqlalchemy.engine.base import Engine  # type: ignore
+import sqlalchemy
+from sqlalchemy import MetaData
+from sqlalchemy.engine.base import Engine
 
 
 def create_mysql_connection_engine(connection_string: str, database: str = None) -> Engine:
