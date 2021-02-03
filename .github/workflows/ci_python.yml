@@ -8,7 +8,7 @@ on:
       - gpl769_use_cherrypicked_view
 
 env: 
-  UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/unified_warehouse:GPL-769-cherrypicked-samples-view-revisited
+  UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:GPL-769-cherrypicked-samples-view-revisited
   EVENT_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:gpl769_test_cp_view
 jobs:
   test_job:
