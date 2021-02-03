@@ -561,7 +561,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE: Dict[str, Any] = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "35000000000000000000000000000000",
+            "uuid_sample_lims": "35",
         },
         {
             "id_sample_tmp": "6",
@@ -574,7 +574,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE: Dict[str, Any] = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "36000000000000000000000000000000",
+            "uuid_sample_lims": "36",
         },
         {
             "id_sample_tmp": "7",
@@ -587,7 +587,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE: Dict[str, Any] = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "37000000000000000000000000000000",
+            "uuid_sample_lims": "37",
         },
         {
             "id_sample_tmp": "8",
@@ -600,7 +600,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE: Dict[str, Any] = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "38000000000000000000000000000000",
+            "uuid_sample_lims": "38",
         },
     ],
     "lighthouse_sample": [
@@ -615,7 +615,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE: Dict[str, Any] = {
             "date_tested": datetime(2020, 10, 24, 22, 30, 22),
             "source": "test centre",
             "lab_id": "TC",
-            "lh_sample_uuid": "35000000000000000000000000000000",
+            "lh_sample_uuid": "35",
         },
         {
             "mongodb_id": "2",
@@ -628,7 +628,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE: Dict[str, Any] = {
             "date_tested": datetime(2020, 10, 24, 22, 30, 22),
             "source": "test centre",
             "lab_id": "TC",
-            "lh_sample_uuid": "36000000000000000000000000000000",
+            "lh_sample_uuid": "36",
         },
         {
             "mongodb_id": "3",
@@ -641,7 +641,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE: Dict[str, Any] = {
             "date_tested": datetime(2020, 10, 24, 22, 30, 22),
             "source": "test centre",
             "lab_id": "TC",
-            "lh_sample_uuid": "37000000000000000000000000000000",
+            "lh_sample_uuid": "37",
         },
         {
             "mongodb_id": "4",
@@ -654,7 +654,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE: Dict[str, Any] = {
             "date_tested": datetime(2020, 10, 24, 22, 30, 22),
             "source": "test centre",
             "lab_id": "TC",
-            "lh_sample_uuid": "38000000000000000000000000000000",
+            "lh_sample_uuid": "38",
         },
     ],
 }
@@ -665,12 +665,29 @@ EVENT_WH_DATA: Dict[str, Any] = {
         {"id": 2, "uuid": "2".encode("utf-8"), "friendly_name": "ss2", "subject_type_id": 1},
         {"id": 3, "uuid": "5".encode("utf-8"), "friendly_name": "ss1-beck", "subject_type_id": 1},
         {"id": 4, "uuid": "6".encode("utf-8"), "friendly_name": "ss2-beck", "subject_type_id": 1},
+        # Plate PB4
+        {
+            "id": 5,
+            "uuid": "35".encode("utf-8"),
+            "friendly_name": "pb_4",
+            "subject_type_id": 1,
+        },
+        # Plate PB5
+        {
+            "id": 6,
+            "uuid": "36".encode("utf-8"),
+            "friendly_name": "pb_5",
+            "subject_type_id": 1,
+        },
     ],
     "roles": [
         {"id": 1, "event_id": 1, "subject_id": 1, "role_type_id": 1},
         {"id": 2, "event_id": 2, "subject_id": 2, "role_type_id": 1},
         {"id": 3, "event_id": 3, "subject_id": 3, "role_type_id": 1},
         {"id": 4, "event_id": 4, "subject_id": 4, "role_type_id": 1},
+        # PB4 and PB5 are Beckman
+        {"id": 5, "event_id": 4, "subject_id": 5, "role_type_id": 1},
+        {"id": 6, "event_id": 4, "subject_id": 6, "role_type_id": 1},
     ],
     "events": [
         {

@@ -83,17 +83,17 @@ Option B (in Docker):
 
         docker build -t lighthouse:develop .
 
-2. Sql server
+1. Sql server
 
         docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=MyS3cr3tPassw0rd" \
         -p 1433:1433 --name sql1 -h sql1 \
         -d mcr.microsoft.com/mssql/server:2019-latest
 
-3. Ensure your .env file contains the line
+1. Ensure your .env file contains the line
 
         LOCALHOST=host.docker.internal
 
-3. Start the docker container and open a bash session in it with:
+1. Start the docker container and open a bash session in it with:
 
         docker run --env-file .env -p 5000:5000 -v `pwd`:/code -it lighthouse:develop bash
 
@@ -101,18 +101,22 @@ Option B (in Docker):
    source code of the project from your hosting machine (You can replace `pwd` with your actual directory).
    The container will map your port 5000 with the port 5000 of Docker.
 
-4. Inside the docker container, you may also need to run
+1. Inside the docker container, you may also need to run
 
         pipenv install
         pipenv shell
 
-5. Initialize the development database for sqlserver inside `pipenv shell`:
+1. Initialize the development database for sqlserver inside `pipenv shell`:
 
         python ./setup_sqlserver_test_db.py
-        python ./setup_test_db.py
 
+1. Initialize the integration tests setup for events warehouse (please check the 
+Integration Tests Setup section at <https://github.com/sanger/event_warehouse/>) 
 
-6. Now that you are inside the container, start the app in port 5000 of Docker using:
+1. Initialize the integration tests setup for unified warehouse (please check the 
+Integration Tests Setup section at <https://github.com/sanger/unified_warehouse/>) 
+
+1. Now that you are inside the container, start the app in port 5000 of Docker using:
 
         flask run -h 0.0.0.0
 
@@ -121,6 +125,11 @@ Option B (in Docker):
 ## Testing
 
 1. Verify the credentials for your database in the settings file 'lighthouse/config/test.py'
+
+1. Install the development dependencies
+
+        pipenv install --dev
+        
 1. Run the tests using pytest (flags are for verbose, exit early and capture output):
 
         python -m pytest -vsx

@@ -164,7 +164,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 "plate_barcodes": tuple(plate_barcodes),
             }
 
-            cherrypicked_sql = __cherrypicked_samples_query()
+            cherrypicked_sql = __cherrypicked_samples_query(mlwh_db)
             cherrypicked_frame = pd.read_sql(cherrypicked_sql, db_connection, params=params)
 
             # drop_duplicates is needed because the same 'root sample id' could pop up in two
@@ -433,12 +433,12 @@ def __convert_size(size_in_bytes: int) -> str:
     return f"{s} {size_name[i]}"
 
 
-def __cherrypicked_samples_query() -> str:
+def __cherrypicked_samples_query(mlwh_db: str) -> str:
     return (
-        f"select `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`,phenotype as `Result_lower`, `{FIELD_COORDINATE}`"
-        f" FROM cherrypicked_samples"
-        f" WHERE {FIELD_ROOT_SAMPLE_ID} IN %(root_sample_ids)s"
-        f" AND {FIELD_PLATE_BARCODE} IN %(plate_barcodes)s"
+        f"select root_sample_id as `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`, phenotype as `Result_lower`, `{FIELD_COORDINATE}`"
+        f" FROM {mlwh_db}.cherrypicked_samples"
+        f" WHERE root_sample_id IN %(root_sample_ids)s"
+        f" AND `{FIELD_PLATE_BARCODE}` IN %(plate_barcodes)s"
     )
 
 
