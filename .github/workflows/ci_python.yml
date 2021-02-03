@@ -4,7 +4,12 @@ on:
   push:
     paths-ignore:
       - "README.md"
+    branches:
+      - gpl769_use_cherrypicked_view
 
+env: 
+  UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/unified_warehouse:GPL-769-cherrypicked-samples-view-revisited
+  EVENT_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:gpl769_test_cp_view
 jobs:
   test_job:
     runs-on: ubuntu-18.04
@@ -61,9 +66,35 @@ jobs:
       - name: Create SQL Server testing database
         run: |
           python setup_sqlserver_test_db.py
-      - name: Setup the test MLWH and Events databases
-        run: |
-          python setup_test_db.py
+
+      - name: Login to registry
+        run: >-
+          docker login
+          -u ${{ github.actor }}
+          -p ${{ secrets.GITHUB_TOKEN }}
+          docker.pkg.github.com
+      - name: Pull Event warehouse image
+        run: >- 
+          docker pull ${EVENT_WAREHOUSE_IMAGE}
+      - name: Initialize Event warehouse testing database
+        run: >-
+          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
+          -v ${GITHUB_WORKSPACE}/spec/data/test_event_wh_seed.rb:/code/db/seed.rb
+          ${EVENT_WAREHOUSE_IMAGE}
+          bundle exec rake db:setup db:seed
+      - name: Seed Event warehouse testing database
+        run: >-
+          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
+          ${EVENT_WAREHOUSE_IMAGE}
+          bundle exec rails runner /code/spec/data/integration/seed_for_unified_wh.rb
+      - name: Create the views
+        run: >-
+          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
+          docker.pkg.github.com/${UNIFIED_WAREHOUSE_IMAGE}:${GITHUB_REF##*/} 
+          bundle exec rake db:views:schema:load
+      #- name: Setup the test MLWH and Events databases
+      #  run: |
+      #    python setup_test_db.py
       - name: Test with pytest
         run: |
           python -m pytest -x

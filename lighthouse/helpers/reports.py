@@ -16,14 +16,12 @@ import pandas as pd
 import sqlalchemy
 from flask import current_app as app
 from lighthouse.constants import (
-    EVENT_CHERRYPICK_LAYOUT_SET,
     FIELD_COORDINATE,
     FIELD_DATE_TESTED,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
-    PLATE_EVENT_DESTINATION_CREATED,
     STAGE_MATCH_FILTERED_POSITIVE,
 )
 from lighthouse.exceptions import ReportCreationError
@@ -156,7 +154,6 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         db_connection = sql_engine.connect()
 
         mlwh_db = app.config["MLWH_DB"]
-        events_wh_db = app.config["EVENTS_WH_DB"]
 
         for chunk_root_sample_id in chunk_root_sample_ids:
             params = {
@@ -174,25 +171,6 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
             concat_frame = (
                 concat_frame.append(cherrypicked_frame).drop_duplicates().reset_index(drop=True)
             )
-
-            # sentinel_sql = __sentinel_cherrypicked_samples_query(mlwh_db, events_wh_db)
-            # sentinel_frame = pd.read_sql(sentinel_sql, db_connection, params=params)
-
-            # # drop_duplicates is needed because the same 'root sample id' could pop up in two
-            # # different batches, and then it would retrieve the same rows for that root sample id
-            # # twice do reset_index after dropping duplicates to make sure the rows are numbered in
-            # # a way that makes sense
-            # concat_frame = (
-            #     concat_frame.append(sentinel_frame).drop_duplicates().reset_index(drop=True)
-            # )
-
-            # beckman_sql = __beckman_cherrypicked_samples_query(mlwh_db, events_wh_db)
-            # beckman_frame = pd.read_sql(beckman_sql, db_connection, params=params)
-
-            # # again we concatenate dropping duplicates here (same reason as outlined above)
-            # concat_frame = (
-            #     concat_frame.append(beckman_frame).drop_duplicates().reset_index(drop=True)
-            # )
 
         return concat_frame
     except Exception as e:
@@ -435,60 +413,9 @@ def __convert_size(size_in_bytes: int) -> str:
 
 def __cherrypicked_samples_query(mlwh_db: str) -> str:
     return (
-        f"select root_sample_id as `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`, phenotype as `Result_lower`, `{FIELD_COORDINATE}`"
+        f"select root_sample_id as `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`,"
+        f" phenotype as `Result_lower`, `{FIELD_COORDINATE}`"
         f" FROM {mlwh_db}.cherrypicked_samples"
         f" WHERE root_sample_id IN %(root_sample_ids)s"
         f" AND `{FIELD_PLATE_BARCODE}` IN %(plate_barcodes)s"
-    )
-
-
-def __sentinel_cherrypicked_samples_query(mlwh_db: str, events_wh_db: str) -> str:
-    """Forms the SQL query to identify samples cherrypicked via the Sentinel workflow.
-
-    Arguments:
-        mlwh_db {str} -- The name of the MLWH database
-        events_wh_db {str} -- The name of the Events Warehouse database
-
-    Returns:
-        str -- the SQL query for Sentinel cherrypicked samples
-    """
-    return (
-        f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"  # noqa: E501
-        f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"  # noqa: E501
-        f" FROM {mlwh_db}.sample as mlwh_sample"
-        f" JOIN {mlwh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"  # noqa: E501
-        f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"  # noqa: E501
-        f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"  # noqa: E501
-        f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"  # noqa: E501
-        f" JOIN {events_wh_db}.event_types mlwh_events_event_types ON (mlwh_events_events.event_type_id = mlwh_events_event_types.id)"  # noqa: E501
-        f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
-        f" AND mlwh_stock_resource.labware_human_barcode IN %(plate_barcodes)s"
-        f" AND mlwh_events_event_types.key = '{EVENT_CHERRYPICK_LAYOUT_SET}'"
-        " GROUP BY mlwh_sample.description, mlwh_stock_resource.labware_human_barcode, mlwh_sample.phenotype, mlwh_stock_resource.labware_coordinate"  # noqa: E501
-    )
-
-
-def __beckman_cherrypicked_samples_query(mlwh_db: str, events_wh_db: str) -> str:
-    """Forms the SQL query to identify samples cherrypicked via the Beckman workflow.
-
-    Arguments:
-        mlwh_db {str} -- The name of the MLWH database
-        events_wh_db {str} -- The name of the Events Warehouse database
-
-    Returns:
-        str -- the SQL query for Beckman cherrypicked samples
-    """
-    return (
-        f"SELECT mlwh_sample.description AS `{FIELD_ROOT_SAMPLE_ID}`, mlwh_lh_sample.plate_barcode AS `{FIELD_PLATE_BARCODE}`,"  # noqa: E501
-        f" mlwh_sample.phenotype AS `Result_lower`, mlwh_lh_sample.coordinate AS `{FIELD_COORDINATE}`"  # noqa: E501
-        f" FROM {mlwh_db}.sample AS mlwh_sample"
-        f" JOIN {mlwh_db}.lighthouse_sample AS mlwh_lh_sample ON (mlwh_sample.uuid_sample_lims = mlwh_lh_sample.lh_sample_uuid)"  # noqa: E501
-        f" JOIN {events_wh_db}.subjects AS mlwh_events_subjects ON (mlwh_events_subjects.uuid = UNHEX(REPLACE(mlwh_lh_sample.lh_sample_uuid, '-', '')))"  # noqa: E501
-        f" JOIN {events_wh_db}.roles AS mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"  # noqa: E501
-        f" JOIN {events_wh_db}.events AS mlwh_events_events ON (mlwh_events_events.id = mlwh_events_roles.event_id)"  # noqa: E501
-        f" JOIN {events_wh_db}.event_types AS mlwh_events_event_types ON (mlwh_events_event_types.id = mlwh_events_events.event_type_id)"  # noqa: E501
-        f" WHERE mlwh_sample.description IN %(root_sample_ids)s"
-        f" AND mlwh_lh_sample.plate_barcode IN %(plate_barcodes)s"
-        f" AND mlwh_events_event_types.key = '{PLATE_EVENT_DESTINATION_CREATED}'"
-        " GROUP BY mlwh_sample.description, mlwh_lh_sample.plate_barcode, mlwh_sample.phenotype, mlwh_lh_sample.coordinate;"  # noqa: E501
     )
