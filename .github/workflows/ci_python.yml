@@ -90,7 +90,7 @@ jobs:
       - name: Create the views
         run: >-
           docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
-          docker.pkg.github.com/${UNIFIED_WAREHOUSE_IMAGE}:${GITHUB_REF##*/} 
+          ${UNIFIED_WAREHOUSE_IMAGE}
           bundle exec rake db:views:schema:load
       #- name: Setup the test MLWH and Events databases
       #  run: |
