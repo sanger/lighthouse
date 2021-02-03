@@ -89,9 +89,6 @@ jobs:
           docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
           ${UNIFIED_WAREHOUSE_IMAGE}
           bundle exec rake db:reset db:views:schema:load
-      #- name: Setup the test MLWH and Events databases
-      #  run: |
-      #    python setup_test_db.py
       - name: Test with pytest
         run: |
           python -m pytest -x

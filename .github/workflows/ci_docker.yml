@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - master
+      - gpl769_use_cherrypicked_view
     paths-ignore:
       - "README.md"
     tags:
@@ -13,6 +14,8 @@ on:
       - v*
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
+  UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:GPL-769-cherrypicked-samples-view-revisited
+  EVENT_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:gpl769_test_cp_view
 
 jobs:
   build_and_test_job:
@@ -56,24 +59,34 @@ jobs:
           --network host
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           python setup_sqlserver_test_db.py
-      - name: Setup the test MLWH and Events databases
+      - name: Login to registry
         run: >-
-          docker run
-          --network host
-          docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-          python setup_test_db.py
+          docker login
+          -u ${{ github.actor }}
+          -p ${{ secrets.GITHUB_TOKEN }}
+          docker.pkg.github.com
+      - name: Pull Event warehouse image
+        run: >- 
+          docker pull ${EVENT_WAREHOUSE_IMAGE}
+      - name: Initialize Event warehouse testing database
+        run: >-
+          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
+          ${EVENT_WAREHOUSE_IMAGE}
+          bundle exec rake db:reset
+      - name: Pull Unified warehouse image
+        run: >- 
+          docker pull ${UNIFIED_WAREHOUSE_IMAGE}
+      - name: Initialize Unified warehouse testing database
+        run: >-
+          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
+          ${UNIFIED_WAREHOUSE_IMAGE}
+          bundle exec rake db:reset db:views:schema:load
       - name: Run tests against the image
         run: >-
           docker run
           --network host
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           python -m  pytest -vsx
-      - name: Login to regitry
-        run: >-
-          docker login
-          -u ${{ github.actor }}
-          -p ${{ secrets.GITHUB_TOKEN }}
-          docker.pkg.github.com
       - name: Publish image with image tag being either develop/master/<tag_name>
         run: >-
           docker push
