@@ -2,27 +2,28 @@ import logging
 from http import HTTPStatus
 from typing import Any, Dict, Tuple
 
-from flask import Blueprint, request
-from flask_cors import CORS  # type: ignore
+from flask import Blueprint
 from flask import current_app as app
+from flask import request
+from flask_cors import CORS  # type: ignore
+from lighthouse.constants import PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.helpers.events import get_routing_key
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
+    add_controls_to_samples,
+    check_matching_sample_numbers,
+    construct_cherrypicking_plate_failed_message,
     create_cherrypicked_post_body,
     find_dart_source_samples_rows,
     find_samples,
+    get_source_plates_for_samples,
     join_rows_with_samples,
     map_to_ss_columns,
-    check_matching_sample_numbers,
-    add_controls_to_samples,
     query_for_cherrypicked_samples,
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
-    get_source_plates_for_samples,
-    construct_cherrypicking_plate_failed_message,
 )
-from lighthouse.messages.broker import Broker  # type:ignore
-from lighthouse.helpers.events import get_routing_key
-from lighthouse.constants import PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.messages.broker import Broker
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +33,7 @@ CORS(bp)
 
 # TODO - reduce method length/complexity
 @bp.route("/cherrypicked-plates/create", methods=["GET"])
-def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
-
+def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:  # noqa: C901
     try:
         user_id = request.args.get("user_id", "")
         if len(user_id) == 0:

@@ -2,7 +2,7 @@ import json
 from http import HTTPStatus
 from unittest.mock import patch
 
-import responses  # type: ignore
+import responses
 
 
 def test_post_plates_endpoint_successful(app, client, samples, mocked_responses, mlwh_lh_samples):

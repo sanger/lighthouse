@@ -1,11 +1,12 @@
-import copy
 import logging
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+
 import requests
 from flask import current_app as app
 from lighthouse.constants import (
+    FIELD_BARCODE,
     FIELD_COG_BARCODE,
     FIELD_COORDINATE,
     FIELD_DART_CONTROL,
@@ -17,31 +18,28 @@ from lighthouse.constants import (
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
     FIELD_LAB_ID,
+    FIELD_LH_SAMPLE_UUID,
+    FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_PLATE_BARCODE,
-    FIELD_BARCODE,
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
-    FIELD_LH_SOURCE_PLATE_UUID,
-    FIELD_LH_SAMPLE_UUID,
-    POSITIVE_SAMPLES_MONGODB_FILTER,
-    STAGE_MATCH_POSITIVE,
-    PLATE_EVENT_DESTINATION_CREATED,
-    PLATE_EVENT_DESTINATION_FAILED,
+    FIELD_SS_BARCODE,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_COORDINATE,
     FIELD_SS_LAB_ID,
     FIELD_SS_NAME,
+    FIELD_SS_PHENOTYPE,
     FIELD_SS_RESULT,
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
-    FIELD_SS_PHENOTYPE,
-    FIELD_SS_CONTROL,
-    FIELD_SS_CONTROL_TYPE,
     FIELD_SS_UUID,
-    FIELD_SS_COORDINATE,
-    FIELD_SS_BARCODE,
+    PLATE_EVENT_DESTINATION_CREATED,
+    PLATE_EVENT_DESTINATION_FAILED,
+    STAGE_MATCH_FILTERED_POSITIVE,
 )
-
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -49,18 +47,17 @@ from lighthouse.exceptions import (
     MultipleCentresError,
 )
 from lighthouse.helpers.dart_db import find_dart_source_samples_rows
-from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
-from sqlalchemy.sql.expression import and_  # type: ignore
-from sqlalchemy.sql.expression import bindparam  # type: ignore
-from lighthouse.messages.message import Message  # type: ignore
 from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
-    get_robot_uuid,
-    construct_robot_message_subject,
     construct_mongo_sample_message_subject,
+    construct_robot_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
+    get_robot_uuid,
 )
+from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
+from lighthouse.messages.message import Message
+from sqlalchemy.sql.expression import and_, bindparam
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +145,7 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
 
 # WARN - on refactoring this be careful not to lose the distributed functionality where
 # None or empty dart rows returns None
-def find_samples(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+def find_samples(query: Dict[str, Any] = None) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
 
@@ -182,8 +179,8 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     pipeline = [
         # 1. We are only interested in the samples for a particular plate
         {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
-        # 2. Then run the positive match stage
-        STAGE_MATCH_POSITIVE,
+        # 2. Then run the filtered positive match stage
+        STAGE_MATCH_FILTERED_POSITIVE,
     ]
 
     samples_for_barcode = list(samples_collection.aggregate(pipeline))
@@ -193,12 +190,34 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
-def count_positive_samples(plate_barcode: str) -> int:
-    query_filter = copy.deepcopy(POSITIVE_SAMPLES_MONGODB_FILTER)
-    query_filter[FIELD_PLATE_BARCODE] = plate_barcode
-    samples_for_barcode = count_samples(query_filter)
+def get_positive_samples_count(plate_barcode: str) -> Optional[int]:
+    """Get a list of documents which correspond to filtered positive samples for a specific plate.
 
-    return samples_for_barcode
+    Args:
+        plate_barcode (str): the barcode of the plate to get samples for.
+
+    Returns:
+        Optional[List[Dict[str, Any]]]: the list of samples for this plate.
+    """
+    samples_collection = app.data.driver.db.samples
+    count_name = "filtered_positives_for_plate"
+    # The pipeline defines stages which execute in sequence
+    pipeline = [
+        # 1. We are only interested in the samples for a particular plate
+        {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
+        # 2. Then run the filtered positive match stage
+        STAGE_MATCH_FILTERED_POSITIVE,
+        {"$count": count_name},
+    ]
+
+    try:
+        samples_for_barcode_count = next(samples_collection.aggregate(pipeline)).get(count_name)
+    except StopIteration:
+        return None
+
+    logger.info(f"Found {samples_for_barcode_count} samples")
+
+    return samples_for_barcode_count
 
 
 def has_sample_data(plate_barcode: str) -> bool:
@@ -288,6 +307,8 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
     logger.debug(f"Creating POST body to send to SS for barcode '{barcode}'")
 
     wells_content = {}
+    phenotype = None
+    description = None
     for sample in samples:
         for key, value in sample.items():
             if key.strip() == FIELD_RESULT:
@@ -360,7 +381,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
             )
 
         sql_engine = create_mysql_connection_engine(
-            app.config["WAREHOUSES_RW_CONN_STRING"], app.config["ML_WH_DB"]
+            app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"]
         )
         table = get_table(sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
@@ -406,7 +427,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
     for sample in samples:
-        mapped_sample = {}  # type: Dict[str, Any]
+        mapped_sample = {}
 
         mongo_row = sample["sample"]
         dart_row = sample["row"]
@@ -505,7 +526,7 @@ def get_source_plates_for_samples(samples):
     return find_source_plates(query_for_source_plate_uuids(barcodes))
 
 
-def find_source_plates(query: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+def find_source_plates(query: Dict[str, Any] = None) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
 

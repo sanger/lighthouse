@@ -9,8 +9,8 @@ from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_post_body,
     get_positive_samples,
+    get_positive_samples_count,
     has_sample_data,
-    count_positive_samples,
     send_to_ss,
     update_mlwh_with_cog_uk_ids,
 )
@@ -93,7 +93,7 @@ def format_plate(barcode: str) -> Dict[str, Any]:
         {}, HTTPStatus
     """
     plate_map = has_sample_data(barcode)
-    number_of_positives = count_positive_samples(barcode) if plate_map else None
+    number_of_positives = get_positive_samples_count(barcode) if plate_map else None
 
     return {
         "plate_barcode": barcode,

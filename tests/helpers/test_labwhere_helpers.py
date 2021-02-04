@@ -1,7 +1,8 @@
-from lighthouse.helpers.labwhere import get_locations_from_labwhere, set_locations_in_labwhere
-import responses  # type: ignore
-from http import HTTPStatus
 import json
+from http import HTTPStatus
+
+import responses
+from lighthouse.helpers.labwhere import get_locations_from_labwhere, set_locations_in_labwhere
 
 
 def test_get_locations_from_labwhere(app, labwhere_samples_simple):

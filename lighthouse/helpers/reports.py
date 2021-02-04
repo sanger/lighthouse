@@ -3,33 +3,31 @@ import math
 import os
 import pathlib
 import re
-import pandas as pd  # type: ignore
+from datetime import datetime, timedelta
+from http import HTTPStatus
+from typing import Dict, List, Tuple
 
+import pandas as pd
 
 # we only need the create_engine method
 # but that can't be mocked
 # can't seem to mock it at the top because
 # it is outside the app context
-import sqlalchemy  # type: ignore
-
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple
-from http import HTTPStatus
-from lighthouse.helpers.labwhere import get_locations_from_labwhere
-
+import sqlalchemy
 from flask import current_app as app
 from lighthouse.constants import (
+    EVENT_CHERRYPICK_LAYOUT_SET,
     FIELD_COORDINATE,
     FIELD_DATE_TESTED,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
-    STAGE_MATCH_POSITIVE,
     PLATE_EVENT_DESTINATION_CREATED,
-    EVENT_CHERRYPICK_LAYOUT_SET,
+    STAGE_MATCH_FILTERED_POSITIVE,
 )
 from lighthouse.exceptions import ReportCreationError
+from lighthouse.helpers.labwhere import get_locations_from_labwhere
 from lighthouse.utils import pretty
 from pandas import DataFrame
 from pymongo.collection import Collection  # type: ignore
@@ -157,7 +155,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         )
         db_connection = sql_engine.connect()
 
-        ml_wh_db = app.config["ML_WH_DB"]
+        mlwh_db = app.config["MLWH_DB"]
         events_wh_db = app.config["EVENTS_WH_DB"]
 
         for chunk_root_sample_id in chunk_root_sample_ids:
@@ -166,7 +164,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 "plate_barcodes": tuple(plate_barcodes),
             }
 
-            sentinel_sql = __sentinel_cherrypicked_samples_query(ml_wh_db, events_wh_db)
+            sentinel_sql = __sentinel_cherrypicked_samples_query(mlwh_db, events_wh_db)
             sentinel_frame = pd.read_sql(sentinel_sql, db_connection, params=params)
 
             # drop_duplicates is needed because the same 'root sample id' could pop up in two
@@ -177,7 +175,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 concat_frame.append(sentinel_frame).drop_duplicates().reset_index(drop=True)
             )
 
-            beckman_sql = __beckman_cherrypicked_samples_query(ml_wh_db, events_wh_db)
+            beckman_sql = __beckman_cherrypicked_samples_query(mlwh_db, events_wh_db)
             beckman_frame = pd.read_sql(beckman_sql, db_connection, params=params)
 
             # again we concatenate dropping duplicates here (same reason as outlined above)
@@ -223,7 +221,7 @@ def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
     # The pipeline defines stages which execute in sequence
     pipeline = [
         # 1. First run the positive match stage
-        STAGE_MATCH_POSITIVE,
+        STAGE_MATCH_FILTERED_POSITIVE,
         {
             # 2. We then need to extract the date using substring since most dates look like this:
             # "2020-05-10 07:30:00 UTC" but the `dateFromString` function does not handle the
@@ -424,11 +422,11 @@ def __convert_size(size_in_bytes: int) -> str:
     return f"{s} {size_name[i]}"
 
 
-def __sentinel_cherrypicked_samples_query(ml_wh_db: str, events_wh_db: str) -> str:
+def __sentinel_cherrypicked_samples_query(mlwh_db: str, events_wh_db: str) -> str:
     """Forms the SQL query to identify samples cherrypicked via the Sentinel workflow.
 
     Arguments:
-        ml_wh_db {str} -- The name of the MLWH database
+        mlwh_db {str} -- The name of the MLWH database
         events_wh_db {str} -- The name of the Events Warehouse database
 
     Returns:
@@ -437,8 +435,8 @@ def __sentinel_cherrypicked_samples_query(ml_wh_db: str, events_wh_db: str) -> s
     return (
         f"select mlwh_sample.description as `{FIELD_ROOT_SAMPLE_ID}`, mlwh_stock_resource.labware_human_barcode as `{FIELD_PLATE_BARCODE}`"  # noqa: E501
         f",mlwh_sample.phenotype as `Result_lower`, mlwh_stock_resource.labware_coordinate as `{FIELD_COORDINATE}`"  # noqa: E501
-        f" FROM {ml_wh_db}.sample as mlwh_sample"
-        f" JOIN {ml_wh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"  # noqa: E501
+        f" FROM {mlwh_db}.sample as mlwh_sample"
+        f" JOIN {mlwh_db}.stock_resource mlwh_stock_resource ON (mlwh_sample.id_sample_tmp = mlwh_stock_resource.id_sample_tmp)"  # noqa: E501
         f" JOIN {events_wh_db}.subjects mlwh_events_subjects ON (mlwh_events_subjects.friendly_name = sanger_sample_id)"  # noqa: E501
         f" JOIN {events_wh_db}.roles mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"  # noqa: E501
         f" JOIN {events_wh_db}.events mlwh_events_events ON (mlwh_events_roles.event_id = mlwh_events_events.id)"  # noqa: E501
@@ -450,11 +448,11 @@ def __sentinel_cherrypicked_samples_query(ml_wh_db: str, events_wh_db: str) -> s
     )
 
 
-def __beckman_cherrypicked_samples_query(ml_wh_db: str, events_wh_db: str) -> str:
+def __beckman_cherrypicked_samples_query(mlwh_db: str, events_wh_db: str) -> str:
     """Forms the SQL query to identify samples cherrypicked via the Beckman workflow.
 
     Arguments:
-        ml_wh_db {str} -- The name of the MLWH database
+        mlwh_db {str} -- The name of the MLWH database
         events_wh_db {str} -- The name of the Events Warehouse database
 
     Returns:
@@ -463,8 +461,8 @@ def __beckman_cherrypicked_samples_query(ml_wh_db: str, events_wh_db: str) -> st
     return (
         f"SELECT mlwh_sample.description AS `{FIELD_ROOT_SAMPLE_ID}`, mlwh_lh_sample.plate_barcode AS `{FIELD_PLATE_BARCODE}`,"  # noqa: E501
         f" mlwh_sample.phenotype AS `Result_lower`, mlwh_lh_sample.coordinate AS `{FIELD_COORDINATE}`"  # noqa: E501
-        f" FROM {ml_wh_db}.sample AS mlwh_sample"
-        f" JOIN {ml_wh_db}.lighthouse_sample AS mlwh_lh_sample ON (mlwh_sample.uuid_sample_lims = mlwh_lh_sample.lh_sample_uuid)"  # noqa: E501
+        f" FROM {mlwh_db}.sample AS mlwh_sample"
+        f" JOIN {mlwh_db}.lighthouse_sample AS mlwh_lh_sample ON (mlwh_sample.uuid_sample_lims = mlwh_lh_sample.lh_sample_uuid)"  # noqa: E501
         f" JOIN {events_wh_db}.subjects AS mlwh_events_subjects ON (mlwh_events_subjects.uuid = UNHEX(REPLACE(mlwh_lh_sample.lh_sample_uuid, '-', '')))"  # noqa: E501
         f" JOIN {events_wh_db}.roles AS mlwh_events_roles ON (mlwh_events_roles.subject_id = mlwh_events_subjects.id)"  # noqa: E501
         f" JOIN {events_wh_db}.events AS mlwh_events_events ON (mlwh_events_events.id = mlwh_events_roles.event_id)"  # noqa: E501
