@@ -40,6 +40,24 @@ jobs:
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: MyS3cr3tPassw0rd
+      ewh:
+        image: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:gpl769_test_cp_view
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          DBHOST: mysql
+          INTEGRATION_TEST_SETUP: true
+          RAILS_ENV: test
+      uwh:
+        image: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:GPL-769-cherrypicked-samples-view-revisited
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          DBHOST: mysql
+          INTEGRATION_TEST_SETUP: true
+          RAILS_ENV: test
     steps:
       - uses: actions/checkout@v2
       - name: Build the Docker image
@@ -65,22 +83,6 @@ jobs:
           -u ${{ github.actor }}
           -p ${{ secrets.GITHUB_TOKEN }}
           docker.pkg.github.com
-      - name: Pull Event warehouse image
-        run: >- 
-          docker pull ${EVENT_WAREHOUSE_IMAGE}
-      - name: Initialize Event warehouse testing database
-        run: >-
-          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
-          ${EVENT_WAREHOUSE_IMAGE}
-          bundle exec rake db:reset
-      - name: Pull Unified warehouse image
-        run: >- 
-          docker pull ${UNIFIED_WAREHOUSE_IMAGE}
-      - name: Initialize Unified warehouse testing database
-        run: >-
-          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
-          ${UNIFIED_WAREHOUSE_IMAGE}
-          bundle exec rake db:reset db:views:schema:load
       - name: Run tests against the image
         run: >-
           docker run
