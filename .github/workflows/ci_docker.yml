@@ -40,6 +40,13 @@ jobs:
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: MyS3cr3tPassw0rd
+      rmq:
+        image: rabbitmq:3
+        ports:
+          - 5672:5672
+        env:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
       ewh:
         image: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:gpl769_test_cp_view
         credentials:
@@ -47,6 +54,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
         env:
           DBHOST: mysql
+          RMQHOST: rmq
           INTEGRATION_TEST_SETUP: true
           RAILS_ENV: test
       uwh:
@@ -56,6 +64,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
         env:
           DBHOST: mysql
+          RMQHOST: rmq
           INTEGRATION_TEST_SETUP: true
           RAILS_ENV: test
     steps:
