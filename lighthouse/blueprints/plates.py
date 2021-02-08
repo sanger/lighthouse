@@ -125,6 +125,4 @@ def find_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         # We don't use str(e) here to fetch the exception summary, because
         # the exceptions we're most likely to see here aren't end-user-friendly
         exception_type = type(e).__name__
-        return {
-            "errors": [f"Failed to lookup plates: {exception_type}"]
-        }, HTTPStatus.INTERNAL_SERVER_ERROR
+        return {"errors": [f"Failed to lookup plates: {exception_type}"]}, HTTPStatus.INTERNAL_SERVER_ERROR

@@ -32,12 +32,8 @@ FIELD_FILTERED_POSITIVE = "filtered_positive"
 ###
 # DART specific column names:
 ###
-FIELD_DART_DESTINATION_BARCODE = os.environ.get(
-    "FIELD_DART_DESTINATION_BARCODE", "destination_barcode"
-)
-FIELD_DART_DESTINATION_COORDINATE = os.environ.get(
-    "FIELD_DART_DESTINATION_COORDINATE", "destination_coordinate"
-)
+FIELD_DART_DESTINATION_BARCODE = os.environ.get("FIELD_DART_DESTINATION_BARCODE", "destination_barcode")
+FIELD_DART_DESTINATION_COORDINATE = os.environ.get("FIELD_DART_DESTINATION_COORDINATE", "destination_coordinate")
 FIELD_DART_SOURCE_BARCODE = os.environ.get("FIELD_DART_SOURCE_BARCODE", "source_barcode")
 FIELD_DART_SOURCE_COORDINATE = os.environ.get("FIELD_DART_SOURCE_COORDINATE", "source_coordinate")
 FIELD_DART_CONTROL = os.environ.get("FIELD_DART_CONTROL", "control")

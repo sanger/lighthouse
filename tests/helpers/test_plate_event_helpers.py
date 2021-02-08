@@ -159,9 +159,7 @@ def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid
     assert message is None
 
 
-def test_construct_source_plate_not_recognised_message_creates_expected_message(
-    app, mock_robot_helpers
-):
+def test_construct_source_plate_not_recognised_message_creates_expected_message(app, mock_robot_helpers):
     _, mock_construct = mock_robot_helpers
     test_robot_subject = {"test robot": "this is a robot"}
     mock_construct.return_value = test_robot_subject

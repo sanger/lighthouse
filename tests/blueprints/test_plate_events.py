@@ -43,9 +43,7 @@ def test_get_create_plate_event_endpoint_internal_error_failed_broker_initialise
 
 def test_get_create_plate_event_endpoint_internal_error_failed_broker_connect(client):
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
-        with patch(
-            "lighthouse.blueprints.plate_events.Broker.connect", side_effect=Exception("Boom!")
-        ):
+        with patch("lighthouse.blueprints.plate_events.Broker.connect", side_effect=Exception("Boom!")):
             mock_construct.return_value = [], Message("test message content")
 
             response = client.get("/plate-events/create?event_type=test_event_type")

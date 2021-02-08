@@ -741,9 +741,7 @@ SOURCE_PLATES: List[Dict[str, Any]] = [
 def inject_uuids(sample):
     sample_copy = copy(sample)
     sample_copy[FIELD_LH_SOURCE_PLATE_UUID] = next(
-        x[FIELD_LH_SOURCE_PLATE_UUID]
-        for x in SOURCE_PLATES
-        if x[FIELD_BARCODE] == sample_copy[FIELD_PLATE_BARCODE]
+        x[FIELD_LH_SOURCE_PLATE_UUID] for x in SOURCE_PLATES if x[FIELD_BARCODE] == sample_copy[FIELD_PLATE_BARCODE]
     )
     sample_copy[FIELD_LH_SAMPLE_UUID] = str(uuid4())
     return sample_copy

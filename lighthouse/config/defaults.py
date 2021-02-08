@@ -67,9 +67,7 @@ BARACODA_RETRY_ATTEMPTS = 3
 # Labwhere config
 ###
 LABWHERE_URL = f"{LOCALHOST}:3010"
-LABWHERE_DESTROYED_BARCODE = os.environ.get(
-    "LABWHERE_DESTROYED_BARCODE", "lw-heron-destroyed-17338"
-)
+LABWHERE_DESTROYED_BARCODE = os.environ.get("LABWHERE_DESTROYED_BARCODE", "lw-heron-destroyed-17338")
 
 ###
 # Sequencescape config

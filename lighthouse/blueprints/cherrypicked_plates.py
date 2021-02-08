@@ -74,9 +74,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:  # noqa: C901
             centre_prefix = add_cog_barcodes(mongo_samples)
         except (Exception) as e:
             logger.exception(e)
-            return bad_request_response_with_error(
-                "Failed to add COG barcodes to plate: " + barcode
-            )
+            return bad_request_response_with_error("Failed to add COG barcodes to plate: " + barcode)
 
         samples = join_rows_with_samples(dart_samples, mongo_samples)
 
@@ -87,13 +85,9 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:  # noqa: C901
         source_plates = get_source_plates_for_samples(mongo_samples)
 
         if not source_plates:
-            return bad_request_response_with_error(
-                "No source plate UUIDs for samples of destination plate: " + barcode
-            )
+            return bad_request_response_with_error("No source plate UUIDs for samples of destination plate: " + barcode)
 
-        body = create_cherrypicked_post_body(
-            user_id, barcode, mapped_samples, robot_serial_number, source_plates
-        )
+        body = create_cherrypicked_post_body(user_id, barcode, mapped_samples, robot_serial_number, source_plates)
 
         response = send_to_ss(body)
 
@@ -141,17 +135,14 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
         if failure_type not in list(app.config["BECKMAN_FAILURE_TYPES"].keys()):
             logger.error("Failed recording cherrypicking plate failure: unknown failure type")
-            return bad_request_response_with_error(
-                f"'{failure_type}' is not a known cherrypicked plate failure type"
-            )
+            return bad_request_response_with_error(f"'{failure_type}' is not a known cherrypicked plate failure type")
 
         errors, message = construct_cherrypicking_plate_failed_message(
             barcode, user_id, robot_serial_number, failure_type
         )
         if message is None:
             logger.error(
-                "Failed recording cherrypicking plate failure: "
-                f"error(s) constructing event message: {errors}"
+                "Failed recording cherrypicking plate failure: " f"error(s) constructing event message: {errors}"
             )
             return {"errors": errors}, HTTPStatus.INTERNAL_SERVER_ERROR
 
@@ -172,9 +163,7 @@ def fail_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
         logger.error("Failed recording cherrypicking plate failure: an unexpected error occurred")
         logger.exception(e)
         return {
-            "errors": [
-                "An unexpected error occurred attempting to record cherrypicking plate failure"
-            ]
+            "errors": ["An unexpected error occurred attempting to record cherrypicking plate failure"]
         }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 

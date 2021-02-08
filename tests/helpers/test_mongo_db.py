@@ -38,21 +38,15 @@ def test_get_positive_samples_in_source_plate_returns_matching_samples(app, samp
         assert result == expected_samples
 
 
-def test_get_positive_samples_in_source_plate_returns_empty_list_no_matching_samples(
-    app, samples_with_uuids
-):
+def test_get_positive_samples_in_source_plate_returns_empty_list_no_matching_samples(app, samples_with_uuids):
     with app.app_context():
         result = get_positive_samples_in_source_plate("source plate uuid does not exist")
         assert result == []
 
 
-def test_get_positive_samples_in_source_plate_returns_none_failure_fetching_samples(
-    app, samples_with_uuids
-):
+def test_get_positive_samples_in_source_plate_returns_none_failure_fetching_samples(app, samples_with_uuids):
     with app.app_context():
         with patch("flask.current_app.data.driver.db.samples") as samples_collection:
             samples_collection.find.side_effect = Exception("Boom!")
-            result = get_positive_samples_in_source_plate(
-                samples_with_uuids[0][FIELD_LH_SOURCE_PLATE_UUID]
-            )
+            result = get_positive_samples_in_source_plate(samples_with_uuids[0][FIELD_LH_SOURCE_PLATE_UUID])
             assert result is None

@@ -92,9 +92,7 @@ def _labware_barcodes(event: Message) -> List[str]:
 def _robot_barcode(event: Message) -> str:
     """Extracts a robot barcode from an event message"""
     return next(
-        subject["friendly_name"]
-        for subject in event.message["event"]["subjects"]
-        if subject["role_type"] == "robot"
+        subject["friendly_name"] for subject in event.message["event"]["subjects"] if subject["role_type"] == "robot"
     )
 
 

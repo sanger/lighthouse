@@ -66,9 +66,7 @@ def get_reports_details(filename: str = None) -> List[Dict[str, str]]:
         {
             "filename": filename,
             "size": __get_file_size(REPORTS_PATH.joinpath(filename)),
-            "created": datetime.fromtimestamp(
-                os.path.getmtime(REPORTS_PATH.joinpath(filename))
-            ).strftime("%c"),
+            "created": datetime.fromtimestamp(os.path.getmtime(REPORTS_PATH.joinpath(filename))).strftime("%c"),
             "download_url": f"{app.config['DOWNLOAD_REPORTS_URL']}/{filename}",
         }
         for filename in reports
@@ -92,11 +90,7 @@ def get_new_report_name_and_path() -> Tuple[str, pathlib.PurePath]:
 # Strip any leading zeros from the coordinate
 # eg. A01 => A1
 def unpad_coordinate(coordinate):
-    return (
-        re.sub(r"0(\d+)$", r"\1", coordinate)
-        if (coordinate and isinstance(coordinate, str))
-        else coordinate
-    )
+    return re.sub(r"0(\d+)$", r"\1", coordinate) if (coordinate and isinstance(coordinate, str)) else coordinate
 
 
 def delete_reports(filenames):
@@ -146,8 +140,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         concat_frame = pd.DataFrame()
 
         chunk_root_sample_ids = [
-            root_sample_ids[x : (x + chunk_size)]  # noqa: E203
-            for x in range(0, len(root_sample_ids), chunk_size)
+            root_sample_ids[x : (x + chunk_size)] for x in range(0, len(root_sample_ids), chunk_size)  # noqa: E203
         ]
 
         sql_engine = sqlalchemy.create_engine(
@@ -171,17 +164,13 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
             # different batches, and then it would retrieve the same rows for that root sample id
             # twice do reset_index after dropping duplicates to make sure the rows are numbered in
             # a way that makes sense
-            concat_frame = (
-                concat_frame.append(sentinel_frame).drop_duplicates().reset_index(drop=True)
-            )
+            concat_frame = concat_frame.append(sentinel_frame).drop_duplicates().reset_index(drop=True)
 
             beckman_sql = __beckman_cherrypicked_samples_query(mlwh_db, events_wh_db)
             beckman_frame = pd.read_sql(beckman_sql, db_connection, params=params)
 
             # again we concatenate dropping duplicates here (same reason as outlined above)
-            concat_frame = (
-                concat_frame.append(beckman_frame).drop_duplicates().reset_index(drop=True)
-            )
+            concat_frame = concat_frame.append(beckman_frame).drop_duplicates().reset_index(drop=True)
 
         return concat_frame
     except Exception as e:
@@ -320,9 +309,7 @@ def get_distinct_plate_barcodes(samples):
     # for some reason we have some records (documents in mongo language) where the plate_barcode
     #   is empty so ignore those
     # TODO: abstract into new method
-    distinct_plate_barcodes = samples.distinct(
-        FIELD_PLATE_BARCODE, {FIELD_PLATE_BARCODE: {"$nin": ["", None]}}
-    )
+    distinct_plate_barcodes = samples.distinct(FIELD_PLATE_BARCODE, {FIELD_PLATE_BARCODE: {"$nin": ["", None]}})
     logger.info(f"{len(distinct_plate_barcodes)} distinct barcodes")
 
     return distinct_plate_barcodes
@@ -344,9 +331,7 @@ def join_samples_declarations(positive_samples):
                     FIELD_ROOT_SAMPLE_ID: {"$first": "$root_sample_id"},
                     "Value In Sequencing": {"$first": "$value_in_sequencing"},
                     "Declared At": {
-                        "$first": {
-                            "$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}
-                        }
+                        "$first": {"$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}}
                     },
                 }
             },

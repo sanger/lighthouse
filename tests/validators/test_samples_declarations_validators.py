@@ -42,13 +42,14 @@ def test_build_clean_elems_object(app):
 
     assert build_clean_elems_object([], TestRequest()) == {}
 
-    assert build_clean_elems_object(
-        [{"_status": "OK"}, {"_status": "ERR"}, {"_status": "OK"}], TestRequest()
-    ) == {0: "a", 2: "c"}
+    assert build_clean_elems_object([{"_status": "OK"}, {"_status": "ERR"}, {"_status": "OK"}], TestRequest()) == {
+        0: "a",
+        2: "c",
+    }
 
-    assert build_clean_elems_object(
-        [{"_status": "ERR"}, {"_status": "OK"}, {"_status": "ERR"}], TestRequest()
-    ) == {1: "b"}
+    assert build_clean_elems_object([{"_status": "ERR"}, {"_status": "OK"}, {"_status": "ERR"}], TestRequest()) == {
+        1: "b"
+    }
 
 
 def test_merge_response_into_payload():

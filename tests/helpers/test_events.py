@@ -23,9 +23,7 @@ from lighthouse.constants import (
 
 
 def any_robot_info(app):
-    return next(
-        (serial_num, robot["uuid"]) for serial_num, robot in app.config["BECKMAN_ROBOTS"].items()
-    )
+    return next((serial_num, robot["uuid"]) for serial_num, robot in app.config["BECKMAN_ROBOTS"].items())
 
 
 # ---------- get_routing_key tests ----------
@@ -95,10 +93,7 @@ def test_construct_robot_message_subject(app):
         "uuid": test_robot_uuid,
     }
 
-    assert (
-        construct_robot_message_subject(test_robot_serial_number, test_robot_uuid)
-        == correct_subject
-    )
+    assert construct_robot_message_subject(test_robot_serial_number, test_robot_uuid) == correct_subject
 
 
 # ---------- construct_mongo_sample_message_subject tests ----------

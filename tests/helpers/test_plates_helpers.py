@@ -78,15 +78,9 @@ def mock_event_helpers():
     root = "lighthouse.helpers.plates"
     with patch(f"{root}.get_robot_uuid") as mock_get_uuid:
         with patch(f"{root}.construct_robot_message_subject") as mock_construct_robot:
-            with patch(
-                f"{root}.construct_destination_plate_message_subject"
-            ) as mock_construct_dest:
-                with patch(
-                    f"{root}.construct_mongo_sample_message_subject"
-                ) as mock_construct_sample:
-                    with patch(
-                        f"{root}.construct_source_plate_message_subject"
-                    ) as mock_construct_source:
+            with patch(f"{root}.construct_destination_plate_message_subject") as mock_construct_dest:
+                with patch(f"{root}.construct_mongo_sample_message_subject") as mock_construct_sample:
+                    with patch(f"{root}.construct_source_plate_message_subject") as mock_construct_source:
                         with patch(f"{root}.get_message_timestamp") as mock_get_timestamp:
                             yield (
                                 mock_get_uuid,
@@ -107,10 +101,7 @@ def any_failure_type(app):
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
     with app.app_context():
-        baracoda_url = (
-            f"http://{current_app.config['BARACODA_URL']}"
-            f"/barcodes_group/TS1/new?count={len(samples)}"
-        )
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TS1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -136,10 +127,7 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
 
 def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_responses):
     with app.app_context():
-        baracoda_url = (
-            f"http://{current_app.config['BARACODA_URL']}/"
-            f"barcodes_group/TS1/new?count={len(samples)}"
-        )
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TS1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -164,10 +152,7 @@ def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_respo
 
 def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_responses):
     with app.app_context():
-        baracoda_url = (
-            f"http://{current_app.config['BARACODA_URL']}/"
-            f"barcodes_group/TS1/new?count={len(samples)}"
-        )
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TS1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -190,14 +175,9 @@ def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_
         assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
 
 
-def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(
-    app, centres, samples, mocked_responses
-):
+def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centres, samples, mocked_responses):
     with app.app_context():
-        baracoda_url = (
-            f"http://{current_app.config['BARACODA_URL']}/"
-            f"barcodes_group/TS1/new?count={len(samples)}"
-        )
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TS1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -385,9 +365,7 @@ def test_update_mlwh_with_cog_uk_ids(
         assert after_cog_uk_ids == set(cog_uk_ids)
 
 
-def test_update_mlwh_with_cog_uk_ids_connection_fails(
-    app, mlwh_lh_samples_multiple, samples_for_mlwh_update
-):
+def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples_multiple, samples_for_mlwh_update):
     with app.app_context():
         # mock this out to cause an exception
         app.config["WAREHOUSES_RW_CONN_STRING"] = "notarealconnectionstring"
@@ -454,8 +432,7 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(
 def retrieve_samples_cursor(config, mlwh_sql_engine):
     with mlwh_sql_engine.connect() as connection:
         results = connection.execute(
-            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} "
-            "FROM lighthouse_sample"
+            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} " "FROM lighthouse_sample"
         )
 
     return results
@@ -532,12 +509,8 @@ def test_row_is_normal_sample_detects_if_sample_is_control(app):
     assert not row_is_normal_sample(
         DartRow("DN1111", "A01", "DN2222", "C03", "control", "sample_1", "plate1:A01", "ABC")
     )
-    assert row_is_normal_sample(
-        DartRow("DN1111", "A01", "DN2222", "C03", "", "sample_1", "plate1:A01", "ABC")
-    )
-    assert row_is_normal_sample(
-        DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC")
-    )
+    assert row_is_normal_sample(DartRow("DN1111", "A01", "DN2222", "C03", "", "sample_1", "plate1:A01", "ABC"))
+    assert row_is_normal_sample(DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"))
 
 
 def test_rows_without_controls_filters_out_controls(app):
@@ -821,9 +794,7 @@ def test_create_cherrypicked_post_body(app):
         }
 
         assert (
-            create_cherrypicked_post_body(
-                user_id, barcode, mapped_samples, robot_serial_number, source_plates
-            )
+            create_cherrypicked_post_body(user_id, barcode, mapped_samples, robot_serial_number, source_plates)
             == correct_body
         )
 
@@ -884,9 +855,7 @@ def test_get_source_plates_for_samples(app, samples_different_plates, source_pla
         results = get_source_plates_for_samples(samples)
         assert len(results) == 2
         for result in results:
-            source_plate = next(
-                plate for plate in source_plates if result[FIELD_BARCODE] == plate[FIELD_BARCODE]
-            )
+            source_plate = next(plate for plate in source_plates if result[FIELD_BARCODE] == plate[FIELD_BARCODE])
             assert source_plate is not None
             assert source_plate[FIELD_LH_SOURCE_PLATE_UUID] == result[FIELD_LH_SOURCE_PLATE_UUID]
 
@@ -897,16 +866,11 @@ def test_get_source_plates_for_samples(app, samples_different_plates, source_pla
 def test_construct_cherrypicking_plate_failed_message_unknown_robot_fails(mock_event_helpers):
     mock_get_uuid, _, _, _, _, _ = mock_event_helpers
     mock_get_uuid.return_value = None
-    errors, message = construct_cherrypicking_plate_failed_message(
-        "plate_1", "test_user", "BKRB0001", "robot_crashed"
-    )
+    errors, message = construct_cherrypicking_plate_failed_message("plate_1", "test_user", "BKRB0001", "robot_crashed")
 
     assert message is None
     assert len(errors) == 1
-    msg = (
-        "An unexpected error occurred attempting to construct the cherrypicking plate failed "
-        "event message"
-    )
+    msg = "An unexpected error occurred attempting to construct the cherrypicking plate failed " "event message"
     assert msg in errors[0]
 
 
@@ -995,9 +959,7 @@ def test_construct_cherrypicking_plate_failed_message_none_dart_samples(app, moc
     with app.app_context():
         test_uuid = uuid4()
         with patch("lighthouse.helpers.plates.uuid4", return_value=test_uuid):
-            with patch(
-                "lighthouse.helpers.plates.find_dart_source_samples_rows", return_value=None
-            ):
+            with patch("lighthouse.helpers.plates.find_dart_source_samples_rows", return_value=None):
                 with patch("lighthouse.helpers.plates.Message") as mock_message:
                     test_barcode = "plate_1"
                     test_user = "test_user_id"
@@ -1113,10 +1075,7 @@ def test_construct_cherrypicking_plate_failed_message_mongo_samples_fetch_failur
 
             assert message is None
             assert len(errors) == 1
-            msg = (
-                "An unexpected error occurred attempting to construct the cherrypicking plate "
-                "failed event message"
-            )
+            msg = "An unexpected error occurred attempting to construct the cherrypicking plate " "failed event message"
             assert msg in errors[0]
 
 
@@ -1132,10 +1091,7 @@ def test_construct_cherrypicking_plate_failed_message_none_mongo_samples(
 
             assert message is None
             assert len(errors) == 1
-            assert (
-                f"No sample data found in Mongo matching DART samples in plate '{barcode}'"
-                in errors
-            )
+            assert f"No sample data found in Mongo matching DART samples in plate '{barcode}'" in errors
 
 
 def test_construct_cherrypicking_plate_failed_message_samples_not_in_mongo(
@@ -1158,9 +1114,7 @@ def test_construct_cherrypicking_plate_failed_message_mongo_source_plates_fetch_
     app, dart_samples_for_bp_test, samples_with_uuids, mock_event_helpers
 ):
     with app.app_context():
-        with patch(
-            "lighthouse.helpers.plates.app.data.driver.db.source_plates"
-        ) as source_plates_collection:
+        with patch("lighthouse.helpers.plates.app.data.driver.db.source_plates") as source_plates_collection:
             source_plates_collection.find.side_effect = Exception("Boom!")
             errors, message = construct_cherrypicking_plate_failed_message(
                 "plate_1", "test_user", "12345", "robot_crashed"
@@ -1168,10 +1122,7 @@ def test_construct_cherrypicking_plate_failed_message_mongo_source_plates_fetch_
 
             assert message is None
             assert len(errors) == 1
-            msg = (
-                "An unexpected error occurred attempting to construct the cherrypicking plate "
-                "failed event message"
-            )
+            msg = "An unexpected error occurred attempting to construct the cherrypicking plate " "failed event message"
             assert msg in errors[0]
 
 
@@ -1187,19 +1138,14 @@ def test_construct_cherrypicking_plate_failed_message_none_mongo_source_plates(
 
             assert message is None
             assert len(errors) == 1
-            assert (
-                f"No source plate data found in Mongo for DART samples in plate '{barcode}'"
-                in errors
-            )
+            assert f"No source plate data found in Mongo for DART samples in plate '{barcode}'" in errors
 
 
 def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo(
     app, dart_samples_for_bp_test, samples_with_uuids, mock_event_helpers
 ):
     with app.app_context():
-        with patch(
-            "lighthouse.helpers.plates.app.data.driver.db.source_plates"
-        ) as source_plates_collection:
+        with patch("lighthouse.helpers.plates.app.data.driver.db.source_plates") as source_plates_collection:
             source_plates_collection.find.return_value = []
             barcode = "plate_1"
             errors, message = construct_cherrypicking_plate_failed_message(
@@ -1208,10 +1154,7 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
 
             assert message is None
             assert len(errors) == 1
-            assert (
-                f"No source plate data found in Mongo for DART samples in plate '{barcode}'"
-                in errors
-            )
+            assert f"No source plate data found in Mongo for DART samples in plate '{barcode}'" in errors
 
 
 def test_construct_cherrypicking_plate_failed_message_success(
@@ -1252,9 +1195,7 @@ def test_construct_cherrypicking_plate_failed_message_success(
                 # assert expected calls
                 mock_robot_subject.assert_called_with(test_robot_serial_number, test_robot_uuid)
                 mock_dest_subject.assert_called_with(test_barcode)
-                mock_source_subject.assert_called_with(
-                    "123", "a17c38cd-b2df-43a7-9896-582e7855b4cc"
-                )
+                mock_source_subject.assert_called_with("123", "a17c38cd-b2df-43a7-9896-582e7855b4cc")
 
                 root_sample_ids = ["MCM001", "MCM006"]
                 expected_samples = list(

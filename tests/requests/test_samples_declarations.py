@@ -38,9 +38,7 @@ def test_get_samples_declarations_with_content(client, samples_declarations):
     assert len(response.json["_items"]) == 4
 
 
-def test_post_new_sample_declaration_for_existing_samples_unauthorized(
-    app, client, samples_declarations
-):
+def test_post_new_sample_declaration_for_existing_samples_unauthorized(app, client, samples_declarations):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
         response = client.post(
             "/samples_declarations",
@@ -74,9 +72,7 @@ def post_authorized_create_samples_declaration(client, payload):
     )
 
 
-def test_post_new_single_sample_declaration_for_existing_sample(
-    app, client, samples, empty_data_when_finish
-):
+def test_post_new_single_sample_declaration_for_existing_sample(app, client, samples, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
         items = {
             "root_sample_id": "MCM001",
@@ -89,9 +85,7 @@ def test_post_new_single_sample_declaration_for_existing_sample(
         assert response.json["_status"] == "OK"
 
 
-def test_post_new_sample_declaration_for_existing_samples(
-    app, client, samples, empty_data_when_finish
-):
+def test_post_new_sample_declaration_for_existing_samples(app, client, samples, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 2):
         items = [
             {
@@ -117,12 +111,8 @@ def test_post_new_sample_declaration_for_existing_samples(
 def test_create_lots_of_samples_declarations(
     app, client, lots_of_samples, lots_of_samples_declarations_payload, empty_data_when_finish
 ):
-    with CheckNumInstancesChangeBy(
-        app, "samples_declarations", len(lots_of_samples_declarations_payload)
-    ):
-        response = post_authorized_create_samples_declaration(
-            client, lots_of_samples_declarations_payload
-        )
+    with CheckNumInstancesChangeBy(app, "samples_declarations", len(lots_of_samples_declarations_payload)):
+        response = post_authorized_create_samples_declaration(client, lots_of_samples_declarations_payload)
         assert len(response.json["_items"]) == len(lots_of_samples_declarations_payload)
         assert response.json["_status"] == "OK"
 
@@ -130,9 +120,7 @@ def test_create_lots_of_samples_declarations(
             assert item["_status"] == "OK"
 
 
-def test_inserts_new_declarations_even_when_other_declarations_are_wrong(
-    app, client, samples, empty_data_when_finish
-):
+def test_inserts_new_declarations_even_when_other_declarations_are_wrong(app, client, samples, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
         stamp = "2013-04-10T09:00:00"
         post_authorized_create_samples_declaration(
@@ -147,16 +135,11 @@ def test_inserts_new_declarations_even_when_other_declarations_are_wrong(
             ],
         )
         with app.app_context():
-            li = [
-                x
-                for x in app.data.driver.db.samples_declarations.find({"root_sample_id": "MCM002"})
-            ]
+            li = [x for x in app.data.driver.db.samples_declarations.find({"root_sample_id": "MCM002"})]
             assert len(li) == 1
 
 
-def test_wrong_value_for_value_in_sequencing(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_wrong_value_for_value_in_sequencing(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
         response = post_authorized_create_samples_declaration(
             client,
@@ -176,15 +159,11 @@ def test_wrong_value_for_value_in_sequencing(
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert len(response.json["_items"]) == 2
         assert response.json["_status"] == "ERR"
-        assert_has_error(
-            response.json["_items"][0], "value_in_sequencing", "unallowed value wrong answer!!"
-        )
+        assert_has_error(response.json["_items"][0], "value_in_sequencing", "unallowed value wrong answer!!")
         assert response.json["_items"][1]["_status"] == "OK"
 
 
-def test_wrong_value_for_declared_at(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_wrong_value_for_declared_at(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
         response = post_authorized_create_samples_declaration(
             client,
@@ -208,9 +187,7 @@ def test_wrong_value_for_declared_at(
         assert_has_error(response.json["_items"][1], "declared_at", "must be of datetime type")
 
 
-def test_wrong_value_for_root_sample_id(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_wrong_value_for_root_sample_id(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
         response = post_authorized_create_samples_declaration(
             client,
@@ -234,9 +211,7 @@ def test_wrong_value_for_root_sample_id(
         assert response.json["_items"][1]["_status"] == "OK"
 
 
-def test_unknown_sample_for_root_sample_id(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_unknown_sample_for_root_sample_id(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
         response = post_authorized_create_samples_declaration(
             client,
@@ -248,14 +223,10 @@ def test_unknown_sample_for_root_sample_id(
         )
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert response.json["_status"] == "ERR"
-        assert_has_error(
-            response.json, "root_sample_id", "Sample does not exist in database: nonsense"
-        )
+        assert_has_error(response.json, "root_sample_id", "Sample does not exist in database: nonsense")
 
 
-def test_missing_value_for_root_sample_id_multiple(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_missing_value_for_root_sample_id_multiple(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
         response = post_authorized_create_samples_declaration(
             client,
@@ -278,9 +249,7 @@ def test_missing_value_for_root_sample_id_multiple(
         assert response.json["_items"][1]["_status"] == "OK"
 
 
-def test_missing_value_for_root_sample_id_single(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_missing_value_for_root_sample_id_single(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
         response = post_authorized_create_samples_declaration(
             client,
@@ -294,9 +263,7 @@ def test_missing_value_for_root_sample_id_single(
         assert_has_error(response.json, "root_sample_id", "required field")
 
 
-def test_validate_sample_exist_in_samples_table(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_validate_sample_exist_in_samples_table(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
         response = post_authorized_create_samples_declaration(
             client,
@@ -324,9 +291,7 @@ def test_validate_sample_exist_in_samples_table(
         )
 
 
-def test_validate_samples_are_defined_twice_v1(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_validate_samples_are_defined_twice_v1(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
         response = post_authorized_create_samples_declaration(
             client,
@@ -346,17 +311,11 @@ def test_validate_samples_are_defined_twice_v1(
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert len(response.json["_items"]) == 2
         assert response.json["_status"] == "ERR"
-        assert_has_error(
-            response.json["_items"][0], "root_sample_id", "Sample is a duplicate: MCM001"
-        )
-        assert_has_error(
-            response.json["_items"][1], "root_sample_id", "Sample is a duplicate: MCM001"
-        )
+        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate: MCM001")
+        assert_has_error(response.json["_items"][1], "root_sample_id", "Sample is a duplicate: MCM001")
 
 
-def test_validate_samples_are_defined_twice_v2(
-    app, client, samples, samples_declarations, empty_data_when_finish
-):
+def test_validate_samples_are_defined_twice_v2(app, client, samples, samples_declarations, empty_data_when_finish):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 1):
         response = post_authorized_create_samples_declaration(
             client,
@@ -391,28 +350,16 @@ def test_validate_samples_are_defined_twice_v2(
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert len(response.json["_items"]) == 5
         assert response.json["_status"] == "ERR"
-        assert_has_error(
-            response.json["_items"][0], "root_sample_id", "Sample is a duplicate: MCM001"
-        )
+        assert_has_error(response.json["_items"][0], "root_sample_id", "Sample is a duplicate: MCM001")
         assert response.json["_items"][1]["_status"] == "OK"
-        assert_has_error(
-            response.json["_items"][2], "root_sample_id", "Sample is a duplicate: MCM001"
-        )
-        assert_has_error(
-            response.json["_items"][3], "root_sample_id", "Sample is a duplicate: MCM003"
-        )
-        assert_has_error(
-            response.json["_items"][4], "root_sample_id", "Sample is a duplicate: MCM003"
-        )
+        assert_has_error(response.json["_items"][2], "root_sample_id", "Sample is a duplicate: MCM001")
+        assert_has_error(response.json["_items"][3], "root_sample_id", "Sample is a duplicate: MCM003")
+        assert_has_error(response.json["_items"][4], "root_sample_id", "Sample is a duplicate: MCM003")
 
 
-def test_multiple_errors_on_samples_declaration(
-    app, client, multiple_errors_samples_declarations_payload
-):
+def test_multiple_errors_on_samples_declaration(app, client, multiple_errors_samples_declarations_payload):
     with CheckNumInstancesChangeBy(app, "samples_declarations", 0):
-        response = post_authorized_create_samples_declaration(
-            client, multiple_errors_samples_declarations_payload
-        )
+        response = post_authorized_create_samples_declaration(client, multiple_errors_samples_declarations_payload)
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, response.json
         assert len(response.json["_items"]) == 8
         assert response.json["_status"] == "ERR"
@@ -455,9 +402,7 @@ def test_multiple_errors_on_samples_declaration(
             "Sample does not exist in database: YOR10020217",
         )
         assert_has_error(response.json["_items"][6], "value_in_sequencing", "required field")
-        assert_has_error(
-            response.json["_items"][7], "value_in_sequencing", "unallowed value maybelater"
-        )
+        assert_has_error(response.json["_items"][7], "value_in_sequencing", "unallowed value maybelater")
 
 
 def test_filter_by_root_sample_id(client, samples_declarations):

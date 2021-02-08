@@ -8,9 +8,7 @@ LOGGING: Dict[str, Any] = {
             "()": "colorlog.ColoredFormatter",
             "format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
         },
-        "verbose": {
-            "format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(levelname)-5s %(message)s"
-        },
+        "verbose": {"format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(levelname)-5s %(message)s"},
     },
     "handlers": {
         "colored_stream": {
@@ -27,7 +25,5 @@ LOGGING: Dict[str, Any] = {
             "channel_id": "",
         },
     },
-    "loggers": {
-        "lighthouse": {"handlers": ["console", "slack"], "level": "INFO", "propagate": True}
-    },
+    "loggers": {"lighthouse": {"handlers": ["console", "slack"], "level": "INFO", "propagate": True}},
 }

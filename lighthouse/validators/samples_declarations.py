@@ -48,9 +48,7 @@ def find_duplicates(sample_ids):
 
 # https://stackoverflow.com/questions/3462143/get-difference-between-two-lists
 def find_non_exist_samples(sample_ids):
-    cursor = app.data.driver.db.samples.find(
-        {FIELD_ROOT_SAMPLE_ID: {"$in": sample_ids}}, {FIELD_ROOT_SAMPLE_ID: 1}
-    )
+    cursor = app.data.driver.db.samples.find({FIELD_ROOT_SAMPLE_ID: {"$in": sample_ids}}, {FIELD_ROOT_SAMPLE_ID: 1})
 
     existing_sample_ids = [val[FIELD_ROOT_SAMPLE_ID] for val in cursor]
     return list(set(sample_ids) - set(existing_sample_ids))
@@ -148,9 +146,7 @@ def post_samples_declarations_post_callback(request, payload):
 
             # We re-perform the request again with the OK items without performing
             # the validation again, so they will go to the database
-            new_response = post_internal(
-                "samples_declarations", payl=clean_payload, skip_validation=True
-            )
+            new_response = post_internal("samples_declarations", payl=clean_payload, skip_validation=True)
 
             # We re-generate the response by merging new response with the original response
             merged_payload = merge_response_into_payload(payload, new_response[0], clean_elems)

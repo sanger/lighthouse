@@ -20,19 +20,14 @@ def create_plate_event() -> Tuple[Dict[str, Any], int]:
     try:
         event_type = request.args.get("event_type")
         if not event_type:
-            logger.error(
-                "Failed publishing plate event message: missing required 'event_type' parameter"
-            )
+            logger.error("Failed publishing plate event message: missing required 'event_type' parameter")
             return {"errors": ["'event_type' is a required parameter"]}, HTTPStatus.BAD_REQUEST
 
         logger.info(f"Attempting to publish an '{event_type}' plate event message")
         logger.info("Attempting to construct the plate event message")
         errors, message = construct_event_message(event_type, request.args)
         if len(errors) > 0 or message is None:
-            logger.error(
-                "Failed publishing plate event message: error(s) constructing event message: "
-                f"{errors}"
-            )
+            logger.error("Failed publishing plate event message: error(s) constructing event message: " f"{errors}")
             return {"errors": errors}, HTTPStatus.INTERNAL_SERVER_ERROR
 
         # By this stage we know the event type is valid as we have been able to construct a message

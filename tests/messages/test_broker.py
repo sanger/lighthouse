@@ -11,9 +11,7 @@ def test_broker_connect_connects(app, mock_pika):
         broker = Broker()
         broker.connect()
 
-        pika.PlainCredentials.assert_called_with(
-            app.config["RMQ_USERNAME"], app.config["RMQ_PASSWORD"]
-        )
+        pika.PlainCredentials.assert_called_with(app.config["RMQ_USERNAME"], app.config["RMQ_PASSWORD"])
         pika.ConnectionParameters.assert_called_with(
             app.config["RMQ_HOST"],
             app.config["RMQ_PORT"],

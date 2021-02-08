@@ -28,9 +28,7 @@ def test_get_reports_list(client):
         assert response.json == {"reports": []}
 
 
-def test_create_report(
-    client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations
-):
+def test_create_report(client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations):
     with app.app_context():
         with patch(
             "lighthouse.jobs.reports.get_new_report_name_and_path",
@@ -56,9 +54,7 @@ def test_create_report(
                     assert response.json == {"reports": "Some details of a report"}
 
 
-def test_report_columns(
-    client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations
-):
+def test_report_columns(client, app, tmp_path, samples, labwhere_samples_simple, samples_declarations):
     with app.app_context():
         test_xlsx = "test.xlsx"
         test_path = f"{tmp_path}/{test_xlsx}"

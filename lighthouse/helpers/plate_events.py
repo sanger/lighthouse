@@ -22,9 +22,7 @@ from lighthouse.messages.message import Message
 logger = logging.getLogger(__name__)
 
 
-def construct_event_message(
-    event_type: str, params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
+def construct_event_message(event_type: str, params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
     """Delegates to the appropriate event construction method;
     otherwise returns with errors for unknown event type.
 
@@ -48,9 +46,7 @@ def construct_event_message(
         return [f"Unrecognised event type '{event_type}'"], None
 
 
-def construct_source_plate_completed_message(
-    params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
+def construct_source_plate_completed_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
     """Constructs a message representing a source plate complete event;
     otherwise returns appropriate errors.
 
@@ -61,14 +57,10 @@ def construct_source_plate_completed_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return __construct_source_plate_with_samples_on_robot_message(
-        PLATE_EVENT_SOURCE_COMPLETED, params
-    )
+    return __construct_source_plate_with_samples_on_robot_message(PLATE_EVENT_SOURCE_COMPLETED, params)
 
 
-def construct_source_plate_not_recognised_message(
-    params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
+def construct_source_plate_not_recognised_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
     """Constructs a message representing a source plate not recognised event;
     otherwise returns appropriate errors.
 
@@ -113,9 +105,7 @@ def construct_source_plate_not_recognised_message(
         ], None
 
 
-def construct_source_plate_no_map_data_message(
-    params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
+def construct_source_plate_no_map_data_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
     """Constructs a message representing a source plate without plate map data event;
     otherwise returns appropriate errors.
 
@@ -164,9 +154,7 @@ def construct_source_plate_no_map_data_message(
         return [msg], None
 
 
-def construct_source_plate_all_negatives_message(
-    params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
+def construct_source_plate_all_negatives_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
     """Constructs a message representing a source plate without positives event;
     otherwise returns appropriate errors.
 
@@ -177,9 +165,7 @@ def construct_source_plate_all_negatives_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return __construct_source_plate_with_samples_on_robot_message(
-        PLATE_EVENT_SOURCE_ALL_NEGATIVES, params
-    )
+    return __construct_source_plate_with_samples_on_robot_message(PLATE_EVENT_SOURCE_ALL_NEGATIVES, params)
 
 
 # Private methods
@@ -204,10 +190,7 @@ def __construct_source_plate_with_samples_on_robot_message(
         user_id = params.get("user_id")
         robot_serial_number = params.get("robot")
         if not barcode or not user_id or not robot_serial_number:
-            return [
-                "'barcode', 'user_id' and 'robot' are required to construct a "
-                f"{event_type} event message"
-            ], None
+            return ["'barcode', 'user_id' and 'robot' are required to construct a " f"{event_type} event message"], None
 
         robot_uuid = get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
@@ -241,7 +224,4 @@ def __construct_source_plate_with_samples_on_robot_message(
     except Exception as e:
         logger.error(f"Failed to construct a {event_type} message")
         logger.exception(e)
-        return [
-            "An unexpected error occurred attempting to construct the "
-            f"{event_type} event message"
-        ], None
+        return ["An unexpected error occurred attempting to construct the " f"{event_type} event message"], None

@@ -24,9 +24,7 @@ def get_locations_from_labwhere(labware_barcodes):
     )
 
 
-def set_locations_in_labwhere(
-    labware_barcodes: List[str], location_barcode: str, user_barcode: str
-):
+def set_locations_in_labwhere(labware_barcodes: List[str], location_barcode: str, user_barcode: str):
     """Record a scan event in labwhere for labware_barcodes
 
     Note: The labwhere API currently identifies users by their swipecard, however

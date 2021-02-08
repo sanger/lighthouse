@@ -81,10 +81,7 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
 
     logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
 
-    baracoda_url = (
-        f"http://{app.config['BARACODA_URL']}"
-        f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
-    )
+    baracoda_url = f"http://{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
 
     retries = app.config["BARACODA_RETRY_ATTEMPTS"]
     success_operation = False
@@ -276,9 +273,7 @@ def join_rows_with_samples(rows, samples):
 
 
 def add_controls_to_samples(rows, samples):
-    control_samples = [
-        {"row": row_to_dict(row), "sample": None} for row in rows_with_controls(rows)
-    ]
+    control_samples = [{"row": row_to_dict(row), "sample": None} for row in rows_with_controls(rows)]
     return samples + control_samples
 
 
@@ -380,9 +375,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                 }
             )
 
-        sql_engine = create_mysql_connection_engine(
-            app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"]
-        )
+        sql_engine = create_mysql_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"])
         table = get_table(sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
         stmt = (
@@ -468,9 +461,7 @@ def create_cherrypicked_post_body(
     robot_serial_number: str,
     source_plates: List[Dict[str, str]],
 ) -> Dict[str, Any]:
-    logger.debug(
-        f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'"
-    )
+    logger.debug(f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'")
 
     wells_content = {}
     for sample in samples:
@@ -590,14 +581,10 @@ def construct_cherrypicking_plate_failed_message(
         else:
             mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
             if mongo_samples is None:
-                return [
-                    f"No sample data found in Mongo matching DART samples in plate '{barcode}'"
-                ], None
+                return [f"No sample data found in Mongo matching DART samples in plate '{barcode}'"], None
 
             if not check_matching_sample_numbers(dart_samples, mongo_samples):
-                return [
-                    f"Mismatch in destination and source sample data for plate '{barcode}'"
-                ], None
+                return [f"Mismatch in destination and source sample data for plate '{barcode}'"], None
 
             # Add sample subjects for control and non-control DART entries
             dart_control_rows = [row_to_dict(row) for row in rows_with_controls(dart_samples)]
@@ -607,9 +594,7 @@ def construct_cherrypicking_plate_failed_message(
             # Add source plate subjects
             source_plates = get_source_plates_for_samples(mongo_samples)
             if not source_plates:
-                return [
-                    f"No source plate data found in Mongo for DART samples in plate '{barcode}'"
-                ], None
+                return [f"No source plate data found in Mongo for DART samples in plate '{barcode}'"], None
 
             subjects.extend(__mongo_source_plate_subjects(source_plates))
 
@@ -630,8 +615,7 @@ def construct_cherrypicking_plate_failed_message(
         logger.error("Failed to construct a cherrypicking plate failed message")
         logger.exception(e)
         return [
-            "An unexpected error occurred attempting to construct the cherrypicking plate "
-            f"failed event message: {e}"
+            "An unexpected error occurred attempting to construct the cherrypicking plate " f"failed event message: {e}"
         ], None
 
 
@@ -683,9 +667,7 @@ def __supplier_name_for_dart_control(dart_row):
 
 def __mongo_source_plate_subjects(source_plates):
     return [
-        construct_source_plate_message_subject(
-            plate[FIELD_BARCODE], plate[FIELD_LH_SOURCE_PLATE_UUID]
-        )
+        construct_source_plate_message_subject(plate[FIELD_BARCODE], plate[FIELD_LH_SOURCE_PLATE_UUID])
         for plate in source_plates
     ]
 

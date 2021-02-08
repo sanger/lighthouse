@@ -127,9 +127,7 @@ def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
         pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Sentinel query resp.
         pd.DataFrame([]),  # Beckman query response
     ]
-    expected = pd.DataFrame(
-        ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
-    )
+    expected = pd.DataFrame(["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2])
 
     samples = ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005"]
     plate_barcodes = ["123", "456"]
@@ -149,9 +147,7 @@ def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
 # - Only the Sentinel queries return matches (No Beckman)
 # - Chunking: multiple queries are made, with all matches contained in the sum of these queries
 # - Duplication of returned matches across different chunks: duplicates should be filtered out
-def test_get_cherrypicked_samples_repeat_tests_no_beckman(
-    app, freezer, mlwh_sentinel_cherrypicked, event_wh_data
-):
+def test_get_cherrypicked_samples_repeat_tests_no_beckman(app, freezer, mlwh_sentinel_cherrypicked, event_wh_data):
     # the following come from MLWH_SAMPLE_STOCK_RESOURCE in fixture_data
     root_sample_ids = ["root_1", "root_2", "root_1"]
     plate_barcodes = ["pb_1", "pb_2", "pb_3"]
@@ -214,9 +210,7 @@ def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
         pd.DataFrame([]),  # Sentinel query resp.
         pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Beckman query resp.
     ]
-    expected = pd.DataFrame(
-        ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
-    )
+    expected = pd.DataFrame(["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2])
 
     samples = ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005"]
     plate_barcodes = ["123", "456"]
@@ -236,9 +230,7 @@ def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
 # - Only the Beckman queries return matches (No Sentinel)
 # - Chunking: multiple queries are made, with all matches contained in the sum of these queries
 # - Duplication of returned matches across different chunks: duplicates should be filtered out
-def test_get_cherrypicked_samples_repeat_tests_no_sentinel(
-    app, freezer, mlwh_beckman_cherrypicked, event_wh_data
-):
+def test_get_cherrypicked_samples_repeat_tests_no_sentinel(app, freezer, mlwh_beckman_cherrypicked, event_wh_data):
     # the following come from MLWH_SAMPLE_LIGHTHOUSE_SAMPLE in fixture_data
     root_sample_ids = ["root_4", "root_5", "root_4"]
     plate_barcodes = ["pb_4", "pb_5", "pb_6"]
@@ -264,9 +256,7 @@ def test_get_cherrypicked_samples_repeat_tests_no_sentinel(
 # - Duplication of returned matches across different workflows: duplicates should be filtered out
 def test_get_cherrypicked_samples_sentinel_and_beckman(app, freezer):
     expected = [
-        pd.DataFrame(
-            ["MCM001", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]
-        ),  # Sentinel query response
+        pd.DataFrame(["MCM001", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),  # Sentinel query response
         pd.DataFrame(
             ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
         ),  # Beckman query response

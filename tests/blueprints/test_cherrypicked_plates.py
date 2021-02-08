@@ -36,9 +36,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
         )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.json == {
-            "data": {"plate_barcode": "plate_1", "centre": "TS1", "number_of_positives": 2}
-        }
+        assert response.json == {"data": {"plate_barcode": "plate_1", "centre": "TS1", "number_of_positives": 2}}
 
 
 def test_get_cherrypicked_plates_endpoint_no_barcode_in_request(app, client, samples_with_lab_id):
@@ -51,9 +49,7 @@ def test_get_cherrypicked_plates_endpoint_no_barcode_in_request(app, client, sam
     assert response.json == {"errors": ["GET request needs 'barcode' in url"]}
 
 
-def test_get_cherrypicked_plates_endpoint_no_robot_number_in_request(
-    app, client, samples_with_lab_id
-):
+def test_get_cherrypicked_plates_endpoint_no_robot_number_in_request(app, client, samples_with_lab_id):
     response = client.get(
         "/cherrypicked-plates/create?barcode=plate_1&user_id=test",
         content_type="application/json",
@@ -153,9 +149,7 @@ def test_get_cherrypicked_plates_mlwh_update_failure(
             }
 
 
-def test_post_plates_endpoint_mismatched_sample_numbers(
-    app, client, dart_samples_for_bp_test, samples_with_lab_id
-):
+def test_post_plates_endpoint_mismatched_sample_numbers(app, client, dart_samples_for_bp_test, samples_with_lab_id):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
         return_value="TS1",
@@ -187,9 +181,7 @@ def test_post_cherrypicked_plates_endpoint_missing_dart_data(app, client):
             content_type="application/json",
         )
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert response.json == {
-            "errors": ["Failed to find sample data in DART for plate barcode: " + barcode]
-        }
+        assert response.json == {"errors": ["Failed to find sample data in DART for plate barcode: " + barcode]}
 
 
 def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
@@ -209,69 +201,54 @@ def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
                 content_type="application/json",
             )
             assert response.status_code == HTTPStatus.BAD_REQUEST
-            assert response.json == {
-                "errors": ["No source plate UUIDs for samples of destination plate: " + barcode]
-            }
+            assert response.json == {"errors": ["No source plate UUIDs for samples of destination plate: " + barcode]}
 
 
 # ---------- cherrypicked-plates/fail tests ----------
 
 
 def test_fail_plate_from_barcode_bad_request_no_barcode(client):
-    response = client.get(
-        "/cherrypicked-plates/fail?user_id=test_user&robot=BKRB0001&failure_type=robot_crashed"
-    )
+    response = client.get("/cherrypicked-plates/fail?user_id=test_user&robot=BKRB0001&failure_type=robot_crashed")
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert len(response.json["errors"]) == 1
 
     response = client.get(
-        "/cherrypicked-plates/fail?user_id=test_user&robot=BKRB0001"
-        "&failure_type=robot_crashed&barcode="
+        "/cherrypicked-plates/fail?user_id=test_user&robot=BKRB0001" "&failure_type=robot_crashed&barcode="
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert len(response.json["errors"]) == 1
 
 
 def test_fail_plate_from_barcode_bad_request_no_user_id(client):
-    response = client.get(
-        "/cherrypicked-plates/fail?barcode=ABC123&robot=BKRB0001&failure_type=robot_crashed"
-    )
+    response = client.get("/cherrypicked-plates/fail?barcode=ABC123&robot=BKRB0001&failure_type=robot_crashed")
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert len(response.json["errors"]) == 1
 
     response = client.get(
-        "/cherrypicked-plates/fail?barcode=ABC123&robot=BKRB0001"
-        "&failure_type=robot_crashed&user_id="
+        "/cherrypicked-plates/fail?barcode=ABC123&robot=BKRB0001" "&failure_type=robot_crashed&user_id="
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert len(response.json["errors"]) == 1
 
 
 def test_fail_plate_from_barcode_bad_request_no_robot(client):
-    response = client.get(
-        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&failure_type=robot_crashed"
-    )
+    response = client.get("/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&failure_type=robot_crashed")
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert len(response.json["errors"]) == 1
 
     response = client.get(
-        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
-        "&failure_type=robot_crashed&robot="
+        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user" "&failure_type=robot_crashed&robot="
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert len(response.json["errors"]) == 1
 
 
 def test_fail_plate_from_barcode_bad_request_no_failure_type(client):
-    response = client.get(
-        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&robot=BKRB0001"
-    )
+    response = client.get("/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&robot=BKRB0001")
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert len(response.json["errors"]) == 1
 
-    response = client.get(
-        "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&robot=BKRB0001&failure_type="
-    )
+    response = client.get("/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user&robot=BKRB0001&failure_type=")
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert len(response.json["errors"]) == 1
 
@@ -280,8 +257,7 @@ def test_fail_plate_from_barcode_bad_request_unrecognised_failure_type(app, clie
     with app.app_context():
         failure_type = "notAFailureType"
         response = client.get(
-            "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user"
-            f"&robot=BKRB0001&failure_type={failure_type}"
+            "/cherrypicked-plates/fail?barcode=ABC123&user_id=test_user" f"&robot=BKRB0001&failure_type={failure_type}"
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
         errors = response.json["errors"]
@@ -327,9 +303,7 @@ def test_fail_plate_from_barcode_internal_error_failed_broker_initialise(client)
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
     ) as mock_construct:
-        with patch(
-            "lighthouse.blueprints.cherrypicked_plates.Broker", side_effect=Exception("Boom!")
-        ):
+        with patch("lighthouse.blueprints.cherrypicked_plates.Broker", side_effect=Exception("Boom!")):
             mock_construct.return_value = [], Message("test message content")
 
             response = client.get(
@@ -392,9 +366,7 @@ def test_fail_plate_from_barcode_success(client):
         "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
     ) as mock_construct:
         routing_key = "test.routing.key"
-        with patch(
-            "lighthouse.blueprints.cherrypicked_plates.get_routing_key", return_value=routing_key
-        ):
+        with patch("lighthouse.blueprints.cherrypicked_plates.get_routing_key", return_value=routing_key):
             with patch("lighthouse.blueprints.cherrypicked_plates.Broker") as mock_broker:
                 test_errors = ["error 1", "error 2"]
                 test_message = Message("test message content")

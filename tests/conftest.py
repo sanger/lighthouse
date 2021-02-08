@@ -233,16 +233,12 @@ def cog_uk_ids():
 
 @pytest.fixture
 def mlwh_lh_samples(app, mlwh_sql_engine):
-    insert_into_mlwh(
-        app, MLWH_LH_SAMPLES, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
-    )
+    insert_into_mlwh(app, MLWH_LH_SAMPLES, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
 
 @pytest.fixture
 def mlwh_lh_samples_multiple(app, mlwh_sql_engine):
-    insert_into_mlwh(
-        app, MLWH_LH_SAMPLES_MULTIPLE, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
-    )
+    insert_into_mlwh(app, MLWH_LH_SAMPLES_MULTIPLE, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
 
 @pytest.fixture
@@ -374,9 +370,7 @@ def event_wh_data(app, event_wh_sql_engine):
         roles_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLES_TABLE"])
         events_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENTS_TABLE"])
         event_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENT_TYPES_TABLE"])
-        subject_types_table = get_table(
-            event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"]
-        )
+        subject_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"])
         role_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLE_TYPES_TABLE"])
 
         def delete_event_warehouse_data():
@@ -406,9 +400,7 @@ def event_wh_data(app, event_wh_sql_engine):
 
 @pytest.fixture
 def mlwh_sql_engine(app):
-    return create_mysql_connection_engine(
-        app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"]
-    )
+    return create_mysql_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"])
 
 
 @pytest.fixture
@@ -455,9 +447,7 @@ def samples_with_lab_id(app):
 
 @pytest.fixture
 def event_wh_sql_engine(app):
-    return create_mysql_connection_engine(
-        app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"]
-    )
+    return create_mysql_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"])
 
 
 @pytest.fixture

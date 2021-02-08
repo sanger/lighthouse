@@ -23,9 +23,7 @@ def get_source_plate_uuid(barcode: str) -> Optional[str]:
 
         return source_plate.get(FIELD_LH_SOURCE_PLATE_UUID, None)
     except Exception as e:
-        logger.error(
-            f"An error occurred attempting to determine the uuid of source plate '{barcode}'"
-        )
+        logger.error(f"An error occurred attempting to determine the uuid of source plate '{barcode}'")
         logger.exception(e)
         return None
 
@@ -48,8 +46,6 @@ def get_positive_samples_in_source_plate(source_plate_uuid: str) -> Optional[Lis
         }
         return list(samples_collection.find(query))
     except Exception as e:
-        logger.error(
-            f"An error occurred attempting to fetch samples on source plate '{source_plate_uuid}'"
-        )
+        logger.error(f"An error occurred attempting to fetch samples on source plate '{source_plate_uuid}'")
         logger.exception(e)
         return None
