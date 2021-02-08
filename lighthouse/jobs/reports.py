@@ -33,14 +33,10 @@ def create_report() -> str:
     positive_samples_df = get_all_positive_samples(samples_collection)
 
     logger.debug("Getting location barcodes from labwhere")
-    labware_to_location_barcode_df = map_labware_to_location(
-        get_distinct_plate_barcodes(samples_collection)
-    )
+    labware_to_location_barcode_df = map_labware_to_location(get_distinct_plate_barcodes(samples_collection))
 
     logger.debug("Joining location data from labwhere")
-    merged = positive_samples_df.merge(
-        labware_to_location_barcode_df, how="left", on=FIELD_PLATE_BARCODE
-    )
+    merged = positive_samples_df.merge(labware_to_location_barcode_df, how="left", on=FIELD_PLATE_BARCODE)
 
     merged = join_samples_declarations(merged)
 
@@ -50,8 +46,8 @@ def create_report() -> str:
 
     logger.info(f"Writing results to {report_path}")
 
-    # Create a Pandas Excel writer using XlsxWriter as the engine
-    writer = pd.ExcelWriter(report_path, engine="xlsxwriter")
+    # Create a Pandas Excel writer using openpyxl as the engine
+    writer = pd.ExcelWriter(report_path, engine="openpyxl")
 
     # Get the list (and order) of columns for the report from config otherwise fall back to
     #   pre-defined list
@@ -62,7 +58,7 @@ def create_report() -> str:
         writer, sheet_name="POSITIVE SAMPLES WITH LOCATION", columns=columns, index=False
     )
 
-    # Convert the dataframe to an XlsxWriter Excel object
+    # Convert the dataframe to an openpyxl Excel object
     #  Sheet1 contains all positive samples with AND without location barcodes
     merged.to_excel(writer, sheet_name="ALL POSITIVE SAMPLES", columns=columns, index=False)
 
