@@ -4,9 +4,7 @@ on:
   push:
     paths-ignore:
       - "README.md"
-    branches:
-      - gpl769_use_cherrypicked_view
-
+      
 env: 
   UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:develop
   EVENT_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:master
