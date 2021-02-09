@@ -8,11 +8,11 @@ on:
       - gpl769_use_cherrypicked_view
 
 env: 
-  UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:GPL-769-cherrypicked-samples-view-revisited
-  EVENT_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:gpl769_test_cp_view
+  UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:develop
+  EVENT_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:master
 jobs:
   test_job:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     services:
       mongodb:
         image: mongo:4.2.5
@@ -33,6 +33,33 @@ jobs:
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: MyS3cr3tPassw0rd
+      rmq:
+        image: rabbitmq:3
+        ports:
+          - 5672:5672
+        env:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
+      ewh:
+        image: ${EVENT_WAREHOUSE_IMAGE}
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          DBHOST: mysql
+          RMQHOST: rmq
+          INTEGRATION_TEST_SETUP: true
+          RAILS_ENV: test
+      uwh:
+        image: ${UNIFIED_WAREHOUSE_IMAGE}
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          DBHOST: mysql
+          RMQHOST: rmq
+          INTEGRATION_TEST_SETUP: true
+          RAILS_ENV: test
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -66,29 +93,6 @@ jobs:
       - name: Create SQL Server testing database
         run: |
           python setup_sqlserver_test_db.py
-
-      - name: Login to registry
-        run: >-
-          docker login
-          -u ${{ github.actor }}
-          -p ${{ secrets.GITHUB_TOKEN }}
-          docker.pkg.github.com
-      - name: Pull Event warehouse image
-        run: >- 
-          docker pull ${EVENT_WAREHOUSE_IMAGE}
-      - name: Initialize Event warehouse testing database
-        run: >-
-          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
-          ${EVENT_WAREHOUSE_IMAGE}
-          bundle exec rake db:reset
-      - name: Pull Unified warehouse image
-        run: >- 
-          docker pull ${UNIFIED_WAREHOUSE_IMAGE}
-      - name: Initialize Unified warehouse testing database
-        run: >-
-          docker run --network host --env DBHOST=127.0.0.1 --env RAILS_ENV=test
-          ${UNIFIED_WAREHOUSE_IMAGE}
-          bundle exec rake db:reset db:views:schema:load
       - name: Test with pytest
         run: |
           python -m pytest -x
