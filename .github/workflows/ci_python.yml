@@ -4,7 +4,7 @@ on:
   push:
     paths-ignore:
       - "README.md"
-      
+
 env: 
   UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:develop
   EVENT_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:master
@@ -39,7 +39,7 @@ jobs:
           RABBITMQ_DEFAULT_USER: guest
           RABBITMQ_DEFAULT_PASS: guest
       ewh:
-        image: ${EVENT_WAREHOUSE_IMAGE}
+        image: ${{env.EVENT_WAREHOUSE_IMAGE}}
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +49,7 @@ jobs:
           INTEGRATION_TEST_SETUP: true
           RAILS_ENV: test
       uwh:
-        image: ${UNIFIED_WAREHOUSE_IMAGE}
+        image: ${{env.UNIFIED_WAREHOUSE_IMAGE}}
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
