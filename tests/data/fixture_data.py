@@ -1,6 +1,6 @@
 from copy import copy
 from datetime import datetime
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 from uuid import uuid4
 
 from lighthouse.constants import (
@@ -267,7 +267,7 @@ SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
     },
 ]
 
-SAMPLES_NO_DECLARATION: List[Dict[str, Union[str, bool]]] = [
+SAMPLES_NO_DECLARATION: List[Dict[str, Any]] = [
     {
         FIELD_COORDINATE: "A01",
         FIELD_SOURCE: "test1",
