@@ -413,8 +413,8 @@ def __convert_size(size_in_bytes: int) -> str:
 
 def __cherrypicked_samples_query(mlwh_db: str) -> str:
     return (
-        f"select root_sample_id as `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`,"
-        f" phenotype as `Result_lower`, `{FIELD_COORDINATE}`"
+        f"SELECT root_sample_id AS `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`,"
+        f" phenotype AS `Result_lower`, `{FIELD_COORDINATE}`"
         f" FROM {mlwh_db}.cherrypicked_samples"
         f" WHERE root_sample_id IN %(root_sample_ids)s"
         f" AND `{FIELD_PLATE_BARCODE}` IN %(plate_barcodes)s"
