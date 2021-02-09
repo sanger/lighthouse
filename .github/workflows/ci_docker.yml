@@ -13,8 +13,6 @@ on:
       - v*
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
-  UNIFIED_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:develop
-  EVENT_WAREHOUSE_IMAGE: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:master
 
 jobs:
   build_and_test_job:
@@ -47,7 +45,7 @@ jobs:
           RABBITMQ_DEFAULT_USER: guest
           RABBITMQ_DEFAULT_PASS: guest
       ewh:
-        image: ${EVENT_WAREHOUSE_IMAGE}
+        image: docker.pkg.github.com/sanger/event_warehouse/event_warehouse:master
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -57,7 +55,7 @@ jobs:
           INTEGRATION_TEST_SETUP: true
           RAILS_ENV: test
       uwh:
-        image: ${UNIFIED_WAREHOUSE_IMAGE}
+        image: docker.pkg.github.com/sanger/unified_warehouse/unified_warehouse:develop
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
