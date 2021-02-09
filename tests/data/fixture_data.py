@@ -116,7 +116,7 @@ LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD: List[Dict[str, str]] = [
     for i in range(0, MAX_SAMPLES)
 ]
 
-DATE_TESTED_NOW = datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
+DATE_TESTED_NOW = datetime.utcnow()
 SAMPLES: List[Dict[str, Any]] = [
     {  # a positive result, no Ct values
         FIELD_COORDINATE: "A01",
@@ -424,6 +424,7 @@ def inject_lab_id(sample, lab_id):
 
 
 SAMPLES_WITH_LAB_ID = [inject_lab_id(sample, "Lab 1") for sample in SAMPLES]
+
 MLWH_SAMPLE_STOCK_RESOURCE: Dict[str, Any] = {
     "sample": [
         {

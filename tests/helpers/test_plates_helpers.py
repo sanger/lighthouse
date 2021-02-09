@@ -19,6 +19,7 @@ from lighthouse.constants import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DATE_TESTED,
     FIELD_LAB_ID,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_RESULT,
@@ -1260,8 +1261,17 @@ def test_construct_cherrypicking_plate_failed_message_success(
                 expected_samples = list(
                     filter(lambda x: x[FIELD_ROOT_SAMPLE_ID] in root_sample_ids, samples_with_uuids)
                 )
+                # remove the microsecond comparing
+                for sample in expected_samples:
+                    sample.update(
+                        {FIELD_DATE_TESTED: sample[FIELD_DATE_TESTED].replace(microsecond=0)}
+                    )
                 assert len(root_sample_ids) == len(expected_samples)  # sanity check
                 for args, _ in mock_sample_subject.call_args_list:
+                    # remove the microsecond and tzinfo before comparing
+                    args[0][FIELD_DATE_TESTED] = args[0][FIELD_DATE_TESTED].replace(
+                        microsecond=0, tzinfo=None
+                    )
                     assert args[0] in expected_samples
 
                 # assert expected return values

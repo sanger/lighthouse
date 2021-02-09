@@ -1,13 +1,12 @@
 from unittest.mock import patch
-from lighthouse.helpers.mongo_db import (
-    get_source_plate_uuid,
-    get_positive_samples_in_source_plate,
-)
+
 from lighthouse.constants import (
     FIELD_BARCODE,
+    FIELD_DATE_TESTED,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_RESULT,
 )
+from lighthouse.helpers.mongo_db import get_positive_samples_in_source_plate, get_source_plate_uuid
 
 
 def test_get_source_plate_uuid_returns_uuid(app, source_plates):
@@ -35,6 +34,15 @@ def test_get_positive_samples_in_source_plate_returns_matching_samples(app, samp
         source_plate_uuid = samples_with_uuids[0][FIELD_LH_SOURCE_PLATE_UUID]
         expected_samples = list(filter(lambda x: x[FIELD_RESULT] == "Positive", samples_with_uuids))
         result = get_positive_samples_in_source_plate(source_plate_uuid)
+
+        # remove the microsecond and tzinfo before comparing
+        for res in result:
+            res.update(
+                {FIELD_DATE_TESTED: res[FIELD_DATE_TESTED].replace(microsecond=0, tzinfo=None)}
+            )
+        for sample in expected_samples:
+            sample.update({FIELD_DATE_TESTED: sample[FIELD_DATE_TESTED].replace(microsecond=0)})
+
         assert result == expected_samples
 
 
