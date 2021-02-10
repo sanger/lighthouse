@@ -203,52 +203,13 @@ def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
         FIELD_COORDINATE: True,
     }
 
-    DATE_EXTRACTED = "extracted_date"
-    DATE_CONVERTED = "converted_date"
-    DATE_ERROR = "date_conversion_error"
-
     # The pipeline defines stages which execute in sequence
     pipeline = [
         # 1. First run the positive match stage
         STAGE_MATCH_FILTERED_POSITIVE,
-        {
-            # 2. We then need to extract the date using substring since most dates look like this:
-            # "2020-05-10 07:30:00 UTC" but the `dateFromString` function does not handle the
-            # timezone string "UTC"
-            "$addFields": {
-                DATE_EXTRACTED: {
-                    "$substrBytes": [f"${FIELD_DATE_TESTED}", 0, 19],
-                },
-            },
-        },
-        {
-            # 3. Then add a date field which converts the extracted date string to a mongo date
-            # type using the specified format. If it cannot parse the date using the first format
-            # it tries with the other format found in the data
-            # TODO: handle the case that no format is matched
-            "$addFields": {
-                DATE_CONVERTED: {
-                    "$dateFromString": {
-                        "dateString": f"${DATE_EXTRACTED}",
-                        "format": "%Y-%m-%d %H:%M:%S",
-                        "timezone": "UTC",
-                        "onError": {
-                            "$dateFromString": {
-                                "dateString": f"${DATE_EXTRACTED}",
-                                "format": "%d/%m/%Y %H:%M",
-                                "timezone": "UTC",
-                                "onError": DATE_ERROR,
-                            },
-                        },
-                    },
-                },
-            },
-        },
-        # 4. We only want documents which have valid dates that we can compare against
-        {"$match": {DATE_CONVERTED: {"$ne": DATE_ERROR}}},
-        # 5. Find all the document after a certain date
-        {"$match": {DATE_CONVERTED: {"$gte": report_query_window_start()}}},
-        # 6. Define which fields to have in the output documents
+        # 2. We only want documents which have valid dates that we can compare against
+        {"$match": {FIELD_DATE_TESTED: {"$type": "date", "$gte": report_query_window_start()}}},
+        # 3. Define which fields to have in the output documents
         {"$project": projection},
     ]
 

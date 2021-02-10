@@ -4,7 +4,7 @@ import time
 import pandas as pd
 from flask import current_app as app
 from lighthouse import scheduler
-from lighthouse.constants import FIELD_PLATE_BARCODE, REPORT_COLUMNS
+from lighthouse.constants import FIELD_DATE_TESTED, FIELD_PLATE_BARCODE, REPORT_COLUMNS
 from lighthouse.helpers.reports import (
     add_cherrypicked_column,
     get_all_positive_samples,
@@ -31,6 +31,11 @@ def create_report() -> str:
     logger.debug("Getting all positive samples")
     samples_collection = app.data.driver.db.samples
     positive_samples_df = get_all_positive_samples(samples_collection)
+
+    # remove timezone info before writing to excel
+    positive_samples_df[FIELD_DATE_TESTED] = positive_samples_df[FIELD_DATE_TESTED].map(
+        lambda dt: dt.replace(tzinfo=None)
+    )
 
     logger.debug("Getting location barcodes from labwhere")
     labware_to_location_barcode_df = map_labware_to_location(get_distinct_plate_barcodes(samples_collection))
