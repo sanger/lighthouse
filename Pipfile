@@ -36,5 +36,7 @@ python_version = "3.8"
 allow_prereleases = true
 
 [scripts]
-lint = 'black .'
-test = 'python -m pytest'
+black = 'black'
+mypy = 'mypy'
+flake8 = 'flake8'
+test = 'python -m pytest -vx'
