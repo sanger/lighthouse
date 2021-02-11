@@ -1,12 +1,15 @@
-name: CI python
+name: Python - test
 
 on:
   push:
     paths-ignore:
       - "README.md"
+  pull-request:
+    paths-ignore:
+      - "README.md"
 
 jobs:
-  test_job:
+  test:
     runs-on: ubuntu-18.04
     services:
       mongodb:
@@ -47,17 +50,6 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv install --dev --ignore-pipfile --system --deploy
-      - name: Check format with black
-        run: |
-          # stop the build if there are black formatting errors
-          python -m black --check .
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8
-      - name: Run mypy
-        run: |
-          python -m mypy .
       - name: Create SQL Server testing database
         run: |
           python setup_sqlserver_test_db.py
