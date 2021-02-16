@@ -52,7 +52,7 @@ def get_failure_types() -> FlaskResponse:
     try:
         failure_types_config = app.config.get("BECKMAN_FAILURE_TYPES")
 
-        if failure_types_config is None:
+        if failure_types_config is None or not isinstance(failure_types_config, dict):
             logger.error(f"{ERROR_FAILURE_TYPE_CONFIG} no config found")
 
             return internal_server_error("No information exists for any Beckman failure types", failure_types=[])

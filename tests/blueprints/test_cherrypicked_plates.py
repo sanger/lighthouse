@@ -244,7 +244,7 @@ def test_fail_plate_from_barcode_internal_server_error_constructing_message_fail
                 "&robot=BKRB0001&failure_type=robot_crashed"
             )
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert ERROR_UNEXPECTED_CHERRYPICKING_FAILURE in response.json["errors"]
+            assert ERROR_UNEXPECTED_CHERRYPICKING_FAILURE in response.json["errors"][0]
 
 
 def test_fail_plate_from_barcode_internal_server_error_constructing_message_none(app, client):

@@ -3,7 +3,11 @@ from unittest.mock import patch
 
 import responses
 
-from lighthouse.constants.error_messages import ERROR_UPDATE_MLWH_WITH_COG_UK_IDS
+from lighthouse.constants.error_messages import (
+    ERROR_ADD_COG_BARCODES,
+    ERROR_PLATES_CREATE,
+    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
+)
 
 
 def test_post_plates_endpoint_successful(app, client, samples, mocked_responses, mlwh_lh_samples):
@@ -40,7 +44,7 @@ def test_post_plates_endpoint_add_cog_barcodes_failed(app, client, samples, cent
     response = client.post("/plates/new", json={"barcode": "plate_123"})
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": ["Failed to add COG barcodes to plate: plate_123"]}
+    assert response.json == {"errors": [f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} plate_123"]}
 
 
 def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses):
