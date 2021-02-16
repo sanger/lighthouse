@@ -5,16 +5,33 @@ LOGGING: Dict[str, Any] = {
     "disable_existing_loggers": False,
     "formatters": {
         "colored": {
+            "style": "{",
             "()": "colorlog.ColoredFormatter",
-            "format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
+            "format": "{asctime:<15} {name:<45}:{lineno:<3} {log_color}{levelname:<5} {message}",
         },
-        "verbose": {"format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(levelname)-5s %(message)s"},
+        "colored_dev": {
+            "style": "{",
+            "()": "colorlog.ColoredFormatter",
+            "format": "{asctime:<15} {relative_path_and_lineno:<50} {log_color}{levelname:<5} {message}",
+        },
+        "verbose": {"style": "{", "format": "{asctime:<15} {name:<45}:{lineno:<3} {levelname:<5} {message}"},
+    },
+    "filters": {
+        "package_path": {
+            "()": "lighthouse.utils.PackagePathFilter",
+        }
     },
     "handlers": {
         "colored_stream": {
             "level": "DEBUG",
             "class": "colorlog.StreamHandler",
             "formatter": "colored",
+        },
+        "colored_stream_dev": {
+            "level": "DEBUG",
+            "class": "colorlog.StreamHandler",
+            "formatter": "colored_dev",
+            "filters": ["package_path"],
         },
         "console": {"level": "INFO", "class": "logging.StreamHandler", "formatter": "verbose"},
         "slack": {

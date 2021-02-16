@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from lighthouse.messages.broker import Broker
 
 
@@ -53,7 +54,7 @@ def test_broker_publish_no_message(app, mock_pika):
 
         broker = Broker()
         broker.connect()
-        broker.publish(None, test_routing_key)
+        broker.publish(None, test_routing_key)  # type: ignore
 
         mock_channel.basic_publish.assert_not_called()
 
@@ -65,7 +66,7 @@ def test_broker_publish_no_routing_key(app, mock_pika, mock_message):
 
         broker = Broker()
         broker.connect()
-        broker.publish(test_message, None)
+        broker.publish(test_message, None)  # type: ignore
 
         mock_channel.basic_publish.assert_not_called()
 

@@ -4,19 +4,24 @@ from lighthouse.config.defaults import *
 # setting here will overwrite those in 'defaults.py'
 
 ###
+# Eve config
+###
+API_TOKEN = "testing"
+
+###
 # Flask config
 ###
 TESTING = True
 
 ###
-# General config
-###
-REPORTS_DIR = "tests/data/reports"
-
-###
 # APScheduler config
 ###
 SCHEDULER_RUN = False
+
+###
+# General config
+###
+REPORTS_DIR = "tests/data/reports"
 
 ###
 # mongo config
@@ -34,7 +39,7 @@ LABWHERE_DESTROYED_BARCODE = "heron-bin"
 # logging config
 ###
 LOGGING["loggers"]["lighthouse"]["level"] = "DEBUG"
-LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream"]
+LOGGING["loggers"]["lighthouse"]["handlers"] = ["colored_stream_dev"]
 
 ###
 # MLWH config

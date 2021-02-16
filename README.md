@@ -145,6 +145,10 @@ Run the tests using pytest (flags are for verbose and exit early):
 
     python -m pytest -vx
 
+A wrapper is provided with pipenv (look in the Pipfile's `[scripts]` block for more information):
+
+    pipenv run test
+
 **NB**: Make sure to be in the virtual environment (`pipenv shell`) before running the tests:
 
 ## Deployment
@@ -158,28 +162,32 @@ The release version should align with the [standards](https://github.com/sanger/
 
 The service has the following routes:
 
-    Endpoint                          Methods    Rule
-    --------------------------------  ---------  -------------------------------------------------
-    centres|item_lookup               GET        /centres/<regex("[a-f0-9]{24}"):_id>
-    centres|resource                  GET        /centres
-    health_check                      GET        /health
-    home                              GET        /
-    imports|item_lookup               GET        /imports/<regex("[a-f0-9]{24}"):_id>
-    imports|resource                  GET        /imports
-    plates.create_plate_from_barcode  POST       /plates/new
-    plates.find_plate_from_barcode    GET        /plates
-    reports.create_report_endpoint    POST       /reports/new
-    reports.delete_reports_endpoint   POST       /delete_reports
-    reports.get_reports               GET        /reports
-    samples_declarations|item_lookup  GET        /samples_declarations/<regex("[a-f0-9]{24}"):_id>
-    samples_declarations|resource     GET, POST  /samples_declarations
-    samples|item_lookup               GET        /samples/<regex("[a-f0-9]{24}"):_id>
-    samples|resource                  GET        /samples
-    schema|item_lookup                GET        /schema/<regex("[a-f0-9]{24}"):_id>
-    schema|resource                   GET        /schema
-    static                            GET        /static/<path:filename>
+        Endpoint                             Methods          Rule
+    -----------------------------------  ---------------  ---------------------------------------------
+    health_check                         GET              /health
+    home                                 GET              /
+    imports|item_lookup                  GET              /imports/<regex("[a-f0-9]{24}"):_id>
+    imports|resource                     GET              /imports
+    plates.create_plate_from_barcode     POST             /plates/new
+    plates.find_plate_from_barcode       GET              /plates
+    priority_samples|item_lookup         GET, PATCH, PUT  /priority_samples/<regex("[a-f0-9]{24}"):_id>
+    priority_samples|item_post_override  POST             /priority_samples/<regex("[a-f0-9]{24}"):_id>
+    priority_samples|resource            GET, POST        /priority_samples
+    reports.create_report_endpoint       POST             /reports/new
+    reports.delete_reports_endpoint      POST             /delete_reports
+    reports.get_reports                  GET              /reports
+    schema|item_lookup                   GET              /schema/<regex("[a-f0-9]{24}"):_id>
+    schema|resource                      GET              /schema
+    static                               GET              /static/<path:filename>
+
+## Scheduled jobs
+
+This service runs a scheduled job to create a report (in `.xlsx` format) for use by the SSRs.
+
+It is disabled by default. The config for the job can be found in `config/defaults.py`.
 
 ## Miscellaneous
+
 ### Type checking
 
 Type checking is done using mypy, to run it, execute `mypy .`

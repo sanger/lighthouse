@@ -5,7 +5,8 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
-from lighthouse.constants import (
+
+from lighthouse.constants.fields import (
     FIELD_COORDINATE,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
@@ -19,7 +20,6 @@ from lighthouse.helpers.reports import (
     get_cherrypicked_samples,
     get_distinct_plate_barcodes,
     get_new_report_name_and_path,
-    join_samples_declarations,
     report_query_window_start,
     unpad_coordinate,
 )
@@ -356,16 +356,16 @@ def test_get_all_positive_samples(app, freezer, samples):
         samples = app.data.driver.db.samples
         positive_samples = get_all_positive_samples(samples)
 
-        assert len(positive_samples) == 3
-        assert positive_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "MCM001"
+        assert len(positive_samples) == 5
+        assert positive_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "sample_001"
         assert positive_samples.at[0, FIELD_RESULT] == "Positive"
-        assert positive_samples.at[0, FIELD_SOURCE] == "test1"
-        assert positive_samples.at[0, FIELD_PLATE_BARCODE] == "123"
+        assert positive_samples.at[0, FIELD_SOURCE] == "centre_1"
+        assert positive_samples.at[0, FIELD_PLATE_BARCODE] == "plate_123"
         assert positive_samples.at[0, FIELD_COORDINATE] == "A1"
-        assert positive_samples.at[0, "plate and well"] == "123:A1"
+        assert positive_samples.at[0, "plate and well"] == "plate_123:A1"
 
-        assert positive_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "MCM005"
-        assert positive_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "MCM007"
+        assert positive_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "sample_002"
+        assert positive_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "sample_003"
 
 
 # ----- add_cherrypicked_column tests -----
@@ -573,35 +573,7 @@ def test_get_distinct_plate_barcodes(app, freezer, samples):
     with app.app_context():
         samples = app.data.driver.db.samples
 
-        assert get_distinct_plate_barcodes(samples)[0] == "123"
-
-
-# ----- join_samples_declarations tests -----
-
-
-def test_join_samples_declarations(app, freezer, samples_declarations, samples_no_declaration):
-
-    with app.app_context():
-        samples = app.data.driver.db.samples
-        positive_samples = get_all_positive_samples(samples)
-        joined = join_samples_declarations(positive_samples)
-
-        assert joined.at[1, FIELD_ROOT_SAMPLE_ID] == "MCM010"
-        assert joined.at[1, "Value In Sequencing"] == "Unknown"
-
-
-def test_join_samples_declarations_empty_collection(app, freezer, samples_no_declaration):
-    # samples_declaration collection is empty because we are not passing in the fixture
-
-    with app.app_context():
-        samples = app.data.driver.db.samples
-        positive_samples = get_all_positive_samples(samples)
-        joined = join_samples_declarations(positive_samples)
-
-        assert np.array_equal(positive_samples.to_numpy(), joined.to_numpy())
-
-
-# ----- misc tests -----
+        assert get_distinct_plate_barcodes(samples)[0] == "plate_123"
 
 
 def test_report_query_window_start(app):

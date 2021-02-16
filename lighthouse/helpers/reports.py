@@ -15,22 +15,22 @@ import pandas as pd
 # it is outside the app context
 import sqlalchemy
 from flask import current_app as app
-from lighthouse.constants import (
-    EVENT_CHERRYPICK_LAYOUT_SET,
+from pandas import DataFrame
+from pymongo.collection import Collection
+
+from lighthouse.constants.events import EVENT_CHERRYPICK_LAYOUT_SET, PLATE_EVENT_DESTINATION_CREATED
+from lighthouse.constants.fields import (
     FIELD_COORDINATE,
     FIELD_DATE_TESTED,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
-    PLATE_EVENT_DESTINATION_CREATED,
     STAGE_MATCH_FILTERED_POSITIVE,
 )
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.labwhere import get_locations_from_labwhere
 from lighthouse.utils import pretty
-from pandas import DataFrame
-from pymongo.collection import Collection  # type: ignore
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
@@ -93,26 +93,24 @@ def unpad_coordinate(coordinate):
     return re.sub(r"0(\d+)$", r"\1", coordinate) if (coordinate and isinstance(coordinate, str)) else coordinate
 
 
-def delete_reports(filenames):
-    """delete reports from the standard reports folder if they exist.
-
-    Returns:
-        Nothing.
-    """
+def delete_reports(filenames: List[str]) -> None:
+    """Delete reports from the standard reports folder if they exist."""
     for filename in filenames:
         full_path = f"{app.config['REPORTS_DIR']}/{filename}"
         if os.path.isfile(full_path):
             os.remove(full_path)
 
 
-def map_labware_to_location(labware_barcodes):
+def map_labware_to_location(labware_barcodes: List[str]) -> DataFrame:
+
+    logger.info(f"Getting locations from LabWhere for {len(labware_barcodes)} barcodes")
     response = get_locations_from_labwhere(labware_barcodes)
 
     if response.status_code != HTTPStatus.OK:
         raise ReportCreationError("Response from LabWhere is not OK")
 
-    # create a plate_barcode to location_barcode mapping to join with samples
-    # return none for samples where location barcode is not present
+    # create a plate_barcode to location_barcode mapping to join with samples; return None for samples where location
+    #   barcode is not present
     labware_to_location_barcode = [
         {
             FIELD_PLATE_BARCODE: record["barcode"],
@@ -122,6 +120,7 @@ def map_labware_to_location(labware_barcodes):
     ]
 
     labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
+
     logger.info(f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found")
     pretty(logger, labware_to_location_barcode_df)
 
@@ -217,7 +216,7 @@ def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
     # "stages" in sequence
     results = samples_collection.aggregate(pipeline)
 
-    # converting to a dataframe to make it easy to join with data from labwhere
+    # converting to a dataframe to make it easy to join with data from LabWhere
     positive_samples_df = pd.DataFrame.from_records(results)
 
     logger.info(f"{len(positive_samples_df.index)} positive samples")
@@ -264,55 +263,19 @@ def add_cherrypicked_column(existing_dataframe):
     return existing_dataframe
 
 
-def get_distinct_plate_barcodes(samples):
+def get_distinct_plate_barcodes(samples_collection: Collection) -> List[str]:
 
     logger.debug("Getting list of distinct plate barcodes")
-    # for some reason we have some records (documents in mongo language) where the plate_barcode
-    #   is empty so ignore those
+
+    # We have some records (documents in mongo language) where the plate_barcode is empty so ignore those
     # TODO: abstract into new method
-    distinct_plate_barcodes = samples.distinct(FIELD_PLATE_BARCODE, {FIELD_PLATE_BARCODE: {"$nin": ["", None]}})
+    distinct_plate_barcodes: List[str] = samples_collection.distinct(
+        FIELD_PLATE_BARCODE, {FIELD_PLATE_BARCODE: {"$nin": ["", None]}}
+    )
+
     logger.info(f"{len(distinct_plate_barcodes)} distinct barcodes")
 
     return distinct_plate_barcodes
-
-
-def join_samples_declarations(positive_samples):
-
-    samples_declarations = app.data.driver.db.samples_declarations
-
-    # Latest declarations group by root_sample_id
-    # Id is needed to control the group aggregation
-    # Excel formatter required date without timezone
-    declarations = samples_declarations.aggregate(
-        [
-            {"$sort": {"declared_at": -1}},
-            {
-                "$group": {
-                    "_id": "$root_sample_id",
-                    FIELD_ROOT_SAMPLE_ID: {"$first": "$root_sample_id"},
-                    "Value In Sequencing": {"$first": "$value_in_sequencing"},
-                    "Declared At": {
-                        "$first": {"$dateToString": {"date": "$declared_at", "format": "%Y-%m-%dT%H:%M:%S"}}
-                    },
-                }
-            },
-            {"$unset": "_id"},
-        ]
-    )
-
-    declarations_records = [record for record in declarations]
-
-    if len(declarations_records) > 0:
-        logger.debug("Joining declarations")
-        declarations_frame = pd.DataFrame.from_records(declarations_records)
-        results = positive_samples.merge(declarations_frame, how="left", on=FIELD_ROOT_SAMPLE_ID)
-
-        # Give a default value of Unknown to any entry that does not have a
-        # sample declaration
-        results = results.fillna({"Value In Sequencing": "Unknown"})
-        return results
-
-    return positive_samples
 
 
 def report_query_window_start() -> datetime:

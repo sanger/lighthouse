@@ -3,14 +3,15 @@ import time
 
 import pandas as pd
 from flask import current_app as app
+
 from lighthouse import scheduler
-from lighthouse.constants import FIELD_DATE_TESTED, FIELD_PLATE_BARCODE, REPORT_COLUMNS
+from lighthouse.constants.fields import FIELD_PLATE_BARCODE
+from lighthouse.constants.general import REPORT_COLUMNS
 from lighthouse.helpers.reports import (
     add_cherrypicked_column,
     get_all_positive_samples,
     get_distinct_plate_barcodes,
     get_new_report_name_and_path,
-    join_samples_declarations,
     map_labware_to_location,
 )
 
@@ -19,31 +20,24 @@ logger = logging.getLogger(__name__)
 
 def create_report() -> str:
     """Creates a positve samples on site record using the samples collection and location
-    information from labwhere.
+    information from LabWhere.
 
     Returns:
         str -- filename of report created
     """
     logger.info("Creating positive samples report")
+
     start = time.time()
 
     # get samples collection
-    logger.debug("Getting all positive samples")
     samples_collection = app.data.driver.db.samples
     positive_samples_df = get_all_positive_samples(samples_collection)
 
-    # remove timezone info before writing to excel
-    positive_samples_df[FIELD_DATE_TESTED] = positive_samples_df[FIELD_DATE_TESTED].map(
-        lambda dt: dt.replace(tzinfo=None)
-    )
-
-    logger.debug("Getting location barcodes from labwhere")
+    logger.info("Getting location barcodes from LabWhere")
     labware_to_location_barcode_df = map_labware_to_location(get_distinct_plate_barcodes(samples_collection))
 
-    logger.debug("Joining location data from labwhere")
+    logger.debug("Joining location data from LabWhere")
     merged = positive_samples_df.merge(labware_to_location_barcode_df, how="left", on=FIELD_PLATE_BARCODE)
-
-    merged = join_samples_declarations(merged)
 
     merged = add_cherrypicked_column(merged)
 
@@ -82,5 +76,6 @@ def create_report_job():
         str -- filename of report created
     """
     logger.info("Starting create_report job")
+
     with scheduler.app.app_context():
         create_report()

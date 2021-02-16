@@ -5,7 +5,11 @@ from uuid import uuid4
 
 import requests
 from flask import current_app as app
-from lighthouse.constants import (
+from pymongo.collection import Collection
+from sqlalchemy.sql.expression import and_, bindparam
+
+from lighthouse.constants.events import PLATE_EVENT_DESTINATION_CREATED, PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_COG_BARCODE,
     FIELD_COORDINATE,
@@ -36,17 +40,10 @@ from lighthouse.constants import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
-    PLATE_EVENT_DESTINATION_CREATED,
-    PLATE_EVENT_DESTINATION_FAILED,
     STAGE_MATCH_FILTERED_POSITIVE,
 )
-from lighthouse.exceptions import (
-    DataError,
-    MissingCentreError,
-    MissingSourceError,
-    MultipleCentresError,
-)
-from lighthouse.helpers.dart_db import find_dart_source_samples_rows
+from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
+from lighthouse.helpers.dart import find_dart_source_samples_rows
 from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
     construct_mongo_sample_message_subject,
@@ -55,9 +52,9 @@ from lighthouse.helpers.events import (
     get_message_timestamp,
     get_robot_uuid,
 )
-from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
+from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
-from sqlalchemy.sql.expression import and_, bindparam
+from lighthouse.types import SampleDoc
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +70,7 @@ class UnmatchedSampleError(Exception):
     pass
 
 
-def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
+def add_cog_barcodes(samples):
 
     centre_name = __confirm_centre(samples)
     centre_prefix = get_centre_prefix(centre_name)
@@ -89,6 +86,7 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
 
     while retries > 0:
         try:
+            logger.debug(f"Attempting POST to {baracoda_url}")
             response = requests.post(baracoda_url)
             if response.status_code == HTTPStatus.CREATED:
                 success_operation = True
@@ -114,7 +112,7 @@ def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
     return centre_prefix
 
 
-def get_centre_prefix(centre_name: str) -> Optional[str]:
+def get_centre_prefix(centre_name):
     logger.debug(f"Getting the prefix for '{centre_name}'")
     try:
         #  get the centre collection
@@ -140,25 +138,39 @@ def get_centre_prefix(centre_name: str) -> Optional[str]:
         raise DataError("Multiple centres with the same name")
 
 
-# WARN - on refactoring this be careful not to lose the distributed functionality where
-# None or empty dart rows returns None
-def find_samples(query: Dict[str, Any] = None) -> Optional[List[Dict[str, Any]]]:
+def find_samples(query: Dict[str, Any] = None) -> Optional[List[SampleDoc]]:
+    """Query the samples collection with the given query.
+
+    WARN - on refactoring this be careful not to lose the distributed functionality where None or empty DART rows
+    returns None
+
+    Arguments:
+        query (Dict[str, Any], optional): a mongo query. Defaults to None.
+
+    Returns:
+        Optional[List[SampleDoc]]: list of samples
+    """
     if query is None:
         return None
 
-    samples = app.data.driver.db.samples
+    samples_collection = app.data.driver.db.samples
 
-    samples_for_barcode = list(samples.find(query))
+    samples = list(samples_collection.find(query))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples")
+    logger.info(f"{len(samples)} samples found from samples collection")
 
-    return samples_for_barcode
+    return samples
 
 
 def count_samples(query: Dict[str, Any]) -> int:
-    samples = app.data.driver.db.samples
+    samples_collection: Collection = app.data.driver.db.samples
 
-    return samples.count_documents(query)
+    docs_count = samples_collection.count_documents(query)
+
+    if not isinstance(docs_count, int):
+        raise Exception(f"Cannot count documents in samples collection using query: {query}")
+
+    return docs_count
 
 
 def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
@@ -187,7 +199,7 @@ def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
     return samples_for_barcode
 
 
-def get_positive_samples_count(plate_barcode: str) -> Optional[int]:
+def get_positive_samples_count(plate_barcode):
     """Get a list of documents which correspond to filtered positive samples for a specific plate.
 
     Args:
@@ -219,6 +231,7 @@ def get_positive_samples_count(plate_barcode: str) -> Optional[int]:
 
 def has_sample_data(plate_barcode: str) -> bool:
     sample_count = count_samples({FIELD_PLATE_BARCODE: plate_barcode})
+
     return sample_count > 0
 
 
@@ -235,8 +248,8 @@ def rows_with_controls(rows):
     return list(filter(lambda x: not row_is_normal_sample(x), rows))
 
 
-def query_for_cherrypicked_samples(rows):
-    if rows is None or (len(rows) == 0):
+def query_for_cherrypicked_samples(rows: Optional[List[SampleDoc]]) -> Optional[Dict[str, Any]]:
+    if rows is None or not rows:
         return None
 
     return {
@@ -299,7 +312,7 @@ def row_to_dict(row):
 
 
 def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    logger.debug(f"Creating POST body to send to SS for barcode '{barcode}'")
+    logger.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}'")
 
     wells_content = {}
     phenotype = None
@@ -334,29 +347,44 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
     return {"data": {"type": "plates", "attributes": body}}
 
 
-def send_to_ss(body: Dict[str, Any]) -> requests.Response:
+def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
+    """Send JSON body to the Sequencescape /heron/plates endpoint. This should create the plate in Sequencescape.
+
+    Arguments:
+        body (Dict[str, Any]): the info of the plate to create in Sequencescape.
+
+    Raises:
+        requests.ConnectionError: if a connection to Sequencescape is not able to be made.
+
+    Returns:
+        requests.Response: the response from Sequencescape.
+    """
     ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
-    logger.info(f"Sending {body} to {ss_url}")
+    logger.info(f"Sending request to {ss_url}")
 
     headers = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
 
     try:
         response = requests.post(ss_url, json=body, headers=headers)
-        logger.debug(response.status_code)
-    except requests.ConnectionError:
-        raise requests.ConnectionError("Unable to access SS")
 
-    return response
+        logger.debug(f"Response status code: {response.status_code}")
+
+        return response
+    except requests.ConnectionError:
+        raise requests.ConnectionError("Unable to access Sequencescape")
 
 
 def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
-    """Update the MLWH to write the COG UK barcode for each sample.
+    """Update the MLWH lighthouse_sample table with the COG UK barcode for each sample.
 
     Arguments:
-        samples {List[Dict[str, str]]} -- list of samples to be updated
+        samples {List[Dict[str, str]]} -- list of samples to be updated.
     """
-    if len(samples) == 0:
+    logger.info("Attempting to update the lighthouse_sample table in the MLWH with the COG UK barcodes")
+
+    if not samples:
+        logger.warn("No samples")
         return None
 
     # assign db_connection to avoid UnboundLocalError in 'finally' block, in case of exception
@@ -364,8 +392,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
     try:
         data = []
         for sample in samples:
-            # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real
-            # column names
+            # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
             data.append(
                 {
                     "b_root_sample_id": sample[FIELD_ROOT_SAMPLE_ID],
@@ -394,22 +421,21 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         results = db_connection.execute(stmt, data)
 
         rows_matched = results.rowcount
+        logger.info(f"{rows_matched} rows updated in MLWH")
+
         if rows_matched != len(samples):
-            msg = f"""
-            Updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids was
-            only partially successful.
-            Only {rows_matched} of the {len(samples)} samples had matches in the MLWH
-            {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table.
-            """
+            msg = (
+                f"Updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids was only partially "
+                f"successful. Only {rows_matched} of the {len(samples)} samples had matches in the MLWH "
+                f"{app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table."
+            )
             logger.error(msg)
             raise UnmatchedSampleError(msg)
-    except (Exception) as e:
-        msg = f"""
-        Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK
-        ids.
-        {type(e).__name__}: {str(e)}
-        """
-        logger.error(msg)
+    except Exception as e:
+        logger.error(
+            f"({type(e).__name__}: {str(e)}) Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} "
+            "table with COG UK ids."
+        )
         raise
     finally:
         if db_connection is not None:
@@ -443,25 +469,23 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             mapped_sample[FIELD_SS_COORDINATE] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
             mapped_sample[FIELD_SS_BARCODE] = dart_row[FIELD_DART_DESTINATION_BARCODE]
         except KeyError as e:
-            msg = f"""
-            Error while mapping database columns to Sequencescape columns for sample
-            {mongo_row[FIELD_ROOT_SAMPLE_ID]}.
-            {type(e).__name__}: {str(e)}
-            """
-            logger.error(msg)
+            logger.error(
+                f"({type(e).__name__}: {str(e)}) Error while mapping database columns to Sequencescape columns for "
+                f"sample with {FIELD_ROOT_SAMPLE_ID}: {mongo_row[FIELD_ROOT_SAMPLE_ID]}"
+            )
             raise
         mapped_samples.append(mapped_sample)
     return mapped_samples
 
 
 def create_cherrypicked_post_body(
-    user_id: str,
-    barcode: str,
-    samples: List[Dict[str, Any]],
-    robot_serial_number: str,
-    source_plates: List[Dict[str, str]],
-) -> Dict[str, Any]:
-    logger.debug(f"Creating POST body to send to SS for cherrypicked plate with barcode '{barcode}'")
+    user_id,
+    barcode,
+    samples,
+    robot_serial_number,
+    source_plates,
+):
+    logger.debug(f"Creating POST body to send to Sequencescape for cherrypicked plate with barcode '{barcode}'")
 
     wells_content = {}
     for sample in samples:
@@ -716,4 +740,24 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
         "subject_type": "sample",
         "friendly_name": __supplier_name_for_dart_control(dart_control_row),
         "uuid": str(uuid4()),
+    }
+
+
+def format_plate(barcode: str) -> Dict[str, Any]:
+    """Used by flask route /plates to format each plate.
+
+    Arguments:
+        barcode (str): [description]
+
+    Returns:
+        Dict[str, Any]: [description]
+    """
+    plate_map = has_sample_data(barcode)
+
+    number_of_positives = get_positive_samples_count(barcode) if plate_map else None
+
+    return {
+        "plate_barcode": barcode,
+        "plate_map": plate_map,
+        "number_of_positives": number_of_positives,
     }

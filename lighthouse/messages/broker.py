@@ -1,7 +1,9 @@
-import pika
 import logging
-from lighthouse.messages.message import Message
+
+import pika
 from flask import current_app as app
+
+from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
 

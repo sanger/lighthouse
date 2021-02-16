@@ -1,19 +1,26 @@
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
-from flask_cors import CORS  # type: ignore
-from lighthouse.constants import FIELD_PLATE_BARCODE
+from flask_cors import CORS
+
+from lighthouse.constants.error_messages import (
+    ERROR_ADD_COG_BARCODES,
+    ERROR_PLATES_CREATE,
+    ERROR_UNEXPECTED_PLATES_CREATE,
+    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
+)
+from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_post_body,
+    format_plate,
     get_positive_samples,
-    get_positive_samples_count,
-    has_sample_data,
-    send_to_ss,
+    send_to_ss_heron_plates,
     update_mlwh_with_cog_uk_ids,
 )
+from lighthouse.helpers.responses import bad_request, internal_server_error, ok
+from lighthouse.types import FlaskResponse
 
 logger = logging.getLogger(__name__)
 
@@ -22,36 +29,42 @@ CORS(bp)
 
 
 @bp.route("/plates/new", methods=["POST"])
-def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
+def create_plate_from_barcode() -> FlaskResponse:
+    """This endpoint attempts to create a plate in Sequencescape.
+
+    Returns:
+        FlaskResponse: the endpoints acts as proxy and returns the response and status code received from Sequencescape.
+    """
+    logger.info("Attempting to create a plate in Sequencescape")
     try:
         barcode = request.get_json()["barcode"]
-        logger.info(f"Attempting to create a plate in SS from barcode: {barcode}")
     except (KeyError, TypeError) as e:
         logger.exception(e)
-        return {"errors": ["POST request needs 'barcode' in body"]}, HTTPStatus.BAD_REQUEST
+
+        return bad_request("POST request needs 'barcode' in body")
 
     try:
         # get samples for barcode
         samples = get_positive_samples(barcode)
 
         if not samples:
-            return {"errors": ["No samples for this barcode: " + barcode]}, HTTPStatus.BAD_REQUEST
+            return bad_request(f"No samples for this barcode: {barcode}")
 
         # add COG barcodes to samples
         try:
             centre_prefix = add_cog_barcodes(samples)
-        except (Exception) as e:
+        except Exception as e:
+            msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
+            logger.error(msg)
             logger.exception(e)
-            return (
-                {"errors": ["Failed to add COG barcodes to plate: " + barcode]},
-                HTTPStatus.BAD_REQUEST,
-            )
+
+            return bad_request(msg)
 
         body = create_post_body(barcode, samples)
 
-        response = send_to_ss(body)
+        response = send_to_ss_heron_plates(body)
 
-        if response.ok:
+        if response.status_code == HTTPStatus.OK:
             response_json = {
                 "data": {
                     "plate_barcode": samples[0][FIELD_PLATE_BARCODE],
@@ -62,67 +75,48 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
 
             try:
                 update_mlwh_with_cog_uk_ids(samples)
-            except (Exception) as e:
+            except Exception as e:
+                logger.error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
                 logger.exception(e)
-                return (
-                    {
-                        "errors": [
-                            (
-                                "Failed to update MLWH with COG UK ids. The samples should have "
-                                "been successfully inserted into Sequencescape."
-                            )
-                        ]
-                    },
-                    HTTPStatus.INTERNAL_SERVER_ERROR,
-                )
+
+                return internal_server_error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
         else:
             response_json = response.json()
 
-        # return the JSON and status code directly from SS (act as a proxy)
+        # return the JSON and status code directly from Sequencescape (act as a proxy)
         return response_json, response.status_code
     except Exception as e:
+        msg = f"{ERROR_UNEXPECTED_PLATES_CREATE} ({type(e).__name__})"
+        logger.error(msg)
         logger.exception(e)
-        return {"errors": [type(e).__name__]}, HTTPStatus.INTERNAL_SERVER_ERROR
 
-
-def format_plate(barcode: str) -> Dict[str, Any]:
-    """Used by flask route /plates to format each plate
-    Arguments:
-        barcode
-    Returns:
-        {}, HTTPStatus
-    """
-    plate_map = has_sample_data(barcode)
-    number_of_positives = get_positive_samples_count(barcode) if plate_map else None
-
-    return {
-        "plate_barcode": barcode,
-        "plate_map": plate_map,
-        "number_of_positives": number_of_positives,
-    }
+        return internal_server_error(msg)
 
 
 @bp.route("/plates", methods=["GET"])
-def find_plate_from_barcode() -> Tuple[Dict[str, Any], int]:
-    """A Flask route which returns information about a list of plates as
-    specified in the barcodes parameters.
+def find_plate_from_barcode() -> FlaskResponse:
+    """A route which returns information about a list of plates as specified in the 'barcodes' parameters.
+
     For example:
-    GET http://host:port/plates?barcodes[]=123&barcodes[]=456&barcodes[]=789
-    To fetch data for 123,456 and 789
-    This endpoint responds with json and the body is in the format
-    {"plates":[{"barcode":"12345","plate_map":true,"number_of_positives":0}]}
-    Arguments:
-        None
+    To fetch data for the plates with barcodes '123', '456' and '789':
+
+    `GET /plates?barcodes[]=123&barcodes[]=456&barcodes[]=789`
+
+    This endpoint responds with JSON and the body is in the format:
+
+    `{"plates":[{"barcode":"123","plate_map":true,"number_of_positives":0}]}`
+
     Returns:
-        {}, HTTPStatus
+        FlaskResponse: the response body and HTTP status code
     """
-    barcodes = request.args.getlist("barcodes[]")
     try:
+        barcodes = request.args.getlist("barcodes[]")
+
         plates = [format_plate(barcode) for barcode in barcodes]
-        return {"plates": plates}, HTTPStatus.OK
+
+        return ok(plates=plates)
     except Exception as e:
         logger.exception(e)
-        # We don't use str(e) here to fetch the exception summary, because
-        # the exceptions we're most likely to see here aren't end-user-friendly
-        exception_type = type(e).__name__
-        return {"errors": [f"Failed to lookup plates: {exception_type}"]}, HTTPStatus.INTERNAL_SERVER_ERROR
+        # We don't use str(e) here to fetch the exception summary, because the exceptions we're most likely to see here
+        #   aren't end-user-friendly
+        return internal_server_error(f"Failed to lookup plates: {type(e).__name__}")
