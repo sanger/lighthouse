@@ -18,8 +18,6 @@ DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
 ###
 # Eve config
 ###
-# When True, this option will allow insertion of arbitrary, unknown fields to any API endpoint.
-ALLOW_UNKNOWN = False
 HATEOAS = True
 # CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which domains are allowed to perform
 #  CORS requests. Allowed values are: None, a list of domains, or '*' for a wide-open API.
@@ -34,9 +32,17 @@ RENDERERS = ["eve.render.JSONRenderer"]  # render all responses in JSON
 #  added for lighthouse-ui Imports page, to display all Imports in a table
 PAGINATION_LIMIT = 10000
 
+# A list of HTTP methods supported at resource endpoints, open to public access even when Authentication and
+#   Authorization is enabled.
+PUBLIC_METHODS = ["GET"]
+PUBLIC_ITEM_METHODS = ["GET"]
 DOMAIN = {
     "samples": {"internal_resource": True},
-    "imports": {},
+    "imports": {
+        # When True, this option will allow insertion of arbitrary, unknown fields to any API endpoint. Since most
+        #   endpoints are read-only, this will allow all the fields to be shown.
+        "allow_unknown": True
+    },
     "centres": {"internal_resource": True},
     "priority_samples": {
         "authentication": APITokenAuth,
@@ -61,11 +67,6 @@ DOMAIN = {
 OPTIMIZE_PAGINATION_FOR_SPEED = False
 # Enable the Operations Log: https://docs.python-eve.org/en/stable/features.html#oplog
 OPLOG = True
-
-# A list of HTTP methods supported at resource endpoints, open to public access even when Authentication and
-#   Authorization is enabled.
-PUBLIC_METHODS = ["GET"]
-PUBLIC_ITEM_METHODS = ["GET"]
 
 ###
 # mongo config (but consumed by Eve)
