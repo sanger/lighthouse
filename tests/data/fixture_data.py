@@ -240,7 +240,8 @@ SAMPLES: List[Dict[str, Any]] = [
     },
 ]
 
-SAMPLES_DIFFERENT_CENTRES = [    {  # a positive result, no Ct values
+SAMPLES_DIFFERENT_CENTRES = [
+    {  # a positive result, no Ct values
         FIELD_COORDINATE: "A01",
         FIELD_SOURCE: "test1",
         FIELD_RESULT: "Positive",

@@ -72,8 +72,9 @@ logger = logging.getLogger(__name__)
 class UnmatchedSampleError(Exception):
     pass
 
+
 def classify_samples_by_centre(samples):
-    classified_samples={}
+    classified_samples = {}
     for sample in samples:
         centre_name = sample[FIELD_SOURCE]
         if centre_name in classified_samples:
@@ -82,16 +83,17 @@ def classify_samples_by_centre(samples):
             classified_samples[centre_name] = [sample]
     return classified_samples
 
-def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> Optional[str]:
+
+def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[str]:
     # Divide samples in centres and call add_cog_barcodes for each group
     classified_samples = classify_samples_by_centre(samples)
-    
+
     for centre_name in classified_samples:
         add_cog_barcodes(classified_samples[centre_name])
 
     return list(classified_samples.keys())
-        
-        
+
+
 def add_cog_barcodes(samples: List[Dict[str, str]]) -> Optional[str]:
     centre_name = __confirm_centre(samples)
     centre_prefix = get_centre_prefix(centre_name)

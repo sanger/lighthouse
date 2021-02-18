@@ -69,7 +69,6 @@ from lighthouse.helpers.plates import (
     update_mlwh_with_cog_uk_ids,
     classify_samples_by_centre,
     add_cog_barcodes_from_different_centres,
-
 )
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
@@ -108,21 +107,23 @@ def any_failure_type(app):
 
 # ---------- tests ----------
 
+
 def test_classify_samples_by_centre(app, samples_different_centres, mocked_responses):
     assert list(classify_samples_by_centre(samples_different_centres).keys()) == ["test1", "test2"]
     assert len(classify_samples_by_centre(samples_different_centres)["test1"]) == 2
     assert len(classify_samples_by_centre(samples_different_centres)["test2"]) == 1
 
-def test_add_cog_barcodes_from_different_centres(app, centres, samples_different_centres, mocked_responses):
+
+def test_add_cog_barcodes_from_different_centres(
+    app, centres, samples_different_centres, mocked_responses
+):
     with app.app_context():
         baracoda_url = (
-            f"http://{current_app.config['BARACODA_URL']}"
-            f"/barcodes_group/TS1/new?count=2"
+            f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TS1/new?count=2"
         )
 
         baracoda_url2 = (
-            f"http://{current_app.config['BARACODA_URL']}"
-            f"/barcodes_group/TS2/new?count=1"
+            f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TS2/new?count=1"
         )
 
         # remove the cog_barcode key and value from the samples fixture before testing

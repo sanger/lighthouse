@@ -125,6 +125,7 @@ def samples(app):
     with app.app_context():
         samples_collection.delete_many({})
 
+
 @pytest.fixture
 def samples_different_centres(app):
     with app.app_context():
