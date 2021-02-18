@@ -67,6 +67,8 @@ from lighthouse.helpers.plates import (
     rows_with_controls,
     rows_without_controls,
     update_mlwh_with_cog_uk_ids,
+    classify_samples_by_centre,
+    add_cog_barcodes_from_different_centres,
 )
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
@@ -104,6 +106,53 @@ def any_failure_type(app):
 
 
 # ---------- tests ----------
+
+
+def test_classify_samples_by_centre(app, samples_different_centres, mocked_responses):
+    assert list(classify_samples_by_centre(samples_different_centres).keys()) == ["test1", "test2"]
+    assert len(classify_samples_by_centre(samples_different_centres)["test1"]) == 2
+    assert len(classify_samples_by_centre(samples_different_centres)["test2"]) == 1
+
+
+def test_add_cog_barcodes_from_different_centres(
+    app, centres, samples_different_centres, mocked_responses
+):
+    with app.app_context():
+        baracoda_url = (
+            f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TS1/new?count=2"
+        )
+
+        baracoda_url2 = (
+            f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TS2/new?count=1"
+        )
+
+        # remove the cog_barcode key and value from the samples fixture before testing
+        map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples_different_centres)
+
+        cog_barcodes = ("123", "789", "456")
+
+        # update the 'cog_barcode' tuple when adding more samples to the fixture data
+        assert len(cog_barcodes) == len(samples_different_centres)
+
+        mocked_responses.add(
+            responses.POST,
+            baracoda_url,
+            body=json.dumps({"barcodes_group": {"barcodes": ["123", "456"]}}),
+            status=HTTPStatus.CREATED,
+        )
+
+        mocked_responses.add(
+            responses.POST,
+            baracoda_url2,
+            body=json.dumps({"barcodes_group": {"barcodes": ["789"]}}),
+            status=HTTPStatus.CREATED,
+        )
+
+        add_cog_barcodes_from_different_centres(samples_different_centres)
+
+        for idx, sample in enumerate(samples_different_centres):
+            assert FIELD_COG_BARCODE in sample.keys()
+            assert sample[FIELD_COG_BARCODE] == cog_barcodes[idx]
 
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):

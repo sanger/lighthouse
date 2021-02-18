@@ -18,7 +18,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
     source_plates,
 ):
     with patch(
-        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
         return_value="TS1",
     ):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
@@ -96,7 +96,7 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
     app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses, source_plates
 ):
     with patch(
-        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
         return_value="TS1",
     ):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
@@ -121,7 +121,7 @@ def test_get_cherrypicked_plates_mlwh_update_failure(
     app, client, dart_samples_for_bp_test, samples_with_lab_id, mocked_responses, source_plates
 ):
     with patch(
-        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
         return_value="TS1",
     ):
         with patch(
@@ -157,7 +157,7 @@ def test_post_plates_endpoint_mismatched_sample_numbers(
     app, client, dart_samples_for_bp_test, samples_with_lab_id
 ):
     with patch(
-        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
         return_value="TS1",
     ):
         with patch(
@@ -196,7 +196,7 @@ def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
     app, client, dart_samples_for_bp_test, samples_with_lab_id
 ):
     with patch(
-        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
         return_value="TS1",
     ):
         with patch(
