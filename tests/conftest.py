@@ -31,6 +31,7 @@ from .data.fixture_data import (
     SAMPLES_WITH_LAB_ID,
     SAMPLES_WITH_UUIDS,
     SOURCE_PLATES,
+    SAMPLES_DIFFERENT_CENTRES,
 )
 
 
@@ -119,6 +120,19 @@ def samples(app):
 
     #  yield a copy of that the test change it however it wants
     yield copy.deepcopy(SAMPLES)
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
+
+@pytest.fixture
+def samples_different_centres(app):
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        _ = samples_collection.insert_many(SAMPLES_DIFFERENT_CENTRES)
+
+    #  yield a copy of that the test change it however it wants
+    yield copy.deepcopy(SAMPLES_DIFFERENT_CENTRES)
 
     # clear up after the fixture is used
     with app.app_context():

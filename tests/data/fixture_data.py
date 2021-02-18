@@ -240,6 +240,44 @@ SAMPLES: List[Dict[str, Any]] = [
     },
 ]
 
+SAMPLES_DIFFERENT_CENTRES = [    {  # a positive result, no Ct values
+        FIELD_COORDINATE: "A01",
+        FIELD_SOURCE: "test1",
+        FIELD_RESULT: "Positive",
+        FIELD_PLATE_BARCODE: "123",
+        FIELD_COG_BARCODE: "abc",
+        FIELD_ROOT_SAMPLE_ID: "MCM001",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_LH_SAMPLE_UUID: "0a53e7b6-7ce8-4ebc-95c3-02dd64942531",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
+        FIELD_FILTERED_POSITIVE: True,
+    },
+    {  # a negative result
+        FIELD_COORDINATE: "B01",
+        FIELD_SOURCE: "test2",
+        FIELD_RESULT: "Negative",
+        FIELD_PLATE_BARCODE: "123",
+        FIELD_COG_BARCODE: "def",
+        FIELD_ROOT_SAMPLE_ID: "MCM002",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_LH_SAMPLE_UUID: "8426ba76-e595-4475-92a6-8a60be0eee20",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
+        FIELD_FILTERED_POSITIVE: False,
+    },
+    {  # a void result
+        FIELD_COORDINATE: "C01",
+        FIELD_SOURCE: "test1",
+        FIELD_RESULT: "Void",
+        FIELD_PLATE_BARCODE: "123",
+        FIELD_COG_BARCODE: "hij",
+        FIELD_ROOT_SAMPLE_ID: "MCM003",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_LH_SAMPLE_UUID: "8d809bc1-2da6-42f2-9fc8-2eb6794f316f",
+        FIELD_DATE_TESTED: "2020-05-10 07:30:00 UTC",
+        FIELD_FILTERED_POSITIVE: False,
+    },
+]
+
 SAMPLES_DIFFERENT_PLATES: List[Dict[str, Any]] = [
     {
         FIELD_COORDINATE: "A01",

@@ -9,7 +9,7 @@ from flask_cors import CORS  # type: ignore
 from lighthouse.constants import PLATE_EVENT_DESTINATION_FAILED
 from lighthouse.helpers.events import get_routing_key
 from lighthouse.helpers.plates import (
-    add_cog_barcodes,
+    add_cog_barcodes_from_different_centres,
     add_controls_to_samples,
     check_matching_sample_numbers,
     construct_cherrypicking_plate_failed_message,
@@ -71,7 +71,7 @@ def create_plate_from_barcode() -> Tuple[Dict[str, Any], int]:  # noqa: C901
 
         # add COG barcodes to samples
         try:
-            centre_prefix = add_cog_barcodes(mongo_samples)
+            centre_prefix = add_cog_barcodes_from_different_centres(mongo_samples)
         except (Exception) as e:
             logger.exception(e)
             return bad_request_response_with_error(
