@@ -16,9 +16,9 @@ from lighthouse.constants.fields import (
 from lighthouse.helpers.reports import (
     add_cherrypicked_column,
     delete_reports,
-    get_all_positive_samples,
     get_cherrypicked_samples,
     get_distinct_plate_barcodes,
+    get_fit_to_pick_samples,
     get_new_report_name_and_path,
     report_query_window_start,
     unpad_coordinate,
@@ -31,9 +31,9 @@ def test_get_new_report_name_and_path(app, freezer):
     report_date = datetime.now().strftime("%y%m%d_%H%M")
 
     with app.app_context():
-        report_name, report_path = get_new_report_name_and_path()
+        report_name, _ = get_new_report_name_and_path()
 
-        assert report_name == f"{report_date}_positives_with_locations.xlsx"
+        assert report_name == f"{report_date}_fit_to_pick_with_locations.xlsx"
 
 
 # ----- unpad_coordinate tests -----
@@ -66,8 +66,8 @@ def test_delete_reports(app, freezer):
         "200716_1345_positives_with_locations.xlsx",
         "200716_1618_positives_with_locations.xlsx",
         "200716_1640_positives_with_locations.xlsx",
-        "200716_1641_positives_with_locations.xlsx",
-        "200716_1642_positives_with_locations.xlsx",
+        "200716_1641_fit_to_pick_with_locations.xlsx",
+        "200716_1642_fit_to_pick_with_locations.xlsx",
     ]
 
     for filename in filenames:
@@ -350,22 +350,21 @@ def test_get_cherrypicked_samples_repeat_tests_sentinel_and_beckman(
 # ----- get_all_positive_samples tests -----
 
 
-def test_get_all_positive_samples(app, freezer, samples):
-
+def test_get_fit_to_pick_samples(app, freezer, samples, priority_samples):
     with app.app_context():
         samples = app.data.driver.db.samples
-        positive_samples = get_all_positive_samples(samples)
+        fit_to_pick_samples = get_fit_to_pick_samples(samples)
 
-        assert len(positive_samples) == 5
-        assert positive_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "sample_001"
-        assert positive_samples.at[0, FIELD_RESULT] == "Positive"
-        assert positive_samples.at[0, FIELD_SOURCE] == "centre_1"
-        assert positive_samples.at[0, FIELD_PLATE_BARCODE] == "plate_123"
-        assert positive_samples.at[0, FIELD_COORDINATE] == "A1"
-        assert positive_samples.at[0, "plate and well"] == "plate_123:A1"
+        assert len(fit_to_pick_samples) == 7
+        assert fit_to_pick_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "sample_001"
+        assert fit_to_pick_samples.at[0, FIELD_RESULT] == "Positive"
+        assert fit_to_pick_samples.at[0, FIELD_SOURCE] == "centre_1"
+        assert fit_to_pick_samples.at[0, FIELD_PLATE_BARCODE] == "plate_123"
+        assert fit_to_pick_samples.at[0, FIELD_COORDINATE] == "A1"
+        assert fit_to_pick_samples.at[0, "plate and well"] == "plate_123:A1"
 
-        assert positive_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "sample_002"
-        assert positive_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "sample_003"
+        assert fit_to_pick_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "sample_002"
+        assert fit_to_pick_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "sample_a"
 
 
 # ----- add_cherrypicked_column tests -----

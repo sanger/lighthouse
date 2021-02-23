@@ -17,8 +17,12 @@ from lighthouse.constants.fields import (
 from tests.fixtures.data.source_plates import SOURCE_PLATES
 
 DATE_TESTED_NOW = datetime.utcnow()
+# NOTE: Remember that the samples of 'plate_123' are joined to the priority samples
+#   There should be 7 fit to pick samples from all the plates below
 SAMPLES = [
-    {  # a positive result, no Ct values
+    {
+        # a positive result, no Ct values and filtered_positive = True
+        # joined to a priority samples with processed = False
         FIELD_COORDINATE: "A01",
         FIELD_SOURCE: "centre_1",
         FIELD_RESULT: "Positive",
@@ -32,7 +36,9 @@ SAMPLES = [
         FIELD_FILTERED_POSITIVE: True,
         FIELD_LAB_ID: "lab_1",
     },
-    {  # another positive result, no Ct values
+    {
+        # another positive result, no Ct values and filtered_positive = True
+        # joined to a priority samples with processed = True
         FIELD_COORDINATE: "A02",
         FIELD_SOURCE: "centre_1",
         FIELD_RESULT: "Positive",
@@ -46,19 +52,25 @@ SAMPLES = [
         FIELD_FILTERED_POSITIVE: True,
         FIELD_LAB_ID: "lab_1",
     },
-    {  # a negative result
+    {
+        # a negative result and filtered_positive = False
+        # joined to a priority samples with processed = True
         FIELD_COORDINATE: "B01",
         FIELD_SOURCE: "centre_1",
         FIELD_RESULT: "Negative",
         FIELD_PLATE_BARCODE: "plate_123",
         FIELD_ROOT_SAMPLE_ID: "sample_a",
         FIELD_RNA_ID: "rna_a",
+        FIELD_COG_BARCODE: "stu",
         FIELD_LH_SAMPLE_UUID: "8426ba76-e595-4475-92a6-8a60be0eee20",
+        FIELD_LH_SOURCE_PLATE_UUID: SOURCE_PLATES[0][FIELD_LH_SOURCE_PLATE_UUID],
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
         FIELD_FILTERED_POSITIVE: False,
         FIELD_LAB_ID: "lab_1",
     },
-    {  # a void result
+    {
+        # a void result
+        # joined to a (non) priority samples with processed = True
         FIELD_COORDINATE: "C01",
         FIELD_SOURCE: "centre_1",
         FIELD_RESULT: "Void",
@@ -71,6 +83,7 @@ SAMPLES = [
         FIELD_LAB_ID: "lab_1",
     },
     {  # a 'limit of detection' result
+        # joined to a (non) priority samples with processed = False
         FIELD_COORDINATE: "D01",
         FIELD_SOURCE: "centre_1",
         FIELD_RESULT: "limit of detection",
@@ -80,6 +93,22 @@ SAMPLES = [
         FIELD_LH_SAMPLE_UUID: "8e595a92-6798-4c93-8dc8-44f3ffb8bed3",
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
         FIELD_FILTERED_POSITIVE: False,
+        FIELD_LAB_ID: "lab_1",
+    },
+    {
+        # another positive result and filtered_positive = True
+        # NOT joined to a priority sample
+        FIELD_COORDINATE: "E01",
+        FIELD_SOURCE: "centre_1",
+        FIELD_RESULT: "Positive",
+        FIELD_PLATE_BARCODE: "plate_123",
+        FIELD_ROOT_SAMPLE_ID: "sample_101",
+        FIELD_RNA_ID: "rna_6",
+        FIELD_COG_BARCODE: "pqr",
+        FIELD_LH_SAMPLE_UUID: "2a53e7b6-7ce8-4ebc-95c3-02dd64942532",
+        FIELD_LH_SOURCE_PLATE_UUID: SOURCE_PLATES[0][FIELD_LH_SOURCE_PLATE_UUID],
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
+        FIELD_FILTERED_POSITIVE: True,
         FIELD_LAB_ID: "lab_1",
     },
     {

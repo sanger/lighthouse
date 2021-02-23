@@ -29,6 +29,7 @@ def test_get_source_plate_uuid_returns_none_failure_fetching_plates(app, source_
 
 def test_get_positive_samples_in_source_plate_returns_matching_samples(app, samples):
     with app.app_context():
+        samples, _ = samples
         source_plate_uuid = samples[0][FIELD_LH_SOURCE_PLATE_UUID]
         expected_samples = list(
             filter(
@@ -58,6 +59,7 @@ def test_get_positive_samples_in_source_plate_returns_empty_list_no_matching_sam
 
 def test_get_positive_samples_in_source_plate_returns_none_failure_fetching_samples(app, samples):
     with app.app_context():
+        samples, _ = samples
         with patch("flask.current_app.data.driver.db.samples") as samples_collection:
             samples_collection.find.side_effect = Exception()
             result = get_positive_samples_in_source_plate(samples[0][FIELD_LH_SOURCE_PLATE_UUID])

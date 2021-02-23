@@ -62,8 +62,8 @@ def test_delete_reports_endpoint(client):
                     "200716_1345_positives_with_locations.xlsx",
                     "200716_1618_positives_with_locations.xlsx",
                     "200716_1640_positives_with_locations.xlsx",
-                    "200716_1641_positives_with_locations.xlsx",
-                    "200716_1642_positives_with_locations.xlsx",
+                    "200716_1641_fit_to_pick_with_locations.xlsx",
+                    "200716_1642_fit_to_pick_with_locations.xlsx",
                 ]
             }
         }

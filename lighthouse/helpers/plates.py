@@ -1,6 +1,6 @@
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
 import requests
@@ -8,6 +8,7 @@ from flask import current_app as app
 from pymongo.collection import Collection
 from sqlalchemy.sql.expression import and_, bindparam
 
+from lighthouse.constants.aggregation_stages import STAGES_FIT_TO_PICK_SAMPLES
 from lighthouse.constants.events import PLATE_EVENT_DESTINATION_CREATED, PLATE_EVENT_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -40,9 +41,14 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
-    STAGE_MATCH_FILTERED_POSITIVE,
 )
-from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
+from lighthouse.exceptions import (
+    DataError,
+    MissingCentreError,
+    MissingSourceError,
+    MultipleCentresError,
+    UnmatchedSampleError,
+)
 from lighthouse.helpers.dart import find_dart_source_samples_rows
 from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
@@ -66,12 +72,7 @@ logger = logging.getLogger(__name__)
 # On refactoring be careful to heed the WARNs in the code: not losing distributed functionality
 
 
-class UnmatchedSampleError(Exception):
-    pass
-
-
 def add_cog_barcodes(samples):
-
     centre_name = __confirm_centre(samples)
     centre_prefix = get_centre_prefix(centre_name)
     num_samples = len(samples)
@@ -173,60 +174,67 @@ def count_samples(query: Dict[str, Any]) -> int:
     return docs_count
 
 
-def get_positive_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
-    """Get a list of documents which correspond to filtered positive samples for a specific plate.
+def get_fit_to_pick_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
+    """Get a list of samples (documents) for a specific plate which meet the fit to pick rules.
 
     Args:
         plate_barcode (str): the barcode of the plate to get samples for.
 
     Returns:
-        Optional[List[Dict[str, Any]]]: the list of samples for this plate.
+        Optional[List[Dict[str, Any]]]: a list of samples for this plate which meet the fit to pick rules.
     """
+    logger.info(f"Finding fit to pick samples for barcode: {plate_barcode}")
+
     samples_collection = app.data.driver.db.samples
 
     # The pipeline defines stages which execute in sequence
     pipeline = [
         # 1. We are only interested in the samples for a particular plate
         {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
-        # 2. Then run the filtered positive match stage
-        STAGE_MATCH_FILTERED_POSITIVE,
     ]
+
+    # 2. Then run the fit to pick stages
+    pipeline.extend(STAGES_FIT_TO_PICK_SAMPLES)
 
     samples_for_barcode = list(samples_collection.aggregate(pipeline))
 
-    logger.info(f"Found {len(samples_for_barcode)} samples")
+    logger.info(f"Found {len(samples_for_barcode)} fit to pick samples")
 
     return samples_for_barcode
 
 
-def get_positive_samples_count(plate_barcode):
-    """Get a list of documents which correspond to filtered positive samples for a specific plate.
+def get_fit_to_pick_samples_count(plate_barcode: str) -> Optional[int]:
+    """Get the count of samples (documents) for a specific plate which meet the fit to pick rules.
 
     Args:
         plate_barcode (str): the barcode of the plate to get samples for.
 
     Returns:
-        Optional[List[Dict[str, Any]]]: the list of samples for this plate.
+        Optional[int]: the count of samples for this plate which meet the fit to pick rules.
     """
     samples_collection = app.data.driver.db.samples
-    count_name = "filtered_positives_for_plate"
+
     # The pipeline defines stages which execute in sequence
-    pipeline = [
+    pipeline: List[Dict[str, Any]] = [
         # 1. We are only interested in the samples for a particular plate
         {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
-        # 2. Then run the filtered positive match stage
-        STAGE_MATCH_FILTERED_POSITIVE,
-        {"$count": count_name},
     ]
 
+    # 2. Then run the fit to pick stages
+    pipeline.extend(STAGES_FIT_TO_PICK_SAMPLES)
+
+    # 3. Add the count stage
+    count_name = "fit_to_pick_samples"
+    pipeline.append({"$count": count_name})
+
     try:
-        samples_for_barcode_count = next(samples_collection.aggregate(pipeline)).get(count_name)
+        samples_for_barcode_count = int(next(samples_collection.aggregate(pipeline)).get(count_name))
+
+        logger.info(f"Found {samples_for_barcode_count} fit to pick samples")
+
+        return samples_for_barcode_count
     except StopIteration:
         return None
-
-    logger.info(f"Found {samples_for_barcode_count} samples")
-
-    return samples_for_barcode_count
 
 
 def has_sample_data(plate_barcode: str) -> bool:
@@ -312,7 +320,7 @@ def row_to_dict(row):
 
 
 def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    logger.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}'")
+    logger.debug(f"Creating POST body to send to Sequencescape for barcode: {barcode}")
 
     wells_content = {}
     phenotype = None
@@ -361,7 +369,7 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
     """
     ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
-    logger.info(f"Sending request to {ss_url}")
+    logger.info(f"Sending request to: {ss_url}")
 
     headers = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
 
@@ -430,6 +438,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                 f"{app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table."
             )
             logger.error(msg)
+
             raise UnmatchedSampleError(msg)
     except Exception as e:
         logger.error(
@@ -743,21 +752,22 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def format_plate(barcode: str) -> Dict[str, Any]:
-    """Used by flask route /plates to format each plate.
+def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
+    """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
+    so, how many samples meet the fit to pick rules.
 
     Arguments:
-        barcode (str): [description]
+        barcode (str): barcode of plate to get sample information for.
 
     Returns:
-        Dict[str, Any]: [description]
+        Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
     """
-    plate_map = has_sample_data(barcode)
+    has_plate_map = has_sample_data(barcode)
 
-    number_of_positives = get_positive_samples_count(barcode) if plate_map else None
+    number_of_fit_to_pick = get_fit_to_pick_samples_count(barcode) if has_plate_map else None
 
     return {
         "plate_barcode": barcode,
-        "plate_map": plate_map,
-        "number_of_positives": number_of_positives,
+        "plate_map": has_plate_map,
+        "number_of_fit_to_pick": number_of_fit_to_pick,
     }

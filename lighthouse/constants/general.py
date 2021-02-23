@@ -4,8 +4,7 @@ ARG_USER_ID = "user_id"
 ARG_ROBOT_SERIAL = "robot"
 ARG_FAILURE_TYPE = "failure_type"
 
-# Columns that should appear in the filtered positive samples report and the order in which they
-# will appear
+# Columns that should appear in the fit to pick samples report and the order in which they will appear
 REPORT_COLUMNS = [
     "Date Tested",
     "Root Sample ID",

@@ -1,6 +1,6 @@
 PRIORITY_SAMPLES_SCHEMA = {
-    "root_sample_id": {
-        "type": "string",
+    "sample_id": {
+        "type": "objectid",
         "required": True,
         "unique": True,
         "check_with": "required_bools",  # validator defined in lighthouse.validators.priority_samples.py

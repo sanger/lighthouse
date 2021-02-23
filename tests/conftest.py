@@ -7,6 +7,7 @@ import responses
 
 from lighthouse import create_app
 from lighthouse.constants.events import PLATE_EVENT_SOURCE_ALL_NEGATIVES, PLATE_EVENT_SOURCE_COMPLETED
+from lighthouse.constants.fields import FIELD_SAMPLE_ID
 from lighthouse.db.dart import load_sql_server_script
 from lighthouse.helpers.dart import create_dart_connection
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
@@ -60,10 +61,10 @@ def centres(app):
 def samples(app):
     with app.app_context():
         samples_collection = app.data.driver.db.samples
-        _ = samples_collection.insert_many(SAMPLES)
+        inserted_samples = samples_collection.insert_many(SAMPLES)
 
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SAMPLES)
+    #  yield a copy of so that the test change it however it wants
+    yield copy.deepcopy(SAMPLES), inserted_samples
 
     # clear up after the fixture is used
     with app.app_context():
@@ -71,16 +72,26 @@ def samples(app):
 
 
 @pytest.fixture
-def mongo_priority_samples(app):
-    with app.app_context():
-        priority_samples_collections = app.data.driver.db.priority_samples
-        _ = priority_samples_collections.insert_many(PRIORITY_SAMPLES)
+def priority_samples(app, samples):
+    _, samples = samples
 
-    yield copy.deepcopy(PRIORITY_SAMPLES)
+    # create a copy so that the test can change it however it needs
+    priority_samples = copy.deepcopy(PRIORITY_SAMPLES)
+
+    # update the priority samples with the _id of the samples inserted into mongo, currently only uses the number
+    #   of priority samples therefore PRIORITY_SAMPLES needs to be <= SAMPLES
+    for count, priority_sample in enumerate(priority_samples):
+        priority_sample[FIELD_SAMPLE_ID] = samples.inserted_ids[count]
+
+    with app.app_context():
+        priority_samples_collection = app.data.driver.db.priority_samples
+        _ = priority_samples_collection.insert_many(priority_samples)
+
+    yield priority_samples
 
     # clear up after the fixture is used
     with app.app_context():
-        priority_samples_collections.delete_many({})
+        priority_samples_collection.delete_many({})
 
 
 @pytest.fixture

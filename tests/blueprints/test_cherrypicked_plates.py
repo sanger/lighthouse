@@ -42,7 +42,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
         )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.json == {"data": {"plate_barcode": "des_plate_1", "centre": "TC1", "number_of_positives": 5}}
+        assert response.json == {"data": {"plate_barcode": "des_plate_1", "centre": "TC1", "number_of_fit_to_pick": 5}}
 
 
 def test_get_cherrypicked_plates_endpoint_no_barcode_in_request(app, client, samples):

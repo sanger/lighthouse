@@ -15,7 +15,7 @@ from lighthouse.helpers.plates import (
     add_cog_barcodes,
     create_post_body,
     format_plate,
-    get_positive_samples,
+    get_fit_to_pick_samples,
     send_to_ss_heron_plates,
     update_mlwh_with_cog_uk_ids,
 )
@@ -45,7 +45,7 @@ def create_plate_from_barcode() -> FlaskResponse:
 
     try:
         # get samples for barcode
-        samples = get_positive_samples(barcode)
+        samples = get_fit_to_pick_samples(barcode)
 
         if not samples:
             return bad_request(f"No samples for this barcode: {barcode}")
@@ -69,7 +69,7 @@ def create_plate_from_barcode() -> FlaskResponse:
                 "data": {
                     "plate_barcode": samples[0][FIELD_PLATE_BARCODE],
                     "centre": centre_prefix,
-                    "number_of_positives": len(samples),
+                    "number_of_fit_to_pick": len(samples),
                 }
             }
 
@@ -104,7 +104,7 @@ def find_plate_from_barcode() -> FlaskResponse:
 
     This endpoint responds with JSON and the body is in the format:
 
-    `{"plates":[{"barcode":"123","plate_map":true,"number_of_positives":0}]}`
+    `{"plates":[{"barcode":"123","plate_map":true,"number_of_fit_to_pick":0}]}`
 
     Returns:
         FlaskResponse: the response body and HTTP status code

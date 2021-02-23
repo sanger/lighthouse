@@ -59,8 +59,8 @@ from lighthouse.helpers.plates import (
     find_samples,
     find_source_plates,
     get_centre_prefix,
-    get_positive_samples,
-    get_positive_samples_count,
+    get_fit_to_pick_samples,
+    get_fit_to_pick_samples_count,
     get_source_plates_for_samples,
     get_unique_plate_barcodes,
     join_rows_with_samples,
@@ -105,14 +105,15 @@ def any_failure_type(app):
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
     with app.app_context():
+        samples, _ = samples
         baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+        # update this tuple when adding more samples to the fixture data
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "abc")
 
-        # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
 
         mocked_responses.add(
@@ -131,12 +132,13 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
 
 def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_responses):
     with app.app_context():
+        samples, _ = samples
         baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "abc")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -156,12 +158,13 @@ def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_respo
 
 def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_responses):
     with app.app_context():
+        samples, _ = samples
         baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "abc")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -181,12 +184,13 @@ def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_
 
 def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centres, samples, mocked_responses):
     with app.app_context():
+        samples, _ = samples
         baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222")
+        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "abc")
 
         # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
@@ -228,6 +232,7 @@ def test_centre_prefix(app, centres, mocked_responses):
 
 def test_create_post_body(app, samples):
     with app.app_context():
+        samples, _ = samples
         barcode = "12345"
 
         filtered_positive_samples = list(
@@ -259,6 +264,13 @@ def test_create_post_body(app, samples):
                                 FIELD_SS_SAMPLE_DESCRIPTION: "sample_002",
                             }
                         },
+                        "E01": {
+                            "content": {
+                                FIELD_SS_PHENOTYPE: "positive",
+                                FIELD_SS_SUPPLIER_NAME: "pqr",
+                                FIELD_SS_SAMPLE_DESCRIPTION: "sample_101",
+                            }
+                        },
                     },
                 },
             }
@@ -267,28 +279,28 @@ def test_create_post_body(app, samples):
         assert create_post_body(barcode, filtered_positive_samples) == correct_body
 
 
-def test_get_positive_samples(app, samples):
+def test_get_fit_to_pick_samples(app, samples, priority_samples):
     with app.app_context():
-        samples = get_positive_samples("plate_123")
+        samples = get_fit_to_pick_samples("plate_123")
         if samples:
-            assert len(samples) == 2
+            assert len(samples) == 4
         else:
             raise AssertionError()
 
 
-def test_get_positive_samples_count_valid_barcode(app, samples):
+def test_get_fit_to_pick_samples_count_valid_barcode(app, samples, priority_samples):
     with app.app_context():
-        assert get_positive_samples_count("plate_123") == 2
+        assert get_fit_to_pick_samples_count("plate_123") == 4
 
 
-def test_get_positive_samples_count_invalid_barcode(app, samples):
+def test_get_fit_to_pick_samples_count_invalid_barcode(app, samples):
     with app.app_context():
-        assert get_positive_samples_count("abc") is None
+        assert get_fit_to_pick_samples_count("abc") is None
 
 
-def test_get_positive_samples_count_different_plates(app, samples):
+def test_get_fit_to_pick_samples_count_different_plates(app, samples):
     with app.app_context():
-        assert get_positive_samples_count("plate_456") == 1
+        assert get_fit_to_pick_samples_count("plate_456") == 1
 
 
 def test_update_mlwh_with_cog_uk_ids(
@@ -492,6 +504,7 @@ def test_rows_with_controls_returns_controls(app):
 
 
 def test_equal_row_and_sample_compares_row_and_sample(app, samples):
+    samples, _ = samples
     # Different root sample id
     row = DartRow("DN1111", "A01", "plate_123", "A01", None, "wrong_root_sample", "rna_1", "lab_1")
     assert not equal_row_and_sample(row, samples[0])
@@ -510,18 +523,21 @@ def test_equal_row_and_sample_compares_row_and_sample(app, samples):
 
 
 def test_find_sample_matching_row(app, samples):
+    samples, _ = samples
     row = DartRow("DN1111", "A01", "plate_123", "A01", None, "sample_002", "rna_2", "lab_1")
 
     assert find_sample_matching_row(row, samples) == samples[1]
 
 
 def test_find_sample_matching_row_returns_none_if_not_found(app, samples):
+    samples, _ = samples
     row = DartRow("DN1111", "A01", "plate_123", "A01", None, "MCM002", "rna_2", "Lab 3")
 
     assert find_sample_matching_row(row, samples) is None
 
 
 def test_join_rows_with_samples(app, samples):
+    samples, _ = samples
     rows = [
         DartRow("DN1111", "A01", "plate_123", "A01", None, "sample_001", "rna_1", "lab_1"),
         DartRow("DN1111", "A01", "plate_123", "A01", None, "sample_002", "rna_2", "lab_1"),
@@ -534,6 +550,7 @@ def test_join_rows_with_samples(app, samples):
 
 
 def test_join_rows_with_samples_joins_with_empty_sample_if_not_found(app, samples):
+    samples, _ = samples
     rows = [
         DartRow("DN1111", "A01", "plate_123", "A01", None, "sample_001", "rna_1", "lab_1"),
         DartRow("DN1111", "A01", "plate_123", "A01", None, "sample_002", "rna_3", "lab_1"),
@@ -546,17 +563,19 @@ def test_join_rows_with_samples_joins_with_empty_sample_if_not_found(app, sample
 
 
 def test_join_rows_with_samples_filters_out_controls(app, samples):
+    samples, _ = samples
     rows = [
         DartRow("DN1111", "A01", "plate_123", "A01", "positive", "sample_001", "rna_1", "lab_1"),
         DartRow("DN1111", "A01", "plate_456", "A01", None, "sample_003", "rna_3", "lab_2"),
     ]
 
     assert join_rows_with_samples(rows, samples) == [
-        {"row": row_to_dict(rows[1]), "sample": samples[5]},
+        {"row": row_to_dict(rows[1]), "sample": samples[6]},
     ]
 
 
 def test_add_controls_to_samples(app, samples):
+    samples, _ = samples
     rows = [
         DartRow("DN1111", "A01", "plate_123", "A01", "positive", "MCM001", "rna_1", "lab_1"),
         DartRow("DN1111", "A01", "plate_123", "A01", "negative", "MCM002", "rna_2", "Lab 2"),
@@ -576,6 +595,7 @@ def test_add_controls_to_samples(app, samples):
 
 
 def test_check_matching_sample_numbers_returns_false_mismatch(app, samples):
+    samples, _ = samples
     rows = [
         DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
         DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
@@ -591,6 +611,7 @@ def test_check_matching_sample_numbers_returns_false_mismatch(app, samples):
 
 
 def test_check_matching_sample_numbers_returns_true_match(app, samples):
+    samples, _ = samples
     rows = [
         DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
         DartRow("DN1111", "A02", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
@@ -600,6 +621,7 @@ def test_check_matching_sample_numbers_returns_true_match(app, samples):
         DartRow("DN1111", "A06", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN1111", "A07", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN1111", "A08", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow("DN1111", "A09", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
         DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
     ]
@@ -766,13 +788,14 @@ def test_find_samples_returns_none_if_no_query_provided(app):
 
 
 def test_get_unique_plate_barcodes(app, samples):
+    samples, _ = samples
     correct_barcodes = ["plate_123", "plate_456"]
 
     samples = [
         samples[0],
         samples[0],
-        samples[5],
-        samples[5],
+        samples[6],
+        samples[6],
     ]
 
     result = get_unique_plate_barcodes(samples)
@@ -805,12 +828,13 @@ def test_find_source_plates_returns_none(app):
 
 
 def test_get_source_plates_for_samples(app, samples, source_plates):
+    samples, _ = samples
     with app.app_context():
         samples = [
             samples[0],
             samples[0],
-            samples[5],
-            samples[5],
+            samples[6],
+            samples[6],
         ]
 
         results = get_source_plates_for_samples(samples)
@@ -1203,5 +1227,5 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
 
 def test_count_samples(app, samples):
     with app.app_context():
-        assert count_samples({FIELD_PLATE_BARCODE: "plate_123"}) == 5
+        assert count_samples({FIELD_PLATE_BARCODE: "plate_123"}) == 6
         assert count_samples({FIELD_PLATE_BARCODE: ""}) == 0

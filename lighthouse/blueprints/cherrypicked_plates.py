@@ -113,7 +113,7 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
                 "data": {
                     "plate_barcode": barcode,
                     "centre": centre_prefix,
-                    "number_of_positives": len(samples),
+                    "number_of_fit_to_pick": len(samples),
                 }
             }
 

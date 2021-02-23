@@ -18,19 +18,11 @@ from flask import current_app as app
 from pandas import DataFrame
 from pymongo.collection import Collection
 
+from lighthouse.constants.aggregation_stages import STAGES_FIT_TO_PICK_SAMPLES
 from lighthouse.constants.events import EVENT_CHERRYPICK_LAYOUT_SET, PLATE_EVENT_DESTINATION_CREATED
-from lighthouse.constants.fields import (
-    FIELD_COORDINATE,
-    FIELD_DATE_TESTED,
-    FIELD_PLATE_BARCODE,
-    FIELD_RESULT,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_SOURCE,
-    STAGE_MATCH_FILTERED_POSITIVE,
-)
+from lighthouse.constants.fields import FIELD_COORDINATE, FIELD_DATE_TESTED, FIELD_PLATE_BARCODE, FIELD_ROOT_SAMPLE_ID
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.labwhere import get_locations_from_labwhere
-from lighthouse.utils import pretty
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
@@ -59,7 +51,7 @@ def get_reports_details(filename: str = None) -> List[Dict[str, str]]:
         (_, _, files) = next(os.walk(REPORTS_PATH))
 
         # we only want files which match the report naming convention
-        report_pattern = re.compile(r"^\d{6}_\d{4}_positives_with_locations.xlsx$")
+        report_pattern = re.compile(r"^\d{6}_\d{4}_(positives|fit_to_pick)_with_locations.xlsx$")
         reports = filter(report_pattern.match, files)
 
     return [
@@ -80,7 +72,7 @@ def get_new_report_name_and_path() -> Tuple[str, pathlib.PurePath]:
         Tuple[str, pathlib.PurePath] -- filename and path of report being created
     """
     report_date = datetime.now().strftime("%y%m%d_%H%M")
-    report_name = f"{report_date}_positives_with_locations.xlsx"
+    report_name = f"{report_date}_fit_to_pick_with_locations.xlsx"
     REPORTS_PATH = PROJECT_ROOT.joinpath(app.config["REPORTS_DIR"])
     report_path = REPORTS_PATH.joinpath(report_name)
 
@@ -102,7 +94,6 @@ def delete_reports(filenames: List[str]) -> None:
 
 
 def map_labware_to_location(labware_barcodes: List[str]) -> DataFrame:
-
     logger.info(f"Getting locations from LabWhere for {len(labware_barcodes)} barcodes")
     response = get_locations_from_labwhere(labware_barcodes)
 
@@ -122,7 +113,6 @@ def map_labware_to_location(labware_barcodes: List[str]) -> DataFrame:
     labware_to_location_barcode_df = pd.DataFrame.from_records(labware_to_location_barcode)
 
     logger.info(f"{len(labware_to_location_barcode_df.index)} locations for plate barcodes found")
-    pretty(logger, labware_to_location_barcode_df)
 
     return labware_to_location_barcode_df
 
@@ -179,60 +169,43 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
         db_connection.close()
 
 
-def get_all_positive_samples(samples_collection: Collection) -> DataFrame:
-    """Get all the positive samples from mongo from a specific date.
+def get_fit_to_pick_samples(samples_collection: Collection) -> DataFrame:
+    """Get all the samples (documents) from mongo which meet the fit to pick rules and are from a specific date.
 
     Args:
         samples_collection (Collection): the samples collection.
 
     Returns:
-        DataFrame: a pandas DataFrame with the positive samples.
+        DataFrame: a pandas DataFrame with the fit to pick samples.
     """
-    logger.debug("Getting all positive samples from a specific date")
-
-    # The projection defines which fields are present in the documents from the output of the mongo
-    # query
-    projection = {
-        "_id": False,
-        FIELD_SOURCE: True,
-        FIELD_PLATE_BARCODE: True,
-        FIELD_ROOT_SAMPLE_ID: True,
-        FIELD_RESULT: True,
-        FIELD_DATE_TESTED: True,
-        FIELD_COORDINATE: True,
-    }
+    logger.debug("Getting all fit to pick samples from a specific date")
 
     # The pipeline defines stages which execute in sequence
-    pipeline = [
-        # 1. First run the positive match stage
-        STAGE_MATCH_FILTERED_POSITIVE,
-        # 2. We only want documents which have valid dates that we can compare against
-        {"$match": {FIELD_DATE_TESTED: {"$type": "date", "$gte": report_query_window_start()}}},
-        # 3. Define which fields to have in the output documents
-        {"$project": projection},
-    ]
+    # 1. First run "fit to pick" stage
+    pipeline = STAGES_FIT_TO_PICK_SAMPLES
 
-    # Perform an aggregation using the defined pipeline - this will run through the pipeline
-    # "stages" in sequence
+    # 2. We only want documents which have valid dates that we can compare against
+    pipeline.append({"$match": {FIELD_DATE_TESTED: {"$type": "date", "$gte": report_query_window_start()}}})
+
+    # Perform an aggregation using the defined pipeline - this will run through the pipeline stages in sequence
     results = samples_collection.aggregate(pipeline)
 
     # converting to a dataframe to make it easy to join with data from LabWhere
-    positive_samples_df = pd.DataFrame.from_records(results)
+    fit_to_pick_samples_df = pd.DataFrame.from_records(results)
 
-    logger.info(f"{len(positive_samples_df.index)} positive samples")
-    pretty(logger, positive_samples_df)
+    logger.info(f"{len(fit_to_pick_samples_df.index)} fit to pick samples")
 
     # strip zeros out of the well coordinates
-    positive_samples_df[FIELD_COORDINATE] = positive_samples_df[FIELD_COORDINATE].map(
+    fit_to_pick_samples_df[FIELD_COORDINATE] = fit_to_pick_samples_df[FIELD_COORDINATE].map(
         lambda coord: unpad_coordinate(coord)
     )
 
     # create 'plate and well' column for copy-pasting into Sequencescape submission, e.g. DN1234:A1
-    positive_samples_df["plate and well"] = (
-        positive_samples_df[FIELD_PLATE_BARCODE] + ":" + positive_samples_df[FIELD_COORDINATE]
+    fit_to_pick_samples_df["plate and well"] = (
+        fit_to_pick_samples_df[FIELD_PLATE_BARCODE] + ":" + fit_to_pick_samples_df[FIELD_COORDINATE]
     )
 
-    return positive_samples_df
+    return fit_to_pick_samples_df
 
 
 def add_cherrypicked_column(existing_dataframe):
@@ -284,7 +257,7 @@ def report_query_window_start() -> datetime:
         datetime: start date for the report window
     """
     window_size = app.config["REPORT_WINDOW_SIZE"]
-    logger.debug(f"Current report window size: {window_size}")
+    logger.debug(f"Current report window size: {window_size} days")
 
     start = datetime.now() + timedelta(days=-window_size)
     logger.info(f"Report starting from: {start.strftime('%d/%m/%Y')}")

@@ -45,7 +45,7 @@ SAMPLES_FOR_MLWH_UPDATE = [
     },
 ]
 
-# this matches the positive sample in SAMPLES
+# this matches samples which meet the fit to pick rules
 MLWH_LH_SAMPLES = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "sample_001",
@@ -55,6 +55,16 @@ MLWH_LH_SAMPLES = [
     {
         MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "sample_002",
         MLWH_LH_SAMPLE_RNA_ID: "rna_2",
+        MLWH_LH_SAMPLE_RESULT: "Positive",
+    },
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "sample_a",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_a",
+        MLWH_LH_SAMPLE_RESULT: "Negative",
+    },
+    {
+        MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: "sample_101",
+        MLWH_LH_SAMPLE_RNA_ID: "rna_6",
         MLWH_LH_SAMPLE_RESULT: "Positive",
     },
     {
