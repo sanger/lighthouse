@@ -9,7 +9,7 @@ on:
       - "README.md"
 
 env:
-  IMAGE_NAME: " ${{ github.repository }}/${{ github.event.repository.name }}"
+  IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
 
 jobs:
   build_and_test_job:
