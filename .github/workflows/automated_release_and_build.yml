@@ -1,4 +1,4 @@
-name: CI docker
+name: Automated release and build
 
 on:
   push:
