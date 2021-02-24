@@ -5,10 +5,8 @@ from uuid import uuid4
 
 import requests
 from flask import current_app as app
-from pymongo.collection import Collection
 from sqlalchemy.sql.expression import and_, bindparam
 
-from lighthouse.constants.aggregation_stages import STAGES_FIT_TO_PICK_SAMPLES
 from lighthouse.constants.events import PLATE_EVENT_DESTINATION_CREATED, PLATE_EVENT_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -58,6 +56,7 @@ from lighthouse.helpers.events import (
     get_message_timestamp,
     get_robot_uuid,
 )
+from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc
@@ -161,86 +160,6 @@ def find_samples(query: Dict[str, Any] = None) -> Optional[List[SampleDoc]]:
     logger.info(f"{len(samples)} samples found from samples collection")
 
     return samples
-
-
-def count_samples(query: Dict[str, Any]) -> int:
-    samples_collection: Collection = app.data.driver.db.samples
-
-    docs_count = samples_collection.count_documents(query)
-
-    if not isinstance(docs_count, int):
-        raise Exception(f"Cannot count documents in samples collection using query: {query}")
-
-    return docs_count
-
-
-def get_fit_to_pick_samples(plate_barcode: str) -> Optional[List[Dict[str, Any]]]:
-    """Get a list of samples (documents) for a specific plate which meet the fit to pick rules.
-
-    Args:
-        plate_barcode (str): the barcode of the plate to get samples for.
-
-    Returns:
-        Optional[List[Dict[str, Any]]]: a list of samples for this plate which meet the fit to pick rules.
-    """
-    logger.info(f"Finding fit to pick samples for barcode: {plate_barcode}")
-
-    samples_collection = app.data.driver.db.samples
-
-    # The pipeline defines stages which execute in sequence
-    pipeline = [
-        # 1. We are only interested in the samples for a particular plate
-        {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
-    ]
-
-    # 2. Then run the fit to pick stages
-    pipeline.extend(STAGES_FIT_TO_PICK_SAMPLES)
-
-    samples_for_barcode = list(samples_collection.aggregate(pipeline))
-
-    logger.info(f"Found {len(samples_for_barcode)} fit to pick samples")
-
-    return samples_for_barcode
-
-
-def get_fit_to_pick_samples_count(plate_barcode: str) -> Optional[int]:
-    """Get the count of samples (documents) for a specific plate which meet the fit to pick rules.
-
-    Args:
-        plate_barcode (str): the barcode of the plate to get samples for.
-
-    Returns:
-        Optional[int]: the count of samples for this plate which meet the fit to pick rules.
-    """
-    samples_collection = app.data.driver.db.samples
-
-    # The pipeline defines stages which execute in sequence
-    pipeline: List[Dict[str, Any]] = [
-        # 1. We are only interested in the samples for a particular plate
-        {"$match": {FIELD_PLATE_BARCODE: plate_barcode}},
-    ]
-
-    # 2. Then run the fit to pick stages
-    pipeline.extend(STAGES_FIT_TO_PICK_SAMPLES)
-
-    # 3. Add the count stage
-    count_name = "fit_to_pick_samples"
-    pipeline.append({"$count": count_name})
-
-    try:
-        samples_for_barcode_count = int(next(samples_collection.aggregate(pipeline)).get(count_name))
-
-        logger.info(f"Found {samples_for_barcode_count} fit to pick samples")
-
-        return samples_for_barcode_count
-    except StopIteration:
-        return None
-
-
-def has_sample_data(plate_barcode: str) -> bool:
-    sample_count = count_samples({FIELD_PLATE_BARCODE: plate_barcode})
-
-    return sample_count > 0
 
 
 def row_is_normal_sample(row):
@@ -762,12 +681,21 @@ def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
     Returns:
         Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
     """
-    has_plate_map = has_sample_data(barcode)
+    logger.info(f"Getting information for plate with barcode: {barcode}")
 
-    number_of_fit_to_pick = get_fit_to_pick_samples_count(barcode) if has_plate_map else None
+    (
+        fit_to_pick_samples,
+        count_fit_to_pick_samples,
+        count_must_sequence,
+        count_preferentially_sequence,
+        count_filtered_positive,
+    ) = get_fit_to_pick_samples_and_counts(barcode)
 
     return {
         "plate_barcode": barcode,
-        "plate_map": has_plate_map,
-        "number_of_fit_to_pick": number_of_fit_to_pick,
+        "has_plate_map": fit_to_pick_samples is not None and len(fit_to_pick_samples) > 0,
+        "count_fit_to_pick_samples": count_fit_to_pick_samples,
+        "count_must_sequence": count_must_sequence,
+        "count_preferentially_sequence": count_preferentially_sequence,
+        "count_filtered_positive": count_filtered_positive,
     }

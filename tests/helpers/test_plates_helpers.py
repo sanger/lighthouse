@@ -51,7 +51,6 @@ from lighthouse.helpers.plates import (
     add_controls_to_samples,
     check_matching_sample_numbers,
     construct_cherrypicking_plate_failed_message,
-    count_samples,
     create_cherrypicked_post_body,
     create_post_body,
     equal_row_and_sample,
@@ -59,8 +58,6 @@ from lighthouse.helpers.plates import (
     find_samples,
     find_source_plates,
     get_centre_prefix,
-    get_fit_to_pick_samples,
-    get_fit_to_pick_samples_count,
     get_source_plates_for_samples,
     get_unique_plate_barcodes,
     join_rows_with_samples,
@@ -277,30 +274,6 @@ def test_create_post_body(app, samples):
         }
 
         assert create_post_body(barcode, filtered_positive_samples) == correct_body
-
-
-def test_get_fit_to_pick_samples(app, samples, priority_samples):
-    with app.app_context():
-        samples = get_fit_to_pick_samples("plate_123")
-        if samples:
-            assert len(samples) == 4
-        else:
-            raise AssertionError()
-
-
-def test_get_fit_to_pick_samples_count_valid_barcode(app, samples, priority_samples):
-    with app.app_context():
-        assert get_fit_to_pick_samples_count("plate_123") == 4
-
-
-def test_get_fit_to_pick_samples_count_invalid_barcode(app, samples):
-    with app.app_context():
-        assert get_fit_to_pick_samples_count("abc") is None
-
-
-def test_get_fit_to_pick_samples_count_different_plates(app, samples):
-    with app.app_context():
-        assert get_fit_to_pick_samples_count("plate_456") == 1
 
 
 def test_update_mlwh_with_cog_uk_ids(
@@ -1165,6 +1138,7 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
 #     test_timestamp = datetime.now()
 #     mock_get_timestamp.return_value = test_timestamp
 #     with app.app_context():
+#         samples, _ = samples
 #         test_uuid = uuid4()
 #         with patch("lighthouse.helpers.plates.uuid4", return_value=test_uuid):
 #             with patch("lighthouse.helpers.plates.Message") as mock_message:
@@ -1186,7 +1160,6 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
 #                 # remove the microsecond comparing
 #                 for sample in expected_samples:
 #                     sample.update({FIELD_DATE_TESTED: sample[FIELD_DATE_TESTED].replace(microsecond=0)})
-#                 print(expected_samples)
 #                 assert len(root_sample_ids) == len(expected_samples)  # sanity check
 #                 for args, _ in mock_sample_subject.call_args_list:
 #                     # remove the microsecond before comparing
@@ -1223,9 +1196,3 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
 
 #                 metadata = event["metadata"]
 #                 assert metadata == {"failure_type": test_failure_type}
-
-
-def test_count_samples(app, samples):
-    with app.app_context():
-        assert count_samples({FIELD_PLATE_BARCODE: "plate_123"}) == 6
-        assert count_samples({FIELD_PLATE_BARCODE: ""}) == 0

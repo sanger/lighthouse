@@ -19,7 +19,9 @@ def test_post_plates_endpoint_successful(app, client, samples, priority_samples,
 
         response = client.post("/plates/new", json=body)
         assert response.status_code == HTTPStatus.OK
-        assert response.json == {"data": {"plate_barcode": "plate_123", "centre": "TC1", "number_of_fit_to_pick": 4}}
+        assert response.json == {
+            "data": {"plate_barcode": "plate_123", "centre": "TC1", "count_fit_to_pick_samples": 4}
+        }
 
 
 def test_post_plates_endpoint_no_barcode_in_request(app, client, samples):
@@ -33,7 +35,7 @@ def test_post_plates_endpoint_no_fit_to_pick_samples(app, client):
     response = client.post("/plates/new", json={"barcode": "qwerty"})
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": ["No samples for this barcode: qwerty"]}
+    assert response.json == {"errors": ["No fit to pick samples for this barcode: qwerty"]}
 
 
 def test_post_plates_endpoint_add_cog_barcodes_failed(
@@ -82,14 +84,28 @@ def test_get_plates_endpoint_successful(app, client, samples, priority_samples, 
     assert response.status_code == HTTPStatus.OK
     assert response.json == {
         "plates": [
-            {"plate_barcode": "plate_123", "plate_map": True, "number_of_fit_to_pick": 4},
-            {"plate_barcode": "456", "plate_map": False, "number_of_fit_to_pick": None},
+            {
+                "plate_barcode": "plate_123",
+                "has_plate_map": True,
+                "count_fit_to_pick_samples": 4,
+                "count_filtered_positive": 3,
+                "count_must_sequence": 1,
+                "count_preferentially_sequence": 1,
+            },
+            {
+                "plate_barcode": "456",
+                "has_plate_map": False,
+                "count_fit_to_pick_samples": None,
+                "count_filtered_positive": None,
+                "count_must_sequence": None,
+                "count_preferentially_sequence": None,
+            },
         ]
     }
 
 
 def test_get_plates_endpoint_fail(app, client, samples, mocked_responses):
-    with patch("lighthouse.helpers.plates.has_sample_data", side_effect=Exception()):
+    with patch("lighthouse.helpers.plates.get_fit_to_pick_samples_and_counts", side_effect=Exception()):
         response = client.get("/plates?barcodes[]=123&barcodes[]=456", content_type="application/json")
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
