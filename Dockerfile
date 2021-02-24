@@ -2,9 +2,9 @@
 FROM python:3.8-slim
 
 # "Force the stdout and stderr streams to be unbuffered" - Docker logs to stdout and stderr so to prevent delay, do not
-#   buffer message
-#   https://docs.python.org/3/using/cmdline.html#cmdoption-u
+#   buffer message: https://docs.python.org/3/using/cmdline.html#cmdoption-u
 ENV PYTHONUNBUFFERED 1
+
 # This is required for Flask to know what app to start
 ENV FLASK_APP lighthouse
 
