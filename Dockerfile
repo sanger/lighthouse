@@ -24,21 +24,20 @@ RUN useradd --create-home lighthouse
 USER lighthouse
 ENV PATH "$PATH:/home/lighthouse/.local/bin"
 
+RUN pip install --user pipenv
+
 # Change the working directory for all proceeding operations
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#workdir
 WORKDIR /home/lighthouse/app
 
 # "items (files, directories) that do not require ADD’s tar auto-extraction capability, you should always use COPY."
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#add-or-copy
-# COPY --chown=lighthouse Pipfile ./
+COPY --chown=lighthouse Pipfile ./
 COPY --chown=lighthouse Pipfile.lock ./
-
-RUN pip install --user pipenv
 
 # install the required python packages depending on the purpose of the image
 COPY --chown=lighthouse pipenv_install.sh ./pipenv_install.sh
 RUN chmod u+x pipenv_install.sh && ./pipenv_install.sh
-# RUN ./pipenv_install.sh
 
 # Copy all the source to the image
 COPY . .
