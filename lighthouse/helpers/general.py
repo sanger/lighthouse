@@ -37,7 +37,7 @@ def get_fit_to_pick_samples_and_counts(
 
     pretty(logger, results)
 
-    if results is None:
+    if results is None or not results:
         return None, None, None, None, None
 
     def extract_count(count_name: str) -> Optional[int]:
