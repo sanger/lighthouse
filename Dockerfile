@@ -42,11 +42,12 @@ RUN chmod u+x pipenv_install.sh && ./pipenv_install.sh
 # Copy all the source to the image
 COPY . .
 
-HEALTHCHECK --interval=5m --timeout=3s \
-    CMD curl -f http://localhost:5000/health || exit 1
+# https://docs.docker.com/engine/reference/builder/#healthcheck
+HEALTHCHECK --interval=1m --timeout=3s \
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # "The best use for ENTRYPOINT is to set the image’s main command, allowing that image to be run as though it was that
 #   command (and then use CMD as the default flags)."
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
 ENTRYPOINT ["pipenv", "run", "flask"]
-CMD ["run"]
+CMD ["run", "--host", "0.0.0.0", "--port", "8000"]
