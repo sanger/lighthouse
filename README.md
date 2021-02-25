@@ -131,6 +131,14 @@ Option B (in Docker):
 
 Type checking is done using mypy, to run it, execute `mypy .`
 
+## Releases
+
+#### UAT
+On merging a pull request into develop, a release will be created with the tag/name `<branch>/<timestamp>`
+
+#### PROD
+Update `.release-version` with major/minor/patch. On merging a pull request into master, a release will be created with the release version as the tag/name 
+
 ## Troubleshooting
 
 If you experience `ImportError: dlopen(/Users/.../.local/share/virtualenvs/lighthouse-e4xstWfp/lib/python3.8/site-packages/pyodbc.cpython-38-darwin.so, 2): Library not loaded: /usr/local/opt/unixodbc/lib/libodbc.2.dylib` or
