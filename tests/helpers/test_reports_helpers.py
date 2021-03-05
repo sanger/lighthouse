@@ -24,6 +24,7 @@ from lighthouse.helpers.reports import (
     unpad_coordinate,
 )
 
+
 # ----- get_new_report_name_and_path tests -----
 
 
@@ -135,9 +136,7 @@ def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
                 side_effect=query_results,
             ):
                 returned_samples = get_cherrypicked_samples(samples, plate_barcodes, 2)
-                pd.testing.assert_frame_equal(
-                    expected, returned_samples.sort_values(by=FIELD_ROOT_SAMPLE_ID), check_like=True
-                )
+                pd.testing.assert_frame_equal(expected, returned_samples)
 
 
 # Test Scenario
@@ -161,7 +160,7 @@ def test_get_cherrypicked_samples_repeat_tests_no_beckman(app, freezer, mlwh_sen
     with app.app_context():
         chunk_size = 2
         returned_samples = get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size)
-        pd.testing.assert_frame_equal(expected, returned_samples.sort_values(by=FIELD_ROOT_SAMPLE_ID), check_like=True)
+        pd.testing.assert_frame_equal(expected, returned_samples)
 
 
 # Test Scenario
@@ -240,7 +239,12 @@ def test_get_cherrypicked_samples_repeat_tests_no_sentinel(app, freezer, mlwh_be
     with app.app_context():
         chunk_size = 2
         returned_samples = get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size)
-        pd.testing.assert_frame_equal(expected, returned_samples.sort_values(by=FIELD_ROOT_SAMPLE_ID), check_like=True)
+
+        # The view could be returning the rows in a different order, which we solve by sorting and
+        # reindexing the rows for returned_samples, so we can compare with our expected frame
+        resorted_returned_samples = returned_samples.sort_values(by=FIELD_ROOT_SAMPLE_ID, ignore_index=True)
+
+        pd.testing.assert_frame_equal(expected, resorted_returned_samples)
 
 
 # Test Scenario
@@ -340,9 +344,7 @@ def test_get_cherrypicked_samples_chunking_sentinel_and_beckman(app, freezer):
                 side_effect=query_results,
             ):
                 returned_samples = get_cherrypicked_samples(samples, plate_barcodes, 2)
-                pd.testing.assert_frame_equal(
-                    expected, returned_samples.sort_values(by=FIELD_ROOT_SAMPLE_ID), check_like=True
-                )
+                pd.testing.assert_frame_equal(expected, returned_samples)
 
 
 # Test Scenario
@@ -376,7 +378,7 @@ def test_get_cherrypicked_samples_repeat_tests_sentinel_and_beckman(
     with app.app_context():
         chunk_size = 2
         returned_samples = get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size)
-        pd.testing.assert_frame_equal(expected, returned_samples.sort_values(by=FIELD_ROOT_SAMPLE_ID), check_like=True)
+        pd.testing.assert_frame_equal(expected, returned_samples)
 
 
 # ----- get_all_positive_samples tests -----
