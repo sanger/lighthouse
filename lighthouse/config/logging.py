@@ -7,14 +7,17 @@ LOGGING: Dict[str, Any] = {
         "colored": {
             "style": "{",
             "()": "colorlog.ColoredFormatter",
-            "format": "{asctime:<15} {name:<45}:{lineno:<3} {log_color}{levelname:<5} {message}",
+            "format": "{asctime:<15} {name:<45}:{lineno:<3} {log_color}{levelname:<7} {message}",
         },
         "colored_dev": {
             "style": "{",
             "()": "colorlog.ColoredFormatter",
-            "format": "{asctime:<15} {relative_path_and_lineno:<50} {log_color}{levelname:<5} {message}",
+            "format": "{asctime:<15} {relative_path_and_lineno:<50} {log_color}{levelname:<7} {message}",
         },
-        "verbose": {"style": "{", "format": "{asctime:<15} {name:<45}:{lineno:<3} {levelname:<5} {message}"},
+        "verbose": {
+            "style": "{",
+            "format": "{asctime:<15} {name:<45}:{lineno:<3} {levelname:<7} {message}",
+        },
     },
     "filters": {
         "package_path": {
@@ -33,7 +36,11 @@ LOGGING: Dict[str, Any] = {
             "formatter": "colored_dev",
             "filters": ["package_path"],
         },
-        "console": {"level": "INFO", "class": "logging.StreamHandler", "formatter": "verbose"},
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
         "slack": {
             "level": "ERROR",
             "class": "lighthouse.utils.SlackHandler",
@@ -42,5 +49,11 @@ LOGGING: Dict[str, Any] = {
             "channel_id": "",
         },
     },
-    "loggers": {"lighthouse": {"handlers": ["console", "slack"], "level": "INFO", "propagate": True}},
+    "loggers": {
+        "lighthouse": {
+            "handlers": ["console", "slack"],
+            "level": "INFO",
+            "propagate": True,
+        }
+    },
 }

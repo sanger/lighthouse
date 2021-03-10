@@ -694,8 +694,10 @@ def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
     return {
         "plate_barcode": barcode,
         "has_plate_map": fit_to_pick_samples is not None and len(fit_to_pick_samples) > 0,
-        "count_fit_to_pick_samples": count_fit_to_pick_samples,
-        "count_must_sequence": count_must_sequence,
-        "count_preferentially_sequence": count_preferentially_sequence,
-        "count_filtered_positive": count_filtered_positive,
+        "count_fit_to_pick_samples": count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0,
+        "count_must_sequence": count_must_sequence if count_must_sequence is not None else 0,
+        "count_preferentially_sequence": count_preferentially_sequence
+        if count_preferentially_sequence is not None
+        else 0,
+        "count_filtered_positive": count_filtered_positive if count_filtered_positive is not None else 0,
     }
