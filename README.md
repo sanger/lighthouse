@@ -213,3 +213,7 @@ To update the table of contents after adding things to this README you can use t
 [markdown-toc](https://github.com/jonschlinkert/markdown-toc) node module. To run:
 
     npx markdown-toc -i README.md
+
+## Releases
+
+Update `.release-version` with major/minor/patch. On merging a pull request into develop or master, a release will be created with the release version as the tag/name
