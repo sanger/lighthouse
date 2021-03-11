@@ -146,3 +146,7 @@ approach.
 
 This project uses [black](https://github.com/psf/black) to check for code format, the use it run:
 `black .`
+
+## Releases
+
+Update `.release-version` with major/minor/patch. On merging a pull request into develop or master, a release will be created with the release version as the tag/name
