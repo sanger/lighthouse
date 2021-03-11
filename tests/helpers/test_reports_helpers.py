@@ -355,7 +355,7 @@ def test_get_fit_to_pick_samples(app, freezer, samples, priority_samples):
         samples = app.data.driver.db.samples
         fit_to_pick_samples = get_fit_to_pick_samples(samples)
 
-        assert len(fit_to_pick_samples) == 8
+        assert len(fit_to_pick_samples) == 7
         assert fit_to_pick_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "sample_001"
         assert fit_to_pick_samples.at[0, FIELD_RESULT] == "Positive"
         assert fit_to_pick_samples.at[0, FIELD_SOURCE] == "centre_1"
