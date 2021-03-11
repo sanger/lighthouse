@@ -31,6 +31,7 @@ from lighthouse.constants.fields import (
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
     FIELD_SS_BARCODE,
     FIELD_SS_CONTROL,
     FIELD_SS_CONTROL_TYPE,
@@ -45,11 +46,13 @@ from lighthouse.constants.fields import (
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
+from lighthouse.exceptions import UnmatchedSampleError
 from lighthouse.helpers.plates import (
-    UnmatchedSampleError,
     add_cog_barcodes,
+    add_cog_barcodes_from_different_centres,
     add_controls_to_samples,
     check_matching_sample_numbers,
+    classify_samples_by_centre,
     construct_cherrypicking_plate_failed_message,
     create_cherrypicked_post_body,
     create_post_body,
@@ -100,9 +103,58 @@ def any_failure_type(app):
 # ---------- tests ----------
 
 
+def test_classify_samples_by_centre(app, samples, mocked_responses):
+    samples, _ = samples
+    assert list(classify_samples_by_centre(samples).keys()) == ["centre_1", "centre_2"]
+    assert len(classify_samples_by_centre(samples)["centre_1"]) == 9
+    assert len(classify_samples_by_centre(samples)["centre_2"]) == 1
+
+
+def test_add_cog_barcodes_from_different_centres(app, centres, samples, mocked_responses):
+    with app.app_context():
+        samples, _ = samples
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC1/new?count=9"
+
+        baracoda_url2 = f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC2/new?count=1"
+
+        # remove the cog_barcode key and value from the samples fixture before testing
+        _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
+
+        cog_barcodes = ("123", "789", "456", "abc", "def", "hij", "klm", "nop", "qrs", "tuv")
+
+        # update the 'cog_barcode' tuple when adding more samples to the fixture data
+        assert len(cog_barcodes) == len(samples)
+
+        mocked_responses.add(
+            responses.POST,
+            baracoda_url,
+            body=json.dumps(
+                {"barcodes_group": {"barcodes": ["123", "789", "456", "abc", "def", "hij", "klm", "nop", "qrs"]}}
+            ),
+            status=HTTPStatus.CREATED,
+        )
+
+        mocked_responses.add(
+            responses.POST,
+            baracoda_url2,
+            body=json.dumps({"barcodes_group": {"barcodes": ["tuv"]}}),
+            status=HTTPStatus.CREATED,
+        )
+
+        add_cog_barcodes_from_different_centres(samples)
+
+        for idx, sample in enumerate(samples):
+            assert FIELD_COG_BARCODE in sample.keys()
+            assert sample[FIELD_COG_BARCODE] == cog_barcodes[idx]
+
+
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
     with app.app_context():
         samples, _ = samples
+
+        # we're testing samples from a single centre
+        samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+
         baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
@@ -130,6 +182,10 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
 def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_responses):
     with app.app_context():
         samples, _ = samples
+
+        # we're testing samples from a single centre
+        samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+
         baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
@@ -156,6 +212,10 @@ def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_respo
 def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_responses):
     with app.app_context():
         samples, _ = samples
+
+        # we're testing samples from a single centre
+        samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+
         baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
@@ -182,6 +242,10 @@ def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_
 def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centres, samples, mocked_responses):
     with app.app_context():
         samples, _ = samples
+
+        # we're testing samples from a single centre
+        samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+
         baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
@@ -595,6 +659,7 @@ def test_check_matching_sample_numbers_returns_true_match(app, samples):
         DartRow("DN1111", "A07", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN1111", "A08", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN1111", "A09", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow("DN1111", "A10", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
         DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
     ]

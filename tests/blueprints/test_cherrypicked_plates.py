@@ -25,7 +25,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
     source_plates,
 ):
     with patch(
-        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes",
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
         return_value="TC1",
     ):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
@@ -94,7 +94,10 @@ def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
 def test_get_cherrypicked_plates_endpoint_ss_failure(
     app, client, dart_samples, samples, mocked_responses, source_plates
 ):
-    with patch("lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes", return_value="TC1"):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
+        return_value="TC1",
+    ):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
         barcode = "des_plate_1"
@@ -117,8 +120,14 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
 def test_get_cherrypicked_plates_mlwh_update_failure(
     app, client, dart_samples, samples, mocked_responses, source_plates
 ):
-    with patch("lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes", return_value="TC1"):
-        with patch("lighthouse.blueprints.cherrypicked_plates.update_mlwh_with_cog_uk_ids", side_effect=Exception()):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
+        return_value="TC1",
+    ):
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.update_mlwh_with_cog_uk_ids",
+            side_effect=Exception(),
+        ):
             ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
             body = {"barcode": "plate_1"}
 
@@ -135,12 +144,27 @@ def test_get_cherrypicked_plates_mlwh_update_failure(
             )
 
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+            assert response.json == {
+                "errors": [
+                    (
+                        "Failed to update MLWH with COG UK ids. The samples should have been "
+                        "successfully inserted into Sequencescape."
+                    )
+                ]
+            }
+
             assert response.json == {"errors": [ERROR_UPDATE_MLWH_WITH_COG_UK_IDS]}
 
 
 def test_post_plates_endpoint_mismatched_sample_numbers(app, client, dart_samples, samples):
-    with patch("lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes", return_value="TC1"):
-        with patch("lighthouse.blueprints.cherrypicked_plates.check_matching_sample_numbers", return_value=False):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
+        return_value="TC1",
+    ):
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.check_matching_sample_numbers",
+            return_value=False,
+        ):
             barcode = "des_plate_1"
             response = client.get(
                 f"/cherrypicked-plates/create?barcode={barcode}&robot=BKRB0001&user_id=test",
@@ -163,8 +187,14 @@ def test_post_cherrypicked_plates_endpoint_missing_dart_data(app, client):
 
 
 def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(app, client, dart_samples, samples):
-    with patch("lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes", return_value="TC1"):
-        with patch("lighthouse.blueprints.cherrypicked_plates.get_source_plates_for_samples", return_value=[]):
+    with patch(
+        "lighthouse.blueprints.cherrypicked_plates.add_cog_barcodes_from_different_centres",
+        return_value="TC1",
+    ):
+        with patch(
+            "lighthouse.blueprints.cherrypicked_plates.get_source_plates_for_samples",
+            return_value=[],
+        ):
             barcode = "des_plate_1"
             response = client.get(
                 f"/cherrypicked-plates/create?barcode={barcode}&robot=BKRB0001&user_id=test",

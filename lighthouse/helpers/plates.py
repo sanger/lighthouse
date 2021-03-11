@@ -67,8 +67,29 @@ logger = logging.getLogger(__name__)
 # TODO - Refactor:
 # * move db calls (MLWH and Mongo) to separate files
 # * consolidate small methods into larger ones if the small methods are not re-used elsewhere
-# * make private methods obviously so, and don't explicity test them
+# * make private methods obviously so, and don't explicitly test them
 # On refactoring be careful to heed the WARNs in the code: not losing distributed functionality
+
+
+def classify_samples_by_centre(samples: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
+    classified_samples = {}  # type: ignore
+    for sample in samples:
+        centre_name = sample[FIELD_SOURCE]
+        if centre_name in classified_samples:
+            classified_samples[centre_name].append(sample)
+        else:
+            classified_samples[centre_name] = [sample]
+    return classified_samples
+
+
+def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[str]:
+    # Divide samples in centres and call add_cog_barcodes for each group
+    classified_samples = classify_samples_by_centre(samples)
+
+    for centre_name in classified_samples:
+        add_cog_barcodes(classified_samples[centre_name])
+
+    return list(classified_samples.keys())
 
 
 def add_cog_barcodes(samples):
@@ -107,7 +128,6 @@ def add_cog_barcodes(samples):
     if not success_operation and except_obj is not None:
         raise except_obj
 
-    # return centre prefix
     # TODO: I didn't know how else to get centre prefix?
     return centre_prefix
 
