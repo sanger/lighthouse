@@ -13,7 +13,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
 
 jobs:
-  build_and_test:
+  build_test_push:
     runs-on: ubuntu-18.04
     services:
       mongodb:
@@ -46,18 +46,21 @@ jobs:
         run: >-
           docker run
           --network host
+          --env EVE_SETTINGS=test.py
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           pipenv run python setup_sqlserver_test_db.py
       - name: Setup the test MLWH and Events databases
         run: >-
           docker run
           --network host
+          --env EVE_SETTINGS=test.py
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           pipenv run python setup_test_db.py
       - name: Run tests against the image
         run: >-
           docker run
           --network host
+          --env EVE_SETTINGS=test.py
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           pipenv run python -m  pytest -vsx
       - name: Login to registry

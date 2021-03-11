@@ -1,5 +1,5 @@
 # Checks that the .release_version file has been updated
-name: Check release bump
+name: Check release version bump
 
 on:
   pull_request:
@@ -20,9 +20,9 @@ jobs:
           myToken: ${{ github.token }}
           view_top: 1
 
-      - name: Compare release names
+      - name: Compare releases
         run: >-
-          if [ "${{ steps.last_release.outputs.tag_name }}" = "$(printf '%s\n' $(cat .release-version)_develop)" ] ||
-          [ "${{ steps.last_release.outputs.tag_name }}" = "$(printf '%s\n' $(cat .release-version))" ]; then
+          if [ "${{ steps.last_release.outputs.tag_name }}" = "$(printf 'v%s-develop\n' $(cat .release_version))" ] ||
+          [ "${{ steps.last_release.outputs.tag_name }}" = "$(printf 'v%s\n' $(cat .release_version))" ]; then
             exit 1;
           fi
