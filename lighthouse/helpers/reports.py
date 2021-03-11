@@ -18,9 +18,16 @@ from flask import current_app as app
 from pandas import DataFrame
 from pymongo.collection import Collection
 
-from lighthouse.constants.aggregation_stages import STAGES_FIT_TO_PICK_SAMPLES
 from lighthouse.constants.events import EVENT_CHERRYPICK_LAYOUT_SET, PLATE_EVENT_DESTINATION_CREATED
-from lighthouse.constants.fields import FIELD_COORDINATE, FIELD_DATE_TESTED, FIELD_PLATE_BARCODE, FIELD_ROOT_SAMPLE_ID
+from lighthouse.constants.fields import (
+    FIELD_COORDINATE,
+    FIELD_DATE_TESTED,
+    FIELD_FILTERED_POSITIVE,
+    FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
+)
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.labwhere import get_locations_from_labwhere
 
@@ -180,14 +187,40 @@ def get_fit_to_pick_samples(samples_collection: Collection) -> DataFrame:
     """
     logger.debug("Getting all fit to pick samples from a specific date")
 
+    # The projection defines which fields are present in the documents from the output of the mongo
+    # query
+    projection = {
+        "_id": False,
+        FIELD_SOURCE: True,
+        FIELD_PLATE_BARCODE: True,
+        FIELD_ROOT_SAMPLE_ID: True,
+        FIELD_RESULT: True,
+        FIELD_DATE_TESTED: True,
+        FIELD_COORDINATE: True,
+    }
+
+    # Stage for mongo aggregation pipeline
+    STAGE_MATCH_FILTERED_POSITIVE = {
+        "$match": {
+            # 1. We are only interested filtered positive samples
+            FIELD_FILTERED_POSITIVE: True,
+            # 2. We are only interested in documents which have a valid date
+            FIELD_DATE_TESTED: {"$exists": True, "$nin": [None, ""]},
+        }
+    }
+
     # The pipeline defines stages which execute in sequence
-    # 1. First run "fit to pick" stage
-    pipeline = STAGES_FIT_TO_PICK_SAMPLES
+    pipeline = [
+        # 1. First run the positive match stage
+        STAGE_MATCH_FILTERED_POSITIVE,
+        # 2. We only want documents which have valid dates that we can compare against
+        {"$match": {FIELD_DATE_TESTED: {"$type": "date", "$gte": report_query_window_start()}}},
+        # 3. Define which fields to have in the output documents
+        {"$project": projection},
+    ]
 
-    # 2. We only want documents which have valid dates that we can compare against
-    pipeline.append({"$match": {FIELD_DATE_TESTED: {"$type": "date", "$gte": report_query_window_start()}}})
-
-    # Perform an aggregation using the defined pipeline - this will run through the pipeline stages in sequence
+    # Perform an aggregation using the defined pipeline - this will run through the pipeline
+    # "stages" in sequence
     results = samples_collection.aggregate(pipeline)
 
     # converting to a dataframe to make it easy to join with data from LabWhere
