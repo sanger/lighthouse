@@ -37,11 +37,13 @@ jobs:
           SA_PASSWORD: MyS3cr3tPassw0rd
     steps:
       - uses: actions/checkout@v2
+
       - name: Build the Docker image
         run: >-
           docker build .
           --file Dockerfile
           --tag docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
+
       - name: Create SQL Server testing database
         run: >-
           docker run
@@ -50,6 +52,7 @@ jobs:
           --entrypoint ''
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           pipenv run python setup_sqlserver_test_db.py
+
       - name: Setup the test MLWH and Events databases
         run: >-
           docker run
@@ -58,6 +61,7 @@ jobs:
           --entrypoint ''
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
           pipenv run python setup_test_db.py
+
       - name: Run tests against the image
         run: >-
           docker run
@@ -65,7 +69,8 @@ jobs:
           --env EVE_SETTINGS=test.py
           --entrypoint ''
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-          pipenv run python -m  pytest -vsx
+          pipenv run python -m  pytest --no-cov -vsx
+
       - name: Login to registry
         if: ${{ github.event_name == 'push' }}
         run: >-
@@ -73,6 +78,7 @@ jobs:
           -u ${{ github.actor }}
           -p ${{ secrets.GITHUB_TOKEN }}
           docker.pkg.github.com
+
       - name: Publish image with image tag being either develop/master/<tag_name>
         if: ${{ github.event_name == 'push' }}
         run: >-
