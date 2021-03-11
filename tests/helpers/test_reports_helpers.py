@@ -352,8 +352,8 @@ def test_get_cherrypicked_samples_repeat_tests_sentinel_and_beckman(
 
 def test_get_fit_to_pick_samples(app, freezer, samples, priority_samples):
     with app.app_context():
-        samples = app.data.driver.db.samples
-        fit_to_pick_samples = get_fit_to_pick_samples(samples)
+        samples_collection = app.data.driver.db.samples
+        fit_to_pick_samples = get_fit_to_pick_samples(samples_collection)
 
         assert len(fit_to_pick_samples) == 7
         assert fit_to_pick_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "sample_001"
@@ -364,7 +364,7 @@ def test_get_fit_to_pick_samples(app, freezer, samples, priority_samples):
         assert fit_to_pick_samples.at[0, "plate and well"] == "plate_123:A1"
 
         assert fit_to_pick_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "sample_002"
-        assert fit_to_pick_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "sample_a"
+        assert fit_to_pick_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "sample_101"
 
 
 # ----- add_cherrypicked_column tests -----
