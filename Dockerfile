@@ -28,10 +28,10 @@ ENV PATH "$PATH:/home/lighthouse/.local/bin"
 WORKDIR /home/lighthouse/app
 
 # Create and set the ownership of the data directory - currently in the .dockerignore file
-RUN mkdir data && chown lighthouse:lighthouse data
+RUN mkdir -p data/reports && chown lighthouse:lighthouse data/reports
 
 # Use the data directory as a volume
-VOLUME data
+VOLUME data/reports
 
 # Run the rest of the commands as lighthouse user
 USER lighthouse
