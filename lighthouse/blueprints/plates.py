@@ -13,7 +13,7 @@ from lighthouse.constants.error_messages import (
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.plates import (
-    add_cog_barcodes,
+    add_cog_barcodes_from_different_centres,
     create_post_body,
     format_plate,
     send_to_ss_heron_plates,
@@ -53,7 +53,7 @@ def create_plate_from_barcode() -> FlaskResponse:
 
         # add COG barcodes to samples
         try:
-            centre_prefix = add_cog_barcodes(fit_to_pick_samples)
+            centre_prefix = add_cog_barcodes_from_different_centres(fit_to_pick_samples)
         except Exception as e:
             msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
             logger.error(msg)

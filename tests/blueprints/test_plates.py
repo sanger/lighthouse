@@ -11,7 +11,7 @@ from lighthouse.constants.error_messages import (
 
 
 def test_post_plates_endpoint_successful(app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples):
-    with patch("lighthouse.blueprints.plates.add_cog_barcodes", return_value="TC1"):
+    with patch("lighthouse.blueprints.plates.add_cog_barcodes_from_different_centres", return_value="TC1"):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
         body = {"barcode": "plate_123"}
@@ -52,7 +52,7 @@ def test_post_plates_endpoint_add_cog_barcodes_failed(
 
 
 def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses):
-    with patch("lighthouse.blueprints.plates.add_cog_barcodes", return_value="TC1"):
+    with patch("lighthouse.blueprints.plates.add_cog_barcodes_from_different_centres", return_value="TC1"):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
         body = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
@@ -65,7 +65,7 @@ def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses)
 
 
 def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses):
-    with patch("lighthouse.blueprints.plates.add_cog_barcodes", return_value="TC1"):
+    with patch("lighthouse.blueprints.plates.add_cog_barcodes_from_different_centres", return_value="TC1"):
         with patch("lighthouse.blueprints.plates.update_mlwh_with_cog_uk_ids", side_effect=Exception()):
             ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
