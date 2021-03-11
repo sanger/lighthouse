@@ -1,20 +1,22 @@
-import pytest
+from typing import Any, List, Tuple
 from unittest.mock import patch
-from lighthouse.messages.message import Message
+
+import pytest
+
+from lighthouse.constants.events import (
+    PLATE_EVENT_SOURCE_ALL_NEGATIVES,
+    PLATE_EVENT_SOURCE_COMPLETED,
+    PLATE_EVENT_SOURCE_NO_MAP_DATA,
+    PLATE_EVENT_SOURCE_NOT_RECOGNISED,
+)
 from lighthouse.helpers.plate_events import (
     construct_event_message,
-    construct_source_plate_not_recognised_message,
-    construct_source_plate_no_map_data_message,
     construct_source_plate_all_negatives_message,
     construct_source_plate_completed_message,
+    construct_source_plate_no_map_data_message,
+    construct_source_plate_not_recognised_message,
 )
-from lighthouse.constants import (
-    PLATE_EVENT_SOURCE_COMPLETED,
-    PLATE_EVENT_SOURCE_NOT_RECOGNISED,
-    PLATE_EVENT_SOURCE_NO_MAP_DATA,
-    PLATE_EVENT_SOURCE_ALL_NEGATIVES,
-)
-
+from lighthouse.messages.message import Message
 
 # ---------- test helpers ----------
 
@@ -46,7 +48,7 @@ def test_construct_event_message_source_complete():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_completed_message"
     ) as mock_construct_source_completed_message:
-        test_return_value = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
         mock_construct_source_completed_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
@@ -60,7 +62,7 @@ def test_construct_event_message_source_not_recognised():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_not_recognised_message"
     ) as mock_construct_source_not_recognised_message:
-        test_return_value = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
         mock_construct_source_not_recognised_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
@@ -74,7 +76,7 @@ def test_construct_event_message_source_no_map_data():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_no_map_data_message"
     ) as mock_construct_source_no_map_data_message:
-        test_return_value = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
         mock_construct_source_no_map_data_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
@@ -88,7 +90,7 @@ def test_construct_event_message_source_all_negatives():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_all_negatives_message"
     ) as mock_construct_source_all_negatives_message:
-        test_return_value = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
         mock_construct_source_all_negatives_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
@@ -137,7 +139,7 @@ def test_construct_source_plate_not_recognised_message_errors_with_failure_getti
     mock_robot_helpers,
 ):
     mock_get_uuid, _ = mock_robot_helpers
-    mock_get_uuid.side_effect = Exception("Boom!")
+    mock_get_uuid.side_effect = Exception()
     test_params = {"user_id": "test_user", "robot": "12345"}
     errors, message = construct_source_plate_not_recognised_message(test_params)
 
@@ -159,9 +161,7 @@ def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid
     assert message is None
 
 
-def test_construct_source_plate_not_recognised_message_creates_expected_message(
-    app, mock_robot_helpers
-):
+def test_construct_source_plate_not_recognised_message_creates_expected_message(app, mock_robot_helpers):
     _, mock_construct = mock_robot_helpers
     test_robot_subject = {"test robot": "this is a robot"}
     mock_construct.return_value = test_robot_subject
@@ -244,7 +244,7 @@ def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_
     mock_robot_helpers,
 ):
     mock_get_uuid, _ = mock_robot_helpers
-    mock_get_uuid.side_effect = Exception("Boom!")
+    mock_get_uuid.side_effect = Exception()
     test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
     errors, message = construct_source_plate_no_map_data_message(test_params)
 
@@ -357,7 +357,7 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
     mock_robot_helpers,
 ):
     mock_get_uuid, _ = mock_robot_helpers
-    mock_get_uuid.side_effect = Exception("Boom!")
+    mock_get_uuid.side_effect = Exception()
     test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
     errors, message = construct_source_plate_all_negatives_message(test_params)
 
@@ -380,7 +380,7 @@ def test_construct_source_plate_all_negatives_message_errors_without_robot_uuid(
 def test_construct_source_plate_all_negatives_message_errors_with_failure_getting_plate_uuid(
     app, mock_robot_helpers, mock_get_source_plate_uuid
 ):
-    mock_get_source_plate_uuid.side_effect = Exception("Boom!")
+    mock_get_source_plate_uuid.side_effect = Exception()
     with app.app_context():
         test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
         errors, message = construct_source_plate_all_negatives_message(test_params)
@@ -414,7 +414,7 @@ def test_construct_source_plate_all_negatives_message_errors_with_failure_gettin
         ):
             with patch(
                 "lighthouse.helpers.plate_events.get_positive_samples_in_source_plate",
-                side_effect=Exception("Boom!"),
+                side_effect=Exception(),
             ):
                 test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
                 errors, message = construct_source_plate_all_negatives_message(test_params)
@@ -555,7 +555,7 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_ro
     mock_robot_helpers,
 ):
     mock_get_uuid, _ = mock_robot_helpers
-    mock_get_uuid.side_effect = Exception("Boom!")
+    mock_get_uuid.side_effect = Exception()
     test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
     errors, message = construct_source_plate_completed_message(test_params)
 
@@ -578,7 +578,7 @@ def test_construct_source_plate_completed_message_errors_without_robot_uuid(mock
 def test_construct_source_plate_completed_message_errors_with_failure_getting_plate_uuid(
     app, mock_robot_helpers, mock_get_source_plate_uuid
 ):
-    mock_get_source_plate_uuid.side_effect = Exception("Boom!")
+    mock_get_source_plate_uuid.side_effect = Exception()
     with app.app_context():
         test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
         errors, message = construct_source_plate_completed_message(test_params)
@@ -613,7 +613,7 @@ def test_construct_source_plate_completed_message_errors_with_failure_getting_sa
         ):
             with patch(
                 "lighthouse.helpers.plate_events.get_positive_samples_in_source_plate",
-                side_effect=Exception("Boom!"),
+                side_effect=Exception(),
             ):
                 test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
                 errors, message = construct_source_plate_completed_message(test_params)

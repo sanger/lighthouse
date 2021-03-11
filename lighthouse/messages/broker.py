@@ -1,7 +1,9 @@
-import pika
 import logging
-from lighthouse.messages.message import Message
+
+import pika
 from flask import current_app as app
+
+from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +34,7 @@ class Broker:
         host = app.config["RMQ_HOST"]
         logger.debug(f"Creating messaging connection to '{host}'")
         credentials = pika.PlainCredentials(app.config["RMQ_USERNAME"], app.config["RMQ_PASSWORD"])
-        parameters = pika.ConnectionParameters(
-            host, app.config["RMQ_PORT"], app.config["RMQ_VHOST"], credentials
-        )
+        parameters = pika.ConnectionParameters(host, app.config["RMQ_PORT"], app.config["RMQ_VHOST"], credentials)
         self.connection = pika.BlockingConnection(parameters)
 
     def __open_channel(self) -> None:

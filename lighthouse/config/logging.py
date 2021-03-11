@@ -5,12 +5,24 @@ LOGGING: Dict[str, Any] = {
     "disable_existing_loggers": False,
     "formatters": {
         "colored": {
+            "style": "{",
             "()": "colorlog.ColoredFormatter",
-            "format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(log_color)s%(levelname)-5s %(message)s",  # noqa: E501
+            "format": "{asctime:<15} {name:<45}:{lineno:<3} {log_color}{levelname:<7} {message}",
+        },
+        "colored_dev": {
+            "style": "{",
+            "()": "colorlog.ColoredFormatter",
+            "format": "{asctime:<15} {relative_path_and_lineno:<50} {log_color}{levelname:<7} {message}",
         },
         "verbose": {
-            "format": "%(asctime)-15s %(name)-30s:%(lineno)-3s %(levelname)-5s %(message)s"
+            "style": "{",
+            "format": "{asctime:<15} {name:<45}:{lineno:<3} {levelname:<7} {message}",
         },
+    },
+    "filters": {
+        "package_path": {
+            "()": "lighthouse.utils.PackagePathFilter",
+        }
     },
     "handlers": {
         "colored_stream": {
@@ -18,7 +30,17 @@ LOGGING: Dict[str, Any] = {
             "class": "colorlog.StreamHandler",
             "formatter": "colored",
         },
-        "console": {"level": "INFO", "class": "logging.StreamHandler", "formatter": "verbose"},
+        "colored_stream_dev": {
+            "level": "DEBUG",
+            "class": "colorlog.StreamHandler",
+            "formatter": "colored_dev",
+            "filters": ["package_path"],
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
         "slack": {
             "level": "ERROR",
             "class": "lighthouse.utils.SlackHandler",
@@ -28,6 +50,10 @@ LOGGING: Dict[str, Any] = {
         },
     },
     "loggers": {
-        "lighthouse": {"handlers": ["console", "slack"], "level": "INFO", "propagate": True}
+        "lighthouse": {
+            "handlers": ["console", "slack"],
+            "level": "INFO",
+            "propagate": True,
+        }
     },
 }

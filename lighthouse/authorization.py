@@ -1,16 +1,7 @@
-from flask import request, current_app
-from eve.auth import BasicAuth  # type: ignore
+from eve.auth import TokenAuth
+from flask import current_app
 
 
-class APIKeyAuth(BasicAuth):
-    def check_auth(self, headers):
-        api_key = headers.get("x-lighthouse-client")
-        if api_key:
-            return api_key == current_app.config["LIGHTHOUSE_API_KEY"]
-        return False
-
-    def authorized(self, allowed_roles, resource, method):
-        if (resource == "samples_declarations") and (method == "POST"):
-            return self.check_auth(request.headers)
-        else:
-            return True
+class APITokenAuth(TokenAuth):
+    def check_auth(self, token, allowed_roles, resource, method):
+        return token == current_app.config["API_TOKEN"]

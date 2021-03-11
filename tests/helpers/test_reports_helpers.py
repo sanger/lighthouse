@@ -5,7 +5,8 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
-from lighthouse.constants import (
+
+from lighthouse.constants.fields import (
     FIELD_COORDINATE,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
@@ -15,11 +16,10 @@ from lighthouse.constants import (
 from lighthouse.helpers.reports import (
     add_cherrypicked_column,
     delete_reports,
-    get_all_positive_samples,
     get_cherrypicked_samples,
     get_distinct_plate_barcodes,
+    get_fit_to_pick_samples,
     get_new_report_name_and_path,
-    join_samples_declarations,
     report_query_window_start,
     unpad_coordinate,
 )
@@ -31,9 +31,9 @@ def test_get_new_report_name_and_path(app, freezer):
     report_date = datetime.now().strftime("%y%m%d_%H%M")
 
     with app.app_context():
-        report_name, report_path = get_new_report_name_and_path()
+        report_name, _ = get_new_report_name_and_path()
 
-        assert report_name == f"{report_date}_positives_with_locations.xlsx"
+        assert report_name == f"{report_date}_fit_to_pick_with_locations.xlsx"
 
 
 # ----- unpad_coordinate tests -----
@@ -66,8 +66,8 @@ def test_delete_reports(app, freezer):
         "200716_1345_positives_with_locations.xlsx",
         "200716_1618_positives_with_locations.xlsx",
         "200716_1640_positives_with_locations.xlsx",
-        "200716_1641_positives_with_locations.xlsx",
-        "200716_1642_positives_with_locations.xlsx",
+        "200716_1641_fit_to_pick_with_locations.xlsx",
+        "200716_1642_fit_to_pick_with_locations.xlsx",
     ]
 
     for filename in filenames:
@@ -127,9 +127,7 @@ def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
         pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Sentinel query resp.
         pd.DataFrame([]),  # Beckman query response
     ]
-    expected = pd.DataFrame(
-        ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
-    )
+    expected = pd.DataFrame(["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2])
 
     samples = ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005"]
     plate_barcodes = ["123", "456"]
@@ -149,9 +147,7 @@ def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
 # - Only the Sentinel queries return matches (No Beckman)
 # - Chunking: multiple queries are made, with all matches contained in the sum of these queries
 # - Duplication of returned matches across different chunks: duplicates should be filtered out
-def test_get_cherrypicked_samples_repeat_tests_no_beckman(
-    app, freezer, mlwh_sentinel_cherrypicked, event_wh_data
-):
+def test_get_cherrypicked_samples_repeat_tests_no_beckman(app, freezer, mlwh_sentinel_cherrypicked, event_wh_data):
     # the following come from MLWH_SAMPLE_STOCK_RESOURCE in fixture_data
     root_sample_ids = ["root_1", "root_2", "root_1"]
     plate_barcodes = ["pb_1", "pb_2", "pb_3"]
@@ -214,9 +210,7 @@ def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
         pd.DataFrame([]),  # Sentinel query resp.
         pd.DataFrame(["MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0]),  # Beckman query resp.
     ]
-    expected = pd.DataFrame(
-        ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
-    )
+    expected = pd.DataFrame(["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2])
 
     samples = ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005"]
     plate_barcodes = ["123", "456"]
@@ -236,9 +230,7 @@ def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
 # - Only the Beckman queries return matches (No Sentinel)
 # - Chunking: multiple queries are made, with all matches contained in the sum of these queries
 # - Duplication of returned matches across different chunks: duplicates should be filtered out
-def test_get_cherrypicked_samples_repeat_tests_no_sentinel(
-    app, freezer, mlwh_beckman_cherrypicked, event_wh_data
-):
+def test_get_cherrypicked_samples_repeat_tests_no_sentinel(app, freezer, mlwh_beckman_cherrypicked, event_wh_data):
     # the following come from MLWH_SAMPLE_LIGHTHOUSE_SAMPLE in fixture_data
     root_sample_ids = ["root_4", "root_5", "root_4"]
     plate_barcodes = ["pb_4", "pb_5", "pb_6"]
@@ -264,9 +256,7 @@ def test_get_cherrypicked_samples_repeat_tests_no_sentinel(
 # - Duplication of returned matches across different workflows: duplicates should be filtered out
 def test_get_cherrypicked_samples_sentinel_and_beckman(app, freezer):
     expected = [
-        pd.DataFrame(
-            ["MCM001", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]
-        ),  # Sentinel query response
+        pd.DataFrame(["MCM001", "MCM006"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1]),  # Sentinel query response
         pd.DataFrame(
             ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
         ),  # Beckman query response
@@ -360,22 +350,21 @@ def test_get_cherrypicked_samples_repeat_tests_sentinel_and_beckman(
 # ----- get_all_positive_samples tests -----
 
 
-def test_get_all_positive_samples(app, freezer, samples):
-
+def test_get_fit_to_pick_samples(app, freezer, samples, priority_samples):
     with app.app_context():
-        samples = app.data.driver.db.samples
-        positive_samples = get_all_positive_samples(samples)
+        samples_collection = app.data.driver.db.samples
+        fit_to_pick_samples = get_fit_to_pick_samples(samples_collection)
 
-        assert len(positive_samples) == 3
-        assert positive_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "MCM001"
-        assert positive_samples.at[0, FIELD_RESULT] == "Positive"
-        assert positive_samples.at[0, FIELD_SOURCE] == "test1"
-        assert positive_samples.at[0, FIELD_PLATE_BARCODE] == "123"
-        assert positive_samples.at[0, FIELD_COORDINATE] == "A1"
-        assert positive_samples.at[0, "plate and well"] == "123:A1"
+        assert len(fit_to_pick_samples) == 7
+        assert fit_to_pick_samples.at[0, FIELD_ROOT_SAMPLE_ID] == "sample_001"
+        assert fit_to_pick_samples.at[0, FIELD_RESULT] == "Positive"
+        assert fit_to_pick_samples.at[0, FIELD_SOURCE] == "centre_1"
+        assert fit_to_pick_samples.at[0, FIELD_PLATE_BARCODE] == "plate_123"
+        assert fit_to_pick_samples.at[0, FIELD_COORDINATE] == "A1"
+        assert fit_to_pick_samples.at[0, "plate and well"] == "plate_123:A1"
 
-        assert positive_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "MCM005"
-        assert positive_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "MCM007"
+        assert fit_to_pick_samples.at[1, FIELD_ROOT_SAMPLE_ID] == "sample_002"
+        assert fit_to_pick_samples.at[2, FIELD_ROOT_SAMPLE_ID] == "sample_101"
 
 
 # ----- add_cherrypicked_column tests -----
@@ -583,35 +572,7 @@ def test_get_distinct_plate_barcodes(app, freezer, samples):
     with app.app_context():
         samples = app.data.driver.db.samples
 
-        assert get_distinct_plate_barcodes(samples)[0] == "123"
-
-
-# ----- join_samples_declarations tests -----
-
-
-def test_join_samples_declarations(app, freezer, samples_declarations, samples_no_declaration):
-
-    with app.app_context():
-        samples = app.data.driver.db.samples
-        positive_samples = get_all_positive_samples(samples)
-        joined = join_samples_declarations(positive_samples)
-
-        assert joined.at[1, FIELD_ROOT_SAMPLE_ID] == "MCM010"
-        assert joined.at[1, "Value In Sequencing"] == "Unknown"
-
-
-def test_join_samples_declarations_empty_collection(app, freezer, samples_no_declaration):
-    # samples_declaration collection is empty because we are not passing in the fixture
-
-    with app.app_context():
-        samples = app.data.driver.db.samples
-        positive_samples = get_all_positive_samples(samples)
-        joined = join_samples_declarations(positive_samples)
-
-        assert np.array_equal(positive_samples.to_numpy(), joined.to_numpy())
-
-
-# ----- misc tests -----
+        assert get_distinct_plate_barcodes(samples)[0] == "plate_123"
 
 
 def test_report_query_window_start(app):

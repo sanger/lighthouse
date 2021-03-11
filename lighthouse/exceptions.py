@@ -65,7 +65,7 @@ class DataError(Error):
 
 
 class ReportCreationError(Error):
-    """Raised when an error occured while trying to generate the positive samples report."""
+    """Raised when an error occurred while trying to generate the fit to pick samples report."""
 
     def __init__(self, message=None):
         self.message = message
@@ -77,3 +77,7 @@ class ReportCreationError(Error):
             return f"ReportCreationError: {self.message}"
         else:
             return f"ReportCreationError: {default_message}"
+
+
+class UnmatchedSampleError(Error):
+    pass
