@@ -39,7 +39,7 @@ COPY --chown=lighthouse Pipfile.lock ./
 RUN pipenv sync --dev
 
 # Copy all the source to the image
-COPY . .
+COPY --chown=lighthouse . .
 
 # https://docs.docker.com/engine/reference/builder/#healthcheck
 HEALTHCHECK --interval=1m --timeout=3s \
