@@ -18,17 +18,25 @@ RUN apt-get update && ACCEPT_EULA=Y apt-get install -y \
     msodbcsql17 \
     && rm -rf /var/lib/apt/lists/*
 
-# Add a non-root user and update the PATH for the remaining build process and in .profile for bash
+# Add a non-root user and update the PATH for the remaining build process
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
 RUN useradd --create-home lighthouse
-USER lighthouse
 ENV PATH "$PATH:/home/lighthouse/.local/bin"
-
-RUN pip install --user pipenv
 
 # Change the working directory for all proceeding operations
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#workdir
 WORKDIR /home/lighthouse/app
+
+# Create and set the ownership of the data directory - currently in the .dockerignore file
+RUN mkdir data && chown lighthouse:lighthouse data
+
+# Use the data directory as a volume
+VOLUME data
+
+# Run the rest of the commands as lighthouse user
+USER lighthouse
+
+RUN pip install --user pipenv
 
 # "items (files, directories) that do not require ADD’s tar auto-extraction capability, you should always use COPY."
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#add-or-copy
