@@ -35,9 +35,8 @@ WORKDIR /home/lighthouse/app
 COPY --chown=lighthouse Pipfile ./
 COPY --chown=lighthouse Pipfile.lock ./
 
-# install the required python packages depending on the purpose of the image
-COPY --chown=lighthouse pipenv_install.sh ./pipenv_install.sh
-RUN chmod u+x pipenv_install.sh && ./pipenv_install.sh
+# Install the required python packages
+RUN pipenv sync --dev
 
 # Copy all the source to the image
 COPY . .
