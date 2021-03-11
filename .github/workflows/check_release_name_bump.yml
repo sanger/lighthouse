@@ -1,3 +1,4 @@
+# Checks that the .release_version file has been updated
 name: Check release bump
 
 on:
@@ -8,20 +9,20 @@ on:
 
 jobs:
   check:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: get latest-release
-      id: last_release
-      uses: InsonusK/get-latest-release@v1.0.1
-      with:
-        myToken: ${{ github.token }}
-        view_top: 1
-    
-    - name: Compare release names
-      run: |
-        if [ "${{ steps.last_release.outputs.tag_name }}" = "$(printf '%s\n' $(cat .release-version)_develop)" ] ||
-        [ "${{ steps.last_release.outputs.tag_name }}" = "$(printf '%s\n' $(cat .release-version))" ]; then exit 1; fi
+      - name: Get latest release
+        id: last_release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+          view_top: 1
+
+      - name: Compare release names
+        run: >-
+          if [ "${{ steps.last_release.outputs.tag_name }}" = "$(printf '%s\n' $(cat .release-version)_develop)" ] ||
+          [ "${{ steps.last_release.outputs.tag_name }}" = "$(printf '%s\n' $(cat .release-version))" ]; then
+            exit 1;
+          fi

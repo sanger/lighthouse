@@ -1,6 +1,6 @@
 # flake8: noqa
 import lighthouse.config.test as config
-from lighthouse.helpers.mysql_db import create_mysql_connection_engine
+from lighthouse.helpers.mysql import create_mysql_connection_engine
 
 # Set up a basic MLWH db for testing
 """Drop and recreate required tables."""

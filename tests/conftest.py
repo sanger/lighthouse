@@ -1,43 +1,36 @@
 import copy
-import json
 import os
 from http import HTTPStatus
 
 import pytest
 import responses
-from lighthouse import create_app
-from lighthouse.constants import PLATE_EVENT_SOURCE_ALL_NEGATIVES, PLATE_EVENT_SOURCE_COMPLETED
-from lighthouse.helpers.dart_db import create_dart_connection, load_sql_server_script
-from lighthouse.helpers.mysql_db import create_mysql_connection_engine, get_table
-from lighthouse.messages.message import Message
 
-from .data.fixture_data import (
-    CENTRES,
+from lighthouse import create_app
+from lighthouse.constants.events import PLATE_EVENT_SOURCE_ALL_NEGATIVES, PLATE_EVENT_SOURCE_COMPLETED
+from lighthouse.constants.fields import FIELD_SAMPLE_ID
+from lighthouse.db.dart import load_sql_server_script
+from lighthouse.helpers.dart import create_dart_connection
+from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
+from lighthouse.messages.message import Message
+from tests.fixtures.data.centres import CENTRES
+from tests.fixtures.data.dart import DART_MONGO_MERGED_SAMPLES
+from tests.fixtures.data.event_wh import EVENT_WH_DATA
+from tests.fixtures.data.mlwh import (
     COG_UK_IDS,
-    DART_MONGO_MERGED_SAMPLES,
-    EVENT_WH_DATA,
-    LOTS_OF_SAMPLES,
-    LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD,
     MLWH_LH_SAMPLES,
     MLWH_LH_SAMPLES_MULTIPLE,
     MLWH_SAMPLE_LIGHTHOUSE_SAMPLE,
     MLWH_SAMPLE_STOCK_RESOURCE,
-    MULTIPLE_ERRORS_SAMPLES_DECLARATIONS,
-    SAMPLES,
-    SAMPLES_DECLARATIONS,
-    SAMPLES_DIFFERENT_PLATES,
     SAMPLES_FOR_MLWH_UPDATE,
-    SAMPLES_NO_DECLARATION,
-    SAMPLES_WITH_LAB_ID,
-    SAMPLES_WITH_UUIDS,
-    SOURCE_PLATES,
 )
+from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
+from tests.fixtures.data.samples import SAMPLES
+from tests.fixtures.data.source_plates import SOURCE_PLATES
 
 
 @pytest.fixture
 def app():
-    # set the 'EVE_SETTINGS' env variable to easily switch to the testing environment when creating
-    #   an app
+    # set the 'EVE_SETTINGS' env variable to easily switch to the testing environment when creating an app
     os.environ["EVE_SETTINGS"] = "test.py"
 
     app = create_app()
@@ -65,74 +58,13 @@ def centres(app):
 
 
 @pytest.fixture
-def empty_data_when_finish(app):
-    yield
-
-    with app.app_context():
-        mydb = app.data.driver.db
-        mydb.samples.delete_many({})
-        mydb.samples_declarations.delete_many({})
-        mydb.centres.delete_many({})
-
-
-@pytest.fixture
-def samples_declarations(app):
-    with app.app_context():
-        samples_declarations_collections = app.data.driver.db.samples_declarations
-        _ = samples_declarations_collections.insert_many(SAMPLES_DECLARATIONS)
-
-    yield copy.deepcopy(SAMPLES_DECLARATIONS)
-
-    # clear up after the fixture is used
-    with app.app_context():
-        samples_declarations_collections.delete_many({})
-
-
-@pytest.fixture
-def lots_of_samples_declarations_payload(app):
-    yield copy.deepcopy(LOTS_OF_SAMPLES_DECLARATIONS_PAYLOAD)
-
-
-@pytest.fixture
-def multiple_errors_samples_declarations_payload(app):
-    yield copy.deepcopy(MULTIPLE_ERRORS_SAMPLES_DECLARATIONS)
-
-
-@pytest.fixture
-def lots_of_samples(app):
-    with app.app_context():
-        samples_collections = app.data.driver.db.samples
-        _ = samples_collections.insert_many(LOTS_OF_SAMPLES)
-
-    yield copy.deepcopy(LOTS_OF_SAMPLES)
-
-    # clear up after the fixture is used
-    with app.app_context():
-        samples_collections.delete_many({})
-
-
-@pytest.fixture
 def samples(app):
     with app.app_context():
         samples_collection = app.data.driver.db.samples
-        _ = samples_collection.insert_many(SAMPLES)
+        inserted_samples = samples_collection.insert_many(SAMPLES)
 
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SAMPLES)
-
-    # clear up after the fixture is used
-    with app.app_context():
-        samples_collection.delete_many({})
-
-
-@pytest.fixture
-def samples_different_plates(app):
-    with app.app_context():
-        samples_collection = app.data.driver.db.samples
-        _ = samples_collection.insert_many(SAMPLES_DIFFERENT_PLATES)
-
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SAMPLES_DIFFERENT_PLATES)
+    #  yield a copy of so that the test change it however it wants
+    yield copy.deepcopy(SAMPLES), inserted_samples
 
     # clear up after the fixture is used
     with app.app_context():
@@ -140,17 +72,26 @@ def samples_different_plates(app):
 
 
 @pytest.fixture
-def samples_no_declaration(app):
-    with app.app_context():
-        samples_collection = app.data.driver.db.samples
-        _ = samples_collection.insert_many(SAMPLES_NO_DECLARATION)
+def priority_samples(app, samples):
+    _, samples = samples
 
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SAMPLES_NO_DECLARATION)
+    # create a copy so that the test can change it however it needs
+    priority_samples = copy.deepcopy(PRIORITY_SAMPLES)
+
+    # update the priority samples with the _id of the samples inserted into mongo, currently only uses the number
+    #   of priority samples therefore PRIORITY_SAMPLES needs to be <= SAMPLES
+    for count, priority_sample in enumerate(priority_samples):
+        priority_sample[FIELD_SAMPLE_ID] = samples.inserted_ids[count]
+
+    with app.app_context():
+        priority_samples_collection = app.data.driver.db.priority_samples
+        _ = priority_samples_collection.insert_many(priority_samples)
+
+    yield priority_samples
 
     # clear up after the fixture is used
     with app.app_context():
-        samples_collection.delete_many({})
+        priority_samples_collection.delete_many({})
 
 
 @pytest.fixture
@@ -169,6 +110,7 @@ def source_plates(app):
 
 @pytest.fixture
 def mocked_responses():
+    """Easily mock responses from HTTP calls."""
     with responses.RequestsMock() as rsps:
         yield rsps
 
@@ -177,49 +119,17 @@ def mocked_responses():
 def labwhere_samples_simple(app, mocked_responses):
     labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode"
 
-    body = json.dumps([{"barcode": "123", "location_barcode": "4567"}])
-    mocked_responses.add(
-        responses.POST,
-        labwhere_url,
-        body=body,
-        status=HTTPStatus.OK,
-    )
+    body = [
+        {
+            "barcode": "plate_123",
+            "location_barcode": "location_123",
+        }
+    ]
+    mocked_responses.add(responses.POST, labwhere_url, json=body, status=HTTPStatus.OK)
 
 
 @pytest.fixture
-def labwhere_samples_multiple(app, mocked_responses):
-    labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode"
-
-    body = json.dumps(
-        [
-            {"barcode": "123", "location_barcode": "4567"},
-            {"barcode": "456", "location_barcode": "1234"},
-            {"barcode": "789", "location_barcode": None},
-        ]
-    )
-    mocked_responses.add(
-        responses.POST,
-        labwhere_url,
-        body=body,
-        status=HTTPStatus.OK,
-    )
-
-
-@pytest.fixture
-def labwhere_samples_error(app, mocked_responses):
-    labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode"
-
-    body = json.dumps([])
-    mocked_responses.add(
-        responses.POST,
-        labwhere_url,
-        body=body,
-        status=HTTPStatus.INTERNAL_SERVER_ERROR,
-    )
-
-
-@pytest.fixture
-def samples_for_mlwh_update(cog_uk_ids):
+def samples_for_mlwh_update():
     return SAMPLES_FOR_MLWH_UPDATE
 
 
@@ -233,16 +143,12 @@ def cog_uk_ids():
 
 @pytest.fixture
 def mlwh_lh_samples(app, mlwh_sql_engine):
-    insert_into_mlwh(
-        app, MLWH_LH_SAMPLES, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
-    )
+    insert_into_mlwh(app, MLWH_LH_SAMPLES, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
 
 @pytest.fixture
 def mlwh_lh_samples_multiple(app, mlwh_sql_engine):
-    insert_into_mlwh(
-        app, MLWH_LH_SAMPLES_MULTIPLE, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"]
-    )
+    insert_into_mlwh(app, MLWH_LH_SAMPLES_MULTIPLE, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
 
 
 @pytest.fixture
@@ -328,7 +234,7 @@ def mlwh_sentinel_and_beckman_cherrypicked(app, mlwh_sql_engine):
         )
         insert_into_mlwh(
             app,
-            MLWH_SAMPLE_STOCK_RESOURCE["sample"] + MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"],
+            MLWH_SAMPLE_STOCK_RESOURCE["sample"] + MLWH_SAMPLE_LIGHTHOUSE_SAMPLE["sample"],  # type: ignore
             mlwh_sql_engine,
             app.config["MLWH_SAMPLE_TABLE"],
         )
@@ -374,9 +280,7 @@ def event_wh_data(app, event_wh_sql_engine):
         roles_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLES_TABLE"])
         events_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENTS_TABLE"])
         event_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_EVENT_TYPES_TABLE"])
-        subject_types_table = get_table(
-            event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"]
-        )
+        subject_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_SUBJECT_TYPES_TABLE"])
         role_types_table = get_table(event_wh_sql_engine, app.config["EVENT_WH_ROLE_TYPES_TABLE"])
 
         def delete_event_warehouse_data():
@@ -406,9 +310,7 @@ def event_wh_data(app, event_wh_sql_engine):
 
 @pytest.fixture
 def mlwh_sql_engine(app):
-    return create_mysql_connection_engine(
-        app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"]
-    )
+    return create_mysql_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"])
 
 
 @pytest.fixture
@@ -419,19 +321,13 @@ def dart_connection(app):
 @pytest.fixture
 def dart_schema_create(app):
     with app.app_context():
-        load_sql_server_script(app, "tests/data/dart/schema.sql")
+        load_sql_server_script("tests/data/dart/schema.sql")
 
 
 @pytest.fixture
-def dart_seed_reset(app, dart_schema_create):
+def dart_samples(app, dart_schema_create):
     with app.app_context():
-        load_sql_server_script(app, "tests/data/dart/seed.sql")
-
-
-@pytest.fixture
-def dart_samples_for_bp_test(app, dart_schema_create):
-    with app.app_context():
-        load_sql_server_script(app, "tests/data/dart/seed_for_bp_test.sql")
+        load_sql_server_script("tests/data/dart/seed.sql")
 
 
 @pytest.fixture
@@ -440,38 +336,8 @@ def dart_mongo_merged_samples():
 
 
 @pytest.fixture
-def samples_with_lab_id(app):
-    with app.app_context():
-        samples_collection = app.data.driver.db.samples
-        _ = samples_collection.insert_many(SAMPLES_WITH_LAB_ID)
-
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SAMPLES)
-
-    # clear up after the fixture is used
-    with app.app_context():
-        samples_collection.delete_many({})
-
-
-@pytest.fixture
 def event_wh_sql_engine(app):
-    return create_mysql_connection_engine(
-        app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"]
-    )
-
-
-@pytest.fixture
-def samples_with_uuids(app):
-    with app.app_context():
-        samples_collection = app.data.driver.db.samples
-        _ = samples_collection.insert_many(SAMPLES_WITH_UUIDS)
-
-    #  yield a copy of that the test change it however it wants
-    yield copy.deepcopy(SAMPLES_WITH_UUIDS)
-
-    # clear up after the fixture is used
-    with app.app_context():
-        samples_collection.delete_many({})
+    return create_mysql_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["EVENTS_WH_DB"])
 
 
 @pytest.fixture

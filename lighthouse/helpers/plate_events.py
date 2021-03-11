@@ -3,7 +3,8 @@ from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from flask import current_app as app
-from lighthouse.constants import (
+
+from lighthouse.constants.events import (
     PLATE_EVENT_SOURCE_ALL_NEGATIVES,
     PLATE_EVENT_SOURCE_COMPLETED,
     PLATE_EVENT_SOURCE_NO_MAP_DATA,
@@ -16,17 +17,14 @@ from lighthouse.helpers.events import (
     get_message_timestamp,
     get_robot_uuid,
 )
-from lighthouse.helpers.mongo_db import get_positive_samples_in_source_plate, get_source_plate_uuid
+from lighthouse.helpers.mongo import get_positive_samples_in_source_plate, get_source_plate_uuid
 from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
 
 
-def construct_event_message(
-    event_type: str, params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
-    """Delegates to the appropriate event construction method;
-    otherwise returns with errors for unknown event type.
+def construct_event_message(event_type: str, params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
+    """Delegates to the appropriate event construction method; otherwise returns with errors for unknown event type.
 
     Arguments:
         event_type {str} -- The event type for which to construct a message.
@@ -36,6 +34,8 @@ def construct_event_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
+    logger.info(f"Constructing {event_type} message")
+
     if event_type == PLATE_EVENT_SOURCE_COMPLETED:
         return construct_source_plate_completed_message(params)
     elif event_type == PLATE_EVENT_SOURCE_NOT_RECOGNISED:
@@ -48,11 +48,8 @@ def construct_event_message(
         return [f"Unrecognised event type '{event_type}'"], None
 
 
-def construct_source_plate_completed_message(
-    params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
-    """Constructs a message representing a source plate complete event;
-    otherwise returns appropriate errors.
+def construct_source_plate_completed_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
+    """Constructs a message representing a source plate complete event; otherwise returns appropriate errors.
 
     Arguments:
         params {Dict[str, str]} -- All parameters of the plate event message request.
@@ -61,14 +58,10 @@ def construct_source_plate_completed_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return __construct_source_plate_with_samples_on_robot_message(
-        PLATE_EVENT_SOURCE_COMPLETED, params
-    )
+    return __construct_source_plate_with_samples_on_robot_message(PLATE_EVENT_SOURCE_COMPLETED, params)
 
 
-def construct_source_plate_not_recognised_message(
-    params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
+def construct_source_plate_not_recognised_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
     """Constructs a message representing a source plate not recognised event;
     otherwise returns appropriate errors.
 
@@ -84,8 +77,7 @@ def construct_source_plate_not_recognised_message(
         robot_serial_number = params.get("robot")
         if not user_id or not robot_serial_number:
             return [
-                "'user_id' and 'robot' are required to construct a "
-                f"{PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
+                "'user_id' and 'robot' are required to construct a {PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
             ], None
 
         robot_uuid = get_robot_uuid(robot_serial_number)
@@ -107,17 +99,15 @@ def construct_source_plate_not_recognised_message(
     except Exception as e:
         logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_NOT_RECOGNISED} message")
         logger.exception(e)
+
         return [
-            "An unexpected error occurred attempting to construct the "
-            f"{PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
+            f"An unexpected error occurred attempting to construct {PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
         ], None
 
 
-def construct_source_plate_no_map_data_message(
-    params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
-    """Constructs a message representing a source plate without plate map data event;
-    otherwise returns appropriate errors.
+def construct_source_plate_no_map_data_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
+    """Constructs a message representing a source plate without plate map data event; otherwise returns appropriate
+    errors.
 
     Arguments:
         params {Dict[str, str]} -- All parameters of the plate event message request.
@@ -146,9 +136,7 @@ def construct_source_plate_no_map_data_message(
                 "event_type": PLATE_EVENT_SOURCE_NO_MAP_DATA,
                 "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
-                "subjects": [
-                    construct_robot_message_subject(robot_serial_number, robot_uuid),
-                ],
+                "subjects": [construct_robot_message_subject(robot_serial_number, robot_uuid)],
                 "metadata": {"source_plate_barcode": barcode},
             },
             "lims": app.config["RMQ_LIMS_ID"],
@@ -157,18 +145,14 @@ def construct_source_plate_no_map_data_message(
     except Exception as e:
         logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_NO_MAP_DATA} message")
         logger.exception(e)
-        msg = (
-            "An unexpected error occurred attempting to construct the "
-            f"{PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
-        )
-        return [msg], None
+
+        return [
+            "An unexpected error occurred attempting to construct the {PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
+        ], None
 
 
-def construct_source_plate_all_negatives_message(
-    params: Dict[str, str]
-) -> Tuple[List[str], Optional[Message]]:
-    """Constructs a message representing a source plate without positives event;
-    otherwise returns appropriate errors.
+def construct_source_plate_all_negatives_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
+    """Constructs a message representing a source plate without positives event; otherwise returns appropriate errors.
 
     Arguments:
         params {Dict[str, str]} -- All parameters of the plate event message request.
@@ -177,9 +161,7 @@ def construct_source_plate_all_negatives_message(
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return __construct_source_plate_with_samples_on_robot_message(
-        PLATE_EVENT_SOURCE_ALL_NEGATIVES, params
-    )
+    return __construct_source_plate_with_samples_on_robot_message(PLATE_EVENT_SOURCE_ALL_NEGATIVES, params)
 
 
 # Private methods
@@ -188,8 +170,8 @@ def construct_source_plate_all_negatives_message(
 def __construct_source_plate_with_samples_on_robot_message(
     event_type: str, params: Dict[str, str]
 ) -> Tuple[List[str], Optional[Message]]:
-    """Constructs a default message representing a source plate with samples event on a robot;
-    otherwise returns appropriate errors.
+    """Constructs a default message representing a source plate with samples event on a robot; otherwise returns
+    appropriate errors.
 
     Arguments:
         event_type {str} -- The type of event to create.
@@ -203,11 +185,9 @@ def __construct_source_plate_with_samples_on_robot_message(
         barcode = params.get("barcode")
         user_id = params.get("user_id")
         robot_serial_number = params.get("robot")
+
         if not barcode or not user_id or not robot_serial_number:
-            return [
-                "'barcode', 'user_id' and 'robot' are required to construct a "
-                f"{event_type} event message"
-            ], None
+            return ["'barcode', 'user_id' and 'robot' are required to construct a " f"{event_type} event message"], None
 
         robot_uuid = get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
@@ -241,7 +221,5 @@ def __construct_source_plate_with_samples_on_robot_message(
     except Exception as e:
         logger.error(f"Failed to construct a {event_type} message")
         logger.exception(e)
-        return [
-            "An unexpected error occurred attempting to construct the "
-            f"{event_type} event message"
-        ], None
+
+        return ["An unexpected error occurred attempting to construct the {event_type} event message"], None

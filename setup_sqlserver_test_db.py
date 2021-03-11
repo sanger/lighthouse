@@ -1,5 +1,6 @@
-import pyodbc  # type: ignore
 import os
+
+import pyodbc
 
 LOCALHOST = os.environ.get("LOCALHOST", "localhost")
 

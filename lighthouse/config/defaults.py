@@ -1,61 +1,82 @@
 # flake8: noqa
 import os
-from typing import Dict
 
+from lighthouse.authorization import APITokenAuth
 from lighthouse.config.logging import *
-
-# If we're running in a container, then instead of localhost
-# we want host.docker.internal, you can specify this in the
-# .env file you use for docker. eg
-# LOCALHOST=host.docker.internal
-LOCALHOST = os.environ.get("LOCALHOST", "127.0.0.1")
+from lighthouse.config.schemas import PRIORITY_SAMPLES_SCHEMA
 
 ###
 # General config
 ###
-LIGHTHOUSE_API_KEY = "develop"
 REPORTS_DIR = "data/reports"
+REPORT_WINDOW_SIZE = 84  # The window size when generating the fit to pick samples report
+# If we're running in a container, then instead of localhost we want host.docker.internal, you can specify this in the
+# .env file you use for docker. eg: LOCALHOST=host.docker.internal
+LOCALHOST = os.environ.get("LOCALHOST", "127.0.0.1")
 DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
-X_DOMAINS = "*"
-REPORT_WINDOW_SIZE = 84  # The window size when generating the positive samples report
 
 ###
 # Eve config
 ###
-ALLOW_UNKNOWN = True
-DEBUG = True
 HATEOAS = True
+# CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which domains are allowed to perform
+#  CORS requests. Allowed values are: None, a list of domains, or '*' for a wide-open API.
+X_DOMAINS = "*"
 # We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
 # eg "2013-04-04T10:29:13"
 DATE_FORMAT = r"%Y-%m-%dT%H:%M:%S"
 
+RENDERERS = ["eve.render.JSONRenderer"]  # render all responses in JSON
 # allow requests to set ?max_results= to more than the default
 #  added for lighthouse-ui Imports page, to display all Imports in a table
 PAGINATION_LIMIT = 10000
-SAMPLES_DECLARATIONS_SCHEMA = {
-    "root_sample_id": {"type": "string", "required": True, "validation_errors": True},
-    "value_in_sequencing": {
-        "type": "string",
-        "allowed": ["Yes", "No", "Unknown"],
-        "required": True,
-    },
-    "declared_at": {
-        "type": "datetime",
-        "required": True,
-    },
-}
+
+# A list of HTTP methods supported at resource endpoints, open to public access even when Authentication and
+#   Authorization is enabled.
+PUBLIC_METHODS = ["GET"]
+PUBLIC_ITEM_METHODS = ["GET"]
 DOMAIN = {
-    "samples": {},
-    "imports": {},
-    "centres": {},
-    "samples_declarations": {
+    "samples": {"internal_resource": True},
+    "imports": {
+        # When True, this option will allow insertion of arbitrary, unknown fields to any API endpoint. Since most
+        #   endpoints are read-only, this will allow all the fields to be shown.
+        "allow_unknown": True
+    },
+    "centres": {"internal_resource": True},
+    "priority_samples": {
+        "authentication": APITokenAuth,
+        "item_title": "priority_sample",
         "resource_methods": ["GET", "POST"],
+        "item_methods": ["GET", "PATCH", "PUT"],
+        # If True, the patch document will be normalized according to schema. This means if a field is not included in
+        #   the patch body, it will be reset to the default value in its schema. If False, the field which is not
+        #   included in the patch body will be kept untouched.
+        #   https://docs.python-eve.org/en/stable/features.html#editing-a-document-patch
+        "normalize_on_patch": True,
         "bulk_enabled": True,
-        "schema": SAMPLES_DECLARATIONS_SCHEMA,
+        "schema": PRIORITY_SAMPLES_SCHEMA,
     },
     "schema": {},
 }
+# Improve pagination performance. When optimization is active no count operation, which can be slow on large
+#   collections, is performed on the database. This does have a few consequences. Firstly, no document count is returned.
+#   Secondly, HATEOAS is less accurate: no last page link is available, and next page link is always included, even on
+#   last page. On big collections, switching this feature on can greatly improve performance.#  no count operation, which
+#   can be slow on large collections, is performed on the database.
+OPTIMIZE_PAGINATION_FOR_SPEED = False
+# Enable the Operations Log: https://docs.python-eve.org/en/stable/features.html#oplog
+OPLOG = True
+
+###
+# mongo config (but consumed by Eve)
+###
+MONGO_OPTIONS = {"connect": True, "tz_aware": False}  # we are not interested in storing "aware" datetimes at present
+MONGO_HOST = f"{LOCALHOST}"
+MONGO_PORT = 27017
+MONGO_USERNAME = ""
+MONGO_PASSWORD = ""
+MONGO_DBNAME = ""
 
 ###
 # Baracoda config
@@ -67,9 +88,7 @@ BARACODA_RETRY_ATTEMPTS = 3
 # Labwhere config
 ###
 LABWHERE_URL = f"{LOCALHOST}:3010"
-LABWHERE_DESTROYED_BARCODE = os.environ.get(
-    "LABWHERE_DESTROYED_BARCODE", "lw-heron-destroyed-17338"
-)
+LABWHERE_DESTROYED_BARCODE = os.environ.get("LABWHERE_DESTROYED_BARCODE", "lw-heron-destroyed-17338")
 
 ###
 # Sequencescape config
@@ -107,6 +126,10 @@ EVENT_WH_ROLE_TYPES_TABLE = "role_types"
 # APScheduler config
 ###
 SCHEDULER_RUN = True
+SCHEDULER_TIMEZONE = (
+    "Europe/London"  # We need to define timezone because current flask_apscheduler does not load from TZ env
+)
+SCHEDULER_API_ENABLED = False
 JOBS = [
     {
         "id": "job1",
@@ -116,19 +139,6 @@ JOBS = [
         "hour": 2,
     }
 ]
-# We need to define timezone because current flask_apscheduler does not load from TZ env
-SCHEDULER_TIMEZONE = "Europe/London"
-SCHEDULER_API_ENABLED = False
-
-###
-# mongo config
-###
-MONGO_HOST = f"{LOCALHOST}"
-MONGO_PORT = 27017
-MONGO_USERNAME = ""
-MONGO_PASSWORD = ""
-MONGO_DBNAME = ""
-MONGO_QUERY_BLACKLIST = ["$where"]
 
 ###
 # DART config

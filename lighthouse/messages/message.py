@@ -15,7 +15,7 @@ class Message:
         """
         return json.dumps(self.message)
 
-    def event_type(self) -> str:
+    def event_type(self):
         """Return the event type.
 
         Returns a string representing the event type. Throws a KeyError if

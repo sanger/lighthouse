@@ -1,31 +1,29 @@
-from uuid import uuid4
-from unittest.mock import patch
 from datetime import datetime
+from unittest.mock import patch
+from uuid import uuid4
+
+from lighthouse.constants.fields import (
+    FIELD_LAB_ID,
+    FIELD_LH_SAMPLE_UUID,
+    FIELD_RESULT,
+    FIELD_RNA_ID,
+    FIELD_ROOT_SAMPLE_ID,
+)
 from lighthouse.helpers.events import (
-    get_routing_key,
     construct_destination_plate_message_subject,
-    get_robot_uuid,
-    construct_robot_message_subject,
     construct_mongo_sample_message_subject,
+    construct_robot_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
+    get_robot_uuid,
+    get_routing_key,
 )
-from lighthouse.constants import (
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_RNA_ID,
-    FIELD_LAB_ID,
-    FIELD_RESULT,
-    FIELD_LH_SAMPLE_UUID,
-)
-
 
 # ---------- tests helpers ----------
 
 
 def any_robot_info(app):
-    return next(
-        (serial_num, robot["uuid"]) for serial_num, robot in app.config["BECKMAN_ROBOTS"].items()
-    )
+    return next((serial_num, robot["uuid"]) for serial_num, robot in app.config["BECKMAN_ROBOTS"].items())
 
 
 # ---------- get_routing_key tests ----------
@@ -95,10 +93,7 @@ def test_construct_robot_message_subject(app):
         "uuid": test_robot_uuid,
     }
 
-    assert (
-        construct_robot_message_subject(test_robot_serial_number, test_robot_uuid)
-        == correct_subject
-    )
+    assert construct_robot_message_subject(test_robot_serial_number, test_robot_uuid) == correct_subject
 
 
 # ---------- construct_mongo_sample_message_subject tests ----------

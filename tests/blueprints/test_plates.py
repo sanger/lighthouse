@@ -1,157 +1,112 @@
-import json
 from http import HTTPStatus
 from unittest.mock import patch
 
 import responses
 
+from lighthouse.constants.error_messages import (
+    ERROR_ADD_COG_BARCODES,
+    ERROR_PLATES_CREATE,
+    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
+)
 
-def test_post_plates_endpoint_successful(app, client, samples, mocked_responses, mlwh_lh_samples):
-    with patch(
-        "lighthouse.blueprints.plates.add_cog_barcodes",
-        return_value="TS1",
-    ):
+
+def test_post_plates_endpoint_successful(app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples):
+    with patch("lighthouse.blueprints.plates.add_cog_barcodes", return_value="TC1"):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
-        body = json.dumps({"barcode": "123"})
-        mocked_responses.add(
-            responses.POST,
-            ss_url,
-            body=body,
-            status=HTTPStatus.OK,
-        )
+        body = {"barcode": "plate_123"}
+        mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.OK)
 
-        response = client.post(
-            "/plates/new",
-            data=json.dumps({"barcode": "123"}),
-            content_type="application/json",
-        )
+        response = client.post("/plates/new", json=body)
         assert response.status_code == HTTPStatus.OK
         assert response.json == {
-            "data": {"plate_barcode": "123", "centre": "TS1", "number_of_positives": 3}
+            "data": {"plate_barcode": "plate_123", "centre": "TC1", "count_fit_to_pick_samples": 4}
         }
 
 
 def test_post_plates_endpoint_no_barcode_in_request(app, client, samples):
-    response = client.post(
-        "/plates/new",
-        data=json.dumps({}),
-        content_type="application/json",
-    )
+    response = client.post("/plates/new", json={})
+
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {"errors": ["POST request needs 'barcode' in body"]}
 
 
-def test_post_plates_endpoint_no_positive_samples(app, client):
-    response = client.post(
-        "/plates/new",
-        data=json.dumps({"barcode": "123"}),
-        content_type="application/json",
-    )
+def test_post_plates_endpoint_no_fit_to_pick_samples(app, client):
+    response = client.post("/plates/new", json={"barcode": "qwerty"})
+
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": ["No samples for this barcode: 123"]}
+    assert response.json == {"errors": ["No fit to pick samples for this barcode: qwerty"]}
 
 
 def test_post_plates_endpoint_add_cog_barcodes_failed(
-    app, client, samples, centres, mocked_responses
+    app, client, samples, priority_samples, centres, mocked_responses
 ):
-    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TS1/new?count=3"
+    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=4"
 
-    mocked_responses.add(
-        responses.POST,
-        baracoda_url,
-        status=HTTPStatus.BAD_REQUEST,
-    )
+    mocked_responses.add(responses.POST, baracoda_url, status=HTTPStatus.BAD_REQUEST)
 
-    response = client.post(
-        "/plates/new",
-        data=json.dumps({"barcode": "123"}),
-        content_type="application/json",
-    )
+    response = client.post("/plates/new", json={"barcode": "plate_123"})
+
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": ["Failed to add COG barcodes to plate: 123"]}
+    assert response.json == {"errors": [f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} plate_123"]}
 
 
 def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses):
-    with patch(
-        "lighthouse.blueprints.plates.add_cog_barcodes",
-        return_value="TS1",
-    ):
+    with patch("lighthouse.blueprints.plates.add_cog_barcodes", return_value="TC1"):
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
-        body = json.dumps({"errors": ["The barcode '123' is not a recognised format."]})
-        mocked_responses.add(
-            responses.POST,
-            ss_url,
-            body=body,
-            status=HTTPStatus.UNPROCESSABLE_ENTITY,
-        )
+        body = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
+        mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.UNPROCESSABLE_ENTITY)
 
-        response = client.post(
-            "/plates/new",
-            data=json.dumps({"barcode": "123"}),
-            content_type="application/json",
-        )
+        response = client.post("/plates/new", json={"barcode": "plate_123"})
+
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-        assert response.json == {"errors": ["The barcode '123' is not a recognised format."]}
+        assert response.json == {"errors": ["The barcode 'plate_123' is not a recognised format."]}
 
 
 def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses):
-    with patch(
-        "lighthouse.blueprints.plates.add_cog_barcodes",
-        return_value="TS1",
-    ):
-        with patch(
-            "lighthouse.blueprints.plates.update_mlwh_with_cog_uk_ids",
-            side_effect=Exception("Boom!"),
-        ):
+    with patch("lighthouse.blueprints.plates.add_cog_barcodes", return_value="TC1"):
+        with patch("lighthouse.blueprints.plates.update_mlwh_with_cog_uk_ids", side_effect=Exception()):
             ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
-            body = json.dumps({"barcode": "123"})
-            mocked_responses.add(
-                responses.POST,
-                ss_url,
-                body=body,
-                status=HTTPStatus.OK,
-            )
+            body = {"barcode": "plate_123"}
+            mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.OK)
 
-            response = client.post(
-                "/plates/new",
-                data=json.dumps({"barcode": "123"}),
-                content_type="application/json",
-            )
+            response = client.post("/plates/new", json={"barcode": "plate_123"})
+
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert response.json == {
-                "errors": [
-                    (
-                        "Failed to update MLWH with COG UK ids. The samples should have been "
-                        "successfully inserted into Sequencescape."
-                    )
-                ]
-            }
+            assert response.json == {"errors": [ERROR_UPDATE_MLWH_WITH_COG_UK_IDS]}
 
 
-def test_get_plates_endpoint_successful(app, client, samples, mocked_responses):
-    response = client.get(
-        "/plates?barcodes[]=123&barcodes[]=456",
-        content_type="application/json",
-    )
+def test_get_plates_endpoint_successful(app, client, samples, priority_samples, mocked_responses):
+    response = client.get("/plates?barcodes[]=plate_123&barcodes[]=456", content_type="application/json")
+
     assert response.status_code == HTTPStatus.OK
     assert response.json == {
         "plates": [
-            {"plate_barcode": "123", "plate_map": True, "number_of_positives": 3},
-            {"plate_barcode": "456", "plate_map": False, "number_of_positives": None},
+            {
+                "plate_barcode": "plate_123",
+                "has_plate_map": True,
+                "count_fit_to_pick_samples": 4,
+                "count_filtered_positive": 3,
+                "count_must_sequence": 1,
+                "count_preferentially_sequence": 1,
+            },
+            {
+                "plate_barcode": "456",
+                "has_plate_map": False,
+                "count_fit_to_pick_samples": 0,
+                "count_filtered_positive": 0,
+                "count_must_sequence": 0,
+                "count_preferentially_sequence": 0,
+            },
         ]
     }
 
 
 def test_get_plates_endpoint_fail(app, client, samples, mocked_responses):
-    with patch(
-        "lighthouse.blueprints.plates.has_sample_data",
-        side_effect=Exception("Boom!"),
-    ):
-        response = client.get(
-            "/plates?barcodes[]=123&barcodes[]=456",
-            content_type="application/json",
-        )
+    with patch("lighthouse.helpers.plates.get_fit_to_pick_samples_and_counts", side_effect=Exception()):
+        response = client.get("/plates?barcodes[]=123&barcodes[]=456", content_type="application/json")
+
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert response.json == {"errors": ["Failed to lookup plates: Exception"]}

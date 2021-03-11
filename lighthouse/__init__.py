@@ -2,31 +2,21 @@ import logging
 import logging.config
 from http import HTTPStatus
 
-from eve import Eve  # type: ignore
-from flask_apscheduler import APScheduler  # type: ignore
-from lighthouse.authorization import APIKeyAuth
-from lighthouse.validators.samples_declarations import (
-    pre_samples_declarations_post_callback,
-    post_samples_declarations_post_callback,
-    SamplesDeclarationsValidator,
-)
+from eve import Eve
+from flask_apscheduler import APScheduler
+
+from lighthouse.validators.priority_samples import PrioritySamplesValidator
 
 scheduler = APScheduler()
 
 
 def create_app() -> Eve:
-    app = Eve(__name__, validator=SamplesDeclarationsValidator, auth=APIKeyAuth)
-    app.on_pre_POST_samples_declarations += pre_samples_declarations_post_callback
-    app.on_post_POST_samples_declarations += post_samples_declarations_post_callback
+    app = Eve(__name__, validator=PrioritySamplesValidator)
 
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])
 
-    from lighthouse.blueprints import plates
-    from lighthouse.blueprints import cherrypicked_plates
-    from lighthouse.blueprints import reports
-    from lighthouse.blueprints import plate_events
-    from lighthouse.blueprints import beckman
+    from lighthouse.blueprints import beckman, cherrypicked_plates, plate_events, plates, reports
 
     app.register_blueprint(plates.bp)
     app.register_blueprint(reports.bp)
