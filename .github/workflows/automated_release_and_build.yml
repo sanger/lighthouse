@@ -49,21 +49,21 @@ jobs:
           docker run
           --network host
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-          python setup_sqlserver_test_db.py
+          pipenv run python setup_sqlserver_test_db.py
 
       - name: Setup the test MLWH and Events databases
         run: >-
           docker run
           --network host
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-          python setup_test_db.py
+          pipenv run python setup_test_db.py
 
       - name: Run tests against the image
         run: >-
           docker run
           --network host
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-          python -m  pytest -vsx
+          pipenv run python -m pytest -vx
 
       - name: Set release tag
         # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
