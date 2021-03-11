@@ -27,8 +27,8 @@ ENV PATH "$PATH:/home/lighthouse/.local/bin"
 #   https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#workdir
 WORKDIR /home/lighthouse/app
 
-# Create and set the ownership of the data directory - currently in the .dockerignore file
-RUN mkdir -p data/reports && chown lighthouse:lighthouse data/reports
+# Create the data and reports directory - currently in the .dockerignore file
+RUN mkdir -pv data/reports && chown -R lighthouse:lighthouse data
 
 # Use the data directory as a volume
 VOLUME data/reports
