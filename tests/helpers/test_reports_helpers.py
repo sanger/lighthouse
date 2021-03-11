@@ -5,7 +5,6 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from lighthouse.constants.fields import (
     FIELD_COORDINATE,
@@ -59,7 +58,6 @@ def test_unpad_coordinate_B01010(app, freezer):
 # ----- delete_reports tests -----
 
 
-@pytest.mark.skip(reason="need to check permissions in container")
 def test_delete_reports(app, freezer):
 
     copies_of_reports_folder = "tests/data/reports_copies"
