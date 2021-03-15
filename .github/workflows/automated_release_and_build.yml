@@ -51,7 +51,7 @@ jobs:
           --env EVE_SETTINGS=test.py
           --entrypoint ''
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-          pipenv run python setup_sqlserver_test_db.py
+          python setup_sqlserver_test_db.py
 
       - name: Setup the test MLWH and Events databases
         run: >-
@@ -60,7 +60,7 @@ jobs:
           --env EVE_SETTINGS=test.py
           --entrypoint ''
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-          pipenv run python setup_test_db.py
+          python setup_test_db.py
 
       - name: Run tests against the image
         run: >-
@@ -69,7 +69,7 @@ jobs:
           --env EVE_SETTINGS=test.py
           --entrypoint ''
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-          pipenv run python -m pytest --no-cov -vx
+          python -m pytest --no-cov -vx
 
       - name: Set release tag
         # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable

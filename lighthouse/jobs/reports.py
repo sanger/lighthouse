@@ -53,7 +53,7 @@ def create_report() -> str:
 
     # Sheet 2 contains all fit to pick samples WITH location barcodes
     merged[merged.location_barcode.notnull()].to_excel(
-        writer, sheet_name="FIT TO PICK SAMPLES WITH LOCATION", columns=columns, index=False
+        writer, sheet_name="FIT TO PICK WITH LOCATION", columns=columns, index=False
     )
 
     # Convert the dataframe to an openpyxl Excel object
