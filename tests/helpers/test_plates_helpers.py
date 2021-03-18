@@ -60,7 +60,7 @@ from lighthouse.helpers.plates import (
     find_sample_matching_row,
     find_samples,
     find_source_plates,
-    get_centre_prefix,
+    get_centre_prefix_by_lab_id,
     get_source_plates_for_samples,
     get_unique_plate_barcodes,
     join_rows_with_samples,
@@ -140,7 +140,8 @@ def test_add_cog_barcodes_from_different_centres(app, centres, samples, mocked_r
             body=json.dumps({"barcodes_group": {"barcodes": ["tuv"]}}),
             status=HTTPStatus.CREATED,
         )
-
+        import pdb
+        pdb.set_trace()
         add_cog_barcodes_from_different_centres(samples)
 
         for idx, sample in enumerate(samples):
@@ -284,11 +285,11 @@ def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centr
         assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
 
 
-def test_centre_prefix(app, centres, mocked_responses):
+def test_get_centre_prefix_by_lab_id(app, centres, mocked_responses):
     with app.app_context():
-        assert get_centre_prefix("CENTRE_1") == "TC1"
-        assert get_centre_prefix("centre_2") == "TC2"
-        assert get_centre_prefix("CeNtRe_3") == "TC3"
+        assert get_centre_prefix_by_lab_id("lab_1") == "TC1"
+        assert get_centre_prefix_by_lab_id("lab_2") == "TC2"
+        assert get_centre_prefix_by_lab_id("lab_3") == "TC3"
 
 
 def test_create_post_body(app, samples):

@@ -74,7 +74,7 @@ logger = logging.getLogger(__name__)
 def classify_samples_by_centre(samples: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
     classified_samples = {}  # type: ignore
     for sample in samples:
-        centre_name = sample[FIELD_SOURCE]
+        centre_name = sample[FIELD_LAB_ID]
         if centre_name in classified_samples:
             classified_samples[centre_name].append(sample)
         else:
@@ -84,17 +84,20 @@ def classify_samples_by_centre(samples: List[Dict[str, str]]) -> Dict[str, List[
 
 def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[str]:
     # Divide samples in centres and call add_cog_barcodes for each group
+    # 1: Classify samples by centre lab id
+    # 2: For each centre lab id, get prefix
+    # 3: For each centre add cog barcodes passing prefix and samples
+
     classified_samples = classify_samples_by_centre(samples)
 
-    for centre_name in classified_samples:
-        add_cog_barcodes(classified_samples[centre_name])
+    for centre_lab_id in classified_samples:
+        prefix = get_centre_prefix_by_lab_id(centre_lab_id)
+        add_cog_barcodes(prefix, classified_samples[centre_lab_id])
 
     return list(classified_samples.keys())
 
 
-def add_cog_barcodes(samples):
-    centre_name = __confirm_centre(samples)
-    centre_prefix = get_centre_prefix(centre_name)
+def add_cog_barcodes(centre_prefix, samples):
     num_samples = len(samples)
 
     logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
@@ -132,14 +135,14 @@ def add_cog_barcodes(samples):
     return centre_prefix
 
 
-def get_centre_prefix(centre_name):
-    logger.debug(f"Getting the prefix for '{centre_name}'")
+def get_centre_prefix_by_lab_id(centre_lab_id):
+    logger.debug(f"Getting the prefix for lab id: '{centre_lab_id}'")
     try:
         #  get the centre collection
         centres = app.data.driver.db.centres
 
         # use a case insensitive search for the centre name
-        filter = {"name": {"$regex": f"^(?i){centre_name}$"}}
+        filter = {"lab_id_default": {"$eq": centre_lab_id}}
 
         assert centres.count_documents(filter) == 1
 
@@ -147,7 +150,7 @@ def get_centre_prefix(centre_name):
 
         prefix = centre["prefix"]
 
-        logger.debug(f"Prefix for '{centre_name}' is '{prefix}'")
+        logger.debug(f"Prefix for '{centre_lab_id}' is '{prefix}'")
 
         return prefix
     except Exception as e:
@@ -650,36 +653,6 @@ def __robot_subject(robot_serial_number):
         raise KeyError(f"Unable to find events information for robot: {robot_serial_number}")
 
     return construct_robot_message_subject(robot_serial_number, robot_uuid)
-
-
-def __confirm_centre(samples: List[Dict[str, str]]) -> str:
-    """Confirm that the centre for all the samples is populated and the same and return the centre
-    name
-
-    Arguments:
-        samples {List} -- the list of samples to check
-
-    Returns:
-        str -- the name of the centre for these samples
-    """
-    logger.debug("confirm_centre()")
-
-    try:
-        # check that the 'source' field has a valid name
-        for sample in samples:
-            if not sample[FIELD_SOURCE]:
-                raise MissingCentreError(sample)
-
-        # create a set from the 'source' field to check we only have 1 unique centre for these
-        #   samples
-        centre_set = {sample[FIELD_SOURCE] for sample in samples}
-    except KeyError:
-        raise MissingSourceError()
-    else:
-        if len(centre_set) > 1:
-            raise MultipleCentresError()
-
-    return centre_set.pop()
 
 
 def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> Dict[str, str]:
