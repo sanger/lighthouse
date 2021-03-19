@@ -281,8 +281,7 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
                 FIELD_SS_PHENOTYPE: phenotype.strip().lower(),
                 FIELD_SS_SUPPLIER_NAME: sample[FIELD_COG_BARCODE],
                 FIELD_SS_SAMPLE_DESCRIPTION: description,
-                FIELD_SS_UUID: sample[FIELD_LH_SAMPLE_UUID]
-
+                FIELD_SS_UUID: sample[FIELD_LH_SAMPLE_UUID],
             }
         }
         wells_content[sample[FIELD_COORDINATE]] = well
