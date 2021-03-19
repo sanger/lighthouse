@@ -316,6 +316,7 @@ def test_create_post_body(app, samples):
                                 FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "abc",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "sample_001",
+                                FIELD_SS_UUID: "0a53e7b6-7ce8-4ebc-95c3-02dd64942531"
                             }
                         },
                         "A02": {
@@ -323,6 +324,7 @@ def test_create_post_body(app, samples):
                                 FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "def",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "sample_002",
+                                FIELD_SS_UUID: "1a53e7b6-7ce8-4ebc-95c3-02dd64942531"
                             }
                         },
                         "E01": {
@@ -330,6 +332,7 @@ def test_create_post_body(app, samples):
                                 FIELD_SS_PHENOTYPE: "positive",
                                 FIELD_SS_SUPPLIER_NAME: "pqr",
                                 FIELD_SS_SAMPLE_DESCRIPTION: "sample_101",
+                                FIELD_SS_UUID: "2a53e7b6-7ce8-4ebc-95c3-02dd64942532"
                             }
                         },
                     },
