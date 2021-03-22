@@ -1,4 +1,4 @@
-from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
+from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 
 
 def test_get_fit_to_pick_samples_count_valid_barcode(app, samples, priority_samples):
@@ -23,3 +23,9 @@ def test_get_fit_to_pick_samples_count_valid_barcode(app, samples, priority_samp
 def test_get_fit_to_pick_samples_count_invalid_barcode(app, samples):
     with app.app_context():
         assert get_fit_to_pick_samples_and_counts("abc") == ([], None, None, None, None)
+
+
+def test_has_plate_map_data(app, samples):
+    with app.app_context():
+        assert has_plate_map_data("no_plate_barcode") is False
+        assert has_plate_map_data("plate_123") is True

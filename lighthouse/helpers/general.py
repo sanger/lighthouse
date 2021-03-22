@@ -60,3 +60,23 @@ def get_fit_to_pick_samples_and_counts(
         count_preferentially_sequence,
         count_filtered_positive,
     )
+
+
+def has_plate_map_data(plate_barcode: str) -> bool:
+    """Determines whether there is plate map data for the provided barcode. Currently just a `count_documents` using
+    the barcode and a limit of 1 to try keep it as fast as possible.
+
+    Args:
+        plate_barcode (str): the barcode of the plate to look for.
+
+    Returns:
+        bool: True is documents were found for the barcode, otherwise False.
+    """
+    samples_collection = app.data.driver.db.samples
+
+    doc_count = samples_collection.count_documents({FIELD_PLATE_BARCODE: plate_barcode}, limit=1)
+
+    if doc_count > 0:
+        return True
+
+    return False
