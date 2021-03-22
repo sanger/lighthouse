@@ -153,4 +153,18 @@ SAMPLES = [
         FIELD_FILTERED_POSITIVE: True,
         FIELD_LAB_ID: "lab_3",
     },
+    {
+        # positive sample in a different centre
+        FIELD_COORDINATE: "A01",
+        FIELD_SOURCE: "centre_2",
+        FIELD_RESULT: "Positive",
+        FIELD_PLATE_BARCODE: "plate_xyz",
+        FIELD_ROOT_SAMPLE_ID: "sample_001",
+        FIELD_RNA_ID: "rna_1",
+        FIELD_COG_BARCODE: "abc",
+        FIELD_LH_SAMPLE_UUID: "343910d9-74bc-4da0-8f55-8606ed97b33a",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
+        FIELD_FILTERED_POSITIVE: True,
+        FIELD_LAB_ID: "lab_4",
+    },
 ]

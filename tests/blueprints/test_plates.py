@@ -95,10 +95,10 @@ def test_get_plates_endpoint_successful(app, client, samples, priority_samples, 
             {
                 "plate_barcode": "456",
                 "has_plate_map": False,
-                "count_fit_to_pick_samples": None,
-                "count_filtered_positive": None,
-                "count_must_sequence": None,
-                "count_preferentially_sequence": None,
+                "count_fit_to_pick_samples": 0,
+                "count_filtered_positive": 0,
+                "count_must_sequence": 0,
+                "count_preferentially_sequence": 0,
             },
         ]
     }

@@ -27,6 +27,10 @@ drop_table_study = """
 DROP TABLE IF EXISTS `unified_warehouse_test`.`study`;
 """
 
+drop_view_cherrypicked_samples = """
+DROP VIEW IF EXISTS `unified_warehouse_test`.`cherrypicked_samples`;
+"""
+
 create_table_lh_sample = """
 CREATE TABLE `unified_warehouse_test`.`lighthouse_sample` (
 `id` int NOT NULL AUTO_INCREMENT,
@@ -358,6 +362,8 @@ with sql_engine.connect() as connection:
     connection.execute(drop_table_subjects)
     print("*** Dropping table SUBJECT TYPES ***")
     connection.execute(drop_table_subject_types)
+    print("*** Dropping view CHERRYPICKED SAMPLES ***")
+    connection.execute(drop_view_cherrypicked_samples)
 
     print("*** Creating table SUBJECT TYPES ***")
     connection.execute(create_table_subject_types)

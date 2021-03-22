@@ -7,8 +7,6 @@ from typing import Iterable
 from slack import WebClient
 from slack.errors import SlackApiError
 
-client = WebClient(token=os.getenv("SLACK_API_TOKEN"))
-
 
 class SlackHandler(Handler):
     def __init__(self, token, channel_id):

@@ -1,39 +1,38 @@
-# Lighthouse
+# Lighthouse service
 
-![CI python](https://github.com/sanger/lighthouse/workflows/CI%20python/badge.svg)
-![CI docker](https://github.com/sanger/lighthouse/workflows/CI%20docker/badge.svg)
+![python](https://github.com/sanger/lighthouse/workflows/python_test/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/sanger/lighthouse/branch/develop/graph/badge.svg)](https://codecov.io/gh/sanger/lighthouse)
 
 A Flask Eve API to search through data provided by Lighthouse Labs. The data is populated in a
 mongodb by the [crawler](https://github.com/sanger/crawler).
 
-## Table of contents
+## Table of Contents
 
 <!-- toc -->
 
-- [Requirements for development](#requirements-for-development)
-- [Getting started](#getting-started)
-  * [Configuring environment](#configuring-environment)
-  * [Setup steps](#setup-steps)
+- [Requirements for Development](#requirements-for-development)
+- [Getting Started](#getting-started)
+  * [Configuring Environment](#configuring-environment)
+  * [Setup Steps](#setup-steps)
 - [Running](#running)
-  * [Locally using pipenv](#locally-using-pipenv)
+  * [Locally Using pipenv](#locally-using-pipenv)
   * [Using Docker](#using-docker)
 - [Testing](#testing)
-  * [Testing requirements](#testing-requirements)
-  * [Running tests](#running-tests)
+  * [Testing Requirements](#testing-requirements)
+  * [Running Tests](#running-tests)
 - [Deployment](#deployment)
 - [Routes](#routes)
+- [Scheduled Jobs](#scheduled-jobs)
 - [Miscellaneous](#miscellaneous)
-  * [Type checking](#type-checking)
+  * [Type Checking](#type-checking)
   * [Troubleshooting](#troubleshooting)
-    + [pyodbc errors](#pyodbc-errors)
-- [Contributing](#contributing)
-  * [Updating the table of contents [Mandatory]](#updating-the-table-of-contents-mandatory)
+    + [pyodbc Errors](#pyodbc-errors)
+  * [Updating the Table of Contents](#updating-the-table-of-contents)
 
 <!-- tocstop -->
 
-## Requirements for development
+## Requirements for Development
 
 The following tools are required for development:
 
@@ -42,20 +41,20 @@ The following tools are required for development:
 - MySQL
 - Microsoft SQL Server
 
-A `docker-compose.yml` file is available with seperate `run` commands for each service if you prefer to run these
+A `docker-compose.yml` file is available with separate `run` commands for each service if you prefer to run these
 independently.
 
-## Getting started
+## Getting Started
 
-### Configuring environment
+### Configuring Environment
 
-Create a `.env` file with the following values, or change the extention on `.env.example` in the root:
+Create a `.env` file with the following values, or change the extension on `.env.example` in the root:
 
     FLASK_APP=lighthouse
     FLASK_ENV=development
     EVE_SETTINGS=development.py
 
-### Setup steps
+### Setup Steps
 
 - Use pyenv or something similar to install the version of python
   defined in the `Pipfile`:
@@ -81,7 +80,7 @@ Create a `.env` file with the following values, or change the extention on `.env
 
 ## Running
 
-### Locally using pipenv
+### Locally Using pipenv
 
 1. Enter the python virtual environment using:
 
@@ -103,7 +102,7 @@ Create a `.env` file with the following values, or change the extention on `.env
 
         docker compose up -d
 
-    Or, you can start each individully using the instructions in the compose file.
+    Or, you can start each individually using the instructions in the compose file.
 
 1. Ensure your `.env` file contains the line
 
@@ -114,7 +113,7 @@ Create a `.env` file with the following values, or change the extention on `.env
         docker run --env-file .env -p 5000:5000 -v $(pwd):/home/lighthouse/app -it --entrypoint bash lighthouse:develop
 
    After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all
-   source code of the project from your hosting machine The container will map your port 5000 with the port 5000 of
+   source code of the project from your hosting machine The container will map your port 8000 with the port 8000 of
    Docker.
 
 1. Once inside the docker container, run:
@@ -127,19 +126,19 @@ Create a `.env` file with the following values, or change the extention on `.env
         python ./setup_sqlserver_test_db.py
         python ./setup_test_db.py
 
-1. Finally, start the app in port 5000 of the container using:
+1. Finally, start the app in port 8000 of the container using:
 
-        flask run -h 0.0.0.0
+        flask run -h 0.0.0.0 -p 8000
 
-   After this step you should be able to access the app with a browser going to your local port 5000 (go to http://localhost:5000)
+   After this step you should be able to access the app with a browser going to your local port 8000 (go to http://localhost:8000)
 
 ## Testing
 
-### Testing requirements
+### Testing Requirements
 
-- Verify the credentials for your database in the settings file `lighthouse/config/test.py`
+Verify the credentials for the required databases in the test settings file `lighthouse/config/test.py`.
 
-### Running tests
+### Running Tests
 
 Run the tests using pytest (flags are for verbose and exit early):
 
@@ -149,7 +148,7 @@ A wrapper is provided with pipenv (look in the Pipfile's `[scripts]` block for m
 
     pipenv run test
 
-**NB**: Make sure to be in the virtual environment (`pipenv shell`) before running the tests:
+**NB**: Make sure to be in the virtual environment (`pipenv shell`) before running the tests.
 
 ## Deployment
 
@@ -180,7 +179,7 @@ The service has the following routes:
     schema|resource                      GET              /schema
     static                               GET              /static/<path:filename>
 
-## Scheduled jobs
+## Scheduled Jobs
 
 This service runs a scheduled job to create a report (in `.xlsx` format) for use by the SSRs.
 
@@ -188,15 +187,17 @@ It is disabled by default. The config for the job can be found in `config/defaul
 
 ## Miscellaneous
 
-### Type checking
+### Type Checking
 
-Type checking is done using mypy, to run it, execute `mypy .`
+Type checking is done using mypy, to run it, execute:
+
+    mypy .
 
 ### Troubleshooting
 
-#### pyodbc errors
+#### pyodbc Errors
 
-If you experience
+If you experience:
 
     ImportError: dlopen(/Users/.../.local/share/virtualenvs/lighthouse-e4xstWfp/lib/python3.8/site-packages/pyodbc.cpython-38-darwin.so, 2): Library not loaded: /usr/local/opt/unixodbc/lib/libodbc.2.dylib
 
@@ -206,15 +207,13 @@ https://github.com/mkleehammer/pyodbc/issues/681
 
 If you still experience issues loading the MSSQL drivers themselves, you might need to use the docker container approach.
 
-## Contributing
-
-This project uses [black](https://github.com/psf/black) to check for code format, the use it run:
-
-  `black .`
-
-### Updating the table of contents [Mandatory]
+### Updating the Table of Contents
 
 To update the table of contents after adding things to this README you can use the
 [markdown-toc](https://github.com/jonschlinkert/markdown-toc) node module. To run:
 
     npx markdown-toc -i README.md
+
+## Releases
+
+Update `.release-version` with major/minor/patch. On merging a pull request into develop or master, a release will be created with the release version as the tag/name

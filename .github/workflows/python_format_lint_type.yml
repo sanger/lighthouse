@@ -2,11 +2,13 @@ name: Python - check format, lint and type check
 
 on:
   push:
-    paths-ignore:
-      - "README.md"
+    branches:
+      - develop
+      - master
   pull_request:
-    paths-ignore:
-      - "README.md"
+    branches:
+      - develop
+      - master
 
 jobs:
   black:
