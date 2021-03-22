@@ -44,7 +44,6 @@ services:
       - FLASK_APP=lighthouse
       - FLASK_ENV=development
       - EVE_SETTINGS=development.py
-      - ROOT_PASSWORD=
 
     volumes:
       - ".:/code"
