@@ -154,13 +154,11 @@ A wrapper is provided with pipenv (look in the Pipfile's `[scripts]` block for m
 
 If you are unable to run tests locally because of pyodbc you can use the docker-compose
 
-        docker-compose up
+        docker compose up
 
 2. you will need to run the sqlserver with:
 
-        docker exec -ti <container_id for lighthouse> bash
-
-        python ./setup_sqlserver_test_db.py
+        docker exec -ti <container_id for lighthouse> python ./setup_sqlserver_test_db.py
 
 3. you can then run the tests (with hot reloading) using:
 

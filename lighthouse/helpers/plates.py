@@ -265,7 +265,6 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
     phenotype = None
     description = None
     for sample in samples:
-        print(sample)
         for key, value in sample.items():
             if key.strip() == FIELD_RESULT:
                 phenotype = value
