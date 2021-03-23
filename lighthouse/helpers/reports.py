@@ -163,10 +163,13 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
 
         return concat_frame
     except Exception as e:
-        print("Error while connecting to MySQL", e)
+        logger.error("Error while connecting to MySQL")
+        logger.exception(e)
         return None
     finally:
-        db_connection.close()
+        if db_connection is not None:
+            logger.debug("Closing mlwh connection")
+            db_connection.close()
 
 
 def get_fit_to_pick_samples(samples_collection: Collection) -> DataFrame:
