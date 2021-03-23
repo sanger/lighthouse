@@ -150,6 +150,23 @@ A wrapper is provided with pipenv (look in the Pipfile's `[scripts]` block for m
 
 **NB**: Make sure to be in the virtual environment (`pipenv shell`) before running the tests.
 
+### Running tests with docker
+
+If you are unable to run tests locally because of pyodbc you can use the docker-compose
+
+        docker compose up
+
+2. you will need to run the sqlserver with:
+
+        docker exec -ti <container_id for lighthouse> python ./setup_sqlserver_test_db.py
+
+3. you can then run the tests (with hot reloading) using:
+
+        docker exec -ti <container_id> python -m pytest -vs
+
+#TODO: I tried to run the sql server setup as part of the docker-compose using an entry point but it failed with unable to connect error.
+
+
 ## Deployment
 
 This project uses a Docker image as the unit of deployment. To create a release for deployment, create a release
