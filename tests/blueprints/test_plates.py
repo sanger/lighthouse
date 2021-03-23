@@ -104,6 +104,14 @@ def test_get_plates_endpoint_successful(app, client, samples, priority_samples, 
     }
 
 
+def test_get_plates_endpoint_method_calls(app, client, samples, priority_samples):
+    barcode = "plate_123"
+    with patch("lighthouse.helpers.plates.has_plate_map_data") as mock_has_plate_map_data:
+        response = client.get(f"/plates?barcodes[]={barcode}", content_type="application/json")
+        assert response.status_code == HTTPStatus.OK
+        mock_has_plate_map_data.assert_called_once_with(barcode)
+
+
 def test_get_plates_endpoint_fail(app, client, samples, mocked_responses):
     with patch("lighthouse.helpers.plates.get_fit_to_pick_samples_and_counts", side_effect=Exception()):
         response = client.get("/plates?barcodes[]=123&barcodes[]=456", content_type="application/json")

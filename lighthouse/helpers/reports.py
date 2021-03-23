@@ -27,6 +27,8 @@ from lighthouse.constants.fields import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
 )
+from lighthouse.sql_queries import SQL_MLWH_GET_CP_SAMPLES
+
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.labwhere import get_locations_from_labwhere
 
@@ -138,12 +140,12 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
             root_sample_ids[x : (x + chunk_size)] for x in range(0, len(root_sample_ids), chunk_size)  # noqa: E203
         ]
 
+        mlwh_db = app.config["MLWH_DB"]
+
         sql_engine = sqlalchemy.create_engine(
-            f"mysql+pymysql://{app.config['WAREHOUSES_RO_CONN_STRING']}", pool_recycle=3600
+            f"mysql+pymysql://{app.config['WAREHOUSES_RO_CONN_STRING']}/{mlwh_db}", pool_recycle=3600
         )
         db_connection = sql_engine.connect()
-
-        mlwh_db = app.config["MLWH_DB"]
 
         for chunk_root_sample_id in chunk_root_sample_ids:
             params = {
@@ -151,8 +153,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
                 "plate_barcodes": tuple(plate_barcodes),
             }
 
-            cherrypicked_sql = __cherrypicked_samples_query(mlwh_db)
-            cherrypicked_frame = pd.read_sql(cherrypicked_sql, db_connection, params=params)
+            cherrypicked_frame = pd.read_sql(SQL_MLWH_GET_CP_SAMPLES, db_connection, params=params)
 
             # drop_duplicates is needed because the same 'root sample id' could pop up in two
             # different batches, and then it would retrieve the same rows for that root sample id
@@ -329,11 +330,11 @@ def __convert_size(size_in_bytes: int) -> str:
     return f"{s} {size_name[i]}"
 
 
-def __cherrypicked_samples_query(mlwh_db: str) -> str:
-    return (
-        f"SELECT root_sample_id AS `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`,"
-        f" phenotype AS `Result_lower`, `{FIELD_COORDINATE}`"
-        f" FROM {mlwh_db}.cherrypicked_samples"
-        f" WHERE root_sample_id IN %(root_sample_ids)s"
-        f" AND `{FIELD_PLATE_BARCODE}` IN %(plate_barcodes)s"
-    )
+# def __cherrypicked_samples_query(mlwh_db: str) -> str:
+#     return (
+#         f"SELECT root_sample_id AS `{FIELD_ROOT_SAMPLE_ID}`, `{FIELD_PLATE_BARCODE}`,"
+#         f" phenotype AS `Result_lower`, `{FIELD_COORDINATE}`"
+#         f" FROM {mlwh_db}.cherrypicked_samples"
+#         f" WHERE root_sample_id IN %(root_sample_ids)s"
+#         f" AND `{FIELD_PLATE_BARCODE}` IN %(plate_barcodes)s"
+#     )
