@@ -84,6 +84,30 @@ def test_delete_reports(app, freezer):
 # ----- get_cherrypicked_samples tests -----
 
 
+def test_get_cherrypicked_samples_no_beckman_test_db_connection_close(app, freezer):
+    """
+    Test Scenario
+    - Mocking database responses
+    - Only the Sentinel query returns matches (No Beckman)
+    - No chunking: a single query is made in which all matches are returned
+    - No duplication of returned matches
+    """
+    expected = [
+        pd.DataFrame(
+            ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
+        ),  # Cherrypicking query response
+    ]
+    samples = ["MCM001", "MCM002", "MCM003", "MCM004", "MCM005"]
+    plate_barcodes = ["123", "456"]
+
+    with app.app_context():
+        with patch("sqlalchemy.create_engine") as mock_sql_engine:
+            mock_db_connection = Mock()
+            mock_sql_engine().connect.return_value = mock_db_connection
+            get_cherrypicked_samples(samples, plate_barcodes)
+            mock_db_connection.close.assert_called_once()
+
+
 # Test Scenario
 # - Mocking database responses
 # - Only the Sentinel query returns matches (No Beckman)
