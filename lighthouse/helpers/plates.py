@@ -56,7 +56,7 @@ from lighthouse.helpers.events import (
     get_message_timestamp,
     get_robot_uuid,
 )
-from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
+from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc
@@ -714,7 +714,7 @@ def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
 
     return {
         "plate_barcode": barcode,
-        "has_plate_map": fit_to_pick_samples is not None and len(fit_to_pick_samples) > 0,
+        "has_plate_map": has_plate_map_data(barcode),
         "count_fit_to_pick_samples": count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0,
         "count_must_sequence": count_must_sequence if count_must_sequence is not None else 0,
         "count_preferentially_sequence": count_preferentially_sequence
