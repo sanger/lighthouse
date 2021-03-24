@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from tests.fixtures.data.uuids import testing_uuid_utf8
+
 from lighthouse.constants.fields import (
     FIELD_COG_BARCODE,
     FIELD_RESULT,
@@ -128,7 +130,7 @@ MLWH_SAMPLE_STOCK_RESOURCE = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "1",
+            "uuid_sample_lims": testing_uuid_utf8(1),
         },
         {
             "id_sample_tmp": "2",
@@ -141,7 +143,7 @@ MLWH_SAMPLE_STOCK_RESOURCE = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "2",
+            "uuid_sample_lims": testing_uuid_utf8(2),
         },
         {
             "id_sample_tmp": "3",
@@ -154,7 +156,7 @@ MLWH_SAMPLE_STOCK_RESOURCE = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "3",
+            "uuid_sample_lims": testing_uuid_utf8(3),
         },
         {
             "id_sample_tmp": "4",
@@ -167,7 +169,7 @@ MLWH_SAMPLE_STOCK_RESOURCE = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "4",
+            "uuid_sample_lims": testing_uuid_utf8(4),
         },
     ],
     "stock_resource": [
@@ -253,7 +255,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "35000000000000000000000000000000",
+            "uuid_sample_lims": testing_uuid_utf8(35),
         },
         {
             "id_sample_tmp": "6",
@@ -266,7 +268,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "36000000000000000000000000000000",
+            "uuid_sample_lims": testing_uuid_utf8(36),
         },
         {
             "id_sample_tmp": "7",
@@ -279,7 +281,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "37000000000000000000000000000000",
+            "uuid_sample_lims": testing_uuid_utf8(37),
         },
         {
             "id_sample_tmp": "8",
@@ -292,7 +294,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE = {
             "last_updated": "2015-11-25 11:35:30",
             "recorded_at": "2015-11-25 11:35:30",
             "created": "2015-11-25 11:35:30",
-            "uuid_sample_lims": "38000000000000000000000000000000",
+            "uuid_sample_lims": testing_uuid_utf8(38),
         },
     ],
     "lighthouse_sample": [
@@ -306,7 +308,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE = {
             "date_tested": date_tested,
             "source": "test centre",
             "lab_id": "TC",
-            "lh_sample_uuid": "35000000000000000000000000000000",
+            "lh_sample_uuid": testing_uuid_utf8(35),
         },
         {
             "mongodb_id": "2",
@@ -318,7 +320,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE = {
             "date_tested": date_tested,
             "source": "test centre",
             "lab_id": "TC",
-            "lh_sample_uuid": "36000000000000000000000000000000",
+            "lh_sample_uuid": testing_uuid_utf8(36),
         },
         {
             "mongodb_id": "3",
@@ -330,7 +332,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE = {
             "date_tested": date_tested,
             "source": "test centre",
             "lab_id": "TC",
-            "lh_sample_uuid": "37000000000000000000000000000000",
+            "lh_sample_uuid": testing_uuid_utf8(37),
         },
         {
             "mongodb_id": "4",
@@ -342,7 +344,7 @@ MLWH_SAMPLE_LIGHTHOUSE_SAMPLE = {
             "date_tested": date_tested,
             "source": "test centre",
             "lab_id": "TC",
-            "lh_sample_uuid": "38000000000000000000000000000000",
+            "lh_sample_uuid": testing_uuid_utf8(38),
         },
     ],
 }

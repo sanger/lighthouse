@@ -110,7 +110,7 @@ Create a `.env` file with the following values, or change the extension on `.env
 
 1. Start the docker container and open a bash session in it with:
 
-        docker run --env-file .env -p 5000:5000 -v $(pwd):/home/lighthouse/app -it --entrypoint bash lighthouse:develop
+        docker run --env-file .env -p 5000:5000 -v $(pwd):/code -it --entrypoint bash lighthouse:develop
 
    After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all
    source code of the project from your hosting machine The container will map your port 8000 with the port 8000 of
@@ -138,7 +138,7 @@ Create a `.env` file with the following values, or change the extension on `.env
 
 Verify the credentials for the required databases in the test settings file `lighthouse/config/test.py`.
 
-### Running Tests
+ ### Running Tests
 
 Run the tests using pytest (flags are for verbose and exit early):
 
