@@ -47,7 +47,7 @@ def create_plate_event() -> FlaskResponse:
 
         if len(errors) > 0 or message is None:
             logger.error(f"{ERROR_PLATE_EVENT_PUBLISH} error(s) constructing event message: " f"{errors}")
-
+            # HERE
             return internal_server_error(errors)
 
         # By this stage we know the event type is valid as we have been able to construct a message

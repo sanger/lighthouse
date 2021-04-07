@@ -49,6 +49,7 @@ def create_plate_from_barcode() -> FlaskResponse:
         (fit_to_pick_samples, count_fit_to_pick_samples, _, _, _) = get_fit_to_pick_samples_and_counts(barcode)
 
         if not fit_to_pick_samples:
+            # HERE
             return bad_request(f"No fit to pick samples for this barcode: {barcode}")
 
         # add COG barcodes to samples
@@ -58,7 +59,7 @@ def create_plate_from_barcode() -> FlaskResponse:
             msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
             logger.error(msg)
             logger.exception(e)
-
+            # HERE
             return bad_request(msg)
 
         body = create_post_body(barcode, fit_to_pick_samples)
