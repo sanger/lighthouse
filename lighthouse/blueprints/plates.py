@@ -56,11 +56,12 @@ def create_plate_from_barcode() -> FlaskResponse:
         try:
             centre_prefix = add_cog_barcodes(fit_to_pick_samples)
         except Exception as e:
-            msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
+            msg1 = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
             logger.error(msg)
             logger.exception(e)
             # HERE
-            return bad_request(msg)
+            return bad_request(msg1)
+            # return bad_request(msg)
 
         body = create_post_body(barcode, fit_to_pick_samples)
 
