@@ -39,6 +39,7 @@ def create_plate_from_barcode() -> FlaskResponse:
     logger.info("Attempting to create a plate in Sequencescape")
     try:
         barcode = request.get_json()["barcode"]
+        test = request.get_json()["test"]
     except (KeyError, TypeError) as e:
         logger.exception(e)
 
@@ -50,13 +51,14 @@ def create_plate_from_barcode() -> FlaskResponse:
 
         if not fit_to_pick_samples:
             # HERE
-            return bad_request(f"No fit to pick samples for this barcode: {barcode}")
+            return bad_request(f"No fit to pick samples for this test: {test}")
+            # return bad_request(f"No fit to pick samples for this barcode: {barcode}")
 
         # add COG barcodes to samples
         try:
             centre_prefix = add_cog_barcodes(fit_to_pick_samples)
         except Exception as e:
-            msg1 = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
+            msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
             logger.error(msg)
             logger.exception(e)
             # HERE
