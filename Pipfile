@@ -17,7 +17,7 @@ responses = "*"
 [packages]
 colorlog = "~=4.1"
 eve = "~=1.1"
-flask-apscheduler = "~=1.11"
+flask-apscheduler = "~=1.12"
 flask-cors = "~=3.0"
 gunicorn = "~=20.0"
 pandas = "~=1.0"
