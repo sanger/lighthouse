@@ -15,7 +15,7 @@ pytest-freezegun = "*"
 responses = "*"
 
 [packages]
-colorlog = "~=4.1"
+colorlog = "~=5.0"
 eve = "~=1.1"
 flask-apscheduler = "~=1.11"
 flask-cors = "~=3.0"
