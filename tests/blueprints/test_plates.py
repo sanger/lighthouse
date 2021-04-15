@@ -70,7 +70,7 @@ def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses)
             ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
             body = {"barcode": "plate_123"}
-            mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.OK)
+            mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
 
             response = client.post("/plates/new", json={"barcode": "plate_123"})
 
