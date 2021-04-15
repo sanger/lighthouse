@@ -65,7 +65,7 @@ def create_plate_from_barcode() -> FlaskResponse:
 
         response = send_to_ss_heron_plates(body)
 
-        if response.status_code == HTTPStatus.OK:
+        if response.status_code == HTTPStatus.CREATED:
             response_json = {
                 "data": {
                     "plate_barcode": fit_to_pick_samples[0][FIELD_PLATE_BARCODE],
