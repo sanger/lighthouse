@@ -2,8 +2,8 @@ import os
 
 import pyodbc
 
-#LOCALHOST = os.environ.get("LOCALHOST", "localhost")
-LOCALHOST = "127.0.0.1"
+LOCALHOST = os.environ.get("LOCALHOST", "localhost")
+
 cnxn = pyodbc.connect(
     (
         "DRIVER={ODBC Driver 17 for SQL Server};"  # noqa: F541
