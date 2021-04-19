@@ -23,7 +23,7 @@ MONGO_DBNAME = "lighthouseDevelopmentDB"
 ###
 # Labwhere config
 ###
-LABWHERE_URL = "localhost:3000"
+LABWHERE_URL = "https://localhost:3000"
 
 ###
 # logging config

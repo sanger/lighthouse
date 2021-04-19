@@ -26,7 +26,7 @@ def get_locations_from_labwhere(labware_barcodes: List[str]) -> requests.Respons
         requests.Response: the response from the request to LabWhere.
     """
     return requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode?known=true",
+        f"{app.config['LABWHERE_URL']}/api/labwares_by_barcode?known=true",
         json={"barcodes": labware_barcodes},
     )
 
@@ -54,7 +54,7 @@ def set_locations_in_labwhere(
         {requests.Response} -- The LabWhere response object
     """
     return requests.post(
-        f"http://{app.config['LABWHERE_URL']}/api/scans",
+        f"{app.config['LABWHERE_URL']}/api/scans",
         json={
             "scan": {
                 "user_code": user_barcode,
