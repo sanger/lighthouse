@@ -29,7 +29,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: null
           MYSQL_DATABASE: unified_warehouse_test
       sqlserver:
-        image: mcr.microsoft.com/mssql/server:2019-latest
+        image: mcr.microsoft.com/mssql/server:2019-CU8-ubuntu-16.04
         ports:
           - 1433:1433
         env:
@@ -47,7 +47,7 @@ jobs:
 
       - name: Create SQL Server testing database
         run: >-
-          sleep 20 ; docker run
+          docker run
           --network host
           --env EVE_SETTINGS=test.py
           --entrypoint ''
