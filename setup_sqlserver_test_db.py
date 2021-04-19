@@ -2,7 +2,7 @@ import os
 
 import pyodbc
 
-LOCALHOST = os.environ.get("LOCALHOST", "localhost")
+LOCALHOST = os.environ.get("LOCALHOST", "127.0.0.1")
 
 cnxn = pyodbc.connect(
     (
