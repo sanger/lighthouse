@@ -13,7 +13,7 @@ REPORT_WINDOW_SIZE = 84  # The window size when generating the fit to pick sampl
 # If we're running in a container, then instead of localhost we want host.docker.internal, you can specify this in the
 # .env file you use for docker. eg: LOCALHOST=host.docker.internal
 LOCALHOST = os.environ.get("LOCALHOST", "127.0.0.1")
-DOWNLOAD_REPORTS_URL = f"https://{LOCALHOST}:5000/reports"
+DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
 
 ###
 # Eve config
