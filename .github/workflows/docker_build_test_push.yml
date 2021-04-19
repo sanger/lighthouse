@@ -46,7 +46,7 @@ jobs:
 
       - name: Create SQL Server testing database
         run: >-
-          docker run
+          sleep 20 ; docker run
           --network host
           --env EVE_SETTINGS=test.py
           --entrypoint ''
