@@ -29,13 +29,12 @@ jobs:
           MYSQL_ROOT_PASSWORD: null
           MYSQL_DATABASE: unified_warehouse_test
       sqlserver:
-        image: mcr.microsoft.com/mssql/server:2019-GDR1-ubuntu-16.04
+        image: mcr.microsoft.com/mssql/server:2019-latest
         ports:
           - 1433:1433
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: MyS3cr3tPassw0rd
-          MSSQL_PID: Express
     steps:
       - uses: actions/checkout@v2
 
@@ -85,8 +84,4 @@ jobs:
         run: >-
           docker push
           docker.pkg.github.com/${IMAGE_NAME}:${GITHUB_REF##*/}
-
-      - name: Dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v1
 
