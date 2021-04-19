@@ -100,7 +100,7 @@ Create a `.env` file with the following values, or change the extension on `.env
 
 1. Start the services specified in the `docker-compose.yml`:
 
-        docker compose up -d
+        docker-compose up -d
 
     Or, you can start each individually using the instructions in the compose file.
 
