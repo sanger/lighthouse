@@ -35,6 +35,7 @@ jobs:
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: MyS3cr3tPassw0rd
+          MSSQL_PID: Express
     steps:
       - uses: actions/checkout@v2
 
