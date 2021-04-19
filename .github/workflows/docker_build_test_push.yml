@@ -29,7 +29,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: null
           MYSQL_DATABASE: unified_warehouse_test
       sqlserver:
-        image: mcr.microsoft.com/mssql/server:2019-CU8-ubuntu-16.04
+        image: mcr.microsoft.com/mssql/server:2019-GDR1-ubuntu-16.04
         ports:
           - 1433:1433
         env:
