@@ -13,4 +13,4 @@ cnxn = pyodbc.connect(
     autocommit=True,
 )
 cursor = cnxn.cursor()
-cursor.execute("CREATE DATABASE DartTestDB")
+cursor.execute("CREATE DATABASE DartTestDB;")
