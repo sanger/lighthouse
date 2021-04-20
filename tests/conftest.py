@@ -117,7 +117,7 @@ def mocked_responses():
 
 @pytest.fixture
 def labwhere_samples_simple(app, mocked_responses):
-    labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/labwares_by_barcode"
+    labwhere_url = f"{app.config['LABWHERE_URL']}/api/labwares_by_barcode"
 
     body = [
         {

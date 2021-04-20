@@ -14,7 +14,7 @@ def test_get_locations_from_labwhere(app, labwhere_samples_simple):
 
 def test_set_locations_in_labwhere(app, mocked_responses):
     with app.app_context():
-        labwhere_url = f"http://{app.config['LABWHERE_URL']}/api/scans"
+        labwhere_url = f"{app.config['LABWHERE_URL']}/api/scans"
         # The expected payload sent to LabWhere
         payload = {
             "scan": {
