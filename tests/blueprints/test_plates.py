@@ -15,10 +15,10 @@ def test_post_plates_endpoint_successful(app, client, samples, priority_samples,
         ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
         body = {"barcode": "plate_123"}
-        mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.OK)
+        mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
 
         response = client.post("/plates/new", json=body)
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.CREATED
         assert response.json == {
             "data": {"plate_barcode": "plate_123", "centre": "TC1", "count_fit_to_pick_samples": 4}
         }
@@ -70,7 +70,7 @@ def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses)
             ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
 
             body = {"barcode": "plate_123"}
-            mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.OK)
+            mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
 
             response = client.post("/plates/new", json={"barcode": "plate_123"})
 

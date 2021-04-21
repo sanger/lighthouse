@@ -100,7 +100,7 @@ Create a `.env` file with the following values, or change the extension on `.env
 
 1. Start the services specified in the `docker-compose.yml`:
 
-        docker compose up -d
+        docker-compose up -d
 
     Or, you can start each individually using the instructions in the compose file.
 
@@ -110,7 +110,7 @@ Create a `.env` file with the following values, or change the extension on `.env
 
 1. Start the docker container and open a bash session in it with:
 
-        docker run --env-file .env -p 5000:5000 -v $(pwd):/code -it --entrypoint bash lighthouse:develop
+        docker run --env-file .env -p 8000:8000 -v $(pwd):/code -it --entrypoint bash lighthouse:develop
 
    After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all
    source code of the project from your hosting machine The container will map your port 8000 with the port 8000 of
