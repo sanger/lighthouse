@@ -30,7 +30,7 @@ def create_app() -> Eve:
         scheduler.init_app(app)
         scheduler.start()
 
-    @app.route("/health")
+    @app.get("/health")
     def health_check():
         return "Factory working", HTTPStatus.OK
 

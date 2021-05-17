@@ -22,7 +22,7 @@ bp = Blueprint("plate-events", __name__)
 CORS(bp)
 
 
-@bp.route("/plate-events/create", methods=["GET"])
+@bp.get("/plate-events/create")
 def create_plate_event() -> FlaskResponse:
     """This endpoint attempts to publish a plate event message to the RabbitMQ broker.
 

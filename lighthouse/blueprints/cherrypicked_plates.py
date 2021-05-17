@@ -45,7 +45,7 @@ bp = Blueprint("cherrypicked-plates", __name__)
 CORS(bp)
 
 
-@bp.route("/cherrypicked-plates/create", methods=["GET"])
+@bp.get("/cherrypicked-plates/create")
 def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
     """This endpoint attempts to create a plate in Sequencescape. The arguments provided extract data from the DART
     and mongo databases, add COG UK barcodes and then call Sequencescape to attempt to create a plate and samples.
@@ -136,7 +136,7 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
         return internal_server_error(msg)
 
 
-@bp.route("/cherrypicked-plates/fail", methods=["GET"])
+@bp.get("/cherrypicked-plates/fail")
 def fail_plate_from_barcode() -> FlaskResponse:
     """This endpoints attempts to publish an event to the event warehouse when a failure occurs when a destination plate
     is not created successfully.

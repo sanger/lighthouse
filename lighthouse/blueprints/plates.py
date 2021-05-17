@@ -29,7 +29,7 @@ bp = Blueprint("plates", __name__)
 CORS(bp)
 
 
-@bp.route("/plates/new", methods=["POST"])
+@bp.post("/plates/new")
 def create_plate_from_barcode() -> FlaskResponse:
     """This endpoint attempts to create a plate in Sequencescape.
 
@@ -94,7 +94,7 @@ def create_plate_from_barcode() -> FlaskResponse:
         return internal_server_error(msg)
 
 
-@bp.route("/plates", methods=["GET"])
+@bp.get("/plates")
 def find_plate_from_barcode() -> FlaskResponse:
     """A route which returns information about a list of plates as specified in the 'barcodes' parameters.
 

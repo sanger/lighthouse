@@ -14,7 +14,7 @@ bp = Blueprint("beckman", __name__)
 CORS(bp)
 
 
-@bp.route("/beckman/robots", methods=["GET"])
+@bp.get("/beckman/robots")
 def get_robots() -> FlaskResponse:
     """Find information about the Beckman robots. Currently, this information lives in config.
 
@@ -41,7 +41,7 @@ def get_robots() -> FlaskResponse:
         return internal_server_error(f"{ERROR_UNEXPECTED} while fetching Beckman robot information", robots=[])
 
 
-@bp.route("/beckman/failure-types", methods=["GET"])
+@bp.get("/beckman/failure-types")
 def get_failure_types() -> FlaskResponse:
     """Get a list of the Beckman failure types.
 

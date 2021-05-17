@@ -15,7 +15,7 @@ bp = Blueprint("reports", __name__)
 CORS(bp)
 
 
-@bp.route("/reports", methods=["GET"])
+@bp.get("/reports")
 def get_reports() -> FlaskResponse:
     """Gets a list of all the available reports.
 
@@ -35,7 +35,7 @@ def get_reports() -> FlaskResponse:
         return internal_server_error(msg)
 
 
-@bp.route("/reports/new", methods=["POST"])
+@bp.post("/reports/new")
 def create_report_endpoint() -> FlaskResponse:
     """Creates a new report.
 
@@ -57,7 +57,7 @@ def create_report_endpoint() -> FlaskResponse:
         return internal_server_error(msg)
 
 
-@bp.route("/delete_reports", methods=["POST"])
+@bp.post("/delete_reports")
 def delete_reports_endpoint() -> FlaskResponse:
     """A route which accepts a list of report filenames and then deletes them from the reports path.
     This endpoint should be JSON and the body should be in the format:
