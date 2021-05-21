@@ -78,7 +78,9 @@ def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses)
             assert response.json == {"errors": [ERROR_UPDATE_MLWH_WITH_COG_UK_IDS]}
 
 
-def test_get_plates_endpoint_successful(app, client, samples, priority_samples, mocked_responses, plates_lookup_without_samples):
+def test_get_plates_endpoint_successful(
+    app, client, samples, priority_samples, mocked_responses, plates_lookup_without_samples
+):
     response = client.get("/plates?barcodes[]=plate_123&barcodes[]=456", content_type="application/json")
 
     assert response.status_code == HTTPStatus.OK
@@ -113,8 +115,12 @@ def test_get_plates_endpoint_fail(app, client, samples, mocked_responses):
         assert response.json == {"errors": ["Failed to lookup plates: Exception"]}
 
 
-def test_get_plates_endpoint_include_samples(app, client, samples, priority_samples, mocked_responses, plates_lookup_with_samples):
-    response = client.get("/plates?barcodes[]=plate_123&barcodes[]=456&include_samples=true", content_type="application/json")
+def test_get_plates_endpoint_include_samples(
+    app, client, samples, priority_samples, mocked_responses, plates_lookup_with_samples
+):
+    response = client.get(
+        "/plates?barcodes[]=plate_123&barcodes[]=456&include_samples=true", content_type="application/json"
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == {

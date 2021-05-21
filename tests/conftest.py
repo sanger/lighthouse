@@ -420,9 +420,11 @@ def message_source_all_negative():
     }
     return Message(message_content)
 
+
 @pytest.fixture
 def plates_lookup_with_samples(samples, priority_samples):
     return PLATES_LOOKUP_WITH_SAMPLES
+
 
 @pytest.fixture
 def plates_lookup_without_samples(samples, priority_samples):

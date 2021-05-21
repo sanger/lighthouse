@@ -22,26 +22,26 @@ PLATES_LOOKUP_WITH_SAMPLES = {
                 "lab_id": "lab_1",
                 "rna_id": "rna_1",
                 "sample_id": "0a53e7b6-7ce8-4ebc-95c3-02dd64942531",
-                "source_coordinate": "A01"
+                "source_coordinate": "A01",
             },
             {
                 "lab_id": "lab_1",
                 "rna_id": "rna_2",
                 "sample_id": "1a53e7b6-7ce8-4ebc-95c3-02dd64942531",
-                "source_coordinate": "A02"
+                "source_coordinate": "A02",
             },
             {
                 "lab_id": "lab_1",
                 "rna_id": "rna_a",
                 "sample_id": "8426ba76-e595-4475-92a6-8a60be0eee20",
-                "source_coordinate": "B01"
+                "source_coordinate": "B01",
             },
             {
                 "lab_id": "lab_1",
                 "rna_id": "rna_6",
                 "sample_id": "2a53e7b6-7ce8-4ebc-95c3-02dd64942532",
-                "source_coordinate": "E01"
-            }
+                "source_coordinate": "E01",
+            },
         ],
     }
 }

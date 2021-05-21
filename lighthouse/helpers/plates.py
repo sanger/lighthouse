@@ -1,6 +1,6 @@
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast, Iterable
 from uuid import uuid4
 
 import requests
@@ -65,7 +65,7 @@ from lighthouse.helpers.events import (
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
-from lighthouse.types import SampleDoc
+from lighthouse.types import SampleDoc, SampleDocs
 
 logger = logging.getLogger(__name__)
 
@@ -396,6 +396,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         if db_connection is not None:
             db_connection.close()
 
+
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
@@ -697,7 +698,7 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def format_plate(barcode: str, include_samples: bool = False) -> Dict[str, Union[str, bool, Optional[int]]]:
+def format_plate(barcode: str, include_samples: bool = False) -> Dict[str, Union[str, bool, SampleDocs, Optional[int]]]:
     """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
     so, how many samples meet the fit to pick rules.
 
@@ -717,7 +718,7 @@ def format_plate(barcode: str, include_samples: bool = False) -> Dict[str, Union
         count_filtered_positive,
     ) = get_fit_to_pick_samples_and_counts(barcode)
 
-    formated_response = {
+    formated_response: Dict[str, Union[str, bool, SampleDocs, Optional[int]]] = {
         "plate_barcode": barcode,
         "has_plate_map": has_plate_map_data(barcode),
         "count_fit_to_pick_samples": count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0,
@@ -729,12 +730,14 @@ def format_plate(barcode: str, include_samples: bool = False) -> Dict[str, Union
     }
 
     if include_samples is True:
-        formated_response["pickable_samples"] = list(map(pickable_sample_attributes, fit_to_pick_samples))
+        formated_response["pickable_samples"] = list(
+            map(pickable_sample_attributes, cast(Iterable[SampleDoc], fit_to_pick_samples))
+        )
 
     return formated_response
 
 
-def pickable_sample_attributes(sample: Any) -> Any:
+def pickable_sample_attributes(sample: SampleDoc) -> SampleDoc:
     return {
         FIELD_PLATE_LOOKUP_SOURCE_COORDINATE: sample[FIELD_COORDINATE],
         FIELD_PLATE_LOOKUP_RNA_ID: sample[FIELD_RNA_ID],
