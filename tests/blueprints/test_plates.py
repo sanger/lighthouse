@@ -78,20 +78,13 @@ def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses)
             assert response.json == {"errors": [ERROR_UPDATE_MLWH_WITH_COG_UK_IDS]}
 
 
-def test_get_plates_endpoint_successful(app, client, samples, priority_samples, mocked_responses):
+def test_get_plates_endpoint_successful(app, client, samples, priority_samples, mocked_responses, plates_lookup_without_samples):
     response = client.get("/plates?barcodes[]=plate_123&barcodes[]=456", content_type="application/json")
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == {
         "plates": [
-            {
-                "plate_barcode": "plate_123",
-                "has_plate_map": True,
-                "count_fit_to_pick_samples": 4,
-                "count_filtered_positive": 3,
-                "count_must_sequence": 1,
-                "count_preferentially_sequence": 1,
-            },
+            plates_lookup_without_samples["plate_123"],
             {
                 "plate_barcode": "456",
                 "has_plate_map": False,
@@ -118,3 +111,23 @@ def test_get_plates_endpoint_fail(app, client, samples, mocked_responses):
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert response.json == {"errors": ["Failed to lookup plates: Exception"]}
+
+
+def test_get_plates_endpoint_include_samples(app, client, samples, priority_samples, mocked_responses, plates_lookup_with_samples):
+    response = client.get("/plates?barcodes[]=plate_123&barcodes[]=456&include_samples=true", content_type="application/json")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == {
+        "plates": [
+            plates_lookup_with_samples["plate_123"],
+            {
+                "plate_barcode": "456",
+                "has_plate_map": False,
+                "count_fit_to_pick_samples": 0,
+                "count_filtered_positive": 0,
+                "count_must_sequence": 0,
+                "count_preferentially_sequence": 0,
+                "pickable_samples": [],
+            },
+        ]
+    }

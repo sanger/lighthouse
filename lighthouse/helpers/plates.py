@@ -40,7 +40,12 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE,
+    FIELD_PLATE_LOOKUP_RNA_ID,
+    FIELD_PLATE_LOOKUP_LAB_ID,
+    FIELD_PLATE_LOOKUP_SAMPLE_ID,
 )
+
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -391,7 +396,6 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
         if db_connection is not None:
             db_connection.close()
 
-
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
@@ -693,7 +697,7 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
+def format_plate(barcode: str, include_samples: bool = False) -> Dict[str, Union[str, bool, Optional[int]]]:
     """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
     so, how many samples meet the fit to pick rules.
 
@@ -713,7 +717,7 @@ def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
         count_filtered_positive,
     ) = get_fit_to_pick_samples_and_counts(barcode)
 
-    return {
+    formated_response = {
         "plate_barcode": barcode,
         "has_plate_map": has_plate_map_data(barcode),
         "count_fit_to_pick_samples": count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0,
@@ -722,4 +726,18 @@ def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
         if count_preferentially_sequence is not None
         else 0,
         "count_filtered_positive": count_filtered_positive if count_filtered_positive is not None else 0,
+    }
+
+    if include_samples is True:
+        formated_response["pickable_samples"] = list(map(pickable_sample_attributes, fit_to_pick_samples))
+
+    return formated_response
+
+
+def pickable_sample_attributes(sample: Any) -> Any:
+    return {
+        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE: sample[FIELD_COORDINATE],
+        FIELD_PLATE_LOOKUP_RNA_ID: sample[FIELD_RNA_ID],
+        FIELD_PLATE_LOOKUP_LAB_ID: sample[FIELD_LAB_ID],
+        FIELD_PLATE_LOOKUP_SAMPLE_ID: sample[FIELD_LH_SAMPLE_UUID],
     }

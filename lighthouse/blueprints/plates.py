@@ -116,7 +116,9 @@ def find_plate_from_barcode() -> FlaskResponse:
         barcodes = request.args.getlist("barcodes[]")
         logger.debug(f"Barcodes to look for: {barcodes}")
 
-        plates = [format_plate(barcode) for barcode in barcodes]
+        include_samples = (request.args.get("include_samples") == "true")
+
+        plates = [format_plate(barcode, include_samples) for barcode in barcodes]
 
         pretty(logger, plates)
 
