@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
+from eve import Eve
 from flask import current_app as app
 
 from lighthouse.constants.aggregation_stages import FACETS_FIT_TO_PICK, STAGES_FIT_TO_PICK_SAMPLES
@@ -22,7 +23,7 @@ def get_fit_to_pick_samples_and_counts(
     plate_barcode: str,
 ) -> Tuple[Union[SampleDocs, None], Union[int, None], Union[int, None], Union[int, None], Union[int, None]]:
 
-    samples_collection = app.data.driver.db.samples
+    samples_collection = cast(Eve, app).data.driver.db.samples
 
     # We are only interested in the samples for a particular plate
     pipeline: List[Dict[str, Any]] = [{"$match": {FIELD_PLATE_BARCODE: plate_barcode}}]
@@ -72,7 +73,7 @@ def has_plate_map_data(plate_barcode: str) -> bool:
     Returns:
         bool: True is documents were found for the barcode, otherwise False.
     """
-    samples_collection = app.data.driver.db.samples
+    samples_collection = cast(Eve, app).data.driver.db.samples
 
     doc_count = samples_collection.count_documents({FIELD_PLATE_BARCODE: plate_barcode}, limit=1)
 
