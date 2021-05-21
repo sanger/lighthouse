@@ -72,9 +72,14 @@ def delete_reports_endpoint() -> FlaskResponse:
     """
     logger.info("Attempting to delete report(s)")
     try:
-        delete_reports(request.get_json()["data"]["filenames"])
+        if (request_json := request.get_json()) is not None:
+            if (data := request_json.get("data")) is not None:
+                if (filenames := data.get("filenames")) is not None:
+                    delete_reports(filenames)
 
-        return ok()
+                    return ok()
+
+        raise Exception("Endpoint expecting JSON->data->filenames in request body")
     except Exception as e:
         msg = f"{ERROR_UNEXPECTED} ({type(e).__name__})"
         logger.error(msg)
