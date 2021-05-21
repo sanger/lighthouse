@@ -1,6 +1,7 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, cast
 
+from eve import Eve
 from flask import current_app as app
 from pymongo.collection import Collection
 
@@ -20,7 +21,7 @@ def get_source_plate_uuid(barcode: str) -> Optional[str]:
         {str} -- The source plate UUID; otherwise None if it cannot be determined.
     """
     try:
-        source_plates_collection: Collection = app.data.driver.db.source_plates
+        source_plates_collection: Collection = cast(Eve, app).data.driver.db.source_plates
 
         source_plate: Optional[SourcePlateDoc] = source_plates_collection.find_one({FIELD_BARCODE: barcode})
 
@@ -46,7 +47,7 @@ def get_positive_samples_in_source_plate(source_plate_uuid: str) -> Optional[Lis
         determined.
     """
     try:
-        samples_collection: Collection = app.data.driver.db.samples
+        samples_collection: Collection = cast(Eve, app).data.driver.db.samples
         query = {
             FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid,
             FIELD_RESULT: {"$regex": "^positive", "$options": "i"},

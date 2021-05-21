@@ -1,9 +1,10 @@
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
 import requests
+from eve import Eve
 from flask import current_app as app
 from sqlalchemy.sql.expression import and_, bindparam
 
@@ -136,7 +137,7 @@ def get_centre_prefix(centre_name):
     logger.debug(f"Getting the prefix for '{centre_name}'")
     try:
         #  get the centre collection
-        centres = app.data.driver.db.centres
+        centres = cast(Eve, app).data.driver.db.centres
 
         # use a case insensitive search for the centre name
         filter = {"name": {"$regex": f"^(?i){centre_name}$"}}
@@ -173,7 +174,7 @@ def find_samples(query: Dict[str, Any] = None) -> Optional[List[SampleDoc]]:
     if query is None:
         return None
 
-    samples_collection = app.data.driver.db.samples
+    samples_collection = cast(Eve, app).data.driver.db.samples
 
     samples = list(samples_collection.find(query))
 
@@ -494,7 +495,7 @@ def find_source_plates(query: Dict[str, Any] = None) -> Optional[List[Dict[str, 
     if query is None:
         return None
 
-    source_plates = app.data.driver.db.source_plates
+    source_plates = cast(Eve, app).data.driver.db.source_plates
 
     source_plate_documents = list(source_plates.find(query))
 
