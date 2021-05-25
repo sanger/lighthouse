@@ -29,7 +29,7 @@ bp = Blueprint("plates", __name__)
 CORS(bp)
 
 
-@bp.route("/plates/new", methods=["POST"])
+@bp.post("/plates/new")
 def create_plate_from_barcode() -> FlaskResponse:
     """This endpoint attempts to create a plate in Sequencescape.
 
@@ -37,11 +37,12 @@ def create_plate_from_barcode() -> FlaskResponse:
         FlaskResponse: the endpoints acts as proxy and returns the response and status code received from Sequencescape.
     """
     logger.info("Attempting to create a plate in Sequencescape")
-    try:
-        barcode = request.get_json()["barcode"]
-    except (KeyError, TypeError) as e:
-        logger.exception(e)
 
+    barcode = None
+    if (request_json := request.get_json()) is not None:
+        barcode = request_json.get("barcode")
+
+    if request_json is None or barcode is None:
         return bad_request("POST request needs 'barcode' in body")
 
     try:
@@ -94,9 +95,9 @@ def create_plate_from_barcode() -> FlaskResponse:
         return internal_server_error(msg)
 
 
-@bp.route("/plates", methods=["GET"])
+@bp.get("/plates")
 def find_plate_from_barcode() -> FlaskResponse:
-    """A route which returns information about a list of plates as specified in the 'barcodes' parameters.
+    """A route which returns information about a list of plates as specified in the 'barcodes[]' parameters.
 
     For example:
     To fetch data for the plates with barcodes '123', '456' and '789':

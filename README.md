@@ -1,6 +1,6 @@
 # Lighthouse service
 
-![python](https://github.com/sanger/lighthouse/workflows/python_test/badge.svg)
+![CI](https://github.com/sanger/lighthouse/workflows/CI/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/sanger/lighthouse/branch/develop/graph/badge.svg)](https://codecov.io/gh/sanger/lighthouse)
 
@@ -13,7 +13,7 @@ mongodb by the [crawler](https://github.com/sanger/crawler).
 
 - [Requirements for Development](#requirements-for-development)
 - [Getting Started](#getting-started)
-  * [Configuring Environment](#configuring-environment)
+  * [Configuring the Environment](#configuring-the-environment)
   * [Setup Steps](#setup-steps)
 - [Running](#running)
   * [Locally Using pipenv](#locally-using-pipenv)
@@ -21,6 +21,7 @@ mongodb by the [crawler](https://github.com/sanger/crawler).
 - [Testing](#testing)
   * [Testing Requirements](#testing-requirements)
   * [Running Tests](#running-tests)
+  * [Running tests with docker](#running-tests-with-docker)
 - [Deployment](#deployment)
 - [Routes](#routes)
 - [Scheduled Jobs](#scheduled-jobs)
@@ -46,11 +47,15 @@ independently.
 
 ## Getting Started
 
-### Configuring Environment
+### Configuring the Environment
 
-Create a `.env` file with the following values, or change the extension on `.env.example` in the root:
+Non-sensitive environmental variables can be stored in the `.flaskenv` file. These will be read
+by the `python-dotenv` library when the app is run. Currently, these config variables are defined
+there:
 
     FLASK_APP=lighthouse
+    FLASK_RUN_HOST=0.0.0.0
+    FLASK_RUN_PORT=8000
     FLASK_ENV=development
     EVE_SETTINGS=development.py
 
@@ -90,8 +95,6 @@ Create a `.env` file with the following values, or change the extension on `.env
 
         flask run
 
-**NB:** When adding or changing environmental variables, remember to exit and re-enter the virtual environment.
-
 ### Using Docker
 
 1. Build the docker image using:
@@ -104,7 +107,7 @@ Create a `.env` file with the following values, or change the extension on `.env
 
     Or, you can start each individually using the instructions in the compose file.
 
-1. Ensure your `.env` file contains the line
+1. Create a `.env` file which contains the line:
 
         LOCALHOST=host.docker.internal
 
@@ -126,9 +129,9 @@ Create a `.env` file with the following values, or change the extension on `.env
         python ./setup_sqlserver_test_db.py
         python ./setup_test_db.py
 
-1. Finally, start the app in port 8000 of the container using:
+1. Finally, start the app:
 
-        flask run -h 0.0.0.0 -p 8000
+        flask run
 
    After this step you should be able to access the app with a browser going to your local port 8000 (go to http://localhost:8000)
 
@@ -152,27 +155,23 @@ A wrapper is provided with pipenv (look in the Pipfile's `[scripts]` block for m
 
 ### Running tests with docker
 
-If you are unable to run tests locally because of pyodbc you can use the docker-compose
+If you are unable to run tests locally because of `pyodbc` you can use the Docker Compose:
 
         docker compose up
 
-2. you will need to run the sqlserver with:
+You will then need to setup the MSSQL with:
 
         docker exec -ti <container_id for lighthouse> python ./setup_sqlserver_test_db.py
 
-3. you can then run the tests (with hot reloading) using:
+You can then run the tests (with hot reloading) using:
 
         docker exec -ti <container_id> python -m pytest -vs
 
-#TODO: I tried to run the sql server setup as part of the docker-compose using an entry point but it failed with unable to connect error.
-
-
 ## Deployment
 
-This project uses a Docker image as the unit of deployment. To create a release for deployment, create a release
-in GitHub and wait for the GitHub action to create the Docker image.
-
-The release version should align with the [standards](https://github.com/sanger/.github/blob/master/standards.md).
+This project uses a Docker image as the unit of deployment. Update `.release-version` with
+major/minor/patch. On merging a pull request into *develop* or *master*, a release will be created
+along with the Docker image associated to that release.
 
 ## Routes
 
@@ -230,7 +229,3 @@ To update the table of contents after adding things to this README you can use t
 [markdown-toc](https://github.com/jonschlinkert/markdown-toc) node module. To run:
 
     npx markdown-toc -i README.md
-
-## Releases
-
-Update `.release-version` with major/minor/patch. On merging a pull request into develop or master, a release will be created with the release version as the tag/name

@@ -1,7 +1,9 @@
 import logging
 import time
+from typing import cast
 
 import pandas as pd
+from eve import Eve
 from flask import current_app as app
 
 from lighthouse import scheduler
@@ -30,7 +32,7 @@ def create_report() -> str:
     start = time.time()
 
     # get samples collection
-    samples_collection = app.data.driver.db.samples
+    samples_collection = cast(Eve, app).data.driver.db.samples
     fit_to_pick_samples_df = get_fit_to_pick_samples(samples_collection)
 
     logger.info("Getting location barcodes from LabWhere")
