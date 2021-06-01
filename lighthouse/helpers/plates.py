@@ -1,6 +1,6 @@
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple, Union, cast, Iterable
+from typing import Any, Dict, List, Optional, Tuple, Union, cast, Iterable, Callable
 from uuid import uuid4
 
 import requests
@@ -698,17 +698,17 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def format_plate(barcode: str, include_samples: bool = False) -> Dict[str, Union[str, bool, SampleDocs, Optional[int]]]:
-    """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
-    so, how many samples meet the fit to pick rules.
+def render_fields_format_plate(barcode: str) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
+    """It creates an ungenerated response for a plate lookup by creating lambda functions
+    that can be called when the associated field is needed.
 
     Arguments:
         barcode (str): barcode of plate to get sample information for.
 
     Returns:
-        Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
+        Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]: dict with lambda expresions to
+        calculate the associated field when needed.
     """
-    logger.info(f"Getting information for plate with barcode: {barcode}")
 
     (
         fit_to_pick_samples,
@@ -718,22 +718,50 @@ def format_plate(barcode: str, include_samples: bool = False) -> Dict[str, Union
         count_filtered_positive,
     ) = get_fit_to_pick_samples_and_counts(barcode)
 
-    formated_response: Dict[str, Union[str, bool, SampleDocs, Optional[int]]] = {
-        "plate_barcode": barcode,
-        "has_plate_map": has_plate_map_data(barcode),
-        "count_fit_to_pick_samples": count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0,
-        "count_must_sequence": count_must_sequence if count_must_sequence is not None else 0,
-        "count_preferentially_sequence": count_preferentially_sequence
-        if count_preferentially_sequence is not None
-        else 0,
-        "count_filtered_positive": count_filtered_positive if count_filtered_positive is not None else 0,
+    return {
+        "plate_barcode": lambda: barcode,
+        "has_plate_map": lambda: has_plate_map_data(barcode),
+        "count_fit_to_pick_samples": lambda: (
+            count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0
+        ),
+        "count_must_sequence": lambda: (count_must_sequence if count_must_sequence is not None else 0),
+        "count_preferentially_sequence": lambda: (
+            count_preferentially_sequence if count_preferentially_sequence is not None else 0
+        ),
+        "count_filtered_positive": lambda: (count_filtered_positive if count_filtered_positive is not None else 0),
+        "pickable_samples": lambda: list(
+            map(pickable_sample_attributes, cast(Iterable[SampleDoc], fit_to_pick_samples))
+        ),
     }
 
-    if include_samples is True:
-        formated_response["pickable_samples"] = list(
-            map(pickable_sample_attributes, cast(Iterable[SampleDoc], fit_to_pick_samples))
-        )
 
+def format_plate(
+    barcode: str, exclude_props: Optional[List[str]] = None
+) -> Dict[str, Union[str, bool, SampleDocs, Optional[int]]]:
+    """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
+    so, how many samples meet the fit to pick rules.
+    It accepts a exclude_props argument to exclude certain fields from the response if they are not needed.
+
+    Arguments:
+        barcode (str): barcode of plate to get sample information for.
+        exclude_props Optional[List[str]]: list of fields to exclude from the resulting object
+
+    Returns:
+        Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
+    """
+    # To solve default mutable arguments issue:
+    # <https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/>
+    exclude_props = exclude_props if exclude_props else []
+
+    logger.info(f"Getting information for plate with barcode: {barcode}")
+
+    # Obtain an dict with lambda expressions to generate required fields
+    renderable = render_fields_format_plate(barcode)
+    formated_response = {}
+    for field in renderable:
+        # Not generate the field if is in the exclusion list
+        if not (field in exclude_props):
+            formated_response[field] = renderable[field]()
     return formated_response
 
 
