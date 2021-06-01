@@ -98,29 +98,37 @@ def create_plate_from_barcode() -> FlaskResponse:
 
 @bp.get("/plates")
 def find_plate_from_barcode() -> FlaskResponse:
-    """A route which returns information about a list of plates as specified in the 'barcodes[]' parameters.
+    """A route which returns information about a list of comma separated plates as specified in the 'barcodes' parameters.
 
     For example:
     To fetch data for the plates with barcodes '123', '456' and '789':
 
-    `GET /plates?barcodes[]=123&barcodes[]=456&barcodes[]=789`
+    `GET /plates?barcodes=123,456,789`
 
     This endpoint responds with JSON and the body is in the format:
 
-    `{"plates":[{"barcode":"123","plate_map":true,"number_of_fit_to_pick":0}]}`
+    `{"plates":[
+        {"barcode":"123","plate_map":true,"number_of_fit_to_pick":0},
+        {"barcode":"456","plate_map":true,"number_of_fit_to_pick":0},
+        {"barcode":"789","plate_map":true,"number_of_fit_to_pick":0}
+    }`
 
     Returns:
         FlaskResponse: the response body and HTTP status code
     """
     logger.info("Finding plate from barcode")
     try:
-        barcodes = request.args.getlist("barcodes[]")
-        logger.debug(f"Barcodes to look for: {barcodes}")
+        barcodes_arg = request.args.get("barcodes")
+        barcodes_list = barcodes_arg.split(",") if barcodes_arg else []
+
+        if len(barcodes_list) == 0:
+            return bad_request("Please include a barcode list")
 
         exclude_props_arg = request.args.get(ARG_EXCLUDE_FIELDS)
         exclude_props = exclude_props_arg.split(",") if exclude_props_arg else []
 
-        plates = [format_plate(barcode, exclude_props=exclude_props) for barcode in barcodes]
+        logger.debug(f"Barcodes to look for: {barcodes_arg}")
+        plates = [format_plate(barcode, exclude_props=exclude_props) for barcode in barcodes_list]
 
         pretty(logger, plates)
 

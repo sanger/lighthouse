@@ -82,7 +82,7 @@ def test_get_plates_endpoint_successful(
     app, client, samples, priority_samples, mocked_responses, plates_lookup_without_samples
 ):
     response = client.get(
-        f"/plates?barcodes[]=plate_123&barcodes[]=456&{ ARG_EXCLUDE_FIELDS }=pickable_samples",
+        f"/plates?barcodes=plate_123,456&{ ARG_EXCLUDE_FIELDS }=pickable_samples",
         content_type="application/json",
     )
 
@@ -105,14 +105,14 @@ def test_get_plates_endpoint_successful(
 def test_get_plates_endpoint_method_calls(app, client, samples, priority_samples):
     barcode = "plate_123"
     with patch("lighthouse.helpers.plates.has_plate_map_data", return_value=True) as mock_has_plate_map_data:
-        response = client.get(f"/plates?barcodes[]={barcode}", content_type="application/json")
+        response = client.get(f"/plates?barcodes={barcode}", content_type="application/json")
         assert response.status_code == HTTPStatus.OK
         mock_has_plate_map_data.assert_called_once_with(barcode)
 
 
 def test_get_plates_endpoint_fail(app, client, samples, mocked_responses):
     with patch("lighthouse.helpers.plates.get_fit_to_pick_samples_and_counts", side_effect=Exception()):
-        response = client.get("/plates?barcodes[]=123&barcodes[]=456", content_type="application/json")
+        response = client.get("/plates?barcodes=123,456", content_type="application/json")
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert response.json == {"errors": ["Failed to lookup plates: Exception"]}
@@ -122,7 +122,7 @@ def test_get_plates_endpoint_exclude_props(
     app, client, samples, priority_samples, mocked_responses, plates_lookup_with_samples
 ):
     response = client.get(
-        f"/plates?barcodes[]=plate_123&barcodes[]=456&{ ARG_EXCLUDE_FIELDS }=plate_barcode",
+        f"/plates?barcodes=plate_123,456&{ ARG_EXCLUDE_FIELDS }=plate_barcode",
         content_type="application/json",
     )
 
