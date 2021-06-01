@@ -97,28 +97,33 @@ def create_plate_from_barcode() -> FlaskResponse:
 
 @bp.get("/plates")
 def find_plate_from_barcode() -> FlaskResponse:
-    """A route which returns information about a list of plates as specified in the 'barcodes[]' parameters.
+    """A route which returns information about a list of comma separated plates as specified in the 'barcodes' parameters.
 
     For example:
     To fetch data for the plates with barcodes '123', '456' and '789':
 
-    `GET /plates?barcodes[]=123&barcodes[]=456&barcodes[]=789`
+    `GET /plates?barcodes=123,456,789`
 
     This endpoint responds with JSON and the body is in the format:
 
-    `{"plates":[{"barcode":"123","plate_map":true,"number_of_fit_to_pick":0}]}`
+    `{"plates":[
+        {"barcode":"123","plate_map":true,"number_of_fit_to_pick":0},
+        {"barcode":"456","plate_map":true,"number_of_fit_to_pick":0},
+        {"barcode":"789","plate_map":true,"number_of_fit_to_pick":0}
+    }`
 
     Returns:
         FlaskResponse: the response body and HTTP status code
     """
     logger.info("Finding plate from barcode")
     try:
-        barcodes = request.args.getlist("barcodes[]")
+        barcodes = request.args.get("barcodes")
         logger.debug(f"Barcodes to look for: {barcodes}")
 
+        barcodes_list = barcodes.split(",")
         include_samples = request.args.get("include_samples") == "true"
 
-        plates = [format_plate(barcode, include_samples) for barcode in barcodes]
+        plates = [format_plate(barcode, include_samples) for barcode in barcodes_list]
 
         pretty(logger, plates)
 
