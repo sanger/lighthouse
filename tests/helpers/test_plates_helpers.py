@@ -1185,8 +1185,10 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
 
 def test_format_plate(app, plates_lookup_without_samples, plates_lookup_with_samples):
     with app.app_context():
-        assert format_plate("plate_123") == plates_lookup_without_samples["plate_123"]
-        assert format_plate("plate_123", include_samples=True) == plates_lookup_with_samples["plate_123"]
+        assert (
+            format_plate("plate_123", exclude_props=["pickable_samples"]) == plates_lookup_without_samples["plate_123"]
+        )
+        assert format_plate("plate_123") == plates_lookup_with_samples["plate_123"]
 
 
 # def test_construct_cherrypicking_plate_failed_message_success(

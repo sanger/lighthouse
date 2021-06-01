@@ -81,7 +81,9 @@ def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses)
 def test_get_plates_endpoint_successful(
     app, client, samples, priority_samples, mocked_responses, plates_lookup_without_samples
 ):
-    response = client.get("/plates?barcodes[]=plate_123&barcodes[]=456", content_type="application/json")
+    response = client.get(
+        "/plates?barcodes[]=plate_123&barcodes[]=456&exclude_props=pickable_samples", content_type="application/json"
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == {
@@ -115,19 +117,24 @@ def test_get_plates_endpoint_fail(app, client, samples, mocked_responses):
         assert response.json == {"errors": ["Failed to lookup plates: Exception"]}
 
 
-def test_get_plates_endpoint_include_samples(
+def test_get_plates_endpoint_exclude_props(
     app, client, samples, priority_samples, mocked_responses, plates_lookup_with_samples
 ):
     response = client.get(
-        "/plates?barcodes[]=plate_123&barcodes[]=456&include_samples=true", content_type="application/json"
+        "/plates?barcodes[]=plate_123&barcodes[]=456&exclude_props=plate_barcode", content_type="application/json"
     )
 
     assert response.status_code == HTTPStatus.OK
+
+    # shallow copy of plate
+    first_plate = plates_lookup_with_samples["plate_123"].copy()
+    # we remove the barcode attr
+    first_plate.pop("plate_barcode")
+
     assert response.json == {
         "plates": [
-            plates_lookup_with_samples["plate_123"],
+            first_plate,
             {
-                "plate_barcode": "456",
                 "has_plate_map": False,
                 "count_fit_to_pick_samples": 0,
                 "count_filtered_positive": 0,

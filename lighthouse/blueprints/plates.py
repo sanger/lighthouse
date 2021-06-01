@@ -116,9 +116,10 @@ def find_plate_from_barcode() -> FlaskResponse:
         barcodes = request.args.getlist("barcodes[]")
         logger.debug(f"Barcodes to look for: {barcodes}")
 
-        include_samples = request.args.get("include_samples") == "true"
+        exclude_props_arg = request.args.get("exclude_props")
+        exclude_props = exclude_props_arg.split(",") if exclude_props_arg else []
 
-        plates = [format_plate(barcode, include_samples) for barcode in barcodes]
+        plates = [format_plate(barcode, exclude_props=exclude_props) for barcode in barcodes]
 
         pretty(logger, plates)
 
