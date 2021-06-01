@@ -699,6 +699,17 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
 
 
 def render_fields_format_plate(barcode: str) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
+    """It creates an ungenerated response for a plate lookup by creating lambda functions
+    that can be called when the associated field is needed.
+
+    Arguments:
+        barcode (str): barcode of plate to get sample information for.
+
+    Returns:
+        Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]: dict with lambda expresions to
+        calculate the associated field when needed.
+    """
+
     (
         fit_to_pick_samples,
         count_fit_to_pick_samples,
@@ -729,9 +740,11 @@ def format_plate(
 ) -> Dict[str, Union[str, bool, SampleDocs, Optional[int]]]:
     """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
     so, how many samples meet the fit to pick rules.
+    It accepts a exclude_props argument to exclude certain fields from the response if they are not needed.
 
     Arguments:
         barcode (str): barcode of plate to get sample information for.
+        exclude_props Optional[List[str]]: list of fields to exclude from the resulting object
 
     Returns:
         Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
@@ -742,9 +755,11 @@ def format_plate(
 
     logger.info(f"Getting information for plate with barcode: {barcode}")
 
+    # Obtain an dict with lambda expressions to generate required fields
     renderable = render_fields_format_plate(barcode)
     formated_response = {}
     for field in renderable:
+        # Not generate the field if is in the exclusion list
         if not (field in exclude_props):
             formated_response[field] = renderable[field]()
     return formated_response
