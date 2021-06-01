@@ -10,6 +10,7 @@ from lighthouse.constants.error_messages import (
     ERROR_UNEXPECTED_PLATES_CREATE,
     ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
+from lighthouse.constants.general import ARG_EXCLUDE_FIELDS
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.plates import (
@@ -116,7 +117,7 @@ def find_plate_from_barcode() -> FlaskResponse:
         barcodes = request.args.getlist("barcodes[]")
         logger.debug(f"Barcodes to look for: {barcodes}")
 
-        exclude_props_arg = request.args.get("exclude_props")
+        exclude_props_arg = request.args.get(ARG_EXCLUDE_FIELDS)
         exclude_props = exclude_props_arg.split(",") if exclude_props_arg else []
 
         plates = [format_plate(barcode, exclude_props=exclude_props) for barcode in barcodes]

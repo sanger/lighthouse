@@ -2,7 +2,7 @@ from http import HTTPStatus
 from unittest.mock import patch
 
 import responses
-
+from lighthouse.constants.general import ARG_EXCLUDE_FIELDS
 from lighthouse.constants.error_messages import (
     ERROR_ADD_COG_BARCODES,
     ERROR_PLATES_CREATE,
@@ -82,7 +82,7 @@ def test_get_plates_endpoint_successful(
     app, client, samples, priority_samples, mocked_responses, plates_lookup_without_samples
 ):
     response = client.get(
-        "/plates?barcodes[]=plate_123&barcodes[]=456&exclude_props=pickable_samples", content_type="application/json"
+        f"/plates?barcodes[]=plate_123&barcodes[]=456&{ ARG_EXCLUDE_FIELDS }=pickable_samples", content_type="application/json"
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -121,7 +121,7 @@ def test_get_plates_endpoint_exclude_props(
     app, client, samples, priority_samples, mocked_responses, plates_lookup_with_samples
 ):
     response = client.get(
-        "/plates?barcodes[]=plate_123&barcodes[]=456&exclude_props=plate_barcode", content_type="application/json"
+        f"/plates?barcodes[]=plate_123&barcodes[]=456&{ ARG_EXCLUDE_FIELDS }=plate_barcode", content_type="application/json"
     )
 
     assert response.status_code == HTTPStatus.OK
