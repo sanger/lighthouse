@@ -108,9 +108,10 @@ def find_plate_from_barcode() -> FlaskResponse:
     This endpoint responds with JSON and the body is in the format:
 
     `{"plates":[
-        {"barcode":"123","plate_map":true,"number_of_fit_to_pick":0},
-        {"barcode":"456","plate_map":true,"number_of_fit_to_pick":0},
-        {"barcode":"789","plate_map":true,"number_of_fit_to_pick":0}
+            {"barcode":"123","plate_map":true,"number_of_fit_to_pick":0},
+            {"barcode":"456","plate_map":true,"number_of_fit_to_pick":0},
+            {"barcode":"789","plate_map":true,"number_of_fit_to_pick":0},
+        ]
     }`
 
     Returns:
