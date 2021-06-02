@@ -16,7 +16,7 @@ from lighthouse.constants.error_messages import (
     ERROR_UNEXPECTED_CHERRYPICKING_FAILURE,
     ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
-from lighthouse.constants.events import PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.constants.events import PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.general import ARG_BARCODE, ARG_FAILURE_TYPE, ARG_ROBOT_SERIAL, ARG_USER_ID
 from lighthouse.helpers.events import get_routing_key
 from lighthouse.helpers.plates import (
@@ -145,7 +145,7 @@ def fail_plate_from_barcode() -> FlaskResponse:
         FlaskResponse: If the message is published successfully return with an OK otherwise return the error messages
         and the corresponding HTTP status code.
     """
-    logger.info(f"Attempting to publish a '{PLATE_EVENT_DESTINATION_FAILED}' message")
+    logger.info(f"Attempting to publish a '{PE_BECKMAN_DESTINATION_FAILED}' message")
     try:
         required_args = (ARG_USER_ID, ARG_BARCODE, ARG_ROBOT_SERIAL, ARG_FAILURE_TYPE)
         user_id, barcode, robot_serial_number, failure_type = get_required_params(request, required_args)
@@ -169,7 +169,7 @@ def fail_plate_from_barcode() -> FlaskResponse:
 
             return internal_server_error(errors)
 
-        routing_key = get_routing_key(PLATE_EVENT_DESTINATION_FAILED)
+        routing_key = get_routing_key(PE_BECKMAN_DESTINATION_FAILED)
 
         logger.info("Attempting to publish the destination failed event message")
         broker = Broker()
@@ -177,7 +177,7 @@ def fail_plate_from_barcode() -> FlaskResponse:
         try:
             broker.publish(message, routing_key)
             broker.close_connection()
-            logger.info(f"Successfully published a '{PLATE_EVENT_DESTINATION_FAILED}' message")
+            logger.info(f"Successfully published a '{PE_BECKMAN_DESTINATION_FAILED}' message")
 
             return ok(errors=errors)
 

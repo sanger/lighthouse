@@ -8,7 +8,7 @@ from eve import Eve
 from flask import current_app as app
 from sqlalchemy.sql.expression import and_, bindparam
 
-from lighthouse.constants.events import PLATE_EVENT_DESTINATION_CREATED, PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_COG_BARCODE,
@@ -465,7 +465,7 @@ def create_cherrypicked_post_body(
         {
             "event": {
                 "user_identifier": user_id,
-                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                "event_type": PE_BECKMAN_DESTINATION_CREATED,
                 "subjects": subjects,
                 "metadata": {},
                 "lims": app.config["RMQ_LIMS_ID"],
@@ -576,7 +576,7 @@ def construct_cherrypicking_plate_failed_message(
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
-                "event_type": PLATE_EVENT_DESTINATION_FAILED,
+                "event_type": PE_BECKMAN_DESTINATION_FAILED,
                 "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
                 "subjects": subjects,

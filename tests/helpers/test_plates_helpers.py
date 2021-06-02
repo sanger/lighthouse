@@ -12,7 +12,7 @@ from flask import current_app
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
 
-from lighthouse.constants.events import PLATE_EVENT_DESTINATION_CREATED, PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_COG_BARCODE,
@@ -775,7 +775,7 @@ def test_create_cherrypicked_post_body(app):
                         {
                             "event": {
                                 "user_identifier": "my_user",
-                                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                                "event_type": PE_BECKMAN_DESTINATION_CREATED,
                                 "subjects": [
                                     {
                                         "role_type": "robot",
@@ -955,7 +955,7 @@ def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure(app, mo
 
                     event = message_content["event"]
                     assert event["uuid"] == str(test_uuid)
-                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["event_type"] == PE_BECKMAN_DESTINATION_FAILED
                     assert event["occured_at"] == test_timestamp
                     assert event["user_identifier"] == test_user
 
@@ -1017,7 +1017,7 @@ def test_construct_cherrypicking_plate_failed_message_none_dart_samples(app, moc
 
                     event = message_content["event"]
                     assert event["uuid"] == str(test_uuid)
-                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["event_type"] == PE_BECKMAN_DESTINATION_FAILED
                     assert event["occured_at"] == test_timestamp
                     assert event["user_identifier"] == test_user
 
@@ -1079,7 +1079,7 @@ def test_construct_cherrypicking_plate_failed_message_empty_dart_samples(app, mo
 
                     event = message_content["event"]
                     assert event["uuid"] == str(test_uuid)
-                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["event_type"] == PE_BECKMAN_DESTINATION_FAILED
                     assert event["occured_at"] == test_timestamp
                     assert event["user_identifier"] == test_user
 

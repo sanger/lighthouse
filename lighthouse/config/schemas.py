@@ -1,9 +1,25 @@
+EVENTS_SCHEMA = {
+    "automation_system_run_id": {
+        "required": True,
+        "type": "integer",
+    },
+    "barcode": {
+        "type": "string",
+    },
+    "event_type": {
+        "required": True,
+        "type": "string",
+        "check_with": "plate_events_dependent_parameters",
+    },
+}
+
+
 PRIORITY_SAMPLES_SCHEMA = {
     "sample_id": {
         "type": "objectid",
         "required": True,
         "unique": True,
-        "check_with": "required_bools",  # validator defined in lighthouse.validators.priority_samples.py
+        "check_with": "priority_samples_required_bools",
     },
     "must_sequence": {
         "type": "boolean",

@@ -1,6 +1,5 @@
+from lighthouse.constants.events import EVENT_CHERRYPICK_LAYOUT_SET, PE_BECKMAN_DESTINATION_CREATED
 from tests.fixtures.data.uuids import testing_uuid_binary
-
-from lighthouse.constants.events import EVENT_CHERRYPICK_LAYOUT_SET, PLATE_EVENT_DESTINATION_CREATED
 
 EVENT_WH_DATA = {
     "subjects": [
@@ -68,7 +67,7 @@ EVENT_WH_DATA = {
     ],
     "event_types": [
         {"id": 1, "key": EVENT_CHERRYPICK_LAYOUT_SET, "description": "stuff"},
-        {"id": 2, "key": PLATE_EVENT_DESTINATION_CREATED, "description": "stuff"},
+        {"id": 2, "key": PE_BECKMAN_DESTINATION_CREATED, "description": "stuff"},
     ],
     "subject_types": [{"id": 1, "key": "sample", "description": "stuff"}],
     "role_types": [{"id": 1, "key": "sample", "description": "stuff"}],

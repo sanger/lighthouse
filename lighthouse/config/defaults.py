@@ -1,9 +1,9 @@
 # flake8: noqa
 import os
 
-from lighthouse.authorization import APITokenAuth
+from lighthouse.authorization import BioseroAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
-from lighthouse.config.schemas import PRIORITY_SAMPLES_SCHEMA
+from lighthouse.config.schemas import EVENTS_SCHEMA, PRIORITY_SAMPLES_SCHEMA
 
 ###
 # General config
@@ -37,15 +37,21 @@ PAGINATION_LIMIT = 10000
 PUBLIC_METHODS = ["GET"]
 PUBLIC_ITEM_METHODS = ["GET"]
 DOMAIN = {
-    "samples": {"internal_resource": True},
+    "centres": {
+        "internal_resource": True,
+    },
+    "events": {
+        "authentication": BioseroAPITokenAuth,
+        "resource_methods": ["GET", "POST"],
+        "schema": EVENTS_SCHEMA,
+    },
     "imports": {
         # When True, this option will allow insertion of arbitrary, unknown fields to any API endpoint. Since most
         #   endpoints are read-only, this will allow all the fields to be shown.
         "allow_unknown": True
     },
-    "centres": {"internal_resource": True},
     "priority_samples": {
-        "authentication": APITokenAuth,
+        "authentication": PriorityAPITokenAuth,
         "item_title": "priority_sample",
         "resource_methods": ["GET", "POST"],
         "item_methods": ["GET", "PATCH", "PUT"],
@@ -57,7 +63,9 @@ DOMAIN = {
         "bulk_enabled": True,
         "schema": PRIORITY_SAMPLES_SCHEMA,
     },
-    "schema": {},
+    "samples": {
+        "internal_resource": True,
+    },
 }
 # Improve pagination performance. When optimization is active no count operation, which can be slow on large
 #   collections, is performed on the database. This does have a few consequences. Firstly, no document count is returned.

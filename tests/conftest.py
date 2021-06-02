@@ -6,7 +6,7 @@ import pytest
 import responses
 
 from lighthouse import create_app
-from lighthouse.constants.events import PLATE_EVENT_SOURCE_ALL_NEGATIVES, PLATE_EVENT_SOURCE_COMPLETED
+from lighthouse.constants.events import PE_BECKMAN_SOURCE_ALL_NEGATIVES, PE_BECKMAN_SOURCE_COMPLETED
 from lighthouse.constants.fields import FIELD_SAMPLE_ID
 from lighthouse.db.dart import load_sql_server_script
 from lighthouse.helpers.dart import create_dart_connection
@@ -361,7 +361,7 @@ def message_source_complete():
     message_content = {
         "event": {
             "uuid": "1770dbcd-0abf-4293-ac62-dd26964f80b0",
-            "event_type": PLATE_EVENT_SOURCE_COMPLETED,
+            "event_type": PE_BECKMAN_SOURCE_COMPLETED,
             "occured_at": "2020-11-26T15:58:20",
             "user_identifier": "test1",
             "subjects": [
@@ -396,7 +396,7 @@ def message_source_all_negative():
     message_content = {
         "event": {
             "uuid": "1770dbcd-0abf-4293-ac62-dd26964f80b0",
-            "event_type": PLATE_EVENT_SOURCE_ALL_NEGATIVES,
+            "event_type": PE_BECKMAN_SOURCE_ALL_NEGATIVES,
             "occured_at": "2020-11-26T15:58:20",
             "user_identifier": "test1",
             "subjects": [

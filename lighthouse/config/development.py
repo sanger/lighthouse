@@ -7,7 +7,12 @@ from lighthouse.config.defaults import *
 # Eve config
 ###
 DEBUG = True
-API_TOKEN = "develop"
+API_TOKENS_PRIORITY = {
+    "read_write": "priority_read_write_dev",
+}
+API_TOKENS_BIOSERO = {
+    "read_write": "biosero_read_write_dev",
+}
 
 ###
 # APScheduler config
