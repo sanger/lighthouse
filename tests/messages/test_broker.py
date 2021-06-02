@@ -26,8 +26,8 @@ def test_broker_connect_connects(app, mock_pika):
                 app.config["RMQ_EXCHANGE"], exchange_type=app.config["RMQ_EXCHANGE_TYPE"]
             )
 
-        assert broker.connection == mock_connection
-        assert broker.channel == mock_channel
+        assert broker._connection == mock_connection
+        assert broker._channel == mock_channel
 
 
 def test_broker_publish(app, mock_pika, mock_message):
