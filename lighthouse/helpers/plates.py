@@ -698,7 +698,9 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def field_generators_for_plate_lookup(barcode: str) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
+def field_generators_for_plate_lookup(
+    barcode: str,
+) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
     """It creates an ungenerated response for a plate lookup by creating lambda functions
     that can be called when the associated field is needed.
 
