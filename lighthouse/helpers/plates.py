@@ -698,7 +698,7 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def render_fields_format_plate(barcode: str) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
+def field_generators_for_plate_lookup(barcode: str) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
     """It creates an ungenerated response for a plate lookup by creating lambda functions
     that can be called when the associated field is needed.
 
@@ -756,7 +756,7 @@ def format_plate(
     logger.info(f"Getting information for plate with barcode: {barcode}")
 
     # Obtain an dict with lambda expressions to generate required fields
-    renderable = render_fields_format_plate(barcode)
+    renderable = field_generators_for_plate_lookup(barcode)
     formated_response = {}
     for field in renderable:
         # Not generate the field if is in the exclusion list
@@ -766,6 +766,16 @@ def format_plate(
 
 
 def pickable_sample_attributes(sample: SampleDoc) -> SampleDoc:
+    """Renders into a Dict() the sample information from MongoDB to be sent inside a
+    plate lookup call. This is currently in use for the Biosero robots to get the
+    information of pickable samples in a source plate.
+
+    Arguments:
+        sample SampleDoc: A sample retrieved from MongoDB samples collection
+
+    Returns:
+        sample with the valid list of fields defined for a pickable sample
+    """
     return {
         FIELD_PLATE_LOOKUP_SOURCE_COORDINATE: sample[FIELD_COORDINATE],
         FIELD_PLATE_LOOKUP_RNA_ID: sample[FIELD_RNA_ID],

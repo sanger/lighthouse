@@ -73,7 +73,7 @@ from lighthouse.helpers.plates import (
     rows_without_controls,
     update_mlwh_with_cog_uk_ids,
     format_plate,
-    render_fields_format_plate,
+    field_generators_for_plate_lookup,
 )
 
 # ---------- test helpers ----------
@@ -1192,10 +1192,11 @@ def test_format_plate(app, plates_lookup_without_samples, plates_lookup_with_sam
         assert format_plate("plate_123") == plates_lookup_with_samples["plate_123"]
 
 
-def test_render_fields_format_plate(app, plates_lookup_without_samples, plates_lookup_with_samples):
+def test_field_generators_for_plate_lookup(app, plates_lookup_with_samples):
     with app.app_context():
-        assert render_fields_format_plate("plate_123")["plate_barcode"] is not None
-        assert render_fields_format_plate("plate_123")["plate_barcode"]() == "plate_123"
+        assert field_generators_for_plate_lookup("plate_123")["plate_barcode"] is not None
+        plate = plates_lookup_with_samples["plate_123"]
+        assert field_generators_for_plate_lookup("plate_123")["plate_barcode"]() == plate["plate_barcode"]
 
 
 # def test_construct_cherrypicking_plate_failed_message_success(
