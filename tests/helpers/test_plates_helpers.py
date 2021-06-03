@@ -684,7 +684,7 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
             {
                 FIELD_SS_NAME: "rna_2",
                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
-                FIELD_SS_PHENOTYPE: "Positive",
+                FIELD_SS_PHENOTYPE: "positive",
                 FIELD_SS_SUPPLIER_NAME: "abcd",
                 FIELD_SS_BARCODE: "d123",
                 FIELD_SS_COORDINATE: "B02",
@@ -720,7 +720,7 @@ def test_create_cherrypicked_post_body(app):
             {
                 FIELD_SS_NAME: "rna_2",
                 FIELD_SS_SAMPLE_DESCRIPTION: "MCM002",
-                FIELD_SS_PHENOTYPE: "Positive",
+                FIELD_SS_PHENOTYPE: "positive",
                 FIELD_SS_SUPPLIER_NAME: "abcd",
                 FIELD_SS_BARCODE: "123",
                 FIELD_SS_COORDINATE: "B02",
