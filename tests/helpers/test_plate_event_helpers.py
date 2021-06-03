@@ -48,7 +48,7 @@ def test_construct_event_message_source_complete():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_completed_message"
     ) as mock_construct_source_completed_message:
-        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message({"test": "me"}))
         mock_construct_source_completed_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
@@ -62,7 +62,7 @@ def test_construct_event_message_source_not_recognised():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_not_recognised_message"
     ) as mock_construct_source_not_recognised_message:
-        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message({"test": "me"}))
         mock_construct_source_not_recognised_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
@@ -76,7 +76,7 @@ def test_construct_event_message_source_no_map_data():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_no_map_data_message"
     ) as mock_construct_source_no_map_data_message:
-        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message({"test": "me"}))
         mock_construct_source_no_map_data_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
@@ -90,7 +90,7 @@ def test_construct_event_message_source_all_negatives():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_all_negatives_message"
     ) as mock_construct_source_all_negatives_message:
-        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message({"test": "me"}))
         mock_construct_source_all_negatives_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}

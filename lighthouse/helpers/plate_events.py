@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from flask import current_app as app
 
+from lighthouse.classes.beckman import Beckman
 from lighthouse.constants.events import (
     PE_BECKMAN_SOURCE_ALL_NEGATIVES,
     PE_BECKMAN_SOURCE_COMPLETED,
@@ -15,7 +16,6 @@ from lighthouse.helpers.events import (
     construct_robot_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
-    get_robot_uuid,
 )
 from lighthouse.helpers.mongo import get_positive_samples_in_source_plate, get_source_plate_uuid
 from lighthouse.messages.message import Message
@@ -80,7 +80,7 @@ def construct_source_plate_not_recognised_message(params: Dict[str, str]) -> Tup
                 "'user_id' and 'robot' are required to construct a {PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
             ], None
 
-        robot_uuid = get_robot_uuid(robot_serial_number)
+        robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
@@ -126,7 +126,7 @@ def construct_source_plate_no_map_data_message(params: Dict[str, str]) -> Tuple[
                 f"{PE_BECKMAN_SOURCE_NO_MAP_DATA} event message"
             ], None
 
-        robot_uuid = get_robot_uuid(robot_serial_number)
+        robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
@@ -189,7 +189,7 @@ def __construct_source_plate_with_samples_on_robot_message(
         if not barcode or not user_id or not robot_serial_number:
             return ["'barcode', 'user_id' and 'robot' are required to construct a " f"{event_type} event message"], None
 
-        robot_uuid = get_robot_uuid(robot_serial_number)
+        robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 

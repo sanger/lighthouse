@@ -12,6 +12,7 @@ from lighthouse.db.dart import load_sql_server_script
 from lighthouse.helpers.dart import create_dart_connection
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
+from lighthouse.types import EventMessage
 from tests.fixtures.data.centres import CENTRES
 from tests.fixtures.data.dart import DART_MONGO_MERGED_SAMPLES
 from tests.fixtures.data.event_wh import EVENT_WH_DATA
@@ -342,7 +343,7 @@ def event_wh_sql_engine(app):
 
 @pytest.fixture
 def message_unknown():
-    message_content = {
+    message_content: EventMessage = {
         "event": {
             "uuid": "1770dbcd-0abf-4293-ac62-dd26964f80b0",
             "event_type": "no_callbacks",
@@ -358,7 +359,7 @@ def message_unknown():
 
 @pytest.fixture
 def message_source_complete():
-    message_content = {
+    message_content: EventMessage = {
         "event": {
             "uuid": "1770dbcd-0abf-4293-ac62-dd26964f80b0",
             "event_type": PE_BECKMAN_SOURCE_COMPLETED,
@@ -393,7 +394,7 @@ def message_source_complete():
 
 @pytest.fixture
 def message_source_all_negative():
-    message_content = {
+    message_content: EventMessage = {
         "event": {
             "uuid": "1770dbcd-0abf-4293-ac62-dd26964f80b0",
             "event_type": PE_BECKMAN_SOURCE_ALL_NEGATIVES,

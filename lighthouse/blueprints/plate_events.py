@@ -56,10 +56,10 @@ def create_plate_event() -> FlaskResponse:
         logger.info("Attempting to publish the constructed plate event message")
 
         broker = Broker()
-        broker.connect()
+        broker._connect()
         try:
             broker.publish(message, routing_key)
-            broker.close_connection()
+            broker._close_connection()
             logger.info(f"Successfully published a '{event_type}' plate event message")
             success, messages = fire_callbacks(message)
             if success:
@@ -69,7 +69,7 @@ def create_plate_event() -> FlaskResponse:
 
                 return internal_server_error(messages)
         except Exception:
-            broker.close_connection()
+            broker._close_connection()
 
             raise
     except Exception as e:

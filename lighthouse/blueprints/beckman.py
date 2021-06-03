@@ -1,10 +1,10 @@
 import logging
 
 from flask import Blueprint
-from flask import current_app as app
 from flask_cors import CORS
 
-from lighthouse.constants.error_messages import ERROR_FAILURE_TYPE_CONFIG, ERROR_ROBOT_CONFIG, ERROR_UNEXPECTED
+from lighthouse.classes.beckman import Beckman
+from lighthouse.constants.error_messages import ERROR_UNEXPECTED
 from lighthouse.helpers.responses import internal_server_error, ok
 from lighthouse.types import FlaskResponse
 
@@ -23,19 +23,10 @@ def get_robots() -> FlaskResponse:
     """
     logger.info("Fetching Beckman robot information")
     try:
-        robots_config = app.config.get("BECKMAN_ROBOTS")
-        if robots_config is None:
-            logger.error(f"{ERROR_ROBOT_CONFIG} no config found")
-
-            return internal_server_error("No information exists for any Beckman robots", robots=[])
-
-        robots = [{"name": v["name"], "serial_number": k} for k, v in robots_config.items()]
-
-        logger.info("Successfully fetched Beckman robot information")
+        robots = Beckman.get_robots()
 
         return ok(errors=[], robots=robots)
     except Exception as e:
-        logger.error(f"{ERROR_ROBOT_CONFIG} {type(e).__name__}")
         logger.exception(e)
 
         return internal_server_error(f"{ERROR_UNEXPECTED} while fetching Beckman robot information", robots=[])
@@ -50,20 +41,10 @@ def get_failure_types() -> FlaskResponse:
     """
     logger.info("Fetching Beckman failure type information")
     try:
-        failure_types_config = app.config.get("BECKMAN_FAILURE_TYPES")
-
-        if failure_types_config is None or not isinstance(failure_types_config, dict):
-            logger.error(f"{ERROR_FAILURE_TYPE_CONFIG} no config found")
-
-            return internal_server_error("No information exists for any Beckman failure types", failure_types=[])
-
-        failure_types = [{"type": k, "description": v} for k, v in failure_types_config.items()]
-
-        logger.info("Successfully fetched Beckman failure type information")
+        failure_types = Beckman.get_failure_types()
 
         return ok(errors=[], failure_types=failure_types)
     except Exception as e:
-        logger.error(f"{ERROR_FAILURE_TYPE_CONFIG} {type(e).__name__}")
         logger.exception(e)
 
         return internal_server_error(f"{ERROR_UNEXPECTED} while fetching Beckman failure type information", robots=[])

@@ -95,9 +95,9 @@ def _labware_barcodes(event: Message) -> List[str]:
         List[str]: cherrypicking_source_labware barcodes
     """
     return [
-        subject["friendly_name"]
-        for subject in event.message["event"]["subjects"]
-        if subject["role_type"] == "cherrypicking_source_labware"
+        subject["friendly_name"]  # type: ignore
+        for subject in event.message["event"]["subjects"]  # type: ignore
+        if subject["role_type"] == "cherrypicking_source_labware"  # type: ignore
     ]
 
 
@@ -112,9 +112,9 @@ def _robot_barcode(event: Message) -> str:
     """
     return str(
         next(
-            subject["friendly_name"]
-            for subject in event.message["event"]["subjects"]
-            if subject["role_type"] == "robot"
+            subject["friendly_name"]  # type: ignore
+            for subject in event.message["event"]["subjects"]  # type: ignore
+            if subject["role_type"] == "robot"  # type: ignore
         )
     )
 

@@ -33,7 +33,7 @@ def test_get_create_plate_event_endpoint_internal_error_failed_constructing_mess
 def test_get_create_plate_event_endpoint_internal_error_failed_broker_initialise(client):
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
         with patch("lighthouse.blueprints.plate_events.Broker", side_effect=Exception()):
-            mock_construct.return_value = [], Message("test message content")
+            mock_construct.return_value = [], Message({"test": "me"})
 
             response = client.get("/plate-events/create?event_type=test_event_type")
 
@@ -44,7 +44,7 @@ def test_get_create_plate_event_endpoint_internal_error_failed_broker_initialise
 def test_get_create_plate_event_endpoint_internal_error_failed_broker_connect(client):
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
         with patch("lighthouse.blueprints.plate_events.Broker.connect", side_effect=Exception()):
-            mock_construct.return_value = [], Message("test message content")
+            mock_construct.return_value = [], Message({"test": "me"})
 
             response = client.get("/plate-events/create?event_type=test_event_type")
 
@@ -56,7 +56,7 @@ def test_get_create_plate_event_endpoint_internal_error_failed_broker_publish(cl
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
         with patch("lighthouse.blueprints.plate_events.Broker") as mock_broker:
             mock_broker().publish.side_effect = Exception()
-            mock_construct.return_value = [], Message("test message content")
+            mock_construct.return_value = [], Message({"test": "me"})
 
             response = client.get("/plate-events/create?event_type=test_event_type")
 
@@ -69,7 +69,7 @@ def test_get_create_plate_event_endpoint_internal_error_failed_callback(client):
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
         with patch("lighthouse.blueprints.plate_events.Broker") as mock_broker:
             with patch("lighthouse.blueprints.plate_events.fire_callbacks") as mock_callback:
-                test_message = Message("test message content")
+                test_message = Message({"test": "me"})
                 mock_construct.return_value = [], test_message
                 mock_callback.return_value = False, ["Error"]
 
@@ -86,7 +86,7 @@ def test_get_create_plate_event_endpoint_success(client):
         with patch("lighthouse.blueprints.plate_events.get_routing_key", return_value=routing_key):
             with patch("lighthouse.blueprints.plate_events.Broker") as mock_broker:
                 with patch("lighthouse.blueprints.plate_events.fire_callbacks") as mock_callback:
-                    test_message = Message("test message content")
+                    test_message = Message({"test": "me"})
                     mock_construct.return_value = [], test_message
                     mock_callback.return_value = True, []
 

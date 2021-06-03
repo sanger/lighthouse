@@ -8,6 +8,7 @@ from eve import Eve
 from flask import current_app as app
 from sqlalchemy.sql.expression import and_, bindparam
 
+from lighthouse.classes.beckman import Beckman
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -55,7 +56,6 @@ from lighthouse.helpers.events import (
     construct_robot_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
-    get_robot_uuid,
 )
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
@@ -647,7 +647,7 @@ def __mongo_source_plate_subjects(source_plates):
 
 
 def __robot_subject(robot_serial_number):
-    robot_uuid = get_robot_uuid(robot_serial_number)
+    robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
     if not robot_uuid:
         raise KeyError(f"Unable to find events information for robot: {robot_serial_number}")
 

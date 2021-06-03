@@ -173,16 +173,16 @@ def fail_plate_from_barcode() -> FlaskResponse:
 
         logger.info("Attempting to publish the destination failed event message")
         broker = Broker()
-        broker.connect()
+        broker._connect()
         try:
             broker.publish(message, routing_key)
-            broker.close_connection()
+            broker._close_connection()
             logger.info(f"Successfully published a '{PE_BECKMAN_DESTINATION_FAILED}' message")
 
             return ok(errors=errors)
 
         except Exception:
-            broker.close_connection()
+            broker._close_connection()
             raise
     except Exception as e:
         msg = f"{ERROR_UNEXPECTED_CHERRYPICKING_FAILURE} ({type(e).__name__})"

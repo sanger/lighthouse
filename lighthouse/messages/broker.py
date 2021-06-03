@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class Broker:
     """Controls the connection, exchange and publishing to RabbitMQ."""
 
-    def connect(self) -> None:
+    def _connect(self) -> None:
         self._create_connection()
         self._open_channel()
         if app.config["RMQ_DECLARE_EXCHANGE"]:
@@ -26,15 +26,17 @@ class Broker:
                 body=message.payload(),
             )
 
-    def close_connection(self) -> None:
+    def _close_connection(self) -> None:
         logger.debug("Closing connection")
         self._connection.close()
 
     def _create_connection(self) -> None:
         host = app.config["RMQ_HOST"]
         logger.debug(f"Creating messaging connection to '{host}'")
+
         credentials = pika.PlainCredentials(app.config["RMQ_USERNAME"], app.config["RMQ_PASSWORD"])
         parameters = pika.ConnectionParameters(host, app.config["RMQ_PORT"], app.config["RMQ_VHOST"], credentials)
+
         self._connection = pika.BlockingConnection(parameters)
 
     def _open_channel(self) -> None:
@@ -45,3 +47,11 @@ class Broker:
         exchange_name = app.config["RMQ_EXCHANGE"]
         logger.debug(f"Declaring exchange '{exchange_name}'")
         self._channel.exchange_declare(exchange_name, exchange_type=app.config["RMQ_EXCHANGE_TYPE"])
+
+    def __enter__(self):
+        self._connect()
+
+        return self._channel
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self._close_connection()

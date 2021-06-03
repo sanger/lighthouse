@@ -296,7 +296,7 @@ def test_fail_plate_from_barcode_internal_error_failed_broker_initialise(client)
         "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
     ) as mock_construct:
         with patch("lighthouse.blueprints.cherrypicked_plates.Broker", side_effect=Exception()):
-            mock_construct.return_value = [], Message("test message content")
+            mock_construct.return_value = [], Message({"test": "me"})
 
             response = client.get(
                 "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
@@ -312,7 +312,7 @@ def test_fail_plate_from_barcode_internal_error_failed_broker_connect(client):
         "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
     ) as mock_construct:
         with patch("lighthouse.blueprints.cherrypicked_plates.Broker.connect", side_effect=Exception()):
-            mock_construct.return_value = [], Message("test message content")
+            mock_construct.return_value = [], Message({"test": "me"})
 
             response = client.get(
                 "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
@@ -329,7 +329,7 @@ def test_fail_plate_from_barcode_internal_error_failed_broker_publish(client):
     ) as mock_construct:
         with patch("lighthouse.blueprints.cherrypicked_plates.Broker") as mock_broker:
             mock_broker().publish.side_effect = Exception()
-            mock_construct.return_value = [], Message("test message content")
+            mock_construct.return_value = [], Message({"test": "me"})
 
             response = client.get(
                 "/cherrypicked-plates/fail?barcode=plate_1&user_id=test_user"
@@ -348,7 +348,7 @@ def test_fail_plate_from_barcode_success(client):
         with patch("lighthouse.blueprints.cherrypicked_plates.get_routing_key", return_value=routing_key):
             with patch("lighthouse.blueprints.cherrypicked_plates.Broker") as mock_broker:
                 test_errors = ["error 1", "error 2"]
-                test_message = Message("test message content")
+                test_message = Message({"test": "me"})
                 mock_construct.return_value = test_errors, test_message
 
                 response = client.get(
