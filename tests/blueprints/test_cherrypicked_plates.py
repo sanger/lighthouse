@@ -311,7 +311,7 @@ def test_fail_plate_from_barcode_internal_error_failed_broker_connect(client):
     with patch(
         "lighthouse.blueprints.cherrypicked_plates.construct_cherrypicking_plate_failed_message"
     ) as mock_construct:
-        with patch("lighthouse.blueprints.cherrypicked_plates.Broker.connect", side_effect=Exception()):
+        with patch("lighthouse.blueprints.cherrypicked_plates.Broker._connect", side_effect=Exception()):
             mock_construct.return_value = [], Message({"test": "me"})
 
             response = client.get(
@@ -357,6 +357,6 @@ def test_fail_plate_from_barcode_success(client):
                 )
 
                 mock_broker().publish.assert_called_with(test_message, routing_key)
-                mock_broker().close_connection.assert_called()
+                mock_broker()._close_connection.assert_called()
                 assert response.status_code == HTTPStatus.OK
                 assert response.json["errors"] == test_errors

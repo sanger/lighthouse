@@ -43,7 +43,7 @@ def test_get_create_plate_event_endpoint_internal_error_failed_broker_initialise
 
 def test_get_create_plate_event_endpoint_internal_error_failed_broker_connect(client):
     with patch("lighthouse.blueprints.plate_events.construct_event_message") as mock_construct:
-        with patch("lighthouse.blueprints.plate_events.Broker.connect", side_effect=Exception()):
+        with patch("lighthouse.blueprints.plate_events.Broker._connect", side_effect=Exception()):
             mock_construct.return_value = [], Message({"test": "me"})
 
             response = client.get("/plate-events/create?event_type=test_event_type")
@@ -60,7 +60,7 @@ def test_get_create_plate_event_endpoint_internal_error_failed_broker_publish(cl
 
             response = client.get("/plate-events/create?event_type=test_event_type")
 
-            mock_broker().close_connection.assert_called()
+            mock_broker()._close_connection.assert_called()
             assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert len(response.json["errors"]) == 1
 
@@ -75,7 +75,7 @@ def test_get_create_plate_event_endpoint_internal_error_failed_callback(client):
 
                 response = client.get("/plate-events/create?event_type=test_event_type")
 
-                mock_broker().close_connection.assert_called()
+                mock_broker()._close_connection.assert_called()
                 assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
                 assert len(response.json["errors"]) == 1
 
@@ -93,7 +93,7 @@ def test_get_create_plate_event_endpoint_success(client):
                     response = client.get("/plate-events/create?event_type=test_event_type")
 
                     mock_broker().publish.assert_called_with(test_message, routing_key)
-                    mock_broker().close_connection.assert_called()
+                    mock_broker()._close_connection.assert_called()
 
                     assert response.status_code == HTTPStatus.OK
                     assert len(response.json["errors"]) == 0

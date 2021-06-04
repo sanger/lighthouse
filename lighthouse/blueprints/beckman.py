@@ -47,4 +47,6 @@ def get_failure_types() -> FlaskResponse:
     except Exception as e:
         logger.exception(e)
 
-        return internal_server_error(f"{ERROR_UNEXPECTED} while fetching Beckman failure type information", robots=[])
+        return internal_server_error(
+            f"{ERROR_UNEXPECTED} while fetching Beckman failure type information", failure_types=[]
+        )

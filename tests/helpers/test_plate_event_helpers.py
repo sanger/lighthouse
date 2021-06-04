@@ -24,7 +24,7 @@ from lighthouse.messages.message import Message
 @pytest.fixture
 def mock_robot_helpers():
     with patch("lighthouse.helpers.plate_events.construct_robot_message_subject") as mock_construct:
-        with patch("lighthouse.helpers.plate_events.get_robot_uuid") as mock_get:
+        with patch("lighthouse.helpers.plate_events.Beckman.get_robot_uuid") as mock_get:
             yield mock_get, mock_construct
 
 
@@ -135,9 +135,7 @@ def test_construct_source_plate_not_recognised_message_errors_without_robot():
     assert message is None
 
 
-def test_construct_source_plate_not_recognised_message_errors_with_failure_getting_robot_uuid(
-    mock_robot_helpers,
-):
+def test_construct_source_plate_not_recognised_message_errors_with_failure_getting_robot_uuid(mock_robot_helpers):
     mock_get_uuid, _ = mock_robot_helpers
     mock_get_uuid.side_effect = Exception()
     test_params = {"user_id": "test_user", "robot": "12345"}
@@ -148,9 +146,7 @@ def test_construct_source_plate_not_recognised_message_errors_with_failure_getti
     assert message is None
 
 
-def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid(
-    mock_robot_helpers,
-):
+def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid(mock_robot_helpers):
     mock_get_uuid, _ = mock_robot_helpers
     mock_get_uuid.return_value = None
     test_params = {"user_id": "test_user", "robot": "12345"}
@@ -240,9 +236,7 @@ def test_construct_source_plate_no_map_data_message_errors_without_robot():
     assert message is None
 
 
-def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_robot_uuid(
-    mock_robot_helpers,
-):
+def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_robot_uuid(mock_robot_helpers):
     mock_get_uuid, _ = mock_robot_helpers
     mock_get_uuid.side_effect = Exception()
     test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}

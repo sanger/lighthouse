@@ -80,7 +80,7 @@ from lighthouse.helpers.plates import (
 @pytest.fixture
 def mock_event_helpers():
     root = "lighthouse.helpers.plates"
-    with patch(f"{root}.get_robot_uuid") as mock_get_uuid:
+    with patch(f"{root}.Beckman.get_robot_uuid") as mock_get_uuid:
         with patch(f"{root}.construct_robot_message_subject") as mock_construct_robot:
             with patch(f"{root}.construct_destination_plate_message_subject") as mock_construct_dest:
                 with patch(f"{root}.construct_mongo_sample_message_subject") as mock_construct_sample:
