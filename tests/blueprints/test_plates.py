@@ -103,19 +103,13 @@ def test_get_plates_endpoint_successful(
 
 
 def test_get_plates_endpoint_no_barcode_in_request(client):
-    response = client.get(
-        "/plates",
-        content_type="application/json",
-    )
+    response = client.get("/plates")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_get_plates_endpoint_barcode_empty(client):
-    response = client.get(
-        "/plates?barcodes=",
-        content_type="application/json",
-    )
+    response = client.get("/plates?barcodes=")
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
@@ -141,7 +135,6 @@ def test_get_plates_endpoint_exclude_props(
 ):
     response = client.get(
         f"/plates?barcodes=plate_123,456&{ ARG_EXCLUDE }=plate_barcode",
-        content_type="application/json",
     )
 
     assert response.status_code == HTTPStatus.OK

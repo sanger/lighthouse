@@ -98,19 +98,33 @@ def create_plate_from_barcode() -> FlaskResponse:
 
 @bp.get("/plates")
 def find_plate_from_barcode() -> FlaskResponse:
-    """A route which returns information about a list of comma separated plates as specified in the 'barcodes' parameters.
+    """A route which returns information about a list of comma separated plates as specified
+    in the 'barcodes' parameters. Default fields can be excluded from the response using the url
+    param '_exclude'.
 
     For example:
-    To fetch data for the plates with barcodes '123', '456' and '789':
+    To fetch data for the plates with barcodes '123' and '456' and exclude field 'picked_samples':
 
-    `GET /plates?barcodes=123,456,789`
+    `GET /plates?barcodes=123,456,789&_exclude=picked_samples`
 
-    This endpoint responds with JSON and the body is in the format:
-
-    `{"plates":[
-            {"barcode":"123","plate_map":true,"number_of_fit_to_pick":0},
-            {"barcode":"456","plate_map":true,"number_of_fit_to_pick":0},
-            {"barcode":"789","plate_map":true,"number_of_fit_to_pick":0},
+    `{"plates":
+        [
+            {
+                "plate_barcode": "123",
+                "has_plate_map": true,
+                "count_must_sequence": 0,
+                "count_preferentially_sequence": 0,
+                "count_filtered_positive": 2,
+                "count_fit_to_pick_samples": 2,
+            },
+            {
+                "plate_barcode": "456",
+                "has_plate_map": false,
+                "count_must_sequence": 0,
+                "count_preferentially_sequence": 0,
+                "count_filtered_positive": 4,
+                "count_fit_to_pick_samples": 4,
+            },
         ]
     }`
 
