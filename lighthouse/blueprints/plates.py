@@ -10,6 +10,7 @@ from lighthouse.constants.error_messages import (
     ERROR_UNEXPECTED_PLATES_CREATE,
     ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
+from lighthouse.constants.general import ARG_EXCLUDE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.plates import (
@@ -97,26 +98,52 @@ def create_plate_from_barcode() -> FlaskResponse:
 
 @bp.get("/plates")
 def find_plate_from_barcode() -> FlaskResponse:
-    """A route which returns information about a list of plates as specified in the 'barcodes[]' parameters.
+    """A route which returns information about a list of comma separated plates as specified
+    in the 'barcodes' parameters. Default fields can be excluded from the response using the url
+    param '_exclude'.
 
     For example:
-    To fetch data for the plates with barcodes '123', '456' and '789':
+    To fetch data for the plates with barcodes '123' and '456' and exclude field 'picked_samples':
 
-    `GET /plates?barcodes[]=123&barcodes[]=456&barcodes[]=789`
+    `GET /plates?barcodes=123,456,789&_exclude=picked_samples`
 
-    This endpoint responds with JSON and the body is in the format:
-
-    `{"plates":[{"barcode":"123","plate_map":true,"number_of_fit_to_pick":0}]}`
+    `{"plates":
+        [
+            {
+                "plate_barcode": "123",
+                "has_plate_map": true,
+                "count_must_sequence": 0,
+                "count_preferentially_sequence": 0,
+                "count_filtered_positive": 2,
+                "count_fit_to_pick_samples": 2,
+            },
+            {
+                "plate_barcode": "456",
+                "has_plate_map": false,
+                "count_must_sequence": 0,
+                "count_preferentially_sequence": 0,
+                "count_filtered_positive": 4,
+                "count_fit_to_pick_samples": 4,
+            },
+        ]
+    }`
 
     Returns:
         FlaskResponse: the response body and HTTP status code
     """
     logger.info("Finding plate from barcode")
     try:
-        barcodes = request.args.getlist("barcodes[]")
-        logger.debug(f"Barcodes to look for: {barcodes}")
+        barcodes_arg = request.args.get("barcodes")
+        barcodes_list = barcodes_arg.split(",") if barcodes_arg else []
 
-        plates = [format_plate(barcode) for barcode in barcodes]
+        if len(barcodes_list) == 0:
+            return bad_request("Please include a barcode list")
+
+        exclude_props_arg = request.args.get(ARG_EXCLUDE)
+        exclude_props = exclude_props_arg.split(",") if exclude_props_arg else []
+
+        logger.debug(f"Barcodes to look for: {barcodes_arg}")
+        plates = [format_plate(barcode, exclude_props=exclude_props) for barcode in barcodes_list]
 
         pretty(logger, plates)
 

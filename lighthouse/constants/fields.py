@@ -41,6 +41,15 @@ FIELD_DART_LAB_ID = "lab_id"
 FIELD_DART_RUN_ID = "dart_run_id"
 
 ###
+# PLATE LOOKUP specific column names:
+###
+FIELD_PLATE_LOOKUP_SOURCE_COORDINATE = "source_coordinate"
+FIELD_PLATE_LOOKUP_RNA_ID = "rna_id"
+FIELD_PLATE_LOOKUP_LAB_ID = "lab_id"
+FIELD_PLATE_LOOKUP_SAMPLE_ID = "sample_id"
+
+
+###
 # MLWH lighthouse_samples table field names
 ###
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID = "root_sample_id"

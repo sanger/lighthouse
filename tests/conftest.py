@@ -27,6 +27,7 @@ from tests.fixtures.data.mlwh import (
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
 from tests.fixtures.data.samples import SAMPLES
 from tests.fixtures.data.source_plates import SOURCE_PLATES
+from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
 
 
 @pytest.fixture
@@ -419,3 +420,13 @@ def message_source_all_negative():
         "lims": "LH_TEST",
     }
     return Message(message_content)
+
+
+@pytest.fixture
+def plates_lookup_with_samples(samples, priority_samples):
+    return PLATES_LOOKUP_WITH_SAMPLES
+
+
+@pytest.fixture
+def plates_lookup_without_samples(samples, priority_samples):
+    return PLATES_LOOKUP_WITHOUT_SAMPLES
