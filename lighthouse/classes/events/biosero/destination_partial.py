@@ -7,7 +7,7 @@ from lighthouse.messages.message import Message
 logger = logging.getLogger(__name__)
 
 
-class DestinationCreated(PlateEvent):
+class DestinationPartial(PlateEvent):
     def __init__(self, name: str) -> None:
         super().__init__(name=name, plate_type=PlateEvent.PlateTypeEnum.DESTINATION)
 

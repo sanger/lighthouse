@@ -1,15 +1,15 @@
 import logging
 from typing import Dict
 
-from lighthouse.classes.events.source_plate_event import SourcePlateEvent
+from lighthouse.classes.plate_event import PlateEvent
 from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
 
 
-class Completed(SourcePlateEvent):
+class SourceCompleted(PlateEvent):
     def __init__(self, name: str) -> None:
-        super().__init__(name=name)
+        super().__init__(name=name, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
 
     def initialize_event(self, params: Dict[str, str]) -> None:
         logger.debug("initialize_event")

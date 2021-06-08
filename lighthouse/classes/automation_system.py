@@ -33,8 +33,8 @@ class AutomationSystem(ABC):
 
     def get_plate_event(self, event_name: str) -> PlateEvent:
         if self.is_valid_plate_event(event_name):
-            for event in self._plate_events:
+            for event in self.plate_events:
                 if event.name == event_name:
                     return event
 
-        raise Exception("Invalid event name")
+        raise Exception("Event name invalid or not found")

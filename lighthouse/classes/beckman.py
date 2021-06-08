@@ -4,7 +4,14 @@ from typing import Dict, List, Optional
 from flask import current_app as app
 
 from lighthouse.classes.automation_system import AutomationSystem
-from lighthouse.classes.events.beckman import AllNegatives, Completed, Created, Failed, NoPlateMapData, Unrecognised
+from lighthouse.classes.events.beckman import (
+    DestinationCreated,
+    DestinationFailed,
+    SourceAllNegatives,
+    SourceCompleted,
+    SourceNoPlateMapData,
+    SourceUnrecognised,
+)
 from lighthouse.constants.error_messages import ERROR_FAILURE_TYPE_CONFIG, ERROR_ROBOT_CONFIG
 
 logger = logging.getLogger(__name__)
@@ -37,12 +44,12 @@ class Beckman(AutomationSystem):
     def __init__(self) -> None:
         self._name = AutomationSystem.AutomationSystemEnum.BIOSERO.name
 
-        self._event_destination_created = Created(name=self.EVENT_DESTINATION_CREATED)
-        self._event_destination_failed = Failed(name=self.EVENT_DESTINATION_FAILED)
-        self._event_source_all_negatives = AllNegatives(name=self.EVENT_SOURCE_ALL_NEGATIVES)
-        self._event_source_completed = Completed(name=self.EVENT_SOURCE_COMPLETED)
-        self._event_source_no_plate_map_data = NoPlateMapData(name=self.EVENT_SOURCE_NO_PLATE_MAP_DATA)
-        self._event_source_unrecognised = Unrecognised(name=self.EVENT_SOURCE_UNRECOGNISED)
+        self._event_destination_created = DestinationCreated(name=self.EVENT_DESTINATION_CREATED)
+        self._event_destination_failed = DestinationFailed(name=self.EVENT_DESTINATION_FAILED)
+        self._event_source_all_negatives = SourceAllNegatives(name=self.EVENT_SOURCE_ALL_NEGATIVES)
+        self._event_source_completed = SourceCompleted(name=self.EVENT_SOURCE_COMPLETED)
+        self._event_source_no_plate_map_data = SourceNoPlateMapData(name=self.EVENT_SOURCE_NO_PLATE_MAP_DATA)
+        self._event_source_unrecognised = SourceUnrecognised(name=self.EVENT_SOURCE_UNRECOGNISED)
 
         self._plate_events = {
             self._event_destination_created,
