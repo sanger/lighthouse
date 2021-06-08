@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class Biosero(AutomationSystem):
+    ###
+    # Events: https://ssg-confluence.internal.sanger.ac.uk/display/PSDPUB/%5BBiosero%5D+Cherrypicking+Events
+    ###
     # Destination plate has been created successfully
     EVENT_DESTINATION_CREATED = "lh_biosero_cp_destination_created"
     # Destination plate failed to be created successfully
