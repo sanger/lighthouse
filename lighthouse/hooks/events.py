@@ -9,10 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
-    biosero = Biosero()
     automation_system = AutomationSystem.AutomationSystemEnum.BIOSERO
 
     for event in events:
+        biosero = Biosero()
         event_type = event.get("event_type")
 
         if event_type is None or not isinstance(event_type, str) or not event_type:
