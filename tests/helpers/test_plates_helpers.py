@@ -72,6 +72,8 @@ from lighthouse.helpers.plates import (
     rows_with_controls,
     rows_without_controls,
     update_mlwh_with_cog_uk_ids,
+    format_plate,
+    field_generators_for_plate_lookup,
 )
 
 # ---------- test helpers ----------
@@ -1180,6 +1182,21 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
             assert message is None
             assert len(errors) == 1
             assert f"No source plate data found in Mongo for DART samples in plate '{barcode}'" in errors
+
+
+def test_format_plate(app, plates_lookup_without_samples, plates_lookup_with_samples):
+    with app.app_context():
+        assert (
+            format_plate("plate_123", exclude_props=["pickable_samples"]) == plates_lookup_without_samples["plate_123"]
+        )
+        assert format_plate("plate_123") == plates_lookup_with_samples["plate_123"]
+
+
+def test_field_generators_for_plate_lookup(app, plates_lookup_with_samples):
+    with app.app_context():
+        assert field_generators_for_plate_lookup("plate_123")["plate_barcode"] is not None
+        plate = plates_lookup_with_samples["plate_123"]
+        assert field_generators_for_plate_lookup("plate_123")["plate_barcode"]() == plate["plate_barcode"]
 
 
 # def test_construct_cherrypicking_plate_failed_message_success(
