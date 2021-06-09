@@ -45,6 +45,16 @@ def client(app):
     return app.test_client()
 
 
+
+@pytest.fixture
+def biosero_auth_headers(app):
+    with app.app_context():
+        return {
+            'Authorization': app.config.get("API_TOKENS_BIOSERO").get("read_write")
+        }
+
+
+
 @pytest.fixture
 def centres(app):
     with app.app_context():

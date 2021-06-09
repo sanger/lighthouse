@@ -1,7 +1,9 @@
 import logging
 
 from lighthouse.classes.automation_system import AutomationSystem
-from lighthouse.classes.events.biosero import AllNegatives, Completed, Created, Failed, NoPlateMapData, Unrecognised
+from lighthouse.classes.events.biosero import (
+    AllNegatives, Completed, Created, Failed, NoPlateMapData, Unrecognised, SourcePartiallyCompleted,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,7 @@ class Biosero(AutomationSystem):
     EVENT_SOURCE_NO_PLATE_MAP_DATA = "lh_biosero_cp_source_no_plate_map_data"
     # Source plate barcode cannot be read (damaged or missing), and the plate is put into the output stack
     EVENT_SOURCE_UNRECOGNISED = "lh_biosero_cp_source_plate_unrecognised"
+    EVENT_SOURCE_PARTIALLY_COMPLETED = "lh_biosero_cp_source_partial"
 
     # needs to be an immutable object: https://docs.python.org/3/tutorial/classes.html#class-and-instance-variables
     PLATE_EVENT_NAMES = (
@@ -26,6 +29,7 @@ class Biosero(AutomationSystem):
         EVENT_DESTINATION_FAILED,
         EVENT_SOURCE_ALL_NEGATIVES,
         EVENT_SOURCE_COMPLETED,
+        EVENT_SOURCE_PARTIALLY_COMPLETED,
         EVENT_SOURCE_NO_PLATE_MAP_DATA,
         EVENT_SOURCE_UNRECOGNISED,
     )
@@ -39,6 +43,7 @@ class Biosero(AutomationSystem):
         self._event_source_completed = Completed(name=self.EVENT_SOURCE_COMPLETED)
         self._event_source_no_plate_map_data = NoPlateMapData(name=self.EVENT_SOURCE_NO_PLATE_MAP_DATA)
         self._event_source_unrecognised = Unrecognised(name=self.EVENT_SOURCE_UNRECOGNISED)
+        self._event_source_partially_completed = SourcePartiallyCompleted(name=self.EVENT_SOURCE_PARTIALLY_COMPLETED)
 
         self._plate_events = {
             self._event_destination_created,
@@ -47,4 +52,5 @@ class Biosero(AutomationSystem):
             self._event_source_completed,
             self._event_source_no_plate_map_data,
             self._event_source_unrecognised,
+            self._event_source_partially_completed,
         }
