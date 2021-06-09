@@ -59,7 +59,8 @@ class PlateEvent(ABC):
 
     @abstractmethod
     def process_event(self) -> None:
-        ...
+        message = self._create_message()
+        self._send_warehouse_message(message=message)
 
     def construct_event_message(self, user_identifier: str, subjects: List[Subject]) -> EventMessage:
         return {

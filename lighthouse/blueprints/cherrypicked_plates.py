@@ -173,6 +173,8 @@ def fail_plate_from_barcode() -> FlaskResponse:
 
         logger.info("Attempting to publish the destination failed event message")
         broker = Broker()
+        # To use the broker as a context manager we don't need these methods to be public but we still need to refactor
+        #   these calls to use a context manager
         broker._connect()
         try:
             broker.publish(message, routing_key)

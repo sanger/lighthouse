@@ -19,7 +19,7 @@ class Message:
         Returns:
             {str} -- The message JSON payload.
         """
-        return json.dumps(self._message)
+        return json.dumps(self.message)
 
     def event_type(self) -> str:
         """Return the event type.

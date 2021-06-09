@@ -3,8 +3,8 @@ from typing import Dict
 
 from flask import current_app as app
 
-from lighthouse.classes.events.source_plate_event import SourcePlateEvent
 from lighthouse.classes.mixins.labwhere import LabWhereMixin
+from lighthouse.classes.plate_event import PlateEvent
 from lighthouse.helpers import mongo
 from lighthouse.messages.broker import Broker
 from lighthouse.messages.message import Message
@@ -12,13 +12,13 @@ from lighthouse.messages.message import Message
 logger = logging.getLogger(__name__)
 
 
-class Completed(SourcePlateEvent, LabWhereMixin):
+class SourceCompleted(PlateEvent, LabWhereMixin):
     @property
     def robot_serial_number(self) -> str:
         return self._robot_serial_number
 
     def __init__(self, name: str) -> None:
-        super().__init__(name)
+        super().__init__(name, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
 
     def initialize_event(self, params: Dict[str, str]) -> None:
         self._plate_barcode = params.get("barcode", "")
@@ -31,6 +31,7 @@ class Completed(SourcePlateEvent, LabWhereMixin):
             )
 
     def _create_message(self) -> Message:
+        # Import here is to prevent circular imports
         from lighthouse.classes.beckman import Beckman
 
         robot_uuid = Beckman.get_robot_uuid(self._robot_serial_number)
