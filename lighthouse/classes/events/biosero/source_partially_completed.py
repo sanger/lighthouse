@@ -31,6 +31,18 @@ class SourcePartiallyCompleted(SourcePlateEvent):
                 "'barcode', 'user_id' and 'robot' are required to construct a " f"{self._name} event message"
             )
 
+    def _get_routing_key(self) -> str:
+        """Determines the routing key for a plate event message.
+
+        Arguments:
+            event_type {str} -- The event type for which to determine the routing key.
+
+        Returns:
+            {str} -- The message routing key.
+        """
+
+        return str(app.config["RMQ_ROUTING_KEY"].replace("#", self._name))
+
     def _send_warehouse_message(self, message: Message) -> None:
         logger.info("Attempting to publish the constructed plate event message")
 
