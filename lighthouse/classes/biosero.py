@@ -4,6 +4,7 @@ from lighthouse.classes.automation_system import AutomationSystem
 from lighthouse.classes.events.biosero import (
     DestinationCreated,
     DestinationFailed,
+    DestinationPartial,
     SourceAllNegatives,
     SourceCompleted,
     SourceNoPickableSamples,
@@ -56,7 +57,7 @@ class Biosero(AutomationSystem):
 
         self._event_destination_created = DestinationCreated(name=self.EVENT_DESTINATION_CREATED)
         self._event_destination_failed = DestinationFailed(name=self.EVENT_DESTINATION_FAILED)
-        self._event_destination_partial = DestinationFailed(name=self.EVENT_DESTINATION_PARTIAL)
+        self._event_destination_partial = DestinationPartial(name=self.EVENT_DESTINATION_PARTIAL)
         self._event_source_all_negatives = SourceAllNegatives(name=self.EVENT_SOURCE_ALL_NEGATIVES)
         self._event_source_completed = SourceCompleted(name=self.EVENT_SOURCE_COMPLETED)
         self._event_source_no_pickable_samples = SourceNoPickableSamples(name=self.EVENT_SOURCE_NO_PICKABLE_SAMPLES)
