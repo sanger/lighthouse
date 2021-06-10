@@ -1,9 +1,10 @@
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast, Iterable, Callable
 from uuid import uuid4
 
 import requests
+from eve import Eve
 from flask import current_app as app
 from sqlalchemy.sql.expression import and_, bindparam
 
@@ -39,7 +40,12 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE,
+    FIELD_PLATE_LOOKUP_RNA_ID,
+    FIELD_PLATE_LOOKUP_LAB_ID,
+    FIELD_PLATE_LOOKUP_SAMPLE_ID,
 )
+
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -59,7 +65,7 @@ from lighthouse.helpers.events import (
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
-from lighthouse.types import SampleDoc
+from lighthouse.types import SampleDoc, SampleDocs
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +142,7 @@ def get_centre_prefix(centre_name):
     logger.debug(f"Getting the prefix for '{centre_name}'")
     try:
         #  get the centre collection
-        centres = app.data.driver.db.centres
+        centres = cast(Eve, app).data.driver.db.centres
 
         # use a case insensitive search for the centre name
         filter = {"name": {"$regex": f"^(?i){centre_name}$"}}
@@ -173,7 +179,7 @@ def find_samples(query: Dict[str, Any] = None) -> Optional[List[SampleDoc]]:
     if query is None:
         return None
 
-    samples_collection = app.data.driver.db.samples
+    samples_collection = cast(Eve, app).data.driver.db.samples
 
     samples = list(samples_collection.find(query))
 
@@ -494,7 +500,7 @@ def find_source_plates(query: Dict[str, Any] = None) -> Optional[List[Dict[str, 
     if query is None:
         return None
 
-    source_plates = app.data.driver.db.source_plates
+    source_plates = cast(Eve, app).data.driver.db.source_plates
 
     source_plate_documents = list(source_plates.find(query))
 
@@ -692,17 +698,19 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
-    """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
-    so, how many samples meet the fit to pick rules.
+def field_generators_for_plate_lookup(
+    barcode: str,
+) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
+    """It creates an ungenerated response for a plate lookup by creating lambda functions
+    that can be called when the associated field is needed.
 
     Arguments:
         barcode (str): barcode of plate to get sample information for.
 
     Returns:
-        Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
+        Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]: dict with lambda expresions to
+        calculate the associated field when needed.
     """
-    logger.info(f"Getting information for plate with barcode: {barcode}")
 
     (
         fit_to_pick_samples,
@@ -713,12 +721,66 @@ def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
     ) = get_fit_to_pick_samples_and_counts(barcode)
 
     return {
-        "plate_barcode": barcode,
-        "has_plate_map": has_plate_map_data(barcode),
-        "count_fit_to_pick_samples": count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0,
-        "count_must_sequence": count_must_sequence if count_must_sequence is not None else 0,
-        "count_preferentially_sequence": count_preferentially_sequence
-        if count_preferentially_sequence is not None
-        else 0,
-        "count_filtered_positive": count_filtered_positive if count_filtered_positive is not None else 0,
+        "plate_barcode": lambda: barcode,
+        "has_plate_map": lambda: has_plate_map_data(barcode),
+        "count_fit_to_pick_samples": lambda: (
+            count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0
+        ),
+        "count_must_sequence": lambda: (count_must_sequence if count_must_sequence is not None else 0),
+        "count_preferentially_sequence": lambda: (
+            count_preferentially_sequence if count_preferentially_sequence is not None else 0
+        ),
+        "count_filtered_positive": lambda: (count_filtered_positive if count_filtered_positive is not None else 0),
+        "pickable_samples": lambda: list(
+            map(pickable_sample_attributes, cast(Iterable[SampleDoc], fit_to_pick_samples))
+        ),
+    }
+
+
+def format_plate(
+    barcode: str, exclude_props: Optional[List[str]] = None
+) -> Dict[str, Union[str, bool, SampleDocs, Optional[int]]]:
+    """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
+    so, how many samples meet the fit to pick rules.
+    It accepts a exclude_props argument to exclude certain fields from the response if they are not needed.
+
+    Arguments:
+        barcode (str): barcode of plate to get sample information for.
+        exclude_props Optional[List[str]]: list of fields to exclude from the resulting object
+
+    Returns:
+        Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
+    """
+    # To solve default mutable arguments issue:
+    # <https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/>
+    exclude_props = exclude_props if exclude_props else []
+
+    logger.info(f"Getting information for plate with barcode: {barcode}")
+
+    # Obtain an dict with lambda expressions to generate required fields
+    renderable = field_generators_for_plate_lookup(barcode)
+    formated_response = {}
+    for field in renderable:
+        # Not generate the field if is in the exclusion list
+        if not (field in exclude_props):
+            formated_response[field] = renderable[field]()
+    return formated_response
+
+
+def pickable_sample_attributes(sample: SampleDoc) -> SampleDoc:
+    """Renders into a Dict() the sample information from MongoDB to be sent inside a
+    plate lookup call. This is currently in use for the Biosero robots to get the
+    information of pickable samples in a source plate.
+
+    Arguments:
+        sample SampleDoc: A sample retrieved from MongoDB samples collection
+
+    Returns:
+        sample with the valid list of fields defined for a pickable sample
+    """
+    return {
+        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE: sample[FIELD_COORDINATE],
+        FIELD_PLATE_LOOKUP_RNA_ID: sample[FIELD_RNA_ID],
+        FIELD_PLATE_LOOKUP_LAB_ID: sample[FIELD_LAB_ID],
+        FIELD_PLATE_LOOKUP_SAMPLE_ID: sample[FIELD_LH_SAMPLE_UUID],
     }
