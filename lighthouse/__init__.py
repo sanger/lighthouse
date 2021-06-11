@@ -5,13 +5,19 @@ from http import HTTPStatus
 from eve import Eve
 from flask_apscheduler import APScheduler
 
-from lighthouse.validators.priority_samples import PrioritySamplesValidator
+from lighthouse.hooks.events import inserted_events_hook
+from lighthouse.validator import LighthouseValidator
 
 scheduler = APScheduler()
 
 
 def create_app() -> Eve:
-    app = Eve(__name__, validator=PrioritySamplesValidator)
+    app = Eve(__name__, validator=LighthouseValidator)
+
+    ###
+    # uncomment the follow while dev-ing for Biosero
+    ###
+    app.on_inserted_events += inserted_events_hook
 
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])

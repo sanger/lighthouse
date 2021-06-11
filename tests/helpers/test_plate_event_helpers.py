@@ -4,10 +4,10 @@ from unittest.mock import patch
 import pytest
 
 from lighthouse.constants.events import (
-    PLATE_EVENT_SOURCE_ALL_NEGATIVES,
-    PLATE_EVENT_SOURCE_COMPLETED,
-    PLATE_EVENT_SOURCE_NO_MAP_DATA,
-    PLATE_EVENT_SOURCE_NOT_RECOGNISED,
+    PE_BECKMAN_SOURCE_ALL_NEGATIVES,
+    PE_BECKMAN_SOURCE_COMPLETED,
+    PE_BECKMAN_SOURCE_NO_MAP_DATA,
+    PE_BECKMAN_SOURCE_NOT_RECOGNISED,
 )
 from lighthouse.helpers.plate_events import (
     construct_event_message,
@@ -24,7 +24,7 @@ from lighthouse.messages.message import Message
 @pytest.fixture
 def mock_robot_helpers():
     with patch("lighthouse.helpers.plate_events.construct_robot_message_subject") as mock_construct:
-        with patch("lighthouse.helpers.plate_events.get_robot_uuid") as mock_get:
+        with patch("lighthouse.helpers.plate_events.Beckman.get_robot_uuid") as mock_get:
             yield mock_get, mock_construct
 
 
@@ -48,11 +48,11 @@ def test_construct_event_message_source_complete():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_completed_message"
     ) as mock_construct_source_completed_message:
-        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message({"test": "me"}))
         mock_construct_source_completed_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
-        result = construct_event_message(PLATE_EVENT_SOURCE_COMPLETED, test_params)
+        result = construct_event_message(PE_BECKMAN_SOURCE_COMPLETED, test_params)
 
         mock_construct_source_completed_message.assert_called_with(test_params)
         assert result == test_return_value
@@ -62,11 +62,11 @@ def test_construct_event_message_source_not_recognised():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_not_recognised_message"
     ) as mock_construct_source_not_recognised_message:
-        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message({"test": "me"}))
         mock_construct_source_not_recognised_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
-        result = construct_event_message(PLATE_EVENT_SOURCE_NOT_RECOGNISED, test_params)
+        result = construct_event_message(PE_BECKMAN_SOURCE_NOT_RECOGNISED, test_params)
 
         mock_construct_source_not_recognised_message.assert_called_with(test_params)
         assert result == test_return_value
@@ -76,11 +76,11 @@ def test_construct_event_message_source_no_map_data():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_no_map_data_message"
     ) as mock_construct_source_no_map_data_message:
-        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message({"test": "me"}))
         mock_construct_source_no_map_data_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
-        result = construct_event_message(PLATE_EVENT_SOURCE_NO_MAP_DATA, test_params)
+        result = construct_event_message(PE_BECKMAN_SOURCE_NO_MAP_DATA, test_params)
 
         mock_construct_source_no_map_data_message.assert_called_with(test_params)
         assert result == test_return_value
@@ -90,11 +90,11 @@ def test_construct_event_message_source_all_negatives():
     with patch(
         "lighthouse.helpers.plate_events.construct_source_plate_all_negatives_message"
     ) as mock_construct_source_all_negatives_message:
-        test_return_value: Tuple[List[Any], Message] = ([], Message("test message"))
+        test_return_value: Tuple[List[Any], Message] = ([], Message({"test": "me"}))
         mock_construct_source_all_negatives_message.return_value = test_return_value
 
         test_params = {"test_key": "test_value"}
-        result = construct_event_message(PLATE_EVENT_SOURCE_ALL_NEGATIVES, test_params)
+        result = construct_event_message(PE_BECKMAN_SOURCE_ALL_NEGATIVES, test_params)
 
         mock_construct_source_all_negatives_message.assert_called_with(test_params)
         assert result == test_return_value
@@ -135,9 +135,7 @@ def test_construct_source_plate_not_recognised_message_errors_without_robot():
     assert message is None
 
 
-def test_construct_source_plate_not_recognised_message_errors_with_failure_getting_robot_uuid(
-    mock_robot_helpers,
-):
+def test_construct_source_plate_not_recognised_message_errors_with_failure_getting_robot_uuid(mock_robot_helpers):
     mock_get_uuid, _ = mock_robot_helpers
     mock_get_uuid.side_effect = Exception()
     test_params = {"user_id": "test_user", "robot": "12345"}
@@ -148,9 +146,7 @@ def test_construct_source_plate_not_recognised_message_errors_with_failure_getti
     assert message is None
 
 
-def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid(
-    mock_robot_helpers,
-):
+def test_construct_source_plate_not_recognised_message_errors_without_robot_uuid(mock_robot_helpers):
     mock_get_uuid, _ = mock_robot_helpers
     mock_get_uuid.return_value = None
     test_params = {"user_id": "test_user", "robot": "12345"}
@@ -180,7 +176,7 @@ def test_construct_source_plate_not_recognised_message_creates_expected_message(
 
             event = message_content["event"]
             assert event["uuid"] is not None
-            assert event["event_type"] == PLATE_EVENT_SOURCE_NOT_RECOGNISED
+            assert event["event_type"] == PE_BECKMAN_SOURCE_NOT_RECOGNISED
             assert event["occured_at"] is not None
             assert event["user_identifier"] == test_user_id
 
@@ -240,9 +236,7 @@ def test_construct_source_plate_no_map_data_message_errors_without_robot():
     assert message is None
 
 
-def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_robot_uuid(
-    mock_robot_helpers,
-):
+def test_construct_source_plate_no_map_data_message_errors_with_failure_getting_robot_uuid(mock_robot_helpers):
     mock_get_uuid, _ = mock_robot_helpers
     mock_get_uuid.side_effect = Exception()
     test_params = {"barcode": "ABC123", "user_id": "test_user", "robot": "12345"}
@@ -290,7 +284,7 @@ def test_construct_source_plate_no_map_data_message_creates_expected_message(
 
             event = message_content["event"]
             assert event["uuid"] is not None
-            assert event["event_type"] == PLATE_EVENT_SOURCE_NO_MAP_DATA
+            assert event["event_type"] == PE_BECKMAN_SOURCE_NO_MAP_DATA
             assert event["occured_at"] is not None
             assert event["user_identifier"] == test_user_id
 
@@ -489,7 +483,7 @@ def test_construct_source_plate_all_negatives_message_creates_expected_message(
 
                         event = message_content["event"]
                         assert event["uuid"] is not None
-                        assert event["event_type"] == PLATE_EVENT_SOURCE_ALL_NEGATIVES
+                        assert event["event_type"] == PE_BECKMAN_SOURCE_ALL_NEGATIVES
                         assert event["occured_at"] is not None
                         assert event["user_identifier"] == test_user_id
 
@@ -688,7 +682,7 @@ def test_construct_source_plate_completed_message_creates_expected_message(
 
                         event = message_content["event"]
                         assert event["uuid"] is not None
-                        assert event["event_type"] == PLATE_EVENT_SOURCE_COMPLETED
+                        assert event["event_type"] == PE_BECKMAN_SOURCE_COMPLETED
                         assert event["occured_at"] is not None
                         assert event["user_identifier"] == test_user_id
 

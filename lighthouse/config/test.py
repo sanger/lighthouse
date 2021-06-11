@@ -6,7 +6,12 @@ from lighthouse.config.defaults import *
 ###
 # Eve config
 ###
-API_TOKEN = "testing"
+API_TOKENS_PRIORITY = {
+    "read_write": "priority_read_write_test",
+}
+API_TOKENS_BIOSERO = {
+    "read_write": "biosero_read_write_test",
+}
 
 ###
 # Flask config

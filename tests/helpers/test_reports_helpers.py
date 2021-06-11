@@ -24,7 +24,6 @@ from lighthouse.helpers.reports import (
     unpad_coordinate,
 )
 
-
 # ----- get_new_report_name_and_path tests -----
 
 
@@ -40,26 +39,26 @@ def test_get_new_report_name_and_path(app, freezer):
 # ----- unpad_coordinate tests -----
 
 
-def test_unpad_coordinate_A01(app, freezer):
+def test_unpad_coordinate_A01():
     assert unpad_coordinate("A01") == "A1"
 
 
-def test_unpad_coordinate_A1(app, freezer):
+def test_unpad_coordinate_A1():
     assert unpad_coordinate("A1") == "A1"
 
 
-def test_unpad_coordinate_A10(app, freezer):
+def test_unpad_coordinate_A10():
     assert unpad_coordinate("A10") == "A10"
 
 
-def test_unpad_coordinate_B01010(app, freezer):
+def test_unpad_coordinate_B01010():
     assert unpad_coordinate("B01010") == "B1010"
 
 
 # ----- delete_reports tests -----
 
 
-def test_delete_reports(app, freezer):
+def test_delete_reports(app):
 
     copies_of_reports_folder = "tests/data/reports_copies"
 
@@ -84,7 +83,7 @@ def test_delete_reports(app, freezer):
 # ----- get_cherrypicked_samples tests -----
 
 
-def test_get_cherrypicked_samples_test_db_connection_close(app, freezer):
+def test_get_cherrypicked_samples_test_db_connection_close(app):
     """
     Test Scenario
     - Check that connection is close when we call get_cherrypicked_samples
@@ -100,7 +99,7 @@ def test_get_cherrypicked_samples_test_db_connection_close(app, freezer):
             mock_db_connection.close.assert_called_once()
 
 
-def test_get_cherrypicked_samples_test_db_connection_close_on_exception(app, freezer):
+def test_get_cherrypicked_samples_test_db_connection_close_on_exception(app):
     """
     Test Scenario
     - Check that connection is close when we call get_cherrypicked_samples
@@ -125,7 +124,7 @@ def test_get_cherrypicked_samples_test_db_connection_close_on_exception(app, fre
 # - Only the Sentinel query returns matches (No Beckman)
 # - No chunking: a single query is made in which all matches are returned
 # - No duplication of returned matches
-def test_get_cherrypicked_samples_no_beckman(app, freezer):
+def test_get_cherrypicked_samples_no_beckman(app):
     expected = [
         pd.DataFrame(
             ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
@@ -151,7 +150,7 @@ def test_get_cherrypicked_samples_no_beckman(app, freezer):
 # - Only the Sentinel queries return matches (No Beckman)
 # - Chunking: multiple queries are made, with all matches contained in the sum of these queries
 # - No duplication of returned matches
-def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
+def test_get_cherrypicked_samples_chunking_no_beckman(app):
     # Note: This represents the results of three different (Sentinel, Beckman) sets of
     # database queries, each Sentinel query getting indexed from 0. Do not change the
     # indices here unless you have modified the behaviour of the query.
@@ -180,7 +179,7 @@ def test_get_cherrypicked_samples_chunking_no_beckman(app, freezer):
 # - Only the Sentinel queries return matches (No Beckman)
 # - Chunking: multiple queries are made, with all matches contained in the sum of these queries
 # - Duplication of returned matches across different chunks: duplicates should be filtered out
-def test_get_cherrypicked_samples_repeat_tests_no_beckman(app, freezer, mlwh_sentinel_cherrypicked, event_wh_data):
+def test_get_cherrypicked_samples_repeat_tests_no_beckman(app, mlwh_sentinel_cherrypicked, event_wh_data):
     # the following come from MLWH_SAMPLE_STOCK_RESOURCE in fixture_data
     root_sample_ids = ["root_1", "root_2", "root_1"]
     plate_barcodes = ["pb_1", "pb_2", "pb_3"]
@@ -196,6 +195,7 @@ def test_get_cherrypicked_samples_repeat_tests_no_beckman(app, freezer, mlwh_sen
     with app.app_context():
         chunk_size = 2
         returned_samples = get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size)
+        print(returned_samples)
         pd.testing.assert_frame_equal(expected, returned_samples)
 
 
@@ -204,7 +204,7 @@ def test_get_cherrypicked_samples_repeat_tests_no_beckman(app, freezer, mlwh_sen
 # - Only the Beckman query returns matches (No Sentinel)
 # - No chunking: a single query is made in which all matches are returned
 # - No duplication of returned matches
-def test_get_cherrypicked_samples_no_sentinel(app, freezer):
+def test_get_cherrypicked_samples_no_sentinel(app):
     expected = [
         pd.DataFrame(
             ["MCM001", "MCM003", "MCM005"], columns=[FIELD_ROOT_SAMPLE_ID], index=[0, 1, 2]
@@ -230,7 +230,7 @@ def test_get_cherrypicked_samples_no_sentinel(app, freezer):
 # - Only the Beckman queries return matches (No Sentinel)
 # - Chunking: multiple queries are made, with all matches contained in the sum of these queries
 # - No duplication of returned matches
-def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
+def test_get_cherrypicked_samples_chunking_no_sentinel(app):
     # Note: This represents the results of three different (Sentinel, Beckman) sets of
     # database queries, each Sentinel query getting indexed from 0. Do not change the
     # indices here unless you have modified the behaviour of the query.
@@ -259,7 +259,7 @@ def test_get_cherrypicked_samples_chunking_no_sentinel(app, freezer):
 # - Only the Beckman queries return matches (No Sentinel)
 # - Chunking: multiple queries are made, with all matches contained in the sum of these queries
 # - Duplication of returned matches across different chunks: duplicates should be filtered out
-def test_get_cherrypicked_samples_repeat_tests_no_sentinel(app, freezer, mlwh_beckman_cherrypicked, event_wh_data):
+def test_get_cherrypicked_samples_repeat_tests_no_sentinel(app, mlwh_beckman_cherrypicked, event_wh_data):
     # the following come from MLWH_SAMPLE_LIGHTHOUSE_SAMPLE in fixture_data
     root_sample_ids = ["root_4", "root_5", "root_4"]
     plate_barcodes = ["pb_4", "pb_5", "pb_6"]
@@ -288,7 +288,7 @@ def test_get_cherrypicked_samples_repeat_tests_no_sentinel(app, freezer, mlwh_be
 # - Both Sentinel and Beckman queries return matches
 # - No chunking: a single query is made (per workflow) in which all matches are returned
 # - Duplication of returned matches across different workflows: duplicates should be filtered out
-def test_get_cherrypicked_samples_sentinel_and_beckman(app, freezer):
+def test_get_cherrypicked_samples_sentinel_and_beckman(app):
     expected = [
         pd.DataFrame(
             [
@@ -325,7 +325,7 @@ def test_get_cherrypicked_samples_sentinel_and_beckman(app, freezer):
 # - Both Sentinel and Beckman queries return matches
 # - Chunking: multiple queries are made (per workflow), with all matches contained in the sum
 # - Duplication of returned matches across different workflows: duplicates should be filtered out
-def test_get_cherrypicked_samples_chunking_sentinel_and_beckman(app, freezer):
+def test_get_cherrypicked_samples_chunking_sentinel_and_beckman(app):
     # Note: This represents the results of three different (Sentinel, Beckman) sets of
     # database queries, each query getting indexed from 0. Do not changes the
     # indicies here unless you have modified the behaviour of the query.
@@ -440,7 +440,7 @@ def test_get_fit_to_pick_samples(app, freezer, samples, priority_samples):
 # ----- add_cherrypicked_column tests -----
 
 
-def test_add_cherrypicked_column(app, freezer):
+def test_add_cherrypicked_column(app):
     # existing dataframe before 'add_cherrypicked_column' is run (essentially queried from MongoDB)
     existing_dataframe = pd.DataFrame(
         [
@@ -519,7 +519,7 @@ def test_add_cherrypicked_column(app, freezer):
     assert np.array_equal(new_dataframe.to_numpy(), expected_data)
 
 
-def test_add_cherrypicked_column_duplicates(app, freezer):
+def test_add_cherrypicked_column_duplicates(app):
     # Demonstrates the behaviour where, if 'get_cherrypicked_samples' returns duplicates,
     # 'add_cherrypicked_column' will also return duplicates.
     # De-duping should be handled in 'get_cherrypicked_samples'.
@@ -587,7 +587,7 @@ def test_add_cherrypicked_column_duplicates(app, freezer):
     assert np.array_equal(new_dataframe.to_numpy(), expected_data)
 
 
-def test_add_cherrypicked_column_no_rows(app, freezer):
+def test_add_cherrypicked_column_no_rows(app):
     # mocks response from get_cherrypicked_samples()
     existing_dataframe = pd.DataFrame(
         [
@@ -637,7 +637,7 @@ def test_add_cherrypicked_column_no_rows(app, freezer):
 # ----- get_distinct_plate_barcodes tests -----
 
 
-def test_get_distinct_plate_barcodes(app, freezer, samples):
+def test_get_distinct_plate_barcodes(app, samples):
 
     with app.app_context():
         samples = app.data.driver.db.samples

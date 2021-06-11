@@ -27,10 +27,9 @@ from lighthouse.constants.fields import (
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
 )
-from lighthouse.sql_queries import SQL_MLWH_GET_CP_SAMPLES
-
 from lighthouse.exceptions import ReportCreationError
 from lighthouse.helpers.labwhere import get_locations_from_labwhere
+from lighthouse.sql_queries import SQL_MLWH_GET_CP_SAMPLES
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
