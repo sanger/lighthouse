@@ -1,7 +1,18 @@
 import logging
 from typing import Dict
 
-from lighthouse.messages.message import Message
+from lighthouse.classes.plate_event import PlateEvent
+from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
+from lighthouse.classes.messages.event_properties import (
+    PickedSamplesFromSource,
+    RobotUUID,
+    RunInfo,
+    SourcePlateUUID,
+    UserID,
+    PlateBarcode,
+    RunID,
+    RobotSerialNumber,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -10,45 +21,32 @@ class SourcePartial(PlateEvent):
     def __init__(self, name: str) -> None:
         super().__init__(name=name)
 
-    def _create_message(self) -> Message:
-        logger.debug("_create_message")
-
-        return Message({"test": "me"})
-
     def process_event(self) -> None:
         message = self._create_message()
 
         self._send_warehouse_message(message)
 
     def initialize_event(self, params: Dict[str, str]) -> None:
-        self._plate_barcode = params.get("barcode", "")
-        self._user_id = params.get("user_id", "")
-        self._robot_serial_number = params.get("robot", "")
+        self.properties['plate_barcode'] = PlateBarcode(params)
+        self.properties['user_id'] = UserID(params)
+        self.properties['run_id'] = RunID(params)
 
-        if not self._plate_barcode or not self._user_id or not self._robot_serial_number:
-            raise Exception(
-                "'barcode', 'user_id' and 'robot' are required to construct a " f"{self._name} event message"
-            )
+        for key in ['plate_barcode', 'user_id', 'run_id']:
+            self.properties[key].valid()
 
-    def _get_routing_key(self) -> str:
-        """Determines the routing key for a plate event message.
+        self.properties['run_info'] = RunInfo(self.properties['run_id'])
+        self.properties['picked_samples_from_source'] = PickedSamplesFromSource(
+             self.properties['plate_barcode'], self.properties['run_info']
+        )
+        self.properties['source_plate_uuid'] = SourcePlateUUID(self.properties['plate_barcode'])
+        self.properties['robot_serial_number'] = RobotSerialNumber(params)
+        self.properties['robot_uuid'] = RobotUUID(self.properties['robot_serial_number'])
 
-        Arguments:
-            event_type {str} -- The event type for which to determine the routing key.
+    def _create_message(self):
+        message = WarehouseMessage()
 
-        Returns:
-            {str} -- The message routing key.
-        """
+        for key in ['picked_samples_from_source', 'source_plate_uuid', 'user_id', 'robot_uuid']:
+            self.properties[key].add_to_warehouse_message(message)
 
-        return str(app.config["RMQ_ROUTING_KEY"].replace("#", self._name))
+        return message
 
-    def _send_warehouse_message(self, message: Message) -> None:
-        logger.info("Attempting to publish the constructed plate event message")
-
-        routing_key = self._get_routing_key()
-        with Broker() as broker_channel:
-            broker_channel.basic_publish(
-                exchange=app.config["RMQ_EXCHANGE"],
-                routing_key=routing_key,
-                body=message.payload(),
-            )

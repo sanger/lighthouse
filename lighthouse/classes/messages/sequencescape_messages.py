@@ -1,0 +1,3 @@
+class Sequencescapemessage(Message):
+    def __init__(self):
+        ...
