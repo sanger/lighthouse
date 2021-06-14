@@ -13,7 +13,7 @@ from http import HTTPStatus
 
 
 def test_user_id_new(app):
-    with raises(Exception):
+    with raises(ValidationError):
         UserID(None)
 
     assert UserID({}) is not None
