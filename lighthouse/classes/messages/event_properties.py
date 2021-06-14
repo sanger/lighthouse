@@ -29,6 +29,10 @@ class EventPropertyAccessor(ABC):
     def validate(self):
         ...
 
+
+    def valid(self):
+        return self.validate()
+
     # Returns the value for the property. If the value cannot be obtained or
     # does not have a valid value, then it raises an exception.
     # NB: To avoid this it, the instance should be checked first with the
@@ -46,6 +50,9 @@ class EventPropertyAccessor(ABC):
 
 
 class RunID(EventPropertyAccessor):
+    def validate(self):
+        return (self._params.get("run_id") is not None)
+
     @cached_property
     def value(self):
         val = self._params.get("run_id")
@@ -73,6 +80,9 @@ class PlateBarcode(EventPropertyAccessor):
 class RunInfo(EventPropertyAccessor, ServiceCherryTrackerMixin):
     def __init__(self, run_id_property: RunID):
         self.run_id_property = run_id_property
+
+    def validate(self):
+        return (self.run_id_property.validate())
 
     @cached_property
     def value(self):
