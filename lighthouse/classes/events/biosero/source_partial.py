@@ -3,8 +3,6 @@ from typing import Dict
 
 from lighthouse.classes.plate_event import PlateEvent
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
-from lighthouse.messages.broker import Broker
-from lighthouse.messages.message import Message
 
 from lighthouse.classes.messages.event_properties import (
     PickedSamplesFromSource,
@@ -54,15 +52,5 @@ class SourcePartial(PlateEvent):
         for key in ['picked_samples_from_source', 'source_plate_uuid', 'user_id', 'robot_uuid']:
             self.properties[key].add_to_warehouse_message(message)
 
-        return message
+        return message.render()
 
-    def _send_warehouse_message(self, message: Message) -> None:
-        logger.info("Attempting to publish the constructed plate event message")
-
-        routing_key = self._get_routing_key()
-        with Broker() as broker_channel:
-            broker_channel.basic_publish(
-                exchange=app.config["RMQ_EXCHANGE"],
-                routing_key=routing_key,
-                body=message.payload(),
-            )

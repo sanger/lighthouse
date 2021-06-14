@@ -3,6 +3,10 @@ from lighthouse.helpers import mongo
 from functools import cached_property
 from .warehouse_messages import WarehouseMessage
 
+from lighthouse.classes.plate_event import (
+    ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE, ROLE_TYPE_ROBOT,
+    SUBJECT_TYPE_ROBOT
+)
 from lighthouse.classes.mixins.services.cherry_tracker import ServiceCherryTrackerMixin
 from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin
 
@@ -51,11 +55,11 @@ class EventPropertyAccessor(ABC):
 
 class RunID(EventPropertyAccessor):
     def validate(self):
-        return (self._params.get("run_id") is not None)
+        return (self._params.get("automation_system_run_id") is not None)
 
     @cached_property
     def value(self):
-        val = self._params.get("run_id")
+        val = self._params.get("automation_system_run_id")
         if (val is None):
             raise Exception("Unable to determine run id")
         return val
@@ -76,7 +80,7 @@ class PlateBarcode(EventPropertyAccessor):
         return val
 
     def add_to_warehouse_message(self, message):
-        for sample in self.value():
+        for sample in self.value:
             message.add_subject(self.construct_mongo_sample_message_subject(sample))
 
 
@@ -109,14 +113,14 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, 
     @cached_property
     def value(self):
         val = self.get_samples_from_mongo(self.filter_pickable_samples(
-            self.get_samples_from_source_plates(self.run_property.value(), self.barcode_property.value())
+            self.get_samples_from_source_plates(self.run_property.value, self.barcode_property.value)
         ))
         if val is None:
             raise Exception(f"Unable to obtain any samples picked from '{self.barcode_property.value}'")
         return val
 
     def add_to_warehouse_message(self, message):
-        for sample in self.value():
+        for sample in self.value:
             message.add_subject(self.construct_mongo_sample_message_subject(sample))
 
 
@@ -172,12 +176,12 @@ class RobotUUID(EventPropertyAccessor, ServiceCherryTrackerMixin):
         return val
 
     def add_to_warehouse_message(self, message):
-        message.add_subject(self.construct_message_subject(
-            role_type=self._event.ROLE_TYPE_ROBOT,
-            subject_type=self._event.SUBJECT_TYPE_ROBOT,
+        message.add_subject(
+            role_type=ROLE_TYPE_ROBOT,
+            subject_type=SUBJECT_TYPE_ROBOT,
             friendly_name=self.robot_serial_number_property.value,
             uuid=self.value,
-        ))
+        )
 
     def _get_robot_uuid(self):
         if self.robot_serial_number_property.value in app.config['BIOSERO_ROBOTS'].keys():
@@ -196,15 +200,15 @@ class SourcePlateUUID(EventPropertyAccessor, ServiceMongoMixin):
 
     @cached_property
     def value(self):
-        val = mongo.get_source_plate_uuid(self.barcode_property.value)
+        val = self.get_source_plate_uuid(self.barcode_property.value)
         if val is None:
             raise Exception(f"Unable to determine a uuid for source plate '{self.barcode_property.value}'")
         return val
 
     def add_to_warehouse_message(self, message):
-        message.add_subject(self.construct_message_subject(
-            role_type=self._event.ROLE_TYPE_CP_SOURCE_LABWARE,
-            subject_type=self._event.SUBJECT_TYPE_PLATE,
+        message.add_subject(
+            role_type=ROLE_TYPE_CP_SOURCE_LABWARE,
+            subject_type=SUBJECT_TYPE_PLATE,
             friendly_name=self.barcode_property.value,
             uuid=self.value,
-        ))
+        )

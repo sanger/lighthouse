@@ -16,17 +16,23 @@ from lighthouse.constants.fields import (
 from lighthouse.messages.message import Message
 from lighthouse.types import EventMessage, SampleDoc, Subject
 
+from lighthouse.messages.broker import Broker
+
+import logging
+logger = logging.getLogger(__name__)
+
+###
+# subjects and roles for the message to the events warehouse
+###
+ROLE_TYPE_ROBOT = "robot"
+ROLE_TYPE_SAMPLE = "sample"
+ROLE_TYPE_CP_SOURCE_LABWARE = "cherrypicking_source_labware"
+SUBJECT_TYPE_SAMPLE = ROLE_TYPE_SAMPLE
+SUBJECT_TYPE_ROBOT = ROLE_TYPE_ROBOT
+SUBJECT_TYPE_PLATE = "plate"
+
 
 class PlateEvent(ABC):
-    ###
-    # subjects and roles for the message to the events warehouse
-    ###
-    ROLE_TYPE_ROBOT = "robot"
-    ROLE_TYPE_SAMPLE = "sample"
-    ROLE_TYPE_CP_SOURCE_LABWARE = "cherrypicking_source_labware"
-    SUBJECT_TYPE_SAMPLE = ROLE_TYPE_SAMPLE
-    SUBJECT_TYPE_ROBOT = ROLE_TYPE_ROBOT
-    SUBJECT_TYPE_PLATE = "plate"
 
     class PlateTypeEnum(Enum):
         SOURCE = auto()
@@ -53,9 +59,6 @@ class PlateEvent(ABC):
     def _create_message(self) -> Message:
         ...
 
-    @abstractmethod
-    def _send_warehouse_message(self, message: Message) -> None:
-        ...
 
     @abstractmethod
     def process_event(self) -> None:
@@ -133,3 +136,16 @@ class PlateEvent(ABC):
             {str} -- The current datetime.
         """
         return datetime.now().isoformat(timespec="seconds")
+
+    def _send_warehouse_message(self, message: Message) -> None:
+        logger.info("Attempting to publish the constructed plate event message")
+
+        routing_key = self._get_routing_key()
+
+        with Broker() as broker_channel:
+
+            broker_channel.basic_publish(
+                exchange=app.config["RMQ_EXCHANGE"],
+                routing_key=routing_key,
+                body=message.payload(),
+            )

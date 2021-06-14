@@ -18,8 +18,8 @@ class ServiceCherryTrackerMixin(object):
         """
         return requests.get(f"{app.config['CHERRY_TRACK_URL']}/automation-system-runs/{run_id}").json()
 
-    def get_samples_from_source_plates(self, source_plates):
-        return None
+    def get_samples_from_source_plates(self, run_id, barcode):
+        return []
 
     def filter_pickable_samples(self, samples):
         return []
