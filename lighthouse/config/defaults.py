@@ -200,3 +200,10 @@ BECKMAN_FAILURE_TYPES = {
     "instrument_loaded_incorrectly": "Labware has been incorrectly loaded onto instrument",
     "other": "Any other failure",
 }
+
+BIOSERO_ROBOTS = {
+    "BHRB0001": {"name": "Robot 5", "uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"},
+    "BHRB0002": {"name": "Robot 6", "uuid": "13325f3b-5f10-4c72-a590-8aa7203f108b"},
+    "BHRB0003": {"name": "Robot 7", "uuid": "41fe349d-0bcb-4839-a469-946611dd3ba9"},
+    "BHRB0004": {"name": "Robot 8", "uuid": "948c3a0c-7544-4a72-85cc-6b4e489c9725"},
+}
