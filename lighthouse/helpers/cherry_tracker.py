@@ -15,5 +15,5 @@ def get_automation_system_run_info_from_cherry_track(run_id: int) -> requests.Re
     Returns:
         requests.Response: the response from the request to CherryTrack.
     """
-    return requests.get(f"http://10.80.241.124:8000/automation-system-runs/{run_id}")
+    return requests.get(f"/automation-system-runs/{run_id}")
     # return requests.get(f"{app.config['CHERRY_TRACK_URL']}/automation-system-runs/{run_id}")

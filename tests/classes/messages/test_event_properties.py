@@ -86,40 +86,42 @@ def test_run_info_valid(app):
 
 
 def test_run_info_value_successful(app, mocked_responses):
-    run_id = 2
-    url = f"/automation-system-runs/{run_id}"
+    with app.app_context():
+        run_id = 2
+        url = f"{app.config['CHERRY_TRACK_URL']}/automation-system-runs/{run_id}"
 
-    expected_response = {
-        "data": {"id": run_id, "user_id": "ab1", "liquid_handler_serial_number": "aLiquidHandlerSerialNumber"}
-    }
+        expected_response = {
+            "data": {"id": run_id, "user_id": "ab1", "liquid_handler_serial_number": "aLiquidHandlerSerialNumber"}
+        }
 
-    mocked_responses.add(
-        responses.GET,
-        url,
-        json=expected_response,
-        status=HTTPStatus.OK,
-    )
+        mocked_responses.add(
+            responses.GET,
+            url,
+            json=expected_response,
+            status=HTTPStatus.OK,
+        )
 
-    val = RunInfo(RunID({"run_id": run_id})).value
+        val = RunInfo(RunID({"run_id": run_id})).value
 
-    assert val == expected_response
+        assert val == expected_response
 
 
 def test_run_info_value_unsuccessful(app, mocked_responses):
-    run_id = 0
-    url = f"/automation-system-runs/{run_id}"
+    with app.app_context():
+        run_id = 0
+        url = f"{app.config['CHERRY_TRACK_URL']}/automation-system-runs/{run_id}"
 
-    expected_response = None
+        expected_response = None
 
-    mocked_responses.add(
-        responses.GET,
-        url,
-        json=expected_response,
-        status=HTTPStatus.OK,
-    )
+        mocked_responses.add(
+            responses.GET,
+            url,
+            json=expected_response,
+            status=HTTPStatus.OK,
+        )
 
-    with raises(Exception):
-        RunInfo(RunID({"run_id": run_id})).value
+        with raises(Exception):
+            RunInfo(RunID({"run_id": run_id})).value
 
 
 # def test_picked_samples_from_source(app):

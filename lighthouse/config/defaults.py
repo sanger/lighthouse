@@ -92,6 +92,11 @@ MONGO_DBNAME = ""
 BARACODA_URL = f"{LOCALHOST}:5000"
 BARACODA_RETRY_ATTEMPTS = 3
 
+##
+# Cherrytrack url
+##
+CHERRY_TRACK_URL = f"https://{LOCALHOST}:3020"
+
 ###
 # Labwhere config
 ###
