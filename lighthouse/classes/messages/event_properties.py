@@ -65,6 +65,9 @@ class RunID(EventPropertyAccessor):
 
 
 class PlateBarcode(EventPropertyAccessor):
+    def validate(self):
+        return (self._params.get("barcode") is not None)
+
     @cached_property
     def value(self):
         val = self._params.get("barcode")
@@ -99,6 +102,9 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, 
     def __init__(self, barcode_property: PlateBarcode, run_property: RunInfo):
         self.barcode_property = barcode_property
         self.run_property = run_property
+
+    def validate(self):
+        return (self.barcode_property.validate() and self.run_property.validate())
 
     @cached_property
     def value(self):
@@ -184,6 +190,9 @@ class RobotUUID(EventPropertyAccessor, ServiceCherryTrackerMixin):
 class SourcePlateUUID(EventPropertyAccessor, ServiceMongoMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.barcode_property = barcode_property
+
+    def validate(self):
+        return self.barcode_property.validate()
 
     @cached_property
     def value(self):
