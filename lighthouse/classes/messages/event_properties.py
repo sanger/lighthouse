@@ -4,8 +4,10 @@ from functools import cached_property
 from .warehouse_messages import WarehouseMessage
 
 from lighthouse.classes.plate_event import (
-    ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE, ROLE_TYPE_ROBOT,
-    SUBJECT_TYPE_ROBOT
+    ROLE_TYPE_CP_SOURCE_LABWARE,
+    SUBJECT_TYPE_PLATE,
+    ROLE_TYPE_ROBOT,
+    SUBJECT_TYPE_ROBOT,
 )
 from lighthouse.classes.mixins.services.cherry_tracker import ServiceCherryTrackerMixin
 from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin
@@ -25,14 +27,13 @@ class EventPropertyAccessor(ABC):
     def __init__(self, params):
         self._params = params
         if self._params is None:
-            raise 'You need to define params to create the EventProperty'
+            raise "You need to define params to create the EventProperty"
 
     # Retuns a boolean (True or False) indicating if the params received for this
     # EventProperty have a valid value and can be used to send a request.
     @abstractmethod
     def validate(self):
         ...
-
 
     def valid(self):
         return self.validate()
@@ -50,17 +51,17 @@ class EventPropertyAccessor(ABC):
 
     def enforce_validation(self):
         if not self.validate():
-            raise ValidationError('Validation error')
+            raise ValidationError("Validation error")
 
 
 class RunID(EventPropertyAccessor):
     def validate(self):
-        return (self._params.get("automation_system_run_id") is not None)
+        return self._params.get("automation_system_run_id") is not None
 
     @cached_property
     def value(self):
         val = self._params.get("automation_system_run_id")
-        if (val is None):
+        if val is None:
             raise Exception("Unable to determine run id")
         return val
 
@@ -70,12 +71,12 @@ class RunID(EventPropertyAccessor):
 
 class PlateBarcode(EventPropertyAccessor):
     def validate(self):
-        return (self._params.get("barcode") is not None)
+        return self._params.get("barcode") is not None
 
     @cached_property
     def value(self):
         val = self._params.get("barcode")
-        if (val is None):
+        if val is None:
             raise Exception("Unable to obtain barcode value'")
         return val
 
@@ -89,7 +90,7 @@ class RunInfo(EventPropertyAccessor, ServiceCherryTrackerMixin):
         self.run_id_property = run_id_property
 
     def validate(self):
-        return (self.run_id_property.validate())
+        return self.run_id_property.validate()
 
     @cached_property
     def value(self):
@@ -108,13 +109,15 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, 
         self.run_property = run_property
 
     def validate(self):
-        return (self.barcode_property.validate() and self.run_property.validate())
+        return self.barcode_property.validate() and self.run_property.validate()
 
     @cached_property
     def value(self):
-        val = self.get_samples_from_mongo(self.filter_pickable_samples(
-            self.get_samples_from_source_plates(self.run_property.value, self.barcode_property.value)
-        ))
+        val = self.get_samples_from_mongo(
+            self.filter_pickable_samples(
+                self.get_samples_from_source_plates(self.run_property.value, self.barcode_property.value)
+            )
+        )
         if val is None:
             raise Exception(f"Unable to obtain any samples picked from '{self.barcode_property.value}'")
         return val
@@ -138,7 +141,7 @@ class UserID(EventPropertyAccessor):
         return val
 
     def validate(self):
-        return (self._params.get("user_id") is not None)
+        return self._params.get("user_id") is not None
 
     def add_to_warehouse_message(self, message):
         message.set_user_id(self.value)
@@ -154,7 +157,7 @@ class RobotSerialNumber(EventPropertyAccessor):
         return val
 
     def validate(self):
-        return (self._params.get("robot") is not None)
+        return self._params.get("robot") is not None
 
     def add_to_warehouse_message(self, message):
         return None
@@ -184,11 +187,10 @@ class RobotUUID(EventPropertyAccessor, ServiceCherryTrackerMixin):
         )
 
     def _get_robot_uuid(self):
-        if self.robot_serial_number_property.value in app.config['BIOSERO_ROBOTS'].keys():
-            return app.config['BIOSERO_ROBOTS'][self.robot_serial_number_property.value]['uuid']
+        if self.robot_serial_number_property.value in app.config["BIOSERO_ROBOTS"].keys():
+            return app.config["BIOSERO_ROBOTS"][self.robot_serial_number_property.value]["uuid"]
         else:
             raise RetrievalError(f"Robot with barcode %{self.robot_serial_number_property.value} not found")
-
 
 
 class SourcePlateUUID(EventPropertyAccessor, ServiceMongoMixin):

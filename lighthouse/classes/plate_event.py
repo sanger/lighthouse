@@ -19,6 +19,7 @@ from lighthouse.types import EventMessage, SampleDoc, Subject
 from lighthouse.messages.broker import Broker
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 ###
@@ -33,7 +34,6 @@ SUBJECT_TYPE_PLATE = "plate"
 
 
 class PlateEvent(ABC):
-
     class PlateTypeEnum(Enum):
         SOURCE = auto()
         DESTINATION = auto()
@@ -58,7 +58,6 @@ class PlateEvent(ABC):
     @abstractmethod
     def _create_message(self) -> Message:
         ...
-
 
     @abstractmethod
     def process_event(self) -> None:

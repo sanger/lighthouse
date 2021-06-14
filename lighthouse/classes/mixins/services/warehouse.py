@@ -1,4 +1,3 @@
-
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 
 

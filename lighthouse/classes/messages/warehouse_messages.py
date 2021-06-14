@@ -19,17 +19,18 @@ class WarehouseMessage:
 
         return Message(message_content)
 
-    def add_subject(self, role_type: str, subject_type: str, friendly_name: str, uuid: Optional[str] = None
-    ) -> Subject:
+    def add_subject(self, role_type: str, subject_type: str, friendly_name: str, uuid: Optional[str] = None) -> Subject:
         if uuid is None:
             uuid = str(uuid4())
 
-        self._subjects.append({
-            "role_type": role_type,
-            "subject_type": subject_type,
-            "friendly_name": friendly_name,
-            "uuid": uuid,
-        })
+        self._subjects.append(
+            {
+                "role_type": role_type,
+                "subject_type": subject_type,
+                "friendly_name": friendly_name,
+                "uuid": uuid,
+            }
+        )
 
     def construct_event_message(self, subjects: List[Subject]) -> EventMessage:
         return {

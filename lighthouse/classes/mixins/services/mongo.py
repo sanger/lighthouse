@@ -6,4 +6,4 @@ class ServiceMongoMixin(object):
         return []
 
     def get_source_plate_uuid(self, barcode):
-        return '1234'
+        return "1234"
