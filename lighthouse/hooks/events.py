@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
     automation_system = AutomationSystem.AutomationSystemEnum.BIOSERO
 
+    # TODO: Assume we only receive one event
     for event in events:
         biosero = Biosero()
         event_type = event.get("event_type")
