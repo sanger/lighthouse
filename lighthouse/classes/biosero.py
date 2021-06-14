@@ -12,7 +12,6 @@ from lighthouse.classes.events.biosero import (
     SourceUnrecognised,
     SourcePartial,
 )
-from lighthouse.classes.events.biosero.source_partial import SourcePartial
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,10 @@
 import logging
-from typing import Dict
+from typing import Dict, Any
 
 from lighthouse.classes.plate_event import PlateEvent
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
+from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type: ignore
 
-from lighthouse.classes.messages.event_properties import (
+from lighthouse.classes.messages.event_properties import (  # type: ignore
     PickedSamplesFromSource,
     RobotUUID,
     RunInfo,
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class SourcePartial(PlateEvent):
     def __init__(self, name: str) -> None:
         super().__init__(name=name, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
-        self.properties = {}
+        self.properties: Dict[str, Any] = {}
 
     def process_event(self) -> None:
         message = self._create_message()
@@ -36,7 +36,7 @@ class SourcePartial(PlateEvent):
         self.properties["run_id"] = RunID(params)
 
         for key in ["plate_barcode", "user_id", "run_id"]:
-            self.properties[key].valid()
+            self.properties[key].validate()
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
         self.properties["picked_samples_from_source"] = PickedSamplesFromSource(

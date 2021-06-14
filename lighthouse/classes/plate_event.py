@@ -95,8 +95,8 @@ class PlateEvent(ABC):
             ]
         )
         return self.construct_message_subject(
-            role_type=self.ROLE_TYPE_SAMPLE,
-            subject_type=self.SUBJECT_TYPE_SAMPLE,
+            role_type=ROLE_TYPE_SAMPLE,
+            subject_type=SUBJECT_TYPE_SAMPLE,
             friendly_name=friendly_name,
             uuid=sample[FIELD_LH_SAMPLE_UUID],
         )

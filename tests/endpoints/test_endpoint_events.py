@@ -96,5 +96,12 @@ def test_post_event_partially_completed(app, client, biosero_auth_headers, mocke
                     mocked_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
                         routing_key="test.event.lh_biosero_cp_source_partial",
-                        body='{"event": {"uuid": "1", "event_type": "lh_biosero_cp_source_partial", "occured_at": "mytime", "user_identifier": "user1", "subjects": [{"role_type": "cherrypicking_source_labware", "subject_type": "plate", "friendly_name": "plate_barcode_123", "uuid": "1234"}, {"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", "uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}], "metadata": {}}, "lims": "LH_TEST"}',
+                        body=(
+                            '{"event": {"uuid": "1", "event_type": "lh_biosero_cp_source_partial", '
+                            '"occured_at": "mytime", "user_identifier": "user1", '
+                            '"subjects": [{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
+                            '"friendly_name": "plate_barcode_123", "uuid": "1234"}, {"role_type": "robot", '
+                            '"subject_type": "robot", "friendly_name": "BHRB0001", '
+                            '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}], "metadata": {}}, "lims": "LH_TEST"}'
+                        ),
                     )

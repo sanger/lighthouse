@@ -1,5 +1,5 @@
 from pytest import raises
-from lighthouse.classes.messages.event_properties import (
+from lighthouse.classes.messages.event_properties import (  # type: ignore
     UserID,
     ValidationError,
     RobotSerialNumber,

@@ -3,7 +3,7 @@ from typing import Dict
 
 from flask import current_app as app
 
-from lighthouse.classes.mixins.services.labwhere import LabWhereMixin
+from lighthouse.classes.mixins.services.labwhere import LabWhereMixin  # type: ignore
 from lighthouse.classes.plate_event import PlateEvent
 from lighthouse.helpers import mongo
 from lighthouse.messages.broker import Broker

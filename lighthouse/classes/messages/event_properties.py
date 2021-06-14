@@ -1,16 +1,15 @@
 from abc import ABC, abstractmethod
-from lighthouse.helpers import mongo
 from functools import cached_property
-from .warehouse_messages import WarehouseMessage
-
+from .warehouse_messages import WarehouseMessage  # type: ignore
+from typing import Any
 from lighthouse.classes.plate_event import (
     ROLE_TYPE_CP_SOURCE_LABWARE,
     SUBJECT_TYPE_PLATE,
     ROLE_TYPE_ROBOT,
     SUBJECT_TYPE_ROBOT,
 )
-from lighthouse.classes.mixins.services.cherry_tracker import ServiceCherryTrackerMixin
-from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin
+from lighthouse.classes.mixins.services.cherry_tracker import ServiceCherryTrackerMixin  # type: ignore
+from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin  # type: ignore
 
 from flask import current_app as app
 
@@ -27,7 +26,7 @@ class EventPropertyAccessor(ABC):
     def __init__(self, params):
         self._params = params
         if self._params is None:
-            raise "You need to define params to create the EventProperty"
+            raise ValidationError("You need to define params to create the EventProperty")
 
     # Retuns a boolean (True or False) indicating if the params received for this
     # EventProperty have a valid value and can be used to send a request.
@@ -46,7 +45,8 @@ class EventPropertyAccessor(ABC):
     def value(self):
         ...
 
-    def add_to_warehouse_message(self, message: WarehouseMessage):
+    @abstractmethod
+    def add_to_warehouse_message(self, message: WarehouseMessage) -> Any:
         ...
 
     def enforce_validation(self):
@@ -82,7 +82,7 @@ class PlateBarcode(EventPropertyAccessor):
 
     def add_to_warehouse_message(self, message):
         for sample in self.value:
-            message.add_subject(self.construct_mongo_sample_message_subject(sample))
+            message.add_sample_as_subject(sample)
 
 
 class RunInfo(EventPropertyAccessor, ServiceCherryTrackerMixin):
@@ -124,7 +124,7 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, 
 
     def add_to_warehouse_message(self, message):
         for sample in self.value:
-            message.add_subject(self.construct_mongo_sample_message_subject(sample))
+            message.add_sample_as_subject(sample)
 
 
 ##

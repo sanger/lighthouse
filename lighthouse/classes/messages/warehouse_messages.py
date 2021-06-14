@@ -1,9 +1,18 @@
 from lighthouse.messages.message import Message
 from lighthouse.types import Subject, EventMessage
 from uuid import uuid4
-from typing import List, Optional
+from typing import List, Optional, Any
 from flask import current_app as app
 from datetime import datetime
+from lighthouse.constants.fields import (
+    FIELD_LAB_ID,
+    FIELD_LH_SAMPLE_UUID,
+    FIELD_RESULT,
+    FIELD_RNA_ID,
+    FIELD_ROOT_SAMPLE_ID,
+)
+from lighthouse.types import SampleDoc
+from lighthouse.classes.plate_event import ROLE_TYPE_SAMPLE, SUBJECT_TYPE_SAMPLE
 
 
 class WarehouseMessage:
@@ -19,7 +28,9 @@ class WarehouseMessage:
 
         return Message(message_content)
 
-    def add_subject(self, role_type: str, subject_type: str, friendly_name: str, uuid: Optional[str] = None) -> Subject:
+    def add_subject(
+        self, role_type: str, subject_type: str, friendly_name: str, uuid: Optional[str] = None
+    ) -> List[Any]:
         if uuid is None:
             uuid = str(uuid4())
 
@@ -31,6 +42,7 @@ class WarehouseMessage:
                 "uuid": uuid,
             }
         )
+        return self._subjects
 
     def construct_event_message(self, subjects: List[Subject]) -> EventMessage:
         return {
@@ -44,6 +56,28 @@ class WarehouseMessage:
             },
             "lims": app.config["RMQ_LIMS_ID"],
         }
+
+    def add_sample_as_subject(self, sample: SampleDoc) -> Any:
+        """Adds sample subject for a plate event message from a mongo sample.
+
+        Arguments:
+            samples {SampleDoc} -- The mongo sample for which to generate a subject.
+
+        """
+        friendly_name = "__".join(
+            [
+                sample[FIELD_ROOT_SAMPLE_ID],
+                sample[FIELD_RNA_ID],
+                sample[FIELD_LAB_ID],
+                sample[FIELD_RESULT],
+            ]
+        )
+        return self.add_subject(
+            role_type=ROLE_TYPE_SAMPLE,
+            subject_type=SUBJECT_TYPE_SAMPLE,
+            friendly_name=friendly_name,
+            uuid=sample[FIELD_LH_SAMPLE_UUID],
+        )
 
     def get_message_timestamp(self) -> str:
         """Returns the current datetime in a format compatible with messaging.
