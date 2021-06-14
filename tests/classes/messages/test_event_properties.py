@@ -74,15 +74,15 @@ def test_robot_uuid_value(app):
 
 
 def test_run_id_valid(app):
-    assert RunID({"run_id": 1}).valid() is True
+    assert RunID({"automation_system_run_id": 1}).valid() is True
 
 
 def test_run_id_value(app):
-    assert RunID({"run_id": 1}).value == 1
+    assert RunID({"automation_system_run_id": 1}).value == 1
 
 
 def test_run_info_valid(app):
-    assert RunInfo(RunID({"run_id": 1})).valid() is True
+    assert RunInfo(RunID({"automation_system_run_id": 1})).valid() is True
 
 
 def test_run_info_value_successful(app, mocked_responses):
@@ -101,7 +101,7 @@ def test_run_info_value_successful(app, mocked_responses):
             status=HTTPStatus.OK,
         )
 
-        val = RunInfo(RunID({"run_id": run_id})).value
+        val = RunInfo(RunID({"automation_system_run_id": run_id})).value
 
         assert val == expected_response
 
@@ -121,7 +121,7 @@ def test_run_info_value_unsuccessful(app, mocked_responses):
         )
 
         with raises(Exception):
-            RunInfo(RunID({"run_id": run_id})).value
+            RunInfo(RunID({"automation_system_run_id": run_id})).value
 
 
 # def test_picked_samples_from_source(app):
