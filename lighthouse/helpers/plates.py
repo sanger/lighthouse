@@ -41,7 +41,8 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
-    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED,
     FIELD_PLATE_LOOKUP_RNA_ID,
     FIELD_PLATE_LOOKUP_LAB_ID,
     FIELD_PLATE_LOOKUP_SAMPLE_ID,
@@ -66,6 +67,7 @@ from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_p
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
+from lighthouse.helpers.reports import unpad_coordinate
 
 logger = logging.getLogger(__name__)
 
@@ -779,7 +781,8 @@ def pickable_sample_attributes(sample: SampleDoc) -> SampleDoc:
         sample with the valid list of fields defined for a pickable sample
     """
     return {
-        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE: sample[FIELD_COORDINATE],
+        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED: sample[FIELD_COORDINATE],
+        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED: unpad_coordinate(sample[FIELD_COORDINATE]),
         FIELD_PLATE_LOOKUP_RNA_ID: sample[FIELD_RNA_ID],
         FIELD_PLATE_LOOKUP_LAB_ID: sample[FIELD_LAB_ID],
         FIELD_PLATE_LOOKUP_SAMPLE_ID: sample[FIELD_LH_SAMPLE_UUID],
