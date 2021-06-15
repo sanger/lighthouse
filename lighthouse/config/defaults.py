@@ -187,7 +187,7 @@ RMQ_ROUTING_KEY = "staging.event.#"
 RMQ_LIMS_ID = "LH_LOCAL"
 
 ###
-# Backman config
+# Beckman config
 ###
 BECKMAN_ENABLE = False
 BECKMAN_ROBOTS = {
@@ -212,3 +212,8 @@ BIOSERO_ROBOTS = {
     "BHRB0003": {"name": "Robot 7", "uuid": "41fe349d-0bcb-4839-a469-946611dd3ba9"},
     "BHRB0004": {"name": "Robot 8", "uuid": "948c3a0c-7544-4a72-85cc-6b4e489c9725"},
 }
+
+###
+# CherryTrack config
+###
+CHERRY_TRACK_URL = "http://10.80.241.124:8000"

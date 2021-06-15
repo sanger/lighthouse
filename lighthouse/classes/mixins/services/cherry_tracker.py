@@ -1,6 +1,12 @@
 import requests
 from flask import current_app as app
 
+from lighthouse.helpers.cherry_tracker import get_automation_system_run_info_from_cherry_track
+import logging
+from http import HTTPStatus
+
+logger = logging.getLogger(__name__)
+
 
 class ServiceCherryTrackerMixin(object):
     def get_run_info(self, run_id):
@@ -16,7 +22,14 @@ class ServiceCherryTrackerMixin(object):
         Returns:
             requests.Response: the response from the request to CherryTrack.
         """
-        return requests.get(f"{app.config['CHERRY_TRACK_URL']}/automation-system-runs/{run_id}").json()
+
+        logger.info(f"Getting automation system run info from CherryTracker for run ID {run_id}")
+        response = get_automation_system_run_info_from_cherry_track(run_id)
+
+        if response.status_code != HTTPStatus.OK:
+            raise Exception("Response from CherryTracker is not OK")
+
+        return response.json()
 
     def get_samples_from_source_plates(self, run_id, barcode):
         return []

@@ -46,6 +46,24 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
+def test_post_event_partially_completed(app, client, biosero_auth_headers):
+
+def test_post_event_partially_completed_missing_barcode(app, client, biosero_auth_headers):
+    with app.app_context():
+        response = client.post(
+            "/events",
+            data={
+                "automation_system_run_id": 123,
+                "event_type": "lh_biosero_cp_source_partial",
+                "user_id": "user1",
+                "robot": "roboto",
+            },
+            headers=biosero_auth_headers,
+        )
+
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
 def test_post_event_partially_completed(app, client, biosero_auth_headers, mocked_responses):
 
     with app.app_context():

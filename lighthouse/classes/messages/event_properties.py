@@ -95,6 +95,7 @@ class RunInfo(EventPropertyAccessor, ServiceCherryTrackerMixin):
     @cached_property
     def value(self):
         val = self.get_run_info(self.run_id_property.value)
+        # TODO: handle more than None, but empty object? or include errors field
         if val is None:
             raise Exception(f"Unable to determine a run info for run id '{self.run_id_property.value}'")
         return val
@@ -105,6 +106,9 @@ class RunInfo(EventPropertyAccessor, ServiceCherryTrackerMixin):
 
 class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, ServiceMongoMixin):
     def __init__(self, barcode_property: PlateBarcode, run_property: RunInfo):
+        import pdb
+
+        pdb.set_trace()
         self.barcode_property = barcode_property
         self.run_property = run_property
 
@@ -112,6 +116,8 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, 
         return self.barcode_property.validate() and self.run_property.validate()
 
     @cached_property
+    # read from client
+    # values should have sample fields
     def value(self):
         val = self.get_samples_from_mongo(
             self.filter_pickable_samples(
@@ -122,6 +128,7 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, 
             raise Exception(f"Unable to obtain any samples picked from '{self.barcode_property.value}'")
         return val
 
+    # use value list of sample and write
     def add_to_warehouse_message(self, message):
         for sample in self.value:
             message.add_sample_as_subject(sample)
