@@ -8,7 +8,7 @@ from lighthouse.classes.plate_event import (
     ROLE_TYPE_ROBOT,
     SUBJECT_TYPE_ROBOT,
 )
-from lighthouse.classes.mixins.services.cherry_tracker import ServiceCherryTrackerMixin  # type: ignore
+from lighthouse.classes.mixins.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
 from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin  # type: ignore
 
 from flask import current_app as app
@@ -85,7 +85,7 @@ class PlateBarcode(EventPropertyAccessor):
             message.add_sample_as_subject(sample)
 
 
-class RunInfo(EventPropertyAccessor, ServiceCherryTrackerMixin):
+class RunInfo(EventPropertyAccessor, ServiceCherrytrackMixin):
     def __init__(self, run_id_property: RunID):
         self.run_id_property = run_id_property
 
@@ -104,36 +104,27 @@ class RunInfo(EventPropertyAccessor, ServiceCherryTrackerMixin):
         return None
 
 
-class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, ServiceMongoMixin):
-    def __init__(self, barcode_property: PlateBarcode, run_property: RunInfo):
+class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherrytrackMixin):
+    def __init__(self, barcode_property: PlateBarcode):
         self.barcode_property = barcode_property
-        self.run_property = run_property
 
     def validate(self):
-        return self.barcode_property.validate() and self.run_property.validate()
+        return self.barcode_property.validate()
 
     @cached_property
-    # read from client
-    # values should have sample fields
     def value(self):
-        val = self.get_samples_from_mongo(
-            self.filter_pickable_samples(
-                self.get_samples_from_source_plates(self.run_property.value, self.barcode_property.value)
-            )
+        val = list(
+            filter(self.filter_pickable_samples, self.get_samples_from_source_plates(self.barcode_property.value))
         )
         if val is None:
             raise Exception(f"Unable to obtain any samples picked from '{self.barcode_property.value}'")
         return val
 
-    # use value list of sample and write
     def add_to_warehouse_message(self, message):
         for sample in self.value:
             message.add_sample_as_subject(sample)
 
 
-##
-#
-##
 class UserID(EventPropertyAccessor):
     @cached_property
     def value(self):
@@ -167,7 +158,7 @@ class RobotSerialNumber(EventPropertyAccessor):
         return None
 
 
-class RobotUUID(EventPropertyAccessor, ServiceCherryTrackerMixin):
+class RobotUUID(EventPropertyAccessor, ServiceCherrytrackMixin):
     def __init__(self, robot_serial_number_property: RobotSerialNumber):
         self.robot_serial_number_property = robot_serial_number_property
 

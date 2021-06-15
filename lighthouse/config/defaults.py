@@ -95,7 +95,7 @@ BARACODA_RETRY_ATTEMPTS = 3
 ##
 # Cherrytrack url
 ##
-CHERRY_TRACK_URL = f"https://{LOCALHOST}:3020"
+CHERRYTRACK_URL = "http://192.168.5.124:8000"  # f"https://{LOCALHOST}:3020"
 
 ###
 # Labwhere config
@@ -212,8 +212,3 @@ BIOSERO_ROBOTS = {
     "BHRB0003": {"name": "Robot 7", "uuid": "41fe349d-0bcb-4839-a469-946611dd3ba9"},
     "BHRB0004": {"name": "Robot 8", "uuid": "948c3a0c-7544-4a72-85cc-6b4e489c9725"},
 }
-
-###
-# CherryTrack config
-###
-CHERRY_TRACK_URL = "http://10.80.241.124:8000"

@@ -61,7 +61,7 @@ def test_post_event_partially_completed(app, client, biosero_auth_headers, mocke
                     mocked_broker.__enter__.return_value = mocked_channel
 
                     run_id = 2
-                    url = f"{app.config['CHERRY_TRACK_URL']}/automation-system-runs/{run_id}"
+                    url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
 
                     expected_response = {
                         "data": {

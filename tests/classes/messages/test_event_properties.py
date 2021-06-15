@@ -7,6 +7,8 @@ from lighthouse.classes.messages.event_properties import (  # type: ignore
     RetrievalError,
     RunInfo,
     RunID,
+    PlateBarcode,
+    PickedSamplesFromSource,
 )
 import responses
 from http import HTTPStatus
@@ -80,6 +82,14 @@ def test_robot_uuid_value(app):
         assert RobotUUID(RobotSerialNumber({"robot": "BHRB0001"})).value == uuid
 
 
+def test_plate_barcode_valid(app):
+    assert PlateBarcode({"barcode": "aBarcode"}).valid() is True
+
+
+def test_plate_barcode_value(app):
+    assert PlateBarcode({"barcode": "aBarcode"}).value == "aBarcode"
+
+
 def test_run_id_valid(app):
     assert RunID({"automation_system_run_id": 1}).valid() is True
 
@@ -95,7 +105,7 @@ def test_run_info_valid(app):
 def test_run_info_value_successful(app, mocked_responses):
     with app.app_context():
         run_id = 2
-        url = f"{app.config['CHERRY_TRACK_URL']}/automation-system-runs/{run_id}"
+        url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
 
         expected_response = {
             "data": {"id": run_id, "user_id": "ab1", "liquid_handler_serial_number": "aLiquidHandlerSerialNumber"}
@@ -110,13 +120,13 @@ def test_run_info_value_successful(app, mocked_responses):
 
         val = RunInfo(RunID({"automation_system_run_id": run_id})).value
 
-        assert val == expected_response
+        assert val == expected_response["data"]
 
 
 def test_run_info_value_unsuccessful(app, mocked_responses):
     with app.app_context():
         run_id = 0
-        url = f"{app.config['CHERRY_TRACK_URL']}/automation-system-runs/{run_id}"
+        url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
 
         expected_response = None
 
@@ -131,8 +141,53 @@ def test_run_info_value_unsuccessful(app, mocked_responses):
             RunInfo(RunID({"automation_system_run_id": run_id})).value
 
 
-# def test_picked_samples_from_source(app):
-# assert PickedSamplesFromSource({"barcode_property": "1", "run_property": "1"}).valid() is False
-# assert (
-#     PickedSamplesFromSource({"barcode_property": "PlateBarcode", run_property: {run_id_property: "1"}}).valid is True
-# )
+def test_picked_samples_from_source_valid(app):
+    assert PickedSamplesFromSource(PlateBarcode({"barcode": "aBarcode"})).valid() is True
+    assert PickedSamplesFromSource(PlateBarcode({"missing_barcode_field": "aBarcode"})).valid() is False
+
+
+def test_picked_samples_from_source_value_successful(app, mocked_responses):
+    with app.app_context():
+        source_barcode = "aBarcode"
+        url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}"
+
+        expected_response = {
+            "data": [
+                {
+                    "control": True,
+                    "control_barcode": "control_barcode1",
+                    "control_coordinate": "A1",
+                    "lab_id": "lab_id",
+                    "picked": True,
+                    "rna_id": "rna_id1",
+                    "robot_barcode": "robot_barcode",
+                    "run_id": "run_id",
+                    "sample_id": "sample_id1",
+                    "source_barcode": "aBarcode",
+                    "source_coordinate": "B1",
+                },
+                {
+                    "control": True,
+                    "control_barcode": "control_barcode2",
+                    "control_coordinate": "A2",
+                    "lab_id": "lab_id",
+                    "picked": False,
+                    "rna_id": "rna_id2",
+                    "robot_barcode": "robot_barcode",
+                    "run_id": "run_id",
+                    "sample_id": "sample_id2",
+                    "source_barcode": "aBarcode",
+                    "source_coordinate": "B2",
+                },
+            ]
+        }
+
+        mocked_responses.add(
+            responses.GET,
+            url,
+            json=expected_response,
+            status=HTTPStatus.OK,
+        )
+
+        val = PickedSamplesFromSource(PlateBarcode({"barcode": "aBarcode"})).value
+        assert val == [expected_response["data"][1]]

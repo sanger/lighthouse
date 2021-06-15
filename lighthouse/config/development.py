@@ -52,6 +52,6 @@ MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 BECKMAN_ENABLE = True
 
 ###
-# CherryTrack config
+# Cherrytrack config
 ###
-CHERRY_TRACK_URL = "http://10.80.241.124:8000"
+CHERRYTRACK_URL = "http://192.168.5.124:8000"
