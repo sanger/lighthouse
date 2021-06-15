@@ -5,11 +5,11 @@ from typing import List, Optional, Any
 from flask import current_app as app
 from datetime import datetime
 from lighthouse.constants.fields import (
-    FIELD_LAB_ID,
-    FIELD_LH_SAMPLE_UUID,
-    FIELD_RESULT,
-    FIELD_RNA_ID,
-    FIELD_ROOT_SAMPLE_ID,
+    FIELD_CHERRYTRACK_ROOT_SAMPLE_ID,
+    FIELD_CHERRYTRACK_RNA_ID,
+    FIELD_CHERRYTRACK_LAB_ID,
+    FIELD_CHERRYTRACK_RESULT,
+    FIELD_CHERRYTRACK_LH_SAMPLE_UUID,
 )
 from lighthouse.types import SampleDoc
 from lighthouse.classes.plate_event import PlateEvent, ROLE_TYPE_SAMPLE, SUBJECT_TYPE_SAMPLE
@@ -70,16 +70,16 @@ class WarehouseMessage:
         """
         friendly_name = "__".join(
             [
-                sample[FIELD_ROOT_SAMPLE_ID],
-                sample[FIELD_RNA_ID],
-                sample[FIELD_LAB_ID],
-                sample[FIELD_RESULT],
+                sample[FIELD_CHERRYTRACK_ROOT_SAMPLE_ID],
+                sample[FIELD_CHERRYTRACK_RNA_ID],
+                sample[FIELD_CHERRYTRACK_LAB_ID],
+                sample[FIELD_CHERRYTRACK_RESULT],
             ]
         )
         return self.add_subject(
             role_type=ROLE_TYPE_SAMPLE,
             subject_type=SUBJECT_TYPE_SAMPLE,
             friendly_name=friendly_name,
-            uuid=sample[FIELD_LH_SAMPLE_UUID],
+            uuid=sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID],
         )
 
