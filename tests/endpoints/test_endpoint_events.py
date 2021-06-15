@@ -46,8 +46,6 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
-def test_post_event_partially_completed(app, client, biosero_auth_headers):
-
 def test_post_event_partially_completed_missing_barcode(app, client, biosero_auth_headers):
     with app.app_context():
         response = client.post(
