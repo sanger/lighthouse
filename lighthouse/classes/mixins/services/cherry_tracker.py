@@ -1,6 +1,3 @@
-import requests
-from flask import current_app as app
-
 from lighthouse.helpers.cherry_tracker import get_automation_system_run_info_from_cherry_track
 import logging
 from http import HTTPStatus

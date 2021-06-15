@@ -106,9 +106,6 @@ class RunInfo(EventPropertyAccessor, ServiceCherryTrackerMixin):
 
 class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherryTrackerMixin, ServiceMongoMixin):
     def __init__(self, barcode_property: PlateBarcode, run_property: RunInfo):
-        import pdb
-
-        pdb.set_trace()
         self.barcode_property = barcode_property
         self.run_property = run_property
 
