@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 def insert_events_hook(events: List[Dict[str, Any]]) -> None:
     for event in events:
-        event['event_wh_uuid'] = str(uuid4())
+        event["event_wh_uuid"] = str(uuid4())
+
 
 def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
     automation_system = AutomationSystem.AutomationSystemEnum.BIOSERO
@@ -32,4 +33,3 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
         plate_event.initialize_event(event)
 
         plate_event.process_event()
-

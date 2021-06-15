@@ -51,9 +51,9 @@ def test_post_event_partially_completed(app, client, biosero_auth_headers, mocke
     with app.app_context():
         mocked_broker = MagicMock()
         with patch("lighthouse.classes.plate_event.Broker", return_value=mocked_broker):
-            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[1, 2, 3, 4]):
+            with patch("lighthouse.hooks.events.uuid4", side_effect=[1, 2, 3, 4]):
                 with patch(
-                    "lighthouse.classes.messages.warehouse_messages.WarehouseMessage.get_message_timestamp",
+                    "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
                     return_value="mytime",
                 ):
 

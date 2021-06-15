@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
 from functools import cached_property
-from .warehouse_messages import WarehouseMessage  # type: ignore
-from typing import Any, List, Dict
-from lighthouse.classes.plate_event import (
+from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
+    WarehouseMessage,
     ROLE_TYPE_CP_SOURCE_LABWARE,
     SUBJECT_TYPE_PLATE,
     ROLE_TYPE_ROBOT,
     SUBJECT_TYPE_ROBOT,
 )
+from typing import Any, List, Dict
 from lighthouse.classes.mixins.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
 from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin  # type: ignore
+
 
 from flask import current_app as app
 

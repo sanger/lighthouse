@@ -3,7 +3,6 @@ from lighthouse.types import Subject, EventMessage
 from uuid import uuid4
 from typing import List, Optional, Any
 from flask import current_app as app
-from datetime import datetime
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_ROOT_SAMPLE_ID,
     FIELD_CHERRYTRACK_RNA_ID,
@@ -12,21 +11,32 @@ from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_LH_SAMPLE_UUID,
 )
 from lighthouse.types import SampleDoc
-from lighthouse.classes.plate_event import PlateEvent, ROLE_TYPE_SAMPLE, SUBJECT_TYPE_SAMPLE
+
+###
+# subjects and roles for the message to the events warehouse
+###
+ROLE_TYPE_ROBOT = "robot"
+ROLE_TYPE_SAMPLE = "sample"
+ROLE_TYPE_CP_SOURCE_LABWARE = "cherrypicking_source_labware"
+SUBJECT_TYPE_SAMPLE = ROLE_TYPE_SAMPLE
+SUBJECT_TYPE_ROBOT = ROLE_TYPE_ROBOT
+SUBJECT_TYPE_PLATE = "plate"
 
 
 class WarehouseMessage:
-    def __init__(self, event_type):
+    def __init__(self, event_type, event_uuid, occured_at):
         self._name = event_type
+        self._event_uuid = event_uuid
+        self._occured_at = occured_at
         self._subjects = []
 
-    def set_user_id(self, user_id):
+    def set_user_id(self, user_id: str) -> None:
         self._user_id = user_id
 
-    def render(self, event: PlateEvent):
+    def render(self) -> Message:
         message_content = self.construct_event_message(
-            event_uuid=event.get_event_uuid(),
-            occured_at=event.get_message_timestamp(),
+            event_uuid=self._event_uuid,
+            occured_at=self._occured_at,
             subjects=self._subjects,
         )
 
@@ -82,4 +92,3 @@ class WarehouseMessage:
             friendly_name=friendly_name,
             uuid=sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID],
         )
-
