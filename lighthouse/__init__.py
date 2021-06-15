@@ -5,7 +5,7 @@ from http import HTTPStatus
 from eve import Eve
 from flask_apscheduler import APScheduler
 
-from lighthouse.hooks.events import inserted_events_hook
+from lighthouse.hooks.events import inserted_events_hook, insert_events_hook
 from lighthouse.validator import LighthouseValidator
 
 scheduler = APScheduler()
@@ -17,6 +17,7 @@ def create_app() -> Eve:
     ###
     # uncomment the follow while dev-ing for Biosero
     ###
+    app.on_insert_events += insert_events_hook
     app.on_inserted_events += inserted_events_hook
 
     # setup logging

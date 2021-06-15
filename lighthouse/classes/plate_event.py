@@ -51,23 +51,45 @@ class PlateEvent(ABC):
         self._plate_type = plate_type
         self._plate_barcode = ""
 
-    @abstractmethod
     def initialize_event(self, params: Dict[str, Union[str, Any]]) -> None:
-        ...
+        self._event_uuid = params['event_wh_uuid']
+        self._message_timestamp = params['_created'].isoformat(timespec="seconds")
 
     @abstractmethod
     def _create_message(self) -> Message:
         ...
 
-    @abstractmethod
+    """Returns the uuid for the event as it is going to be stored in the warehouse
+
+    Returns:
+        {str} -- The UUID for the event created.
+    """
+    def get_event_uuid(self):
+        return self._event_uuid
+
+    """Returns the datetime when the event was created in a format compatible with messaging.
+
+    Returns:
+        {str} -- The datetime for the event created.
+    """
+    def get_message_timestamp(self):
+        return self._message_timestamp
+
     def process_event(self) -> None:
         message = self._create_message()
-        self._send_warehouse_message(message=message)
+        self._published = self._send_warehouse_message(message=message)
+
+        updates = {'errors': self.errors()}
+
+        if self._published:
+            updates['state'] = 'published'
+
+        self.update_event(updates)
 
     def construct_event_message(self, user_identifier: str, subjects: List[Subject]) -> EventMessage:
         return {
             "event": {
-                "uuid": str(uuid4()),
+                "uuid": self.get_event_uuid(),
                 "event_type": self._name,
                 "occured_at": self.get_message_timestamp(),
                 "user_identifier": user_identifier,
@@ -127,14 +149,6 @@ class PlateEvent(ABC):
             "uuid": uuid,
         }
 
-    @staticmethod
-    def get_message_timestamp() -> str:
-        """Returns the current datetime in a format compatible with messaging.
-
-        Returns:
-            {str} -- The current datetime.
-        """
-        return datetime.now().isoformat(timespec="seconds")
 
     def _send_warehouse_message(self, message: Message) -> None:
         logger.info("Attempting to publish the constructed plate event message")

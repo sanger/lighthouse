@@ -12,7 +12,7 @@ from lighthouse.constants.fields import (
     FIELD_ROOT_SAMPLE_ID,
 )
 from lighthouse.types import SampleDoc
-from lighthouse.classes.plate_event import ROLE_TYPE_SAMPLE, SUBJECT_TYPE_SAMPLE
+from lighthouse.classes.plate_event import PlateEvent, ROLE_TYPE_SAMPLE, SUBJECT_TYPE_SAMPLE
 
 
 class WarehouseMessage:
@@ -23,8 +23,12 @@ class WarehouseMessage:
     def set_user_id(self, user_id):
         self._user_id = user_id
 
-    def render(self):
-        message_content = self.construct_event_message(subjects=self._subjects)
+    def render(self, event: PlateEvent):
+        message_content = self.construct_event_message(
+            event_uuid=event.get_event_uuid(),
+            occured_at=event.get_message_timestamp(),
+            subjects=self._subjects,
+        )
 
         return Message(message_content)
 
@@ -44,12 +48,12 @@ class WarehouseMessage:
         )
         return self._subjects
 
-    def construct_event_message(self, subjects: List[Subject]) -> EventMessage:
+    def construct_event_message(self, event_uuid: str, occured_at: str, subjects: List[Subject]) -> EventMessage:
         return {
             "event": {
-                "uuid": str(uuid4()),
+                "uuid": event_uuid,
                 "event_type": self._name,
-                "occured_at": self.get_message_timestamp(),
+                "occured_at": occured_at,
                 "user_identifier": self._user_id,
                 "subjects": subjects,
                 "metadata": {},
@@ -79,10 +83,3 @@ class WarehouseMessage:
             uuid=sample[FIELD_LH_SAMPLE_UUID],
         )
 
-    def get_message_timestamp(self) -> str:
-        """Returns the current datetime in a format compatible with messaging.
-
-        Returns:
-            {str} -- The current datetime.
-        """
-        return datetime.now().isoformat(timespec="seconds")

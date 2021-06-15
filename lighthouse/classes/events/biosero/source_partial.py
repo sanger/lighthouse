@@ -23,11 +23,6 @@ class SourcePartial(PlateEvent):
         super().__init__(name=name, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
         self.properties: Dict[str, Any] = {}
 
-    def process_event(self) -> None:
-        message = self._create_message()
-
-        self._send_warehouse_message(message)
-
     def initialize_event(self, params: Dict[str, str]) -> None:
         self.event_type = params["event_type"]
 
@@ -52,4 +47,4 @@ class SourcePartial(PlateEvent):
         for key in ["picked_samples_from_source", "source_plate_uuid", "user_id", "robot_uuid"]:
             self.properties[key].add_to_warehouse_message(message)
 
-        return message.render()
+        return message.render(self)
