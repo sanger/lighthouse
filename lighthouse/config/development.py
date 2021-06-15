@@ -47,6 +47,6 @@ MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 
 
 ###
-# Backman config
+# Beckman config
 ###
 BECKMAN_ENABLE = True
