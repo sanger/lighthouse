@@ -1,6 +1,3 @@
-import requests
-from flask import current_app as app
-
 from lighthouse.helpers.cherrytrack import (
     get_automation_system_run_info_from_cherrytrack,
     get_samples_from_source_plate_barcode_from_cherrytrack,
@@ -21,9 +18,9 @@ class ServiceCherrytrackMixin(object):
 
         return response.json()["data"]
 
-    def get_samples_from_source_plates(self, source_barcode):
+    def get_samples_from_source_plates(self, source_barcode, run_info):
         logger.info(f"Getting samples info from Cherrytrack for source place barcode {source_barcode}")
-        response = get_samples_from_source_plate_barcode_from_cherrytrack(source_barcode)
+        response = get_samples_from_source_plate_barcode_from_cherrytrack(source_barcode, run_info["id"])
 
         if response.status_code != HTTPStatus.OK:
             raise Exception("Response from Cherrytrack is not OK")

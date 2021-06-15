@@ -95,7 +95,7 @@ BARACODA_RETRY_ATTEMPTS = 3
 ##
 # Cherrytrack url
 ##
-CHERRYTRACK_URL = "http://192.168.5.124:8000"  # f"https://{LOCALHOST}:3020"
+CHERRYTRACK_URL = f"https://{LOCALHOST}:3020"
 
 ###
 # Labwhere config

@@ -71,3 +71,12 @@ FIELD_SS_CONTROL_TYPE = "control_type"
 FIELD_SS_UUID = "uuid"
 FIELD_SS_COORDINATE = "coordinate"
 FIELD_SS_BARCODE = "barcode"
+
+###
+# Cherrytrack fields
+FIELD_CHERRYTRACK_ROOT_SAMPLE_ID = "root_sample_id"
+FIELD_CHERRYTRACK_RNA_ID = "rna_id"
+FIELD_CHERRYTRACK_LAB_ID = "lab_id"
+FIELD_CHERRYTRACK_RESULT = "result"
+FIELD_CHERRYTRACK_LH_SAMPLE_UUID = "lh_sample_uuid"
+###

@@ -142,16 +142,54 @@ def test_run_info_value_unsuccessful(app, mocked_responses):
 
 
 def test_picked_samples_from_source_valid(app):
-    assert PickedSamplesFromSource(PlateBarcode({"barcode": "aBarcode"})).valid() is True
-    assert PickedSamplesFromSource(PlateBarcode({"missing_barcode_field": "aBarcode"})).valid() is False
+    assert (
+        PickedSamplesFromSource(
+            PlateBarcode({"barcode": "aBarcode"}), RunInfo(RunID({"automation_system_run_id": 1}))
+        ).valid()
+        is True
+    )
+    assert (
+        PickedSamplesFromSource(
+            PlateBarcode(
+                {
+                    "missing_barcode_field": "aBarcode",
+                }
+            ),
+            RunInfo(RunID({"automation_system_run_id": 1})),
+        ).valid()
+        is False
+    )
+    assert (
+        PickedSamplesFromSource(
+            PlateBarcode(
+                {
+                    "barcode": "aBarcode",
+                }
+            ),
+            RunInfo(RunID({"mising_run_id": 1})),
+        ).valid()
+        is False
+    )
 
 
 def test_picked_samples_from_source_value_successful(app, mocked_responses):
     with app.app_context():
         source_barcode = "aBarcode"
-        url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}"
+        run_id = 1
 
-        expected_response = {
+        run_url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
+        expected_run_response = {
+            "data": {"id": run_id, "user_id": "ab1", "liquid_handler_serial_number": "aLiquidHandlerSerialNumber"}
+        }
+        mocked_responses.add(
+            responses.GET,
+            run_url,
+            json=expected_run_response,
+            status=HTTPStatus.OK,
+        )
+
+        source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}?run-id={run_id}"
+        expected_source_plates_response = {
             "data": [
                 {
                     "control": True,
@@ -161,9 +199,9 @@ def test_picked_samples_from_source_value_successful(app, mocked_responses):
                     "picked": True,
                     "rna_id": "rna_id1",
                     "robot_barcode": "robot_barcode",
-                    "run_id": "run_id",
+                    "run_id": run_id,
                     "sample_id": "sample_id1",
-                    "source_barcode": "aBarcode",
+                    "source_barcode": source_barcode,
                     "source_coordinate": "B1",
                 },
                 {
@@ -174,20 +212,21 @@ def test_picked_samples_from_source_value_successful(app, mocked_responses):
                     "picked": False,
                     "rna_id": "rna_id2",
                     "robot_barcode": "robot_barcode",
-                    "run_id": "run_id",
+                    "run_id": run_id,
                     "sample_id": "sample_id2",
-                    "source_barcode": "aBarcode",
+                    "source_barcode": source_barcode,
                     "source_coordinate": "B2",
                 },
             ]
         }
-
         mocked_responses.add(
             responses.GET,
-            url,
-            json=expected_response,
+            source_plates_url,
+            json=expected_source_plates_response,
             status=HTTPStatus.OK,
         )
 
-        val = PickedSamplesFromSource(PlateBarcode({"barcode": "aBarcode"})).value
-        assert val == [expected_response["data"][1]]
+        val = PickedSamplesFromSource(
+            PlateBarcode({"barcode": source_barcode}), RunInfo(RunID({"automation_system_run_id": run_id}))
+        ).value
+        assert val == [expected_source_plates_response["data"][1]]

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from functools import cached_property
 from .warehouse_messages import WarehouseMessage  # type: ignore
-from typing import Any
+from typing import Any, List, Dict
 from lighthouse.classes.plate_event import (
     ROLE_TYPE_CP_SOURCE_LABWARE,
     SUBJECT_TYPE_PLATE,
@@ -105,16 +105,20 @@ class RunInfo(EventPropertyAccessor, ServiceCherrytrackMixin):
 
 
 class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherrytrackMixin):
-    def __init__(self, barcode_property: PlateBarcode):
+    def __init__(self, barcode_property: PlateBarcode, run_info: RunInfo):
         self.barcode_property = barcode_property
+        self.run_info = run_info
 
     def validate(self):
-        return self.barcode_property.validate()
+        return self.barcode_property.validate() and self.run_info.validate()
 
     @cached_property
     def value(self):
-        val = list(
-            filter(self.filter_pickable_samples, self.get_samples_from_source_plates(self.barcode_property.value))
+        val: List[Dict[str, Any]] = list(
+            filter(
+                self.filter_pickable_samples,
+                self.get_samples_from_source_plates(self.barcode_property.value, self.run_info.value),
+            )
         )
         if val is None:
             raise Exception(f"Unable to obtain any samples picked from '{self.barcode_property.value}'")
