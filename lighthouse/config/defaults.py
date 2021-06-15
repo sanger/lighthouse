@@ -182,7 +182,7 @@ RMQ_ROUTING_KEY = "staging.event.#"
 RMQ_LIMS_ID = "LH_LOCAL"
 
 ###
-# Backman config
+# Beckman config
 ###
 BECKMAN_ENABLE = False
 BECKMAN_ROBOTS = {

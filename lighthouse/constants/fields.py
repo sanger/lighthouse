@@ -43,7 +43,8 @@ FIELD_DART_RUN_ID = "dart_run_id"
 ###
 # PLATE LOOKUP specific column names:
 ###
-FIELD_PLATE_LOOKUP_SOURCE_COORDINATE = "source_coordinate"
+FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED = "source_coordinate_padded"
+FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED = "source_coordinate_unpadded"
 FIELD_PLATE_LOOKUP_RNA_ID = "rna_id"
 FIELD_PLATE_LOOKUP_LAB_ID = "lab_id"
 FIELD_PLATE_LOOKUP_SAMPLE_ID = "sample_id"
