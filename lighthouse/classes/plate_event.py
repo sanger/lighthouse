@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum, auto
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List
 
 from flask import current_app as app
 
@@ -8,7 +8,8 @@ from lighthouse.messages.message import Message
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type: ignore
 
 from lighthouse.messages.broker import Broker
-
+from lighthouse.helpers.mongo import set_errors_to_event
+from lighthouse.classes.messages.event_properties import EventPropertyAccessor  # type: ignore
 import logging
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ class PlateEvent(ABC):
         self._name = name
         self._plate_type = plate_type
         self._state = EVENT_NOT_INITIALIZED
+        self._properties: Dict[str, EventPropertyAccessor] = {}
 
     def initialize_event(self, params: Dict[str, Union[str, Any]]) -> None:
         if "event_wh_uuid" not in params.keys():
@@ -111,3 +113,34 @@ class PlateEvent(ABC):
 
     def build_new_warehouse_message(self) -> WarehouseMessage:
         return WarehouseMessage(self.get_event_type(), self.get_event_uuid(), self.get_message_timestamp())
+
+    def errors(self) -> Dict[str, List[str]]:
+        """Returns an object with all error messages from each event property
+
+        Arguments:
+            None
+
+        Returns:
+            {Dict[str,List[str]]} -- The object with the error messages, where the key is the id of the
+            event property
+        """
+        error_message = {}
+        for event_property_name in self._properties.keys():
+            if len(self._properties[event_property_name].errors()) > 0:
+                error_message[event_property_name] = self._properties[event_property_name].errors()
+
+        return error_message
+
+    def process_errors(self):
+        """Logs the errors into slack, and also writes them into the Mongodb table
+
+        Arguments:
+            None
+
+        Returns:
+            bool - True if the process has been correct, False if there has been a problem while writing
+        """
+        if len(self.errors().keys()) > 0:
+            logger.error(f"Errors found while processing event {self._event_uuid}: {self.errors()}")
+            return set_errors_to_event(self._event_uuid, self.errors())
+        return True

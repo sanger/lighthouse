@@ -1,6 +1,7 @@
 from http import HTTPStatus
 import responses
 from unittest.mock import patch, MagicMock
+from lighthouse.helpers.mongo import get_event_with_uuid
 
 
 def test_post_unauthenticated(app, client):
@@ -154,3 +155,5 @@ def test_post_event_partially_completed(app, client, biosero_auth_headers, mocke
                             '"e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}], "metadata": {}}, "lims": "LH_TEST"}'
                         ),
                     )
+
+                    assert get_event_with_uuid("1") is not None

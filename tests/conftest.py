@@ -27,6 +27,7 @@ from tests.fixtures.data.mlwh import (
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
 from tests.fixtures.data.samples import SAMPLES
 from tests.fixtures.data.source_plates import SOURCE_PLATES
+from tests.fixtures.data.plate_events import PLATE_EVENTS
 from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
 
 
@@ -114,6 +115,20 @@ def source_plates(app):
     # clear up after the fixture is used
     with app.app_context():
         source_plates_collection.delete_many({})
+
+
+@pytest.fixture
+def plate_events(app):
+    with app.app_context():
+        events_collection = app.data.driver.db.events
+        inserted_events = events_collection.insert_many(PLATE_EVENTS)
+
+    #  yield a copy of so that the test change it however it wants
+    yield copy.deepcopy(PLATE_EVENTS), inserted_events
+
+    # clear up after the fixture is used
+    with app.app_context():
+        events_collection.delete_many({})
 
 
 @pytest.fixture

@@ -5,6 +5,8 @@ SampleDocs = List[SampleDoc]
 SourcePlateDoc = Dict[str, Any]
 FlaskResponse = Tuple[Dict[str, Any], int]
 
+EventDoc = Dict[str, Any]
+
 Subject = Dict[str, str]
 Event = Dict[str, Union[str, List[Subject], Dict]]
 EventMessage = Dict[str, Union[str, Event]]

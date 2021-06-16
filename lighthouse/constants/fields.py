@@ -27,6 +27,15 @@ FIELD_PROCESSED = "processed"
 # source_plates collection
 FIELD_BARCODE = "barcode"
 
+# events collection
+FIELD_EVENT_RUN_ID = "automation_system_run_id"
+FIELD_EVENT_BARCODE = "barcode"
+FIELD_EVENT_TYPE = "event_type"
+FIELD_EVENT_USER_ID = "user_id"
+FIELD_EVENT_ROBOT = "robot"
+FIELD_EVENT_UUID = "event_wh_uuid"
+FIELD_EVENT_ERRORS = "errors"
+
 ###
 # DART specific column names:
 ###

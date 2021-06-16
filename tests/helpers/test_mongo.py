@@ -1,7 +1,21 @@
 from unittest.mock import patch
 
-from lighthouse.constants.fields import FIELD_BARCODE, FIELD_DATE_TESTED, FIELD_LH_SOURCE_PLATE_UUID, FIELD_RESULT
-from lighthouse.helpers.mongo import get_positive_samples_in_source_plate, get_source_plate_uuid
+from lighthouse.constants.fields import (
+    FIELD_BARCODE,
+    FIELD_DATE_TESTED,
+    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_RESULT,
+    FIELD_EVENT_UUID,
+    FIELD_EVENT_USER_ID,
+    FIELD_EVENT_ERRORS,
+)
+from typing import Dict, List
+from lighthouse.helpers.mongo import (
+    get_positive_samples_in_source_plate,
+    get_source_plate_uuid,
+    set_errors_to_event,
+    get_event_with_uuid,
+)
 
 
 def test_get_source_plate_uuid_returns_uuid(app, source_plates):
@@ -65,3 +79,46 @@ def test_get_positive_samples_in_source_plate_returns_none_failure_fetching_samp
             result = get_positive_samples_in_source_plate(samples[0][FIELD_LH_SOURCE_PLATE_UUID])
 
             assert result is None
+
+
+def test_set_errors_event_updates_correctly(app, plate_events):
+    with app.app_context():
+        plate_events, _ = plate_events
+        errorObj = {FIELD_EVENT_USER_ID: ["The user does not exist", "The user id format is wrong"]}
+
+        result = set_errors_to_event(plate_events[0][FIELD_EVENT_UUID], errorObj)
+        assert result is True
+        assert get_event_with_uuid(plate_events[0][FIELD_EVENT_UUID])[FIELD_EVENT_ERRORS] == errorObj
+
+
+def test_set_errors_event_result_is_true_with_no_errors(app, plate_events):
+    with app.app_context():
+        plate_events, _ = plate_events
+        errorObj: Dict[str, List[str]] = {}
+        result = set_errors_to_event(plate_events[0][FIELD_EVENT_UUID], errorObj)
+
+        assert result is True
+
+
+def test_set_errors_event_result_is_false_when_exception(app, plate_events):
+    with app.app_context():
+        plate_events, _ = plate_events
+        errorObj: Dict[str, List[str]] = {}
+        with patch("flask.current_app.data.driver.db.events") as events_collection:
+            events_collection.update_one.side_effect = Exception()
+            result = set_errors_to_event(plate_events[0][FIELD_EVENT_UUID], errorObj)
+
+        assert result is False
+
+
+def get_event_with_uuid_finds_event(app, plate_events):
+    with app.app_context():
+        plate_events, _ = plate_events
+
+        assert get_event_with_uuid(plate_events[0][FIELD_EVENT_UUID]) == plate_events[0]
+
+
+def get_event_wih_uuid_finds_none_event(app, plate_events):
+    with app.app_context():
+        plate_events, _ = plate_events
+        assert get_event_with_uuid("11111") is None

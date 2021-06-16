@@ -19,6 +19,17 @@ EVENTS_SCHEMA = {
         "required": True,
         "type": "string",
     },
+    "event_wh_uuid": {
+        "type": "string",
+        "unique": True,
+        "readonly": True,
+    },
+    "errors": {
+        "type": "dict",
+        "default": None,
+        "nullable": True,
+        "allow_unknown": True,
+    },
 }
 
 
