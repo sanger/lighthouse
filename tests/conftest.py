@@ -1,6 +1,7 @@
 import copy
 import os
 from http import HTTPStatus
+from unittest.mock import patch, MagicMock
 
 import pytest
 import responses
@@ -451,3 +452,83 @@ def plates_lookup_with_samples(samples, priority_samples):
 @pytest.fixture
 def plates_lookup_without_samples(samples, priority_samples):
     return PLATES_LOOKUP_WITHOUT_SAMPLES
+
+
+@pytest.fixture
+def mocked_rabbit_channel(app):
+    with app.app_context():
+        mocked_broker = MagicMock()
+        with patch("lighthouse.classes.plate_event.Broker", return_value=mocked_broker):
+            mocked_channel = MagicMock()
+            mocked_broker.__enter__.return_value = mocked_channel
+
+            yield mocked_channel
+
+
+@pytest.fixture
+def mocked_cherrytrack_responses(app, mocked_responses):
+    with app.app_context():
+        run_id = 2
+        source_barcode = "aBarcode"
+
+        run_url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
+
+        expected_run_response = {
+            "data": {
+                "id": run_id,
+                "user_id": "ab1",
+                "liquid_handler_serial_number": "aLiquidHandlerSerialNumber",
+            }
+        }
+
+        mocked_responses.add(
+            responses.GET,
+            run_url,
+            json=expected_run_response,
+            status=HTTPStatus.OK,
+        )
+
+        source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}?run-id={run_id}"
+        expected_source_plates_response = {
+            "data": [
+                {
+                    "control": True,
+                    "control_barcode": "aControlBarcode1",
+                    "control_coordinate": "A1",
+                    "lab_id": "aLabId1",
+                    "picked": True,
+                    "rna_id": "aRNAId1",
+                    "robot_barcode": "aRobotBarcode",
+                    "run_id": run_id,
+                    "sample_id": "aSampleId1",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B1",
+                    "root_sample_id": "aRootSampleId1",
+                    "result": "Positive",
+                    "lh_sample_uuid": "aLighthouseUUID1",
+                },
+                {
+                    "control": True,
+                    "control_barcode": "aControlBarcode2",
+                    "control_coordinate": "A2",
+                    "lab_id": "aLabId1",
+                    "picked": False,
+                    "rna_id": "aRNAId2",
+                    "robot_barcode": "aRobotBarcode",
+                    "run_id": run_id,
+                    "sample_id": "aSampleId2",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B2",
+                    "root_sample_id": "aRootSampleId2",
+                    "result": "Positive",
+                    "lh_sample_uuid": "aLighthouseUUID2",
+                },
+            ]
+        }
+        mocked_responses.add(
+            responses.GET,
+            source_plates_url,
+            json=expected_source_plates_response,
+            status=HTTPStatus.OK,
+        )
+        yield mocked_responses

@@ -131,7 +131,7 @@ class PlateEvent(ABC):
 
         return error_message
 
-    def process_errors(self):
+    def process_errors(self) -> bool:
         """Logs the errors into slack, and also writes them into the Mongodb table
 
         Arguments:
@@ -144,3 +144,15 @@ class PlateEvent(ABC):
             logger.error(f"Errors found while processing event {self._event_uuid}: {self.errors()}")
             return set_errors_to_event(self._event_uuid, self.errors())
         return True
+
+    def process_exception(self, exc: BaseException) -> bool:
+        """Logs the exception into slack, and also writes it into the Mongodb table
+
+        Arguments:
+            None
+
+        Returns:
+            bool - True if the process has been correct, False if there has been a problem while writing
+        """
+        logger.exception(exc)
+        return set_errors_to_event(self._event_uuid, {"base": [str(exc)]})
