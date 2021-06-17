@@ -29,28 +29,71 @@ class EventPropertyAccessor(ABC):
         if self._params is None:
             raise ValidationError("You need to define params to create the EventProperty")
 
-    # Retuns a boolean (True or False) indicating if the params received for this
-    # EventProperty have a valid value and can be used to send a request.
     @abstractmethod
-    def validate(self):
+    def validate(self) -> bool:
+        """
+        Retuns a boolean (True or False) indicating if the params received for this
+        EventProperty are correct in order to retrieve the data. If there is an error
+        in validation it will add it to the errors list.
+        This methods is safe and should not raise any exception.
+
+        Arguments:
+            None
+
+        Returns:
+            bool - True/False depending on the result of the validation.
+
+        """
         ...
 
-    def valid(self):
+    def valid(self) -> bool:
+        """Alias for #validate()"""
+
         return self.validate()
 
-    # Returns the value for the property. If the value cannot be obtained or
-    # does not have a valid value, then it raises an exception.
-    # NB: To avoid this it, the instance should be checked first with the
-    # valid() method.
     @abstractmethod
-    def value(self):
+    def value(self) -> Any:
+        """
+        Returns the value for the property. If the value cannot be obtained or
+        does not have a valid value, then it raises an exception.
+        NB: To avoid this it, the instance should be checked first with the
+        validate() method.
+
+        Arguments:
+            None
+
+        Returns:
+            Any - Value of the property
+
+        """
         ...
 
     @abstractmethod
-    def add_to_warehouse_message(self, message: WarehouseMessage) -> Any:
+    def add_to_warehouse_message(self, message: WarehouseMessage) -> None:
+        """
+        Adds this event property information into the warehouse message
+
+        Arguments:
+            message: WarehouseMessage - A building message where we want to write
+            the information from this event property
+
+        Returns:
+            None
+
+        """
         ...
 
     def enforce_validation(self):
+        """
+        Raises a ValidationError exception if the instance does not pass validation.
+
+        Arguments:
+            None
+
+        Returns:
+            ValidationError - Raises exception
+
+        """
         if not self.validate():
             raise ValidationError("Validation error")
 
@@ -61,10 +104,8 @@ class RunID(EventPropertyAccessor):
 
     @cached_property
     def value(self):
-        val = self._params.get("automation_system_run_id")
-        if val is None:
-            raise Exception("Unable to determine run id")
-        return val
+        super().enforce_validation()
+        return self._params.get("automation_system_run_id")
 
     def add_to_warehouse_message(self, message):
         return None
@@ -76,10 +117,8 @@ class PlateBarcode(EventPropertyAccessor):
 
     @cached_property
     def value(self):
-        val = self._params.get("barcode")
-        if val is None:
-            raise Exception("Unable to obtain barcode value'")
-        return val
+        super().enforce_validation()
+        return self._params.get("barcode")
 
     def add_to_warehouse_message(self, message):
         for sample in self.value:
@@ -95,6 +134,7 @@ class RunInfo(EventPropertyAccessor, ServiceCherrytrackMixin):
 
     @cached_property
     def value(self):
+        super().enforce_validation()
         val = self.get_run_info(self.run_id_property.value)
         # TODO: handle more than None, but empty object? or include errors field
         if val is None:
@@ -115,6 +155,7 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherrytrackMixin):
 
     @cached_property
     def value(self):
+        super().enforce_validation()
         val: List[Dict[str, Any]] = list(
             filter(
                 self.filter_pickable_samples,
@@ -131,6 +172,9 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherrytrackMixin):
 
 
 class UserID(EventPropertyAccessor):
+    def validate(self):
+        return self._params.get("user_id") is not None
+
     @cached_property
     def value(self):
         super().enforce_validation()
@@ -140,24 +184,18 @@ class UserID(EventPropertyAccessor):
             raise RetrievalError("Unable to determine a user id")
         return val
 
-    def validate(self):
-        return self._params.get("user_id") is not None
-
     def add_to_warehouse_message(self, message):
         message.set_user_id(self.value)
 
 
 class RobotSerialNumber(EventPropertyAccessor):
+    def validate(self):
+        return self._params.get("robot") is not None
+
     @cached_property
     def value(self):
         super().enforce_validation()
-        val = self._params.get("robot")
-        if val is None:
-            raise RetrievalError("Unable to determine robot")
-        return val
-
-    def validate(self):
-        return self._params.get("robot") is not None
+        return self._params.get("robot")
 
     def add_to_warehouse_message(self, message):
         return None
@@ -202,6 +240,7 @@ class SourcePlateUUID(EventPropertyAccessor, ServiceMongoMixin):
 
     @cached_property
     def value(self):
+        super().enforce_validation()
         val = self.get_source_plate_uuid(self.barcode_property.value)
         if val is None:
             raise Exception(f"Unable to determine a uuid for source plate '{self.barcode_property.value}'")

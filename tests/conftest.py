@@ -465,7 +465,6 @@ def mocked_rabbit_channel(app):
             yield mocked_channel
 
 
-
 @pytest.fixture
 def cherrytrack_mock_run_info(
     app, mocked_responses, run_id, cherrytrack_run_info_response, cherrytrack_mock_run_info_status
@@ -480,18 +479,25 @@ def cherrytrack_mock_run_info(
     )
     yield
 
+
 @pytest.fixture
 def cherrytrack_mock_source_plates_status():
     return HTTPStatus.OK
+
 
 @pytest.fixture
 def cherrytrack_mock_run_info_status():
     return HTTPStatus.OK
 
+
 @pytest.fixture
 def cherrytrack_mock_source_plates(
-    app, mocked_responses, run_id, source_barcode, cherrytrack_source_plates_response,
-    cherrytrack_mock_source_plates_status
+    app,
+    mocked_responses,
+    run_id,
+    source_barcode,
+    cherrytrack_source_plates_response,
+    cherrytrack_mock_source_plates_status,
 ):
     source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}?run-id={run_id}"
     mocked_responses.add(
@@ -517,40 +523,38 @@ def cherrytrack_run_info_response(run_id):
 @pytest.fixture
 def cherrytrack_source_plates_response(run_id, source_barcode):
     return {
-            "data": [
-                {
-                    "control": True,
-                    "control_barcode": "aControlBarcode1",
-                    "control_coordinate": "A1",
-                    "lab_id": "aLabId1",
-                    "picked": True,
-                    "rna_id": "aRNAId1",
-                    "robot_barcode": "aRobotBarcode",
-                    "run_id": run_id,
-                    "sample_id": "aSampleId1",
-                    "source_barcode": source_barcode,
-                    "source_coordinate": "B1",
-                    "root_sample_id": "aRootSampleId1",
-                    "result": "Positive",
-                    "lh_sample_uuid": "aLighthouseUUID1",
-                },
-                {
-                    "control": True,
-                    "control_barcode": "aControlBarcode2",
-                    "control_coordinate": "A2",
-                    "lab_id": "aLabId1",
-                    "picked": False,
-                    "rna_id": "aRNAId2",
-                    "robot_barcode": "aRobotBarcode",
-                    "run_id": run_id,
-                    "sample_id": "aSampleId2",
-                    "source_barcode": source_barcode,
-                    "source_coordinate": "B2",
-                    "root_sample_id": "aRootSampleId2",
-                    "result": "Positive",
-                    "lh_sample_uuid": "aLighthouseUUID2",
-                },
-            ]
-        }
-
-
+        "data": [
+            {
+                "control": True,
+                "control_barcode": "aControlBarcode1",
+                "control_coordinate": "A1",
+                "lab_id": "aLabId1",
+                "picked": True,
+                "rna_id": "aRNAId1",
+                "robot_barcode": "aRobotBarcode",
+                "run_id": run_id,
+                "sample_id": "aSampleId1",
+                "source_barcode": source_barcode,
+                "source_coordinate": "B1",
+                "root_sample_id": "aRootSampleId1",
+                "result": "Positive",
+                "lh_sample_uuid": "aLighthouseUUID1",
+            },
+            {
+                "control": True,
+                "control_barcode": "aControlBarcode2",
+                "control_coordinate": "A2",
+                "lab_id": "aLabId1",
+                "picked": False,
+                "rna_id": "aRNAId2",
+                "robot_barcode": "aRobotBarcode",
+                "run_id": run_id,
+                "sample_id": "aSampleId2",
+                "source_barcode": source_barcode,
+                "source_coordinate": "B2",
+                "root_sample_id": "aRootSampleId2",
+                "result": "Positive",
+                "lh_sample_uuid": "aLighthouseUUID2",
+            },
+        ]
+    }

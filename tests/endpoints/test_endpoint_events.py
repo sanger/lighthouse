@@ -1,13 +1,10 @@
 from http import HTTPStatus
-import responses
 from unittest.mock import patch
 from lighthouse.helpers.mongo import get_event_with_uuid
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 
-from typing import Dict
 
 import pytest
-
 
 
 def test_post_unauthenticated(app, client):
@@ -52,11 +49,11 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
-@pytest.mark.parametrize('run_id', [2])
-@pytest.mark.parametrize('source_barcode', ['aBarcode'])
+
+@pytest.mark.parametrize("run_id", [2])
+@pytest.mark.parametrize("source_barcode", ["aBarcode"])
 def test_post_event_partially_completed(
-    app, client, biosero_auth_headers, mocked_rabbit_channel, cherrytrack_mock_run_info,
-    cherrytrack_mock_source_plates
+    app, client, biosero_auth_headers, mocked_rabbit_channel, cherrytrack_mock_run_info, cherrytrack_mock_source_plates
 ):
     with app.app_context():
         with patch("lighthouse.hooks.events.uuid4", side_effect=[1, 2, 3, 4]):
@@ -97,9 +94,9 @@ def test_post_event_partially_completed(
                 assert get_event_with_uuid("1") is not None
 
 
-@pytest.mark.parametrize('run_id', [3])
-@pytest.mark.parametrize('cherrytrack_run_info_response', [{}])
-@pytest.mark.parametrize('cherrytrack_mock_run_info_status', [HTTPStatus.INTERNAL_SERVER_ERROR])
+@pytest.mark.parametrize("run_id", [3])
+@pytest.mark.parametrize("cherrytrack_run_info_response", [{}])
+@pytest.mark.parametrize("cherrytrack_mock_run_info_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_run_info(
     app, client, biosero_auth_headers, mocked_rabbit_channel, cherrytrack_mock_run_info
 ):
@@ -135,10 +132,10 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_run
                 assert event[FIELD_EVENT_ERRORS] == {"base": ["Response from Cherrytrack is not OK"]}
 
 
-@pytest.mark.parametrize('run_id', [3])
-@pytest.mark.parametrize('source_barcode', ['aBarcode'])
-@pytest.mark.parametrize('cherrytrack_source_plates_response', [{}])
-@pytest.mark.parametrize('cherrytrack_mock_source_plates_status', [HTTPStatus.INTERNAL_SERVER_ERROR])
+@pytest.mark.parametrize("run_id", [3])
+@pytest.mark.parametrize("source_barcode", ["aBarcode"])
+@pytest.mark.parametrize("cherrytrack_source_plates_response", [{}])
+@pytest.mark.parametrize("cherrytrack_mock_source_plates_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_samples_info(
     app, client, biosero_auth_headers, mocked_rabbit_channel, cherrytrack_mock_run_info, cherrytrack_mock_source_plates
 ):
