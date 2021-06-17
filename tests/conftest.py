@@ -465,31 +465,58 @@ def mocked_rabbit_channel(app):
             yield mocked_channel
 
 
+
 @pytest.fixture
-def mocked_cherrytrack_responses(app, mocked_responses):
-    with app.app_context():
-        run_id = 2
-        source_barcode = "aBarcode"
+def cherrytrack_mock_run_info(
+    app, mocked_responses, run_id, cherrytrack_run_info_response, cherrytrack_mock_run_info_status
+):
+    run_url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
 
-        run_url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
+    mocked_responses.add(
+        responses.GET,
+        run_url,
+        json=cherrytrack_run_info_response,
+        status=cherrytrack_mock_run_info_status,
+    )
+    yield
 
-        expected_run_response = {
-            "data": {
-                "id": run_id,
-                "user_id": "ab1",
-                "liquid_handler_serial_number": "aLiquidHandlerSerialNumber",
-            }
+@pytest.fixture
+def cherrytrack_mock_source_plates_status():
+    return HTTPStatus.OK
+
+@pytest.fixture
+def cherrytrack_mock_run_info_status():
+    return HTTPStatus.OK
+
+@pytest.fixture
+def cherrytrack_mock_source_plates(
+    app, mocked_responses, run_id, source_barcode, cherrytrack_source_plates_response,
+    cherrytrack_mock_source_plates_status
+):
+    source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}?run-id={run_id}"
+    mocked_responses.add(
+        responses.GET,
+        source_plates_url,
+        json=cherrytrack_source_plates_response,
+        status=cherrytrack_mock_source_plates_status,
+    )
+    yield
+
+
+@pytest.fixture
+def cherrytrack_run_info_response(run_id):
+    return {
+        "data": {
+            "id": run_id,
+            "user_id": "ab1",
+            "liquid_handler_serial_number": "aLiquidHandlerSerialNumber",
         }
+    }
 
-        mocked_responses.add(
-            responses.GET,
-            run_url,
-            json=expected_run_response,
-            status=HTTPStatus.OK,
-        )
 
-        source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}?run-id={run_id}"
-        expected_source_plates_response = {
+@pytest.fixture
+def cherrytrack_source_plates_response(run_id, source_barcode):
+    return {
             "data": [
                 {
                     "control": True,
@@ -525,10 +552,5 @@ def mocked_cherrytrack_responses(app, mocked_responses):
                 },
             ]
         }
-        mocked_responses.add(
-            responses.GET,
-            source_plates_url,
-            json=expected_source_plates_response,
-            status=HTTPStatus.OK,
-        )
-        yield mocked_responses
+
+

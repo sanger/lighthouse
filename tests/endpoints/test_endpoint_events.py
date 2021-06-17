@@ -6,6 +6,9 @@ from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 
 from typing import Dict
 
+import pytest
+
+
 
 def test_post_unauthenticated(app, client):
     with app.app_context():
@@ -49,9 +52,11 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
-
+@pytest.mark.parametrize('run_id', [2])
+@pytest.mark.parametrize('source_barcode', ['aBarcode'])
 def test_post_event_partially_completed(
-    app, client, biosero_auth_headers, mocked_rabbit_channel, mocked_cherrytrack_responses
+    app, client, biosero_auth_headers, mocked_rabbit_channel, cherrytrack_mock_run_info,
+    cherrytrack_mock_source_plates
 ):
     with app.app_context():
         with patch("lighthouse.hooks.events.uuid4", side_effect=[1, 2, 3, 4]):
@@ -92,8 +97,11 @@ def test_post_event_partially_completed(
                 assert get_event_with_uuid("1") is not None
 
 
-def test_post_event_partially_completed_with_error_accessing_cherrytrack(
-    app, client, biosero_auth_headers, mocked_rabbit_channel, mocked_responses
+@pytest.mark.parametrize('run_id', [3])
+@pytest.mark.parametrize('cherrytrack_run_info_response', [{}])
+@pytest.mark.parametrize('cherrytrack_mock_run_info_status', [HTTPStatus.INTERNAL_SERVER_ERROR])
+def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_run_info(
+    app, client, biosero_auth_headers, mocked_rabbit_channel, cherrytrack_mock_run_info
 ):
     with app.app_context():
         with patch("lighthouse.hooks.events.uuid4", side_effect=[1, 2, 3, 4]):
@@ -101,18 +109,45 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack(
                 "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
                 return_value="mytime",
             ):
-                run_id = 3
-                run_url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
-
-                expected_run_response: Dict[str, str] = {}
-
-                mocked_responses.add(
-                    responses.GET,
-                    run_url,
-                    json=expected_run_response,
-                    status=HTTPStatus.INTERNAL_SERVER_ERROR,
+                response = client.post(
+                    "/events",
+                    data={
+                        "automation_system_run_id": "3",
+                        "barcode": "aBarcode",
+                        "event_type": "lh_biosero_cp_source_partial",
+                        "user_id": "user1",
+                        "robot": "BHRB0001",
+                    },
+                    headers=biosero_auth_headers,
                 )
 
+                # Test creates the event
+                assert response.status_code == HTTPStatus.CREATED
+
+                # However the message is not published
+                mocked_rabbit_channel.basic_publish.assert_not_called()
+
+                # But the record is there
+                event = get_event_with_uuid("1")
+                assert event is not None
+
+                # And it has errors
+                assert event[FIELD_EVENT_ERRORS] == {"base": ["Response from Cherrytrack is not OK"]}
+
+
+@pytest.mark.parametrize('run_id', [3])
+@pytest.mark.parametrize('source_barcode', ['aBarcode'])
+@pytest.mark.parametrize('cherrytrack_source_plates_response', [{}])
+@pytest.mark.parametrize('cherrytrack_mock_source_plates_status', [HTTPStatus.INTERNAL_SERVER_ERROR])
+def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_samples_info(
+    app, client, biosero_auth_headers, mocked_rabbit_channel, cherrytrack_mock_run_info, cherrytrack_mock_source_plates
+):
+    with app.app_context():
+        with patch("lighthouse.hooks.events.uuid4", side_effect=[1, 2, 3, 4]):
+            with patch(
+                "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
+                return_value="mytime",
+            ):
                 response = client.post(
                     "/events",
                     data={
