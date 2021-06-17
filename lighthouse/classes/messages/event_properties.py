@@ -11,9 +11,13 @@ from typing import Any, List, Dict
 from lighthouse.classes.mixins.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
 from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin  # type: ignore
 
+from lighthouse.constants.fields import FIELD_EVENT_RUN_ID, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID, FIELD_EVENT_BARCODE
 
 from flask import current_app as app
+from contextlib import contextmanager
+import logging
 
+logger = logging.getLogger(__name__)
 
 class ValidationError(BaseException):
     pass
@@ -25,9 +29,14 @@ class RetrievalError(BaseException):
 
 class EventPropertyAccessor(ABC):
     def __init__(self, params):
+        self.reset()
         self._params = params
         if self._params is None:
             raise ValidationError("You need to define params to create the EventProperty")
+
+    def reset(self):
+        self._errors = []
+        self._validate = True
 
     @abstractmethod
     def validate(self) -> bool:
@@ -50,6 +59,22 @@ class EventPropertyAccessor(ABC):
         """Alias for #validate()"""
 
         return self.validate()
+
+    @property
+    def errors(self) -> List[str]:
+        """
+        Validates the instance and returns the complete list of errors found (this
+        errors are not just validations; it could also be previous exceptions
+        thrown during the lifetime of this instance).
+
+        Arguments:
+            None
+
+        Returns:
+            List[str] - List of error messages found currently
+        """
+        self.validate()
+        return self._errors
 
     @abstractmethod
     def value(self) -> Any:
@@ -97,28 +122,106 @@ class EventPropertyAccessor(ABC):
         if not self.validate():
             raise ValidationError("Validation error")
 
+    def _process_validation(self, condition: bool, message: str):
+        """
+        Stores the error message if the condition is not True.
+        Changes the validation state for the instance.
+        It is recommended to run this inside a validation_scope() context
+        to be able to properly log any possible exceptions while checking the
+        condition.
 
-class RunID(EventPropertyAccessor):
+        Arguments:
+            condition: bool - Condition to check
+            message: str - Error message to store
+
+        Returns:
+            None
+
+        """
+        if not condition:
+            if (message not in self._errors):
+                self._errors.append(message)
+            self._validate = False
+        self._validate = self._validate and True
+
+    @contextmanager
+    def validation_scope(self):
+        """
+        Creates a 'safe' scope where we can perform a validation check without
+        raising the exception, but log this situations if it happens.
+        This is intended to be use only with small validation operations inside the
+        validate() method. It is not recommended in any other case.
+
+        Arguments:
+            None
+
+        Returns:
+            ContextManager - A context specifically created to handle a validation error
+        """
+        try:
+            yield
+        except Exception as exc:
+            logger.exception(exc)
+            self._validate = False
+            self._errors.append(f'Unexpected exception while trying to validate')
+
+
+class SimpleValidationsMixin:
+    def _process_validation_param_missing(self, param: str) -> None:
+        with self.validation_scope():
+            self._process_validation(
+                self._params.get(param) is not None,
+                f"'{ param }' is missing"
+            )
+
+    def _process_validation_param_empty(self, param: str) -> None:
+        with self.validation_scope():
+            self._process_validation(
+                self._params.get(param) is not None,
+                f"'{ param }' should not be an empty string"
+            )
+
+    def _process_validation_param_negative_or_zero(self, param: str) -> None:
+        with self.validation_scope():
+            self._process_validation(
+                int(self._params.get(param)) <= 0,
+                f"'{ param }' should not be negative"
+            )
+
+    def _process_validation_param_no_whitespaces(self, param: str) -> None:
+        with self.validation_scope():
+            self._process_validation(
+                ' ' not in self._params.get(param),
+                f"'{ param }' should not contain any whitespaces"
+            )
+
+
+class RunID(EventPropertyAccessor, SimpleValidationsMixin):
     def validate(self):
-        return self._params.get("automation_system_run_id") is not None
+        self._process_validation_param_missing(FIELD_EVENT_RUN_ID)
+        self._process_validation_param_empty(FIELD_EVENT_RUN_ID)
+        return self._validate
 
     @cached_property
     def value(self):
         super().enforce_validation()
-        return self._params.get("automation_system_run_id")
+        return self._params.get(FIELD_EVENT_RUN_ID)
 
     def add_to_warehouse_message(self, message):
         return None
 
 
-class PlateBarcode(EventPropertyAccessor):
+class PlateBarcode(EventPropertyAccessor, SimpleValidationsMixin):
     def validate(self):
-        return self._params.get("barcode") is not None
+        self._process_validation_param_missing(FIELD_EVENT_BARCODE)
+        self._process_validation_param_empty(FIELD_EVENT_BARCODE)
+        self._process_validation_param_no_whitespaces(FIELD_EVENT_BARCODE)
+        return self._validate
 
     @cached_property
     def value(self):
         super().enforce_validation()
-        return self._params.get("barcode")
+        return self._params.get(FIELD_EVENT_BARCODE)
 
     def add_to_warehouse_message(self, message):
         for sample in self.value:
@@ -127,6 +230,7 @@ class PlateBarcode(EventPropertyAccessor):
 
 class RunInfo(EventPropertyAccessor, ServiceCherrytrackMixin):
     def __init__(self, run_id_property: RunID):
+        self.reset()
         self.run_id_property = run_id_property
 
     def validate(self):
@@ -147,6 +251,7 @@ class RunInfo(EventPropertyAccessor, ServiceCherrytrackMixin):
 
 class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherrytrackMixin):
     def __init__(self, barcode_property: PlateBarcode, run_info: RunInfo):
+        self.reset()
         self.barcode_property = barcode_property
         self.run_info = run_info
 
@@ -171,15 +276,17 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherrytrackMixin):
             message.add_sample_as_subject(sample)
 
 
-class UserID(EventPropertyAccessor):
+class UserID(EventPropertyAccessor, SimpleValidationsMixin):
     def validate(self):
-        return self._params.get("user_id") is not None
+        self._process_validation_param_missing(FIELD_EVENT_USER_ID)
+        self._process_validation_param_empty(FIELD_EVENT_USER_ID)
+        return self._validate
 
     @cached_property
     def value(self):
         super().enforce_validation()
 
-        val = self._params.get("user_id")
+        val = self._params.get(FIELD_EVENT_USER_ID)
         if val is None:
             raise RetrievalError("Unable to determine a user id")
         return val
@@ -188,14 +295,16 @@ class UserID(EventPropertyAccessor):
         message.set_user_id(self.value)
 
 
-class RobotSerialNumber(EventPropertyAccessor):
+class RobotSerialNumber(EventPropertyAccessor, SimpleValidationsMixin):
     def validate(self):
-        return self._params.get("robot") is not None
+        self._process_validation_param_missing(FIELD_EVENT_ROBOT)
+        self._process_validation_param_empty(FIELD_EVENT_ROBOT)
+        return self._validate
 
     @cached_property
     def value(self):
         super().enforce_validation()
-        return self._params.get("robot")
+        return self._params.get(FIELD_EVENT_ROBOT)
 
     def add_to_warehouse_message(self, message):
         return None
@@ -203,6 +312,7 @@ class RobotSerialNumber(EventPropertyAccessor):
 
 class RobotUUID(EventPropertyAccessor, ServiceCherrytrackMixin):
     def __init__(self, robot_serial_number_property: RobotSerialNumber):
+        self.reset()
         self.robot_serial_number_property = robot_serial_number_property
 
     def validate(self):
@@ -233,6 +343,7 @@ class RobotUUID(EventPropertyAccessor, ServiceCherrytrackMixin):
 
 class SourcePlateUUID(EventPropertyAccessor, ServiceMongoMixin):
     def __init__(self, barcode_property: PlateBarcode):
+        self.reset()
         self.barcode_property = barcode_property
 
     def validate(self):

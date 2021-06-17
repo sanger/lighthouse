@@ -169,3 +169,39 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
 
                 # And it has errors
                 assert event[FIELD_EVENT_ERRORS] == {"base": ["Response from Cherrytrack is not OK"]}
+
+
+def test_post_event_partially_completed_with_validation_error(
+    app, client, biosero_auth_headers, mocked_rabbit_channel
+):
+    with app.app_context():
+        with patch("lighthouse.hooks.events.uuid4", side_effect=[1, 2, 3, 4]):
+            with patch(
+                "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
+                return_value="mytime",
+            ):
+                response = client.post(
+                    "/events",
+                    data={
+                        "automation_system_run_id": "1",
+                        "barcode": "a Barcode",
+                        "event_type": "lh_biosero_cp_source_partial",
+                        "user_id": "user1",
+                        "robot": "BHRB0001",
+                    },
+                    headers=biosero_auth_headers,
+                )
+
+                # Test creates the event
+                assert response.status_code == HTTPStatus.CREATED
+
+                # However the message is not published
+                mocked_rabbit_channel.basic_publish.assert_not_called()
+
+                # But the record is there
+                event = get_event_with_uuid("1")
+                assert event is not None
+
+                # And it has errors
+                assert event[FIELD_EVENT_ERRORS] == {'plate_barcode': ["'barcode' should not contain any whitespaces"]}
+

@@ -35,7 +35,8 @@ class PlateEvent(ABC):
         self._name = name
         self._plate_type = plate_type
         self._state = EVENT_NOT_INITIALIZED
-        self._properties: Dict[str, EventPropertyAccessor] = {}
+        self.properties: Dict[str, EventPropertyAccessor] = {}
+        self._validation = True
 
     def initialize_event(self, params: Dict[str, Union[str, Any]]) -> None:
         if "event_wh_uuid" not in params.keys():
@@ -125,11 +126,17 @@ class PlateEvent(ABC):
             event property
         """
         error_message = {}
-        for event_property_name in self._properties.keys():
-            if len(self._properties[event_property_name].errors()) > 0:
-                error_message[event_property_name] = self._properties[event_property_name].errors()
+        for event_property_name in self.properties.keys():
+            if len(self.properties[event_property_name].errors) > 0:
+                error_message[event_property_name] = self.properties[event_property_name].errors
 
         return error_message
+
+    def validate(self) -> bool:
+        self._validation = True
+        for event_property_name in self.properties.keys():
+            self._validation = self._validation and self.properties[event_property_name].validate()
+        return self._validation
 
     def process_errors(self) -> bool:
         """Logs the errors into slack, and also writes them into the Mongodb table

@@ -37,6 +37,12 @@ def test_user_id_validate(app):
     assert UserID({"user_id": "1234"}).validate() is True
 
 
+def test_user_id_errors(app):
+    assert len(UserID({}).errors) > 0
+    assert len(UserID({"test": "another test"}).errors) > 0
+    assert len(UserID({"user_id": "1234"}).errors) == 0
+
+
 def test_robot_serial_number_new(app):
     assert RobotSerialNumber({}) is not None
     assert RobotSerialNumber({"test": "a test"}) is not None
