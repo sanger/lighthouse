@@ -135,23 +135,18 @@ class RunInfo(EventPropertyAccessor, ServiceCherrytrackMixin):
     @cached_property
     def value(self):
         super().enforce_validation()
-        val = self.get_run_info(self.run_id_property.value)
-        # TODO: handle more than None, but empty object? or include errors field
-        if val is None:
-            raise Exception(f"Unable to determine a run info for run id '{self.run_id_property.value}'")
-        return val
+        return self.get_run_info(self.run_id_property.value)
 
     def add_to_warehouse_message(self, message):
         return None
 
 
 class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherrytrackMixin):
-    def __init__(self, barcode_property: PlateBarcode, run_info: RunInfo):
+    def __init__(self, barcode_property: PlateBarcode):
         self.barcode_property = barcode_property
-        self.run_info = run_info
 
     def validate(self):
-        return self.barcode_property.validate() and self.run_info.validate()
+        return self.barcode_property.validate()
 
     @cached_property
     def value(self):
@@ -159,11 +154,10 @@ class PickedSamplesFromSource(EventPropertyAccessor, ServiceCherrytrackMixin):
         val: List[Dict[str, Any]] = list(
             filter(
                 self.filter_pickable_samples,
-                self.get_samples_from_source_plates(self.barcode_property.value, self.run_info.value),
+                self.get_samples_from_source_plates(self.barcode_property.value),
             )
         )
-        if val is None:
-            raise Exception(f"Unable to obtain any samples picked from '{self.barcode_property.value}'")
+
         return val
 
     def add_to_warehouse_message(self, message):

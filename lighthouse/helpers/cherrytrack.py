@@ -18,7 +18,7 @@ def get_automation_system_run_info_from_cherrytrack(run_id: int) -> requests.Res
     return requests.get(f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}")
 
 
-def get_samples_from_source_plate_barcode_from_cherrytrack(source_plate_barcode: str, run_id: int) -> requests.Response:
+def get_samples_from_source_plate_barcode_from_cherrytrack(source_plate_barcode: str) -> requests.Response:
     """Retrieve samples infomation from Cherrytrack for the given source plate barcode
 
     Example record from Cherrytrack:
@@ -31,4 +31,4 @@ def get_samples_from_source_plate_barcode_from_cherrytrack(source_plate_barcode:
     Returns:
         requests.Response: the response from the request to Cherrytrack.
     """
-    return requests.get(f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_plate_barcode}?run-id={run_id}")
+    return requests.get(f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_plate_barcode}")

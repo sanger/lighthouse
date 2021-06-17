@@ -54,4 +54,4 @@ BECKMAN_ENABLE = True
 ###
 # Cherrytrack config
 ###
-CHERRYTRACK_URL = f"https://{LOCALHOST}:3020"
+CHERRYTRACK_URL = f"http://{LOCALHOST}:3020"
