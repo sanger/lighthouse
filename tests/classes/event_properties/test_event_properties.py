@@ -13,7 +13,6 @@ from lighthouse.classes.messages.event_properties import (  # type: ignore
 import responses
 from http import HTTPStatus
 
-
 def test_user_id_new(app):
     with raises(ValidationError):
         UserID(None)

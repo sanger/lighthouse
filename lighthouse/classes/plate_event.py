@@ -9,7 +9,7 @@ from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # t
 
 from lighthouse.messages.broker import Broker
 from lighthouse.helpers.mongo import set_errors_to_event
-from lighthouse.classes.messages.event_properties import EventPropertyAccessor  # type: ignore
+from lighthouse.classes.messages.event_property_interfaces import EventPropertyInterface  # type: ignore
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class PlateEvent(ABC):
         self._name = name
         self._plate_type = plate_type
         self._state = EVENT_NOT_INITIALIZED
-        self.properties: Dict[str, EventPropertyAccessor] = {}
+        self.properties: Dict[str, EventPropertyInterface] = {}
         self._validation = True
 
     def initialize_event(self, params: Dict[str, Union[str, Any]]) -> None:

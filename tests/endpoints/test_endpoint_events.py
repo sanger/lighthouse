@@ -91,7 +91,12 @@ def test_post_event_partially_completed(
                     ),
                 )
 
-                assert get_event_with_uuid("1") is not None
+                # The record is there
+                event = get_event_with_uuid("1")
+                assert event is not None
+
+                # And it does not have errors
+                assert event[FIELD_EVENT_ERRORS] == []
 
 
 @pytest.mark.parametrize("run_id", [3])
@@ -183,11 +188,11 @@ def test_post_event_partially_completed_with_validation_error(
                 response = client.post(
                     "/events",
                     data={
-                        "automation_system_run_id": "1",
+                        "automation_system_run_id": "1 2",
                         "barcode": "a Barcode",
                         "event_type": "lh_biosero_cp_source_partial",
-                        "user_id": "user1",
-                        "robot": "BHRB0001",
+                        "user_id": "us  er1",
+                        "robot": "BHR  B0001",
                     },
                     headers=biosero_auth_headers,
                 )
