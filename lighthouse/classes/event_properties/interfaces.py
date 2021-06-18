@@ -40,17 +40,10 @@ class EventPropertyInterface(ABC):
         """
         ...
 
-    def valid(self) -> bool:
-        """Alias for #validate()"""
-
-        return self.validate()
-
-    @property
+    @abstractmethod
     def errors(self) -> List[str]:
         """
-        Validates the instance and returns the complete list of errors found (this
-        errors are not just validations; it could also be previous exceptions
-        thrown during the lifetime of this instance).
+        Returns the complete list of errors found.
 
         Arguments:
             None
@@ -58,8 +51,7 @@ class EventPropertyInterface(ABC):
         Returns:
             List[str] - List of error messages found currently
         """
-        self.validate()
-        return self._errors
+        ...
 
     @abstractmethod
     def value(self) -> Any:
@@ -131,7 +123,27 @@ class EventPropertyAbstract(EventPropertyInterface):
         self._value = None
         self._validate = True
 
-    def enforce_validation(self):
+    def errors(self) -> List[str]:
+        """
+        Validates the instance and returns the complete list of errors found (this
+        errors are not just validations; it could also be previous exceptions
+        thrown during the lifetime of this instance).
+
+        Arguments:
+            None
+
+        Returns:
+            List[str] - List of error messages found currently
+        """
+        self.validate()
+        return self._errors
+
+    def valid(self) -> bool:
+        """Alias for #validate()"""
+
+        return self.validate()
+
+    def enforce_validation(self) -> None:
         """
         Raises a ValidationError exception if the instance does not pass validation.
 
@@ -141,7 +153,7 @@ class EventPropertyAbstract(EventPropertyInterface):
         if not self.validate():
             raise ValidationError("Validation error")
 
-    def process_validation(self, condition: bool, message: str):
+    def process_validation(self, condition: bool, message: str) -> None:
         """
         Stores the error message if the condition is not True.
         Changes the validation state for the instance.

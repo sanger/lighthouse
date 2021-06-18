@@ -1,6 +1,6 @@
 from pytest import raises
 import pytest
-from lighthouse.classes.event_properties.interfaces import ValidationError, RetrievalError
+from lighthouse.classes.event_properties.interfaces import ValidationError, RetrievalError  # type: ignore
 from lighthouse.classes.event_properties.definitions import (  # type: ignore
     UserID,
     RobotSerialNumber,
@@ -148,15 +148,12 @@ def test_run_info_value_unsuccessful(app, mocked_responses):
             status=HTTPStatus.INTERNAL_SERVER_ERROR,
         )
 
-        myExc = ""
+        myExc = None
         with raises(Exception) as exc:
             myExc = exc
             RunInfo(RunID({FIELD_EVENT_RUN_ID: run_id})).value
-
-        assert (
-            "Response from Cherrytrack is not OK: Failed to get automation system run info for the given run id"
-            == str(myExc.value)
-        )
+        msg = "Response from Cherrytrack is not OK: Failed to get automation system run info for the given run id"
+        assert msg == str(myExc.value)  # type: ignore
 
 
 def test_picked_samples_from_source_valid(app):
@@ -203,7 +200,7 @@ def test_picked_samples_from_source_value_unsuccessful(
     app, run_id, source_barcode, mocked_responses, cherrytrack_mock_source_plates
 ):
     with app.app_context():
-        myExc = ""
+        myExc = None
         with raises(Exception) as exc:
             myExc = exc
             PickedSamplesFromSource(
@@ -211,5 +208,5 @@ def test_picked_samples_from_source_value_unsuccessful(
             ).value
 
         assert "Response from Cherrytrack is not OK: Failed to get samples for the given source plate barcode." == str(
-            myExc.value
+            myExc.value  # type: ignore
         )

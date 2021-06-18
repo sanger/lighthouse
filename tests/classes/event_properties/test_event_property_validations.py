@@ -1,5 +1,5 @@
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
-from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract  # type: ignore
+from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin  # type: ignore
 
 
 class DummyEventProperty(EventPropertyAbstract, SimpleEventPropertyMixin):

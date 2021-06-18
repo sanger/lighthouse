@@ -5,8 +5,8 @@ from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
     ROLE_TYPE_ROBOT,
     SUBJECT_TYPE_ROBOT,
 )
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
-from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError  # type: ignore
+from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin  # type: ignore
 from typing import Any, List, Dict
 from lighthouse.classes.mixins.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
 from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin  # type: ignore
@@ -83,7 +83,7 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin):
         # TODO: Filter by run_id from this list
         val: List[Dict[str, Any]] = list(
             filter(
-                lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,
+                lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,  # type: ignore
                 filter(
                     self.filter_pickable_samples,
                     self.get_samples_from_source_plates(self.barcode_property.value),

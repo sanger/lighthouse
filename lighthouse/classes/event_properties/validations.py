@@ -1,7 +1,10 @@
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract  # type: ignore
+
+
 class SimpleEventPropertyMixin:
     """Set of tools to perform validation on simple event properties."""
 
-    def validate_param_not_missing(self, param: str) -> None:
+    def validate_param_not_missing(self: EventPropertyAbstract, param: str) -> None:
         """
         Validates that the params dictionary contains a value for the
         key provided as argument
@@ -15,7 +18,7 @@ class SimpleEventPropertyMixin:
         with self.validation_scope():
             self.process_validation(self._params.get(param) is not None, f"'{ param }' is missing")
 
-    def validate_param_not_empty(self, param: str) -> None:
+    def validate_param_not_empty(self: EventPropertyAbstract, param: str) -> None:
         """
         Validates that the params dictionary contains a value for the
         key provided as argument that is not an empty string ('')
@@ -29,7 +32,7 @@ class SimpleEventPropertyMixin:
         with self.validation_scope():
             self.process_validation(self._params.get(param) != "", f"'{ param }' should not be an empty string")
 
-    def validate_param_no_whitespaces(self, param: str) -> None:
+    def validate_param_no_whitespaces(self: EventPropertyAbstract, param: str) -> None:
         """
         Validates that the params dictionary contains a value for the
         key provided as argument that does not contain any whitespaces.
@@ -45,7 +48,7 @@ class SimpleEventPropertyMixin:
                 " " not in self._params.get(param), f"'{ param }' should not contain any whitespaces"
             )
 
-    def validate_param_is_integer(self, param: str) -> None:
+    def validate_param_is_integer(self: EventPropertyAbstract, param: str) -> None:
         """
         Validates that the params dictionary contains a value for the
         key provided as argument that it represents an integer.
@@ -62,7 +65,7 @@ class SimpleEventPropertyMixin:
         with self.validation_scope():
             self.process_validation(self.is_integer(self._params.get(param)), f"'{ param }' should be an integer")
 
-    def is_integer(self, n: str) -> bool:
+    def is_integer(self: EventPropertyAbstract, n: str) -> bool:
         """
         Function that returns if the string provided can represent an integer.
         This string can contain the sign of integer (+ for positive, - for negative)
