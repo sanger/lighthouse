@@ -9,6 +9,7 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     PlateBarcode,
     PickedSamplesFromSource,
 )
+from lighthouse.constants.fields import FIELD_EVENT_RUN_ID, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID, FIELD_EVENT_BARCODE
 import responses
 from http import HTTPStatus
 
@@ -19,7 +20,7 @@ def test_user_id_new(app):
 
     assert UserID({}) is not None
     assert UserID({"test": "another test"}) is not None
-    assert UserID({"user_id": "1234"}) is not None
+    assert UserID({FIELD_EVENT_USER_ID: "1234"}) is not None
 
 
 def test_user_id_value(app):
@@ -27,31 +28,31 @@ def test_user_id_value(app):
         UserID({}).value
         UserID({"test": "another test"}).value
 
-    assert UserID({"user_id": "1234"}).value == "1234"
+    assert UserID({FIELD_EVENT_USER_ID: "1234"}).value == "1234"
 
 
 def test_user_id_validate(app):
     assert UserID({}).validate() is False
     assert UserID({"test": "another test"}).validate() is False
-    assert UserID({"user_id": "1234"}).validate() is True
+    assert UserID({FIELD_EVENT_USER_ID: "1234"}).validate() is True
 
 
 def test_user_id_errors(app):
     assert len(UserID({}).errors) > 0
     assert len(UserID({"test": "another test"}).errors) > 0
-    assert len(UserID({"user_id": "1234"}).errors) == 0
+    assert len(UserID({FIELD_EVENT_USER_ID: "1234"}).errors) == 0
 
 
 def test_robot_serial_number_new(app):
     assert RobotSerialNumber({}) is not None
     assert RobotSerialNumber({"test": "a test"}) is not None
-    assert RobotSerialNumber({"robot": "a test"}) is not None
+    assert RobotSerialNumber({FIELD_EVENT_ROBOT: "a test"}) is not None
 
 
 def test_robot_serial_number_validate(app):
     assert RobotSerialNumber({}).validate() is False
     assert RobotSerialNumber({"test": "another test"}).validate() is False
-    assert RobotSerialNumber({"robot": "1234"}).validate() is True
+    assert RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"}).validate() is True
 
 
 def test_robot_serial_number_value(app):
@@ -59,19 +60,19 @@ def test_robot_serial_number_value(app):
         RobotSerialNumber({}).value
         RobotSerialNumber({"test": "another test"}).value
 
-    assert RobotSerialNumber({"robot": "1234"}).value == "1234"
+    assert RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"}).value == "1234"
 
 
 def test_robot_uuid_new(app):
     assert RobotUUID(RobotSerialNumber({})) is not None
     assert RobotUUID(RobotSerialNumber({"test": "a test"})) is not None
-    assert RobotUUID(RobotSerialNumber({"robot": "a test"})) is not None
+    assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "a test"})) is not None
 
 
 def test_robot_uuid_validate(app):
     assert RobotUUID(RobotSerialNumber({})).validate() is False
     assert RobotUUID(RobotSerialNumber({"test": "another test"})).validate() is False
-    assert RobotUUID(RobotSerialNumber({"robot": "1234"})).validate() is True
+    assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"})).validate() is True
 
 
 def test_robot_uuid_value(app):
@@ -81,30 +82,30 @@ def test_robot_uuid_value(app):
             RobotUUID(RobotSerialNumber({"test": "another test"})).value
 
         with raises(RetrievalError):
-            RobotUUID(RobotSerialNumber({"robot": "1234"})).value
+            RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"})).value
 
         uuid = app.config["BIOSERO_ROBOTS"]["BHRB0001"]["uuid"]
-        assert RobotUUID(RobotSerialNumber({"robot": "BHRB0001"})).value == uuid
+        assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "BHRB0001"})).value == uuid
 
 
 def test_plate_barcode_valid(app):
-    assert PlateBarcode({"barcode": "aBarcode"}).valid() is True
+    assert PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}).valid() is True
 
 
 def test_plate_barcode_value(app):
-    assert PlateBarcode({"barcode": "aBarcode"}).value == "aBarcode"
+    assert PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}).value == "aBarcode"
 
 
 def test_run_id_valid(app):
-    assert RunID({"automation_system_run_id": 1}).valid() is True
+    assert RunID({FIELD_EVENT_RUN_ID: 1}).valid() is True
 
 
 def test_run_id_value(app):
-    assert RunID({"automation_system_run_id": 1}).value == 1
+    assert RunID({FIELD_EVENT_RUN_ID: 1}).value == 1
 
 
 def test_run_info_valid(app):
-    assert RunInfo(RunID({"automation_system_run_id": 1})).valid() is True
+    assert RunInfo(RunID({FIELD_EVENT_RUN_ID: 1})).valid() is True
 
 
 def test_run_info_value_successful(app, mocked_responses):
@@ -113,7 +114,7 @@ def test_run_info_value_successful(app, mocked_responses):
         url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
 
         expected_response = {
-            "data": {"id": run_id, "user_id": "ab1", "liquid_handler_serial_number": "aLiquidHandlerSerialNumber"}
+            "data": {"id": run_id, FIELD_EVENT_USER_ID: "ab1", "liquid_handler_serial_number": "aLiquidHandlerSerialNumber"}
         }
 
         mocked_responses.add(
@@ -123,7 +124,7 @@ def test_run_info_value_successful(app, mocked_responses):
             status=HTTPStatus.OK,
         )
 
-        val = RunInfo(RunID({"automation_system_run_id": run_id})).value
+        val = RunInfo(RunID({FIELD_EVENT_RUN_ID: run_id})).value
 
         assert val == expected_response["data"]
 
@@ -145,7 +146,7 @@ def test_run_info_value_unsuccessful(app, mocked_responses):
         myExc = ""
         with raises(Exception) as exc:
             myExc = exc
-            RunInfo(RunID({"automation_system_run_id": run_id})).value
+            RunInfo(RunID({FIELD_EVENT_RUN_ID: run_id})).value
 
         assert (
             "Response from Cherrytrack is not OK: Failed to get automation system run info for the given run id"
@@ -154,14 +155,17 @@ def test_run_info_value_unsuccessful(app, mocked_responses):
 
 
 def test_picked_samples_from_source_valid(app):
-    assert PickedSamplesFromSource(PlateBarcode({"barcode": "aBarcode"})).valid() is True
+    assert PickedSamplesFromSource(
+        PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}), RunID({FIELD_EVENT_RUN_ID: "5"})
+    ).valid() is True
     assert (
         PickedSamplesFromSource(
             PlateBarcode(
                 {
                     "missing_barcode_field": "aBarcode",
                 }
-            )
+            ),
+            RunID({FIELD_EVENT_RUN_ID: "5"})
         ).valid()
         is False
     )
@@ -223,7 +227,9 @@ def test_picked_samples_from_source_value_successful(app, mocked_responses):
             status=HTTPStatus.OK,
         )
 
-        val = PickedSamplesFromSource(PlateBarcode({"barcode": source_barcode})).value
+        val = PickedSamplesFromSource(
+            PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: "5"})
+        ).value
         assert val == expected_source_plates_response["data"][1:]
         assert len(val) == 2
 
@@ -246,7 +252,9 @@ def test_picked_samples_from_source_value_unsuccessful(app, mocked_responses):
         myExc = ""
         with raises(Exception) as exc:
             myExc = exc
-            PickedSamplesFromSource(PlateBarcode({"barcode": source_barcode})).value
+            PickedSamplesFromSource(
+                PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: "5"})
+            ).value
 
         assert "Response from Cherrytrack is not OK: Failed to get samples for the given source plate barcode." == str(
             myExc.value

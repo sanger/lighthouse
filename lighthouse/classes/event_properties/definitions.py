@@ -6,7 +6,7 @@ from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
     ROLE_TYPE_ROBOT,
     SUBJECT_TYPE_ROBOT,
 )
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
 from typing import Any, List, Dict
 from lighthouse.classes.mixins.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
     def validate(self):
-        self._validate_param_not_missing(FIELD_EVENT_RUN_ID)
-        self._validate_param_is_integer(FIELD_EVENT_RUN_ID)
+        self.validate_param_not_missing(FIELD_EVENT_RUN_ID)
+        self.validate_param_is_integer(FIELD_EVENT_RUN_ID)
         return self._validate
 
     @cached_property
@@ -36,9 +36,9 @@ class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
 
 class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
     def validate(self):
-        self._validate_param_not_missing(FIELD_EVENT_BARCODE)
-        self._validate_param_not_empty(FIELD_EVENT_BARCODE)
-        self._validate_param_no_whitespaces(FIELD_EVENT_BARCODE)
+        self.validate_param_not_missing(FIELD_EVENT_BARCODE)
+        self.validate_param_not_empty(FIELD_EVENT_BARCODE)
+        self.validate_param_no_whitespaces(FIELD_EVENT_BARCODE)
         return self._validate
 
     @cached_property
@@ -69,13 +69,13 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
 
 
 class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin):
-    def __init__(self, barcode_property: PlateBarcode, run_info_property: RunInfo):
+    def __init__(self, barcode_property: PlateBarcode, run_id_property: RunID):
         self.reset()
         self.barcode_property = barcode_property
-        self.run_info_property = run_info_property
+        self.run_id_property = run_id_property
 
     def validate(self):
-        return self.barcode_property.validate() and self.run_info_property.validate()
+        return self.barcode_property.validate() and self.run_id_property.validate()
 
     @cached_property
     def value(self):
@@ -98,9 +98,9 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin):
 
 class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
     def validate(self):
-        self._validate_param_not_missing(FIELD_EVENT_USER_ID)
-        self._validate_param_not_empty(FIELD_EVENT_USER_ID)
-        self._validate_param_no_whitespaces(FIELD_EVENT_USER_ID)
+        self.validate_param_not_missing(FIELD_EVENT_USER_ID)
+        self.validate_param_not_empty(FIELD_EVENT_USER_ID)
+        self.validate_param_no_whitespaces(FIELD_EVENT_USER_ID)
         return self._validate
 
     @cached_property
@@ -118,9 +118,9 @@ class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
 
 class RobotSerialNumber(EventPropertyAbstract, SimpleEventPropertyMixin):
     def validate(self):
-        self._validate_param_not_missing(FIELD_EVENT_ROBOT)
-        self._validate_param_not_empty(FIELD_EVENT_ROBOT)
-        self._validate_param_no_whitespaces(FIELD_EVENT_ROBOT)
+        self.validate_param_not_missing(FIELD_EVENT_ROBOT)
+        self.validate_param_not_empty(FIELD_EVENT_ROBOT)
+        self.validate_param_no_whitespaces(FIELD_EVENT_ROBOT)
         return self._validate
 
     @cached_property
