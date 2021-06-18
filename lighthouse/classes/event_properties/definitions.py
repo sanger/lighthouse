@@ -1,4 +1,3 @@
-
 from functools import cached_property
 from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
     ROLE_TYPE_CP_SOURCE_LABWARE,
@@ -88,7 +87,7 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin):
                 filter(
                     self.filter_pickable_samples,
                     self.get_samples_from_source_plates(self.barcode_property.value),
-                )
+                ),
             )
         )
 

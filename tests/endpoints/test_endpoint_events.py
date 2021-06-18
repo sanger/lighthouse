@@ -62,13 +62,20 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["aBarcode"])
 def test_post_event_partially_completed(
-    app, client, biosero_auth_headers, clear_events_when_finish, mocked_rabbit_channel, run_id, mocked_responses,
-    cherrytrack_mock_source_plates
+    app,
+    client,
+    biosero_auth_headers,
+    clear_events_when_finish,
+    mocked_rabbit_channel,
+    run_id,
+    mocked_responses,
+    cherrytrack_mock_source_plates,
 ):
     with app.app_context():
-        with patch("lighthouse.hooks.events.uuid4", side_effect=[
-            int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)
-        ]):
+        with patch(
+            "lighthouse.hooks.events.uuid4",
+            side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
+        ):
             with patch(
                 "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
                 return_value="mytime",
@@ -91,8 +98,9 @@ def test_post_event_partially_completed(
                 mocked_rabbit_channel.basic_publish.assert_called_with(
                     exchange="lighthouse.test.examples",
                     routing_key="test.event.lh_biosero_cp_source_partial",
-                    body='{"event": {"uuid": "' + int_to_uuid(1) +
-                    (
+                    body='{"event": {"uuid": "'
+                    + int_to_uuid(1)
+                    + (
                         '", "event_type": "lh_biosero_cp_source_partial", '
                         '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                         '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
@@ -119,13 +127,20 @@ def test_post_event_partially_completed(
 @pytest.mark.parametrize("cherrytrack_source_plates_response", [{"data": {"errors": ["One error", "Another error"]}}])
 @pytest.mark.parametrize("cherrytrack_mock_source_plates_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_samples_info(
-    app, client, biosero_auth_headers, run_id, clear_events_when_finish, mocked_rabbit_channel, mocked_responses,
-    cherrytrack_mock_source_plates
+    app,
+    client,
+    biosero_auth_headers,
+    run_id,
+    clear_events_when_finish,
+    mocked_rabbit_channel,
+    mocked_responses,
+    cherrytrack_mock_source_plates,
 ):
     with app.app_context():
-        with patch("lighthouse.hooks.events.uuid4", side_effect=[
-            int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)
-        ]):
+        with patch(
+            "lighthouse.hooks.events.uuid4",
+            side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
+        ):
             with patch(
                 "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
                 return_value="mytime",
@@ -162,9 +177,10 @@ def test_post_event_partially_completed_with_validation_error_after_storing_in_m
     app, client, biosero_auth_headers, clear_events_when_finish, mocked_rabbit_channel
 ):
     with app.app_context():
-        with patch("lighthouse.hooks.events.uuid4", side_effect=[
-            int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)
-        ]):
+        with patch(
+            "lighthouse.hooks.events.uuid4",
+            side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
+        ):
             with patch(
                 "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
                 return_value="mytime",
@@ -193,8 +209,7 @@ def test_post_event_partially_completed_with_validation_error_after_storing_in_m
 
                 # And it has errors
                 assert event[FIELD_EVENT_ERRORS] == {
-                    'plate_barcode': ["'barcode' should not contain any whitespaces"],
-                    'user_id': ["'user_id' should not contain any whitespaces"],
-                    'robot_serial_number': ["'robot' should not contain any whitespaces"]
+                    "plate_barcode": ["'barcode' should not contain any whitespaces"],
+                    "user_id": ["'user_id' should not contain any whitespaces"],
+                    "robot_serial_number": ["'robot' should not contain any whitespaces"],
                 }
-

@@ -25,7 +25,6 @@ class DummyEventProperty(EventPropertyAbstract):
 
 
 class TestEventPropertyAbstract:
-
     def test_init_raise_validation_error_without_params(self):
         with raises(ValidationError):
             DummyEventProperty(None)
@@ -38,9 +37,9 @@ class TestEventPropertyAbstract:
     def test_reset_can_reset_both_errors_and_validate(self):
         test = DummyEventProperty({})
         test.set_validation(False)
-        test.set_errors(['an error'])
+        test.set_errors(["an error"])
         assert test.valid() is False
-        assert test.errors == ['an error']
+        assert test.errors == ["an error"]
         test.reset()
         assert test.valid() is True
         assert test.errors == []
@@ -55,23 +54,23 @@ class TestEventPropertyAbstract:
 
     def test_process_validation_can_add_errors(self):
         test = DummyEventProperty({})
-        test.process_validation(1 == 1, 'This is right')
+        test.process_validation(1 == 1, "This is right")
         assert test.errors == []
-        test.process_validation(1 == 2, 'This is not right')
-        test.process_validation(1 == 3, 'Neither')
-        assert test.errors == ['This is not right', 'Neither']
+        test.process_validation(1 == 2, "This is not right")
+        test.process_validation(1 == 3, "Neither")
+        assert test.errors == ["This is not right", "Neither"]
 
     def test_validation_scope_can_supress_and_log_errors(self):
         test = DummyEventProperty({})
         mocking = MagicMock()
         try:
             with test.validation_scope():
-                raise Exception('This is an error')
+                raise Exception("This is an error")
         except Exception:
             mocking()
         mocking.assert_not_called()
         assert test.validate() is False
-        assert test.errors == ['Unexpected exception while trying to validate This is an error']
+        assert test.errors == ["Unexpected exception while trying to validate This is an error"]
 
     def test_can_call_other_methods(self):
         test = DummyEventProperty({})
@@ -82,4 +81,3 @@ class TestEventPropertyAbstract:
             test.add_to_warehouse_message()
         except Exception as exception:
             raise fail("DID RAISE {0}".format(exception))
-

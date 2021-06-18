@@ -115,7 +115,11 @@ def test_run_info_value_successful(app, mocked_responses):
         url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
 
         expected_response = {
-            "data": {"id": run_id, FIELD_EVENT_USER_ID: "ab1", "liquid_handler_serial_number": "aLiquidHandlerSerialNumber"}
+            "data": {
+                "id": run_id,
+                FIELD_EVENT_USER_ID: "ab1",
+                "liquid_handler_serial_number": "aLiquidHandlerSerialNumber",
+            }
         }
 
         mocked_responses.add(
@@ -156,9 +160,12 @@ def test_run_info_value_unsuccessful(app, mocked_responses):
 
 
 def test_picked_samples_from_source_valid(app):
-    assert PickedSamplesFromSource(
-        PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}), RunID({FIELD_EVENT_RUN_ID: "5"})
-    ).valid() is True
+    assert (
+        PickedSamplesFromSource(
+            PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}), RunID({FIELD_EVENT_RUN_ID: "5"})
+        ).valid()
+        is True
+    )
     assert (
         PickedSamplesFromSource(
             PlateBarcode(
@@ -166,7 +173,7 @@ def test_picked_samples_from_source_valid(app):
                     "missing_barcode_field": "aBarcode",
                 }
             ),
-            RunID({FIELD_EVENT_RUN_ID: "5"})
+            RunID({FIELD_EVENT_RUN_ID: "5"}),
         ).valid()
         is False
     )
@@ -175,8 +182,7 @@ def test_picked_samples_from_source_valid(app):
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 def test_picked_samples_from_source_value_successful(
-    app, run_id, source_barcode, cherrytrack_source_plates_response, mocked_responses,
-    cherrytrack_mock_source_plates
+    app, run_id, source_barcode, cherrytrack_source_plates_response, mocked_responses, cherrytrack_mock_source_plates
 ):
     with app.app_context():
         val = PickedSamplesFromSource(
@@ -188,9 +194,10 @@ def test_picked_samples_from_source_value_successful(
 
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["aUnknownBarcode"])
-@pytest.mark.parametrize("cherrytrack_source_plates_response", [{
-            "data": {"errors": ["Failed to get samples for the given source plate barcode."]}
-}])
+@pytest.mark.parametrize(
+    "cherrytrack_source_plates_response",
+    [{"data": {"errors": ["Failed to get samples for the given source plate barcode."]}}],
+)
 @pytest.mark.parametrize("cherrytrack_mock_source_plates_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_picked_samples_from_source_value_unsuccessful(
     app, run_id, source_barcode, mocked_responses, cherrytrack_mock_source_plates

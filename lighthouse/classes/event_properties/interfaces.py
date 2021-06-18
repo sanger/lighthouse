@@ -22,6 +22,7 @@ class EventPropertyInterface(ABC):
     Any method we need to have present in event property should be defined
     inside this class.
     """
+
     @abstractmethod
     def validate(self) -> bool:
         """
@@ -108,6 +109,7 @@ class EventPropertyAbstract(EventPropertyInterface):
     The public interface that should be used in this case is
     defined in EventPropertyInterface.
     """
+
     def __init__(self, params: Dict[str, Any]):
         """
         Stores the params, resets the instance and perform a validation check on the params
@@ -156,7 +158,7 @@ class EventPropertyAbstract(EventPropertyInterface):
 
         """
         if not condition:
-            if (message not in self._errors):
+            if message not in self._errors:
                 self._errors.append(message)
             self._validate = False
         self._validate = self._validate and True
@@ -179,6 +181,5 @@ class EventPropertyAbstract(EventPropertyInterface):
             yield
         except Exception as exc:
             self._validate = False
-            self._errors.append(f'Unexpected exception while trying to validate {exc}')
+            self._errors.append(f"Unexpected exception while trying to validate {exc}")
             logger.exception(exc)
-

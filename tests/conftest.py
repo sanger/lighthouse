@@ -90,6 +90,7 @@ def clear_events_when_finish(app):
             events_collection = app.data.driver.db.events
             events_collection.delete_many({})
 
+
 @pytest.fixture
 def priority_samples(app, samples):
     _, samples = samples

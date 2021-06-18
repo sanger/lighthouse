@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class ServiceCherrytrackMixin(object):
     def raise_error_from_response(self, response):
         json = response.json()
-        if json and json['data'] and json['data']['errors']:
+        if json and json["data"] and json["data"]["errors"]:
             raise Exception(f"Response from Cherrytrack is not OK: {','.join(json['data']['errors'])}")
         else:
             raise Exception(f"Response from Cherrytrack is not OK: {response.text}")
