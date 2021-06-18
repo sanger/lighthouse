@@ -123,6 +123,7 @@ class EventPropertyAbstract(EventPropertyInterface):
         self._value = None
         self._validate = True
 
+    @property
     def errors(self) -> List[str]:
         """
         Validates the instance and returns the complete list of errors found (this

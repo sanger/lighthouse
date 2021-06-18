@@ -147,7 +147,7 @@ class PlateEvent(ABC):
         Returns:
             bool - True if the process has been correct, False if there has been a problem while writing
         """
-        if len(self.errors().keys()) > 0:
+        if len(self.errors()) > 0:
             logger.error(f"Errors found while processing event {self._event_uuid}: {self.errors()}")
             return set_errors_to_event(self._event_uuid, self.errors())
         return True
