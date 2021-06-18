@@ -6,13 +6,13 @@ from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
     ROLE_TYPE_ROBOT,
     SUBJECT_TYPE_ROBOT,
 )
-from lighthouse.classes.messages.event_property_interfaces import EventPropertyAbstract
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
 from typing import Any, List, Dict
 from lighthouse.classes.mixins.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
 from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin  # type: ignore
-
 from lighthouse.constants.fields import FIELD_EVENT_RUN_ID, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID, FIELD_EVENT_BARCODE
-from lighthouse.classes.messages.event_property_validations import SimpleEventPropertyMixin
+
 from flask import current_app as app
 import logging
 

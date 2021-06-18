@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 from lighthouse.classes.plate_event import PlateEvent
 
-from lighthouse.classes.messages.event_properties import (  # type: ignore
+from lighthouse.classes.event_properties.definitions import (  # type: ignore
     PickedSamplesFromSource,
     RobotUUID,
     RunInfo,

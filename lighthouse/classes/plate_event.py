@@ -9,7 +9,7 @@ from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # t
 
 from lighthouse.messages.broker import Broker
 from lighthouse.helpers.mongo import set_errors_to_event
-from lighthouse.classes.messages.event_property_interfaces import EventPropertyInterface  # type: ignore
+from lighthouse.classes.event_properties.interfaces import EventPropertyInterface  # type: ignore
 import logging
 
 logger = logging.getLogger(__name__)

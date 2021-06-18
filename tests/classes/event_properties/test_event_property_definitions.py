@@ -1,10 +1,9 @@
 from pytest import raises
-from lighthouse.classes.messages.event_properties import (  # type: ignore
+from lighthouse.classes.event_properties.interfaces import ValidationError, RetrievalError
+from lighthouse.classes.event_properties.definitions import (  # type: ignore
     UserID,
-    ValidationError,
     RobotSerialNumber,
     RobotUUID,
-    RetrievalError,
     RunInfo,
     RunID,
     PlateBarcode,
@@ -12,6 +11,7 @@ from lighthouse.classes.messages.event_properties import (  # type: ignore
 )
 import responses
 from http import HTTPStatus
+
 
 def test_user_id_new(app):
     with raises(ValidationError):
