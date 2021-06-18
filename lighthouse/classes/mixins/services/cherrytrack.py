@@ -9,12 +9,19 @@ logger = logging.getLogger(__name__)
 
 
 class ServiceCherrytrackMixin(object):
+    def raise_error_from_response(self, response):
+        json = response.json()
+        if json and json['data'] and json['data']['errors']:
+            raise Exception(f"Response from Cherrytrack is not OK: {','.join(json['data']['errors'])}")
+        else:
+            raise Exception(f"Response from Cherrytrack is not OK: {response.text}")
+
     def get_run_info(self, run_id):
         logger.info(f"Getting automation system run info from Cherrytrack for run ID {run_id}")
         response = get_automation_system_run_info_from_cherrytrack(run_id)
 
         if response.status_code != HTTPStatus.OK:
-            raise Exception(f"Response from Cherrytrack is not OK: {','.join(response.json()['data']['errors'])}")
+            self.raise_error_from_response(response)
 
         return response.json()["data"]
 
@@ -22,7 +29,7 @@ class ServiceCherrytrackMixin(object):
         logger.info(f"Getting samples info from Cherrytrack for source place barcode {source_barcode}")
         response = get_samples_from_source_plate_barcode_from_cherrytrack(source_barcode)
         if response.status_code != HTTPStatus.OK:
-            raise Exception(f"Response from Cherrytrack is not OK: {','.join(response.json()['data']['errors'])}")
+            self.raise_error_from_response(response)
 
         return response.json()["data"]
 

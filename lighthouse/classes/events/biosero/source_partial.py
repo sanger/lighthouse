@@ -36,7 +36,7 @@ class SourcePartial(PlateEvent):
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
         self.properties["picked_samples_from_source"] = PickedSamplesFromSource(
-            self.properties["plate_barcode"], self.properties["run_info"]
+            self.properties["plate_barcode"], self.properties["run_id"]
         )
         self.properties["source_plate_uuid"] = SourcePlateUUID(self.properties["plate_barcode"])
         self.properties["robot_serial_number"] = RobotSerialNumber(params)

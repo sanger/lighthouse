@@ -82,6 +82,15 @@ def samples(app):
 
 
 @pytest.fixture
+def clear_events_when_finish(app):
+    try:
+        yield
+    finally:
+        with app.app_context():
+            events_collection = app.data.driver.db.events
+            events_collection.delete_many({})
+
+@pytest.fixture
 def priority_samples(app, samples):
     _, samples = samples
 
@@ -494,12 +503,11 @@ def cherrytrack_mock_run_info_status():
 def cherrytrack_mock_source_plates(
     app,
     mocked_responses,
-    run_id,
     source_barcode,
     cherrytrack_source_plates_response,
     cherrytrack_mock_source_plates_status,
 ):
-    source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}?run-id={run_id}"
+    source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}"
     mocked_responses.add(
         responses.GET,
         source_plates_url,
@@ -532,7 +540,7 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
                 "picked": True,
                 "rna_id": "aRNAId1",
                 "robot_barcode": "aRobotBarcode",
-                "run_id": run_id,
+                "automation_system_run_id": run_id,
                 "sample_id": "aSampleId1",
                 "source_barcode": source_barcode,
                 "source_coordinate": "B1",
@@ -548,13 +556,45 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
                 "picked": False,
                 "rna_id": "aRNAId2",
                 "robot_barcode": "aRobotBarcode",
-                "run_id": run_id,
+                "automation_system_run_id": run_id,
                 "sample_id": "aSampleId2",
                 "source_barcode": source_barcode,
                 "source_coordinate": "B2",
                 "root_sample_id": "aRootSampleId2",
                 "result": "Positive",
                 "lh_sample_uuid": "aLighthouseUUID2",
+            },
+            {
+                "control": True,
+                "control_barcode": "aControlBarcode3",
+                "control_coordinate": "A3",
+                "lab_id": "aLabId3",
+                "picked": True,
+                "rna_id": "aRNAId3",
+                "robot_barcode": "aRobotBarcode",
+                "automation_system_run_id": run_id,
+                "sample_id": "aSampleId3",
+                "source_barcode": source_barcode,
+                "source_coordinate": "B3",
+                "root_sample_id": "aRootSampleId3",
+                "result": "Positive",
+                "lh_sample_uuid": "aLighthouseUUID3",
+            },
+            {
+                "control": True,
+                "control_barcode": "aControlBarcode4",
+                "control_coordinate": "A4",
+                "lab_id": "aLabId4",
+                "picked": True,
+                "rna_id": "aRNAId4",
+                "robot_barcode": "aRobotBarcode",
+                "automation_system_run_id": run_id - 1,
+                "sample_id": "aSampleId4",
+                "source_barcode": source_barcode,
+                "source_coordinate": "B4",
+                "root_sample_id": "aRootSampleId4",
+                "result": "Positive",
+                "lh_sample_uuid": "aLighthouseUUID4",
             },
         ]
     }

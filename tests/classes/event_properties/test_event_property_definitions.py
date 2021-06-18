@@ -1,4 +1,5 @@
 from pytest import raises
+import pytest
 from lighthouse.classes.event_properties.interfaces import ValidationError, RetrievalError
 from lighthouse.classes.event_properties.definitions import (  # type: ignore
     UserID,
@@ -171,89 +172,35 @@ def test_picked_samples_from_source_valid(app):
     )
 
 
-def test_picked_samples_from_source_value_successful(app, mocked_responses):
+@pytest.mark.parametrize("run_id", [5])
+@pytest.mark.parametrize("source_barcode", ["DS000050001"])
+def test_picked_samples_from_source_value_successful(
+    app, run_id, source_barcode, cherrytrack_source_plates_response, mocked_responses,
+    cherrytrack_mock_source_plates
+):
     with app.app_context():
-        source_barcode = "DS000050001"
-
-        source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}"
-        expected_source_plates_response = {
-            "data": [
-                {
-                    "automation_system_run_id": "",
-                    "destination_barcode": "",
-                    "destination_coordinate": "",
-                    "destination_plate_well_id": "",
-                    "lab_id": "MK",
-                    "picked": False,
-                    "rna_id": "RNA-S-00005-00000072",
-                    "sample_id": "e1007f3c-cdce-4274-a1f1-d455f03618a3",
-                    "source_barcode": "DS000050001",
-                    "source_coordinate": "A1",
-                    "source_plate_well_id": 472,
-                },
-                {
-                    "automation_system_run_id": "5",
-                    "destination_barcode": "DN00000005",
-                    "destination_coordinate": "C12",
-                    "destination_plate_well_id": "420",
-                    "lab_id": "MK",
-                    "picked": True,
-                    "rna_id": "RNA-S-00005-00000011",
-                    "sample_id": "81e5967c-2499-47a7-9c1d-57b61b565cc0",
-                    "source_barcode": "DS000050001",
-                    "source_coordinate": "A2",
-                    "source_plate_well_id": 411,
-                },
-                {
-                    "automation_system_run_id": "5",
-                    "destination_barcode": "DN00000005",
-                    "destination_coordinate": "C11",
-                    "destination_plate_well_id": "419",
-                    "lab_id": "MK",
-                    "picked": True,
-                    "rna_id": "RNA-S-00005-00000010",
-                    "sample_id": "67155efa-9a88-4c50-aa34-c5e8cc8714a3",
-                    "source_barcode": "DS000050001",
-                    "source_coordinate": "A3",
-                    "source_plate_well_id": 410,
-                },
-            ]
-        }
-
-        mocked_responses.add(
-            responses.GET,
-            source_plates_url,
-            json=expected_source_plates_response,
-            status=HTTPStatus.OK,
-        )
-
         val = PickedSamplesFromSource(
-            PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: "5"})
+            PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: run_id})
         ).value
-        assert val == expected_source_plates_response["data"][1:]
+        assert val == [cherrytrack_source_plates_response["data"][0], cherrytrack_source_plates_response["data"][2]]
         assert len(val) == 2
 
 
-def test_picked_samples_from_source_value_unsuccessful(app, mocked_responses):
-    with app.app_context():
-        source_barcode = "aUnknownBarcode"
-
-        source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}"
-        expected_source_plates_response = {
+@pytest.mark.parametrize("run_id", [5])
+@pytest.mark.parametrize("source_barcode", ["aUnknownBarcode"])
+@pytest.mark.parametrize("cherrytrack_source_plates_response", [{
             "data": {"errors": ["Failed to get samples for the given source plate barcode."]}
-        }
-        mocked_responses.add(
-            responses.GET,
-            source_plates_url,
-            json=expected_source_plates_response,
-            status=HTTPStatus.INTERNAL_SERVER_ERROR,
-        )
-
+}])
+@pytest.mark.parametrize("cherrytrack_mock_source_plates_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
+def test_picked_samples_from_source_value_unsuccessful(
+    app, run_id, source_barcode, mocked_responses, cherrytrack_mock_source_plates
+):
+    with app.app_context():
         myExc = ""
         with raises(Exception) as exc:
             myExc = exc
             PickedSamplesFromSource(
-                PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: "5"})
+                PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: run_id})
             ).value
 
         assert "Response from Cherrytrack is not OK: Failed to get samples for the given source plate barcode." == str(

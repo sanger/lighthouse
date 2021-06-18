@@ -22,8 +22,6 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
 
     # TODO: Assume we only receive one event
     for event in events:
-        error=False
-        exc=None
         try:
             biosero = Biosero()
             event_type = event.get(FIELD_EVENT_TYPE)
@@ -42,9 +40,4 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             plate_event.process_errors()
         except Exception as e:
             plate_event.process_exception(e)
-            error = True
-            exc = e
-        if error:
-            import pdb
-            pdb.set_trace()
 

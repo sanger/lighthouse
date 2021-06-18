@@ -84,8 +84,11 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin):
         # TODO: Filter by run_id from this list
         val: List[Dict[str, Any]] = list(
             filter(
-                self.filter_pickable_samples,
-                self.get_samples_from_source_plates(self.barcode_property.value),
+                lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,
+                filter(
+                    self.filter_pickable_samples,
+                    self.get_samples_from_source_plates(self.barcode_property.value),
+                )
             )
         )
 
