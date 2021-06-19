@@ -192,13 +192,28 @@ def test_picked_samples_from_source_valid(app):
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 def test_picked_samples_from_source_value_successful(
-    app, run_id, source_barcode, cherrytrack_source_plates_response, mocked_responses, cherrytrack_mock_source_plates
+    app,
+    run_id,
+    source_barcode,
+    cherrytrack_source_plates_response,
+    mocked_responses,
+    cherrytrack_mock_source_plates,
+    samples_in_cherrytrack,
 ):
     with app.app_context():
         val = PickedSamplesFromSource(
             PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: run_id})
         ).value
-        assert val == [cherrytrack_source_plates_response["data"][0], cherrytrack_source_plates_response["data"][2]]
+        samples, _ = samples_in_cherrytrack
+
+        for elem in val:
+            del elem["_id"]
+            del elem["Date Tested"]
+        for elem in samples:
+            del elem["_id"]
+            del elem["Date Tested"]
+
+        assert val == [samples[0], samples[2]]
         assert len(val) == 2
 
 

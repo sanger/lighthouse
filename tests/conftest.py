@@ -603,15 +603,16 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
 
 @pytest.fixture
 def samples_in_cherrytrack(app, source_barcode):
-    samples = rows_for_samples_in_cherrytrack(source_barcode)
+    try:
+        samples = rows_for_samples_in_cherrytrack(source_barcode)
 
-    with app.app_context():
-        samples_collection = app.data.driver.db.samples
-        inserted_samples = samples_collection.insert_many(samples)
+        with app.app_context():
+            samples_collection = app.data.driver.db.samples
+            inserted_samples = samples_collection.insert_many(samples)
 
-    #  yield a copy of so that the test change it however it wants
-    yield copy.deepcopy(samples), inserted_samples
+        #  yield a copy of so that the test change it however it wants
+        yield copy.deepcopy(samples), inserted_samples
 
     # clear up after the fixture is used
-    with app.app_context():
+    finally:
         samples_collection.delete_many({})
