@@ -9,8 +9,15 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     RunID,
     PlateBarcode,
     PickedSamplesFromSource,
+    SourcePlateUUID,
 )
-from lighthouse.constants.fields import FIELD_EVENT_RUN_ID, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID, FIELD_EVENT_BARCODE
+from lighthouse.constants.fields import (
+    FIELD_EVENT_RUN_ID,
+    FIELD_EVENT_ROBOT,
+    FIELD_EVENT_USER_ID,
+    FIELD_EVENT_BARCODE,
+    FIELD_LH_SOURCE_PLATE_UUID,
+)
 from http import HTTPStatus
 
 SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS = [
@@ -216,3 +223,49 @@ def test_picked_samples_from_source_value_unsuccessful(
         assert "Response from Cherrytrack is not OK: Failed to get samples for the given source plate barcode." == str(
             myExc.value  # type: ignore
         )
+
+
+def test_source_plate_uuid_new(app, source_plates):
+    assert SourcePlateUUID(PlateBarcode({})) is not None
+    assert SourcePlateUUID(PlateBarcode({"test": "a test"})) is not None
+    assert SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate_123"})) is not None
+
+
+def test_source_plate_uuid_validate(app, source_plates):
+    assert SourcePlateUUID(PlateBarcode({})).validate() is False
+    assert SourcePlateUUID(PlateBarcode({"test": "another test"})).validate() is False
+    assert SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate_123"})).validate() is True
+
+
+def test_source_plate_uuid_value(app, source_plates):
+    with app.app_context():
+        with raises(ValidationError):
+            SourcePlateUUID(PlateBarcode({})).value
+            SourcePlateUUID(PlateBarcode({"test": "another test"})).value
+
+        with raises(Exception):
+            SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "1234"})).value
+
+        uuid = source_plates[0][FIELD_LH_SOURCE_PLATE_UUID]
+
+        assert SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate_123"})).value == uuid
+
+
+def test_source_plate_uuid_errors(app, source_plates):
+    with app.app_context():
+        # After success
+        source_plate_property = SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate_123"}))
+        source_plate_property.value
+        assert len(source_plate_property.errors) == 0
+
+        # After validate false
+        source_plate_property = SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate _123"}))
+        source_plate_property.validate()
+        assert len(source_plate_property.errors) > 0
+
+        # After retrieval error
+        source_plate_property = SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "1234"}))
+        with raises(Exception):
+            source_plate_property.value
+
+        assert len(source_plate_property.errors) > 0

@@ -60,13 +60,14 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
 
 
 @pytest.mark.parametrize("run_id", [3])
-@pytest.mark.parametrize("source_barcode", ["aBarcode"])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
 def test_post_event_partially_completed(
     app,
     client,
     biosero_auth_headers,
     clear_events_when_finish,
     mocked_rabbit_channel,
+    source_plates,
     run_id,
     mocked_responses,
     cherrytrack_mock_source_plates,
@@ -84,7 +85,7 @@ def test_post_event_partially_completed(
                     "/events",
                     data={
                         "automation_system_run_id": 3,
-                        "barcode": "aBarcode",
+                        "barcode": "plate_123",
                         "event_type": "lh_biosero_cp_source_partial",
                         "user_id": "user1",
                         "robot": "BHRB0001",
@@ -108,9 +109,9 @@ def test_post_event_partially_completed(
                         '{"role_type": "sample", "subject_type": "sample", "friendly_name": '
                         '"aRootSampleId3__aRNAId3__aLabId3__Positive", "uuid": "aLighthouseUUID3"}, '
                         '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
-                        '"friendly_name": "aBarcode", "uuid": "1234"}, {"role_type": "robot", '
-                        '"subject_type": "robot", "friendly_name": "BHRB0001", "uuid": '
-                        '"e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}], "metadata": {}}, "lims": "LH_TEST"}'
+                        '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
+                        '{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
+                        '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}], "metadata": {}}, "lims": "LH_TEST"}'
                     ),
                 )
 
@@ -123,13 +124,14 @@ def test_post_event_partially_completed(
 
 
 @pytest.mark.parametrize("run_id", [3])
-@pytest.mark.parametrize("source_barcode", ["aBarcode"])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("cherrytrack_source_plates_response", [{"data": {"errors": ["One error", "Another error"]}}])
 @pytest.mark.parametrize("cherrytrack_mock_source_plates_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_samples_info(
     app,
     client,
     biosero_auth_headers,
+    source_plates,
     run_id,
     clear_events_when_finish,
     mocked_rabbit_channel,
@@ -149,7 +151,7 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
                     "/events",
                     data={
                         "automation_system_run_id": 3,
-                        "barcode": "aBarcode",
+                        "barcode": "plate_123",
                         "event_type": "lh_biosero_cp_source_partial",
                         "user_id": "user1",
                         "robot": "BHRB0001",
