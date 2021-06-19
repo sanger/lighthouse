@@ -18,14 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 class SourcePartial(PlateEvent):
-    def __init__(self, name: str) -> None:
-        super().__init__(name=name, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+    def __init__(self, event_type: str) -> None:
+        super().__init__(event_type=event_type, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
         self.properties: Dict[str, Any] = {}
 
     def initialize_event(self, params: Dict[str, str]) -> None:
         super().initialize_event(params=params)
 
-        self.event_type = params["event_type"]
+        self._event_type = params["event_type"]
 
         self.properties["plate_barcode"] = PlateBarcode(params)
         self.properties["user_id"] = UserID(params)

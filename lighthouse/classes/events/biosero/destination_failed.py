@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 class DestinationFailed(PlateEvent):
-    def __init__(self, name: str) -> None:
-        super().__init__(name=name, plate_type=PlateEvent.PlateTypeEnum.DESTINATION)
+    def __init__(self, event_type: str) -> None:
+        super().__init__(event_type=event_type, plate_type=PlateEvent.PlateTypeEnum.DESTINATION)
 
     def initialize_event(self, params: Dict[str, str]) -> None:
         logger.debug("initialize_event")

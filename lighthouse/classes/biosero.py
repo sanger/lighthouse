@@ -55,15 +55,17 @@ class Biosero(AutomationSystem):
     def __init__(self) -> None:
         self._name = AutomationSystem.AutomationSystemEnum.BIOSERO.name
 
-        self._event_destination_created = DestinationCreated(name=self.EVENT_DESTINATION_CREATED)
-        self._event_destination_failed = DestinationFailed(name=self.EVENT_DESTINATION_FAILED)
-        self._event_destination_partial = DestinationPartial(name=self.EVENT_DESTINATION_PARTIAL)
-        self._event_source_all_negatives = SourceAllNegatives(name=self.EVENT_SOURCE_ALL_NEGATIVES)
-        self._event_source_completed = SourceCompleted(name=self.EVENT_SOURCE_COMPLETED)
-        self._event_source_no_pickable_samples = SourceNoPickableSamples(name=self.EVENT_SOURCE_NO_PICKABLE_SAMPLES)
-        self._event_source_no_plate_map_data = SourceNoPlateMapData(name=self.EVENT_SOURCE_NO_PLATE_MAP_DATA)
-        self._event_source_partial = SourcePartial(name=self.EVENT_SOURCE_PARTIAL)
-        self._event_source_unrecognised = SourceUnrecognised(name=self.EVENT_SOURCE_UNRECOGNISED)
+        self._event_destination_created = DestinationCreated(event_type=self.EVENT_DESTINATION_CREATED)
+        self._event_destination_failed = DestinationFailed(event_type=self.EVENT_DESTINATION_FAILED)
+        self._event_destination_partial = DestinationPartial(event_type=self.EVENT_DESTINATION_PARTIAL)
+        self._event_source_all_negatives = SourceAllNegatives(event_type=self.EVENT_SOURCE_ALL_NEGATIVES)
+        self._event_source_completed = SourceCompleted(event_type=self.EVENT_SOURCE_COMPLETED)
+        self._event_source_no_pickable_samples = SourceNoPickableSamples(
+            event_type=self.EVENT_SOURCE_NO_PICKABLE_SAMPLES
+        )
+        self._event_source_no_plate_map_data = SourceNoPlateMapData(event_type=self.EVENT_SOURCE_NO_PLATE_MAP_DATA)
+        self._event_source_partial = SourcePartial(event_type=self.EVENT_SOURCE_PARTIAL)
+        self._event_source_unrecognised = SourceUnrecognised(event_type=self.EVENT_SOURCE_UNRECOGNISED)
 
         self._plate_events = {
             self._event_destination_created,

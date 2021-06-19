@@ -77,8 +77,8 @@ def test_post_event_partially_completed(
             side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
         ):
             with patch(
-                "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
-                return_value="mytime",
+                "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
+                "mytime",
             ):
                 response = client.post(
                     "/events",
@@ -142,7 +142,7 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
             side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
         ):
             with patch(
-                "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
+                "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
                 return_value="mytime",
             ):
                 response = client.post(
@@ -182,7 +182,7 @@ def test_post_event_partially_completed_with_validation_error_after_storing_in_m
             side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
         ):
             with patch(
-                "lighthouse.classes.plate_event.PlateEvent.get_message_timestamp",
+                "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
                 return_value="mytime",
             ):
                 response = client.post(

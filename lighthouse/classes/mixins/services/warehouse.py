@@ -1,13 +1,15 @@
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type: ignore
 from flask import current_app as app
+from lighthouse.messages.message import Message
 from lighthouse.messages.broker import Broker
+
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class ServiceWarehouseMixin(object):
-    def _get_routing_key(self) -> str:
+class ServiceWarehouseMixin:
+    @property
+    def routing_key(self) -> str:
         """Determines the routing key for a plate event message.
 
         Arguments:
@@ -16,15 +18,14 @@ class ServiceWarehouseMixin(object):
         Returns:
             {str} -- The message routing key.
         """
-        return str(app.config["RMQ_ROUTING_KEY"])  # .replace("#", self._name))
+        return str(app.config["RMQ_ROUTING_KEY"].replace("#", self.event_type))  # type: ignore
 
-    def _send_warehouse_message(self, message: WarehouseMessage) -> None:
+    def send_warehouse_message(self, message: Message) -> None:
+        """Publishes a message in the exchange as specified in configuration."""
         logger.info("Attempting to publish the constructed plate event message")
-
-        routing_key = self._get_routing_key()
         with Broker() as broker_channel:
             broker_channel.basic_publish(
                 exchange=app.config["RMQ_EXCHANGE"],
-                routing_key=routing_key,
+                routing_key=self.routing_key,
                 body=message.payload(),
             )

@@ -1,7 +1,8 @@
 from lighthouse.classes.plate_event import PlateEvent, EventNotInitialized
 from pytest import raises
 from datetime import datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
+from lighthouse.classes.plate_event import EVENT_NOT_INITIALIZED, EVENT_INITIALIZED
 
 
 class TestDummy(PlateEvent):
@@ -11,32 +12,109 @@ class TestDummy(PlateEvent):
 
 def test_source_partial_new(app):
     event = TestDummy("source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
-    assert event.get_event_type() == "source_partial"
+    assert event.event_type == "source_partial"
+    assert event.state == EVENT_NOT_INITIALIZED
 
 
 def test_process_event_uninitialized(app):
-    event = TestDummy(name="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+    event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
     with raises(EventNotInitialized):
         event.process_event()
 
 
 def test_initialize_event(app):
-    event = TestDummy(name="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
-    with raises(EventNotInitialized):
-        event.initialize_event({"_created": datetime.now()})
-        event.initialize_event({"event_wh_uuid": "uuid"})
+    mytime = datetime.now()
+    event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
 
-    event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
+    with raises(EventNotInitialized):
+        event.initialize_event({"_created": mytime})
+    assert event.state == EVENT_NOT_INITIALIZED
+
+    with raises(EventNotInitialized):
+        event.initialize_event({"event_wh_uuid": "uuid"})
+    assert event.state == EVENT_NOT_INITIALIZED
+
+    event.initialize_event({"event_wh_uuid": "uuid", "_created": mytime})
+    assert event.event_uuid == "uuid"
+    assert event.message_timestamp == mytime.isoformat(timespec="seconds")
+    assert event.state == EVENT_INITIALIZED
 
 
 def test_process_event(app):
     with app.app_context():
-        event = TestDummy(name="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+        event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
         event._create_message = MagicMock(name="_create_message")  # type: ignore
-        event._send_warehouse_message = MagicMock(name="_send_warehouse_message")  # type: ignore
+        event.send_warehouse_message = MagicMock(name="_send_warehouse_message")
 
         event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
         event.process_event()
 
         event._create_message.assert_called_once()
-        event._send_warehouse_message.assert_called_once()
+        event.send_warehouse_message.assert_called_once()
+
+
+def test_build_new_warehouse_message(app):
+    with app.app_context():
+        event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+        with raises(EventNotInitialized):
+            event.build_new_warehouse_message()
+
+        event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
+        assert event.build_new_warehouse_message() is not None
+
+
+def test_errors(app):
+    with app.app_context():
+        event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+        assert event.errors == {}
+        mock = MagicMock()
+        mock.errors = ["an error"]
+        mock2 = MagicMock()
+        mock2.errors = ["another error", "other one"]
+        event.properties["myprop1"] = mock
+        event.properties["myprop2"] = mock2
+        assert event.errors == {"myprop1": ["an error"], "myprop2": ["another error", "other one"]}
+
+
+def test_validate(app):
+    with app.app_context():
+        event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+        assert event.validate() is True
+
+        mock = MagicMock()
+        mock.validate = MagicMock(name="validate", return_value=True)
+        event.properties["myprop1"] = mock
+        assert event.validate() is True
+
+        mock2 = MagicMock()
+        mock2.validate = MagicMock(name="validate", return_value=False)
+        event.properties["myprop2"] = mock2
+        assert event.validate() is False
+
+
+def test_process_errors(app):
+    with app.app_context():
+        event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+        event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
+
+        with patch("lighthouse.classes.plate_event.set_errors_to_event") as mock:
+            event.process_errors()
+            mock.assert_not_called()
+
+            mock2 = MagicMock()
+            mock2.errors = ["an error"]
+            event.properties["myprop2"] = mock2
+            event.process_errors()
+            mock.assert_called_once_with("uuid", {"myprop2": ["an error"]})
+
+
+def test_process_exception(app):
+    with app.app_context():
+        event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+        event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
+
+        exc = Exception("boom!")
+
+        with patch("lighthouse.classes.plate_event.set_errors_to_event") as mock:
+            event.process_exception(exc)
+            mock.assert_called_once_with("uuid", {"base": ["boom!"]})

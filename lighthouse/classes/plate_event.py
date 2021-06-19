@@ -2,12 +2,11 @@ from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import Any, Dict, Union, List
 
-from flask import current_app as app
 
 from lighthouse.messages.message import Message
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type: ignore
 
-from lighthouse.messages.broker import Broker
+from lighthouse.classes.mixins.services.warehouse import ServiceWarehouseMixin  # type: ignore
 from lighthouse.helpers.mongo import set_errors_to_event
 from lighthouse.classes.event_properties.interfaces import EventPropertyInterface  # type: ignore
 import logging
@@ -22,23 +21,84 @@ class EventNotInitialized(BaseException):
     pass
 
 
-class PlateEvent(ABC):
+class PlateEventInterface(ABC):
+    @abstractmethod
+    def initialize_event(self, params: Dict[str, Union[str, Any]]) -> None:
+        """This method will parse the event information provided in params and
+        store the relevant information from it.
+        """
+        ...
+
+    @abstractmethod
+    def process_event(self) -> None:
+        """This method will produce the action required for this event, that could
+        mean publishing in the warehouse, creating a plate in Sequencescape, updating
+        labwhere, etc... This will vary dependent on the type of event.
+        """
+        ...
+
+    @abstractmethod
+    def errors(self) -> Dict[str, List[str]]:
+        """This method will return all errors that have happened during the lifetime of
+        this event.
+        Returns:
+            {Dict[str, List[str]]} - an object where the key is the name of an event property and the value
+            is a list of error messages.
+        """
+        ...
+
+    @abstractmethod
+    def validate(self) -> bool:
+        """This method will perform a validation of all event properties.
+        Returns:
+            {bool} - True if all properties are valid, False if not
+        """
+        ...
+
+    @abstractmethod
+    def process_errors(self) -> bool:
+        """This method will provide the behaviour for what action to do if the
+        current instance has any errors.
+        """
+        ...
+
+    @abstractmethod
+    def process_exception(self, exc: Exception) -> bool:
+        """This method will provide the behaviour for what to do if an
+        exception has happened during the process of this event.
+        Arguments:
+            {Exception} - An exception related with the execution of this
+            event.
+        """
+        ...
+
+
+class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
     class PlateTypeEnum(Enum):
         SOURCE = auto()
         DESTINATION = auto()
 
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def __init__(self, name: str, plate_type: PlateTypeEnum) -> None:
-        self._name = name
+    def __init__(self, event_type: str, plate_type: PlateTypeEnum) -> None:
+        """
+        Creates a new instance of PlateEvent.
+        Stores the event type in a property.
+        Sets the state of the event to 'uninitialized' and it will not change until
+        initialize_event() is called.
+        Builds an empty dictionary for event_properties.
+        """
+        self._event_type = event_type
         self._plate_type = plate_type
-        self._state = EVENT_NOT_INITIALIZED
+        self._state: str = EVENT_NOT_INITIALIZED
         self.properties: Dict[str, EventPropertyInterface] = {}
-        self._validation = True
+        self._validation: bool = True
 
     def initialize_event(self, params: Dict[str, Union[str, Any]]) -> None:
+        """
+        Initialize the event by parsing the event params.
+        Stores the uuid and creation timestamp in properties; if any of them
+        are missing it will raise an exception.
+        Sets the state of the event to 'initialized'
+        """
         if "event_wh_uuid" not in params.keys():
             raise EventNotInitialized("Missing event_wh_uuid")
 
@@ -46,80 +106,86 @@ class PlateEvent(ABC):
             raise EventNotInitialized("Missing _created")
 
         self._state = EVENT_INITIALIZED
-        self._event_uuid = params["event_wh_uuid"]
-        self._message_timestamp = params["_created"].isoformat(timespec="seconds")  # type: ignore
+        self._event_uuid: str = params["event_wh_uuid"]
+        self._message_timestamp: str = params["_created"].isoformat(timespec="seconds")  # type: ignore
 
     @abstractmethod
     def _create_message(self) -> Message:
+        """Builds a warehouse message and adds all the information from this event
+        so is ready to be published. As the content will depend on each event, it is
+        implemented in the subclass.
+
+        Returns:
+            {Message} - warehouse message with all information related with current event
+        """
         ...
 
-    """Returns the uuid for the event as it is going to be stored in the warehouse
+    @property
+    def event_type(self) -> str:
+        """Returns the event type for the event
 
-    Returns:
-        {str} -- The UUID for the event created.
-    """
+        Returns:
+            {str} -- The event type for the event created.
+        """
+        return self._event_type
 
-    def get_event_uuid(self):
+    @property
+    def event_uuid(self) -> str:
+        """Returns the uuid for the event as it is going to be stored in the warehouse
+
+        Returns:
+            {str} -- The UUID for the event created.
+        """
         return self._event_uuid
 
-    """Returns the event type for the event
+    @property
+    def message_timestamp(self) -> str:
+        """Returns the datetime when the event was created in a format compatible with messaging.
 
-    Returns:
-        {str} -- The event type for the event created.
-    """
-
-    def get_event_type(self):
-        return self._name
-
-    """Returns the datetime when the event was created in a format compatible with messaging.
-
-    Returns:
-        {str} -- The datetime for the event created.
-    """
-
-    def get_message_timestamp(self):
+        Returns:
+            {str} -- The datetime for the event created.
+        """
         return self._message_timestamp
 
+    @property
+    def state(self) -> str:
+        """Returns the state where this event is ('initialized', 'not initialized') indicating
+        if the params have been parsed or not.
+
+        Returns:
+            {str} -- The state where this event is: ('initialized', 'not initialized')
+        """
+        return self._state
+
     def process_event(self) -> None:
-        if not self._state == EVENT_INITIALIZED:
+        """Adds a default behaviour for the event process. By default it will:
+        - raise an exception if the event has not run initialize_event() before
+        - create a new message to send to the warehouse
+        - send the message to the warehouse
+        """
+        if not self.state == EVENT_INITIALIZED:
             raise EventNotInitialized("Not initialized event")
 
         message = self._create_message()
-        self._send_warehouse_message(message=message)
-
-    def _get_routing_key(self) -> str:
-        """Determines the routing key for a plate event message.
-
-        Arguments:
-            event_type {str} -- The event type for which to determine the routing key.
-
-        Returns:
-            {str} -- The message routing key.
-        """
-
-        return str(app.config["RMQ_ROUTING_KEY"].replace("#", self._name))
-
-    def _send_warehouse_message(self, message: Message) -> None:
-        logger.info("Attempting to publish the constructed plate event message")
-
-        routing_key = self._get_routing_key()
-
-        with Broker() as broker_channel:
-
-            broker_channel.basic_publish(
-                exchange=app.config["RMQ_EXCHANGE"],
-                routing_key=routing_key,
-                body=message.payload(),
-            )
+        self.send_warehouse_message(message=message)
 
     def build_new_warehouse_message(self) -> WarehouseMessage:
-        return WarehouseMessage(self.get_event_type(), self.get_event_uuid(), self.get_message_timestamp())
+        """
+        Builds a new empty warehouse message with the generic information of an event:
+        (type, uuid, timestamp). All other information needs to be fill in.
+        Raises an exception if it does not have all information.
 
+        Returns
+            {WarehouseMessage} - Message that we are building in order to publish to
+            the warehouse
+        """
+        if self.state == EVENT_NOT_INITIALIZED:
+            raise EventNotInitialized("We cannot build a new message because the event is not initialized")
+        return WarehouseMessage(self.event_type, self.event_uuid, self.message_timestamp)
+
+    @property
     def errors(self) -> Dict[str, List[str]]:
         """Returns an object with all error messages from each event property
-
-        Arguments:
-            None
 
         Returns:
             {Dict[str,List[str]]} -- The object with the error messages, where the key is the id of the
@@ -133,6 +199,13 @@ class PlateEvent(ABC):
         return error_message
 
     def validate(self) -> bool:
+        """
+        Performs a validation on all event properties and returns True/False indicating if
+        the current instance is valid
+
+        Returns:
+            {bool} - True if the event is valid, or False if not
+        """
         self._validation = True
         for event_property_name in self.properties.keys():
             self._validation = self._validation and self.properties[event_property_name].validate()
@@ -141,25 +214,19 @@ class PlateEvent(ABC):
     def process_errors(self) -> bool:
         """Logs the errors into slack, and also writes them into the Mongodb table
 
-        Arguments:
-            None
-
         Returns:
             bool - True if the process has been correct, False if there has been a problem while writing
         """
-        if len(self.errors()) > 0:
-            logger.error(f"Errors found while processing event {self._event_uuid}: {self.errors()}")
-            return set_errors_to_event(self._event_uuid, self.errors())
+        if len(self.errors) > 0:
+            logger.error(f"Errors found while processing event {self.event_uuid}: {self.errors}")
+            return set_errors_to_event(self.event_uuid, self.errors)
         return True
 
     def process_exception(self, exc: BaseException) -> bool:
         """Logs the exception into slack, and also writes it into the Mongodb table
 
-        Arguments:
-            None
-
         Returns:
             bool - True if the process has been correct, False if there has been a problem while writing
         """
         logger.exception(exc)
-        return set_errors_to_event(self._event_uuid, {"base": [str(exc)]})
+        return set_errors_to_event(self.event_uuid, {"base": [str(exc)]})

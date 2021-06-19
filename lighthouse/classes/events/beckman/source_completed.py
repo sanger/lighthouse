@@ -17,8 +17,8 @@ class SourceCompleted(PlateEvent, LabWhereMixin):
     def robot_serial_number(self) -> str:
         return self._robot_serial_number
 
-    def __init__(self, name: str) -> None:
-        super().__init__(name, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
+    def __init__(self, event_type: str) -> None:
+        super().__init__(event_type, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
 
     def initialize_event(self, params: Dict[str, str]) -> None:
         self._plate_barcode = params.get("barcode", "")
