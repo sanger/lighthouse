@@ -8,8 +8,8 @@ from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError  # type: ignore
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin  # type: ignore
 from typing import Any, List, Dict
-from lighthouse.classes.mixins.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
-from lighthouse.classes.mixins.services.mongo import ServiceMongoMixin  # type: ignore
+from lighthouse.classes.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
+from lighthouse.classes.services.mongo import ServiceMongoMixin  # type: ignore
 from lighthouse.constants.fields import FIELD_EVENT_RUN_ID, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID, FIELD_EVENT_BARCODE
 
 from flask import current_app as app

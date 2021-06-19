@@ -468,7 +468,7 @@ def plates_lookup_without_samples(samples, priority_samples):
 def mocked_rabbit_channel(app):
     with app.app_context():
         mocked_broker = MagicMock()
-        with patch("lighthouse.classes.mixins.services.warehouse.Broker", return_value=mocked_broker):
+        with patch("lighthouse.classes.services.warehouse.Broker", return_value=mocked_broker):
             mocked_channel = MagicMock()
             mocked_broker.__enter__.return_value = mocked_channel
 

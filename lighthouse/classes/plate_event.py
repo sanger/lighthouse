@@ -6,7 +6,7 @@ from typing import Any, Dict, Union, List
 from lighthouse.messages.message import Message
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type: ignore
 
-from lighthouse.classes.mixins.services.warehouse import ServiceWarehouseMixin  # type: ignore
+from lighthouse.classes.services.warehouse import ServiceWarehouseMixin  # type: ignore
 from lighthouse.helpers.mongo import set_errors_to_event
 from lighthouse.classes.event_properties.interfaces import EventPropertyInterface  # type: ignore
 import logging
