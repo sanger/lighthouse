@@ -11,57 +11,61 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     PickedSamplesFromSource,
 )
 from lighthouse.constants.fields import FIELD_EVENT_RUN_ID, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID, FIELD_EVENT_BARCODE
-import responses
 from http import HTTPStatus
 
+SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS = [
+    [RunID, FIELD_EVENT_RUN_ID, ["1234"], [None, "12 34", "12.34"]],
+    [PlateBarcode, FIELD_EVENT_BARCODE, ["AA1234"], [None, "AA 1234", ""]],
+    [UserID, FIELD_EVENT_USER_ID, ["user1", "user 1"], [None, ""]],
+    [RobotSerialNumber, FIELD_EVENT_ROBOT, ["1234"], ["12 34", None, ""]],
+]
 
-def test_user_id_new(app):
+
+@pytest.mark.parametrize("params", SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS)
+def test_new_simple_event_property(app, params):
+    klass, field, valid_list, invalid_list = params
     with raises(ValidationError):
-        UserID(None)
+        klass(None)
 
-    assert UserID({}) is not None
-    assert UserID({"test": "another test"}) is not None
-    assert UserID({FIELD_EVENT_USER_ID: "1234"}) is not None
+    for invalid in invalid_list:
+        assert klass({field: invalid}) is not None
 
-
-def test_user_id_value(app):
-    with raises(ValidationError):
-        UserID({}).value
-        UserID({"test": "another test"}).value
-
-    assert UserID({FIELD_EVENT_USER_ID: "1234"}).value == "1234"
+    for valid in valid_list:
+        assert klass({field: valid}) is not None
 
 
-def test_user_id_validate(app):
-    assert UserID({}).validate() is False
-    assert UserID({"test": "another test"}).validate() is False
-    assert UserID({FIELD_EVENT_USER_ID: "1234"}).validate() is True
+@pytest.mark.parametrize("params", SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS)
+def test_value_for_simple_event_property(app, params):
+    klass, field, valid_list, invalid_list = params
+
+    for invalid in invalid_list:
+        with raises(ValidationError):
+            klass({field: invalid}).value
+
+    for valid in valid_list:
+        assert klass({field: valid}).value == valid
 
 
-def test_user_id_errors(app):
-    assert len(UserID({}).errors) > 0
-    assert len(UserID({"test": "another test"}).errors) > 0
-    assert len(UserID({FIELD_EVENT_USER_ID: "1234"}).errors) == 0
+@pytest.mark.parametrize("params", SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS)
+def test_validate_for_simple_event_property(app, params):
+    klass, field, valid_list, invalid_list = params
+
+    for invalid in invalid_list:
+        assert klass({field: invalid}).validate() is False
+
+    for valid in valid_list:
+        assert klass({field: valid}).validate() is True
 
 
-def test_robot_serial_number_new(app):
-    assert RobotSerialNumber({}) is not None
-    assert RobotSerialNumber({"test": "a test"}) is not None
-    assert RobotSerialNumber({FIELD_EVENT_ROBOT: "a test"}) is not None
+@pytest.mark.parametrize("params", SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS)
+def test_errors_for_simple_event_property(app, params):
+    klass, field, valid_list, invalid_list = params
 
+    for invalid in invalid_list:
+        assert len(klass({field: invalid}).errors) > 0
 
-def test_robot_serial_number_validate(app):
-    assert RobotSerialNumber({}).validate() is False
-    assert RobotSerialNumber({"test": "another test"}).validate() is False
-    assert RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"}).validate() is True
-
-
-def test_robot_serial_number_value(app):
-    with raises(ValidationError):
-        RobotSerialNumber({}).value
-        RobotSerialNumber({"test": "another test"}).value
-
-    assert RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"}).value == "1234"
+    for valid in valid_list:
+        assert len(klass({field: valid}).errors) == 0
 
 
 def test_robot_uuid_new(app):
@@ -89,30 +93,33 @@ def test_robot_uuid_value(app):
         assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "BHRB0001"})).value == uuid
 
 
-def test_plate_barcode_valid(app):
-    assert PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}).valid() is True
+def test_robot_uuid_errors(app):
+    with app.app_context():
+        # After success
+        robot = RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "BHRB0001"}))
+        robot.value
+        assert len(robot.errors) == 0
 
+        # After validate false
+        robot = RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "12 34"}))
+        robot.validate()
+        assert len(robot.errors) > 0
 
-def test_plate_barcode_value(app):
-    assert PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}).value == "aBarcode"
+        # After retrieval error
+        robot = RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"}))
+        with raises(RetrievalError):
+            robot.value
 
-
-def test_run_id_valid(app):
-    assert RunID({FIELD_EVENT_RUN_ID: 1}).valid() is True
-
-
-def test_run_id_value(app):
-    assert RunID({FIELD_EVENT_RUN_ID: 1}).value == 1
+        assert len(robot.errors) > 0
 
 
 def test_run_info_valid(app):
     assert RunInfo(RunID({FIELD_EVENT_RUN_ID: 1})).valid() is True
 
 
-def test_run_info_value_successful(app, mocked_responses):
+@pytest.mark.parametrize("run_id", [5])
+def test_run_info_value_successful(app, run_id, mocked_responses, cherrytrack_mock_run_info):
     with app.app_context():
-        run_id = 2
-        url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
 
         expected_response = {
             "data": {
@@ -122,38 +129,37 @@ def test_run_info_value_successful(app, mocked_responses):
             }
         }
 
-        mocked_responses.add(
-            responses.GET,
-            url,
-            json=expected_response,
-            status=HTTPStatus.OK,
-        )
-
         val = RunInfo(RunID({FIELD_EVENT_RUN_ID: run_id})).value
 
         assert val == expected_response["data"]
 
 
-def test_run_info_value_unsuccessful(app, mocked_responses):
+@pytest.mark.parametrize("run_id", [5])
+@pytest.mark.parametrize(
+    "cherrytrack_run_info_response",
+    [{"data": {"errors": ["Failed to get automation system run info for the given run id"]}}],
+)
+@pytest.mark.parametrize("cherrytrack_mock_run_info_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
+def test_run_info_value_unsuccessful(app, mocked_responses, cherrytrack_mock_run_info):
     with app.app_context():
-        run_id = 0
-        url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
-
-        expected_response = {"data": {"errors": ["Failed to get automation system run info for the given run id"]}}
-
-        mocked_responses.add(
-            responses.GET,
-            url,
-            json=expected_response,
-            status=HTTPStatus.INTERNAL_SERVER_ERROR,
-        )
-
         myExc = None
-        with raises(Exception) as exc:
+        run_info = RunInfo(RunID({FIELD_EVENT_RUN_ID: 5}))
+        try:
+            run_info.value
+        except Exception as exc:
             myExc = exc
-            RunInfo(RunID({FIELD_EVENT_RUN_ID: run_id})).value
+
         msg = "Response from Cherrytrack is not OK: Failed to get automation system run info for the given run id"
-        assert msg == str(myExc.value)  # type: ignore
+        assert msg == str(myExc)
+        assert len(run_info.errors) == 1
+        assert ["Exception during retrieval: " + msg] == run_info.errors
+
+        # Another try does not add more errors
+        try:
+            run_info.value
+        except Exception:
+            ...
+        assert len(run_info.errors) == 1
 
 
 def test_picked_samples_from_source_valid(app):

@@ -26,8 +26,8 @@ class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
 
     @cached_property
     def value(self):
-        super().enforce_validation()
-        return self._params.get(FIELD_EVENT_RUN_ID)
+        with self.retrieval_scope():
+            return self._params.get(FIELD_EVENT_RUN_ID)
 
     def add_to_warehouse_message(self, message):
         return None
@@ -42,8 +42,8 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
 
     @cached_property
     def value(self):
-        super().enforce_validation()
-        return self._params.get(FIELD_EVENT_BARCODE)
+        with self.retrieval_scope():
+            return self._params.get(FIELD_EVENT_BARCODE)
 
     def add_to_warehouse_message(self, message):
         for sample in self.value:
@@ -58,10 +58,15 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
     def validate(self):
         return self.run_id_property.validate()
 
+    @property
+    def errors(self) -> List[str]:
+        self.validate()
+        return self._errors + self.run_id_property.errors  # type: ignore
+
     @cached_property
     def value(self):
-        super().enforce_validation()
-        return self.get_run_info(self.run_id_property.value)
+        with self.retrieval_scope():
+            return self.get_run_info(self.run_id_property.value)
 
     def add_to_warehouse_message(self, message):
         return None
@@ -76,22 +81,25 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin):
     def validate(self):
         return self.barcode_property.validate() and self.run_id_property.validate()
 
+    @property
+    def errors(self) -> List[str]:
+        self.validate()
+        return self._errors + self.barcode_property.errors + self.run_id_property.errors  # type: ignore
+
     @cached_property
     def value(self):
-        super().enforce_validation()
-
-        # TODO: Filter by run_id from this list
-        val: List[Dict[str, Any]] = list(
-            filter(
-                lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,  # type: ignore
+        with self.retrieval_scope():
+            val: List[Dict[str, Any]] = list(
                 filter(
-                    self.filter_pickable_samples,
-                    self.get_samples_from_source_plates(self.barcode_property.value),
-                ),
+                    lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,  # type: ignore
+                    filter(
+                        self.filter_pickable_samples,
+                        self.get_samples_from_source_plates(self.barcode_property.value),
+                    ),
+                )
             )
-        )
 
-        return val
+            return val
 
     def add_to_warehouse_message(self, message):
         for sample in self.value:
@@ -102,17 +110,15 @@ class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
     def validate(self):
         self.validate_param_not_missing(FIELD_EVENT_USER_ID)
         self.validate_param_not_empty(FIELD_EVENT_USER_ID)
-        self.validate_param_no_whitespaces(FIELD_EVENT_USER_ID)
         return self._validate
 
     @cached_property
     def value(self):
-        super().enforce_validation()
-
-        val = self._params.get(FIELD_EVENT_USER_ID)
-        if val is None:
-            raise RetrievalError("Unable to determine a user id")
-        return val
+        with self.retrieval_scope():
+            val = self._params.get(FIELD_EVENT_USER_ID)
+            if val is None:
+                raise RetrievalError("Unable to determine a user id")
+            return val
 
     def add_to_warehouse_message(self, message):
         message.set_user_id(self.value)
@@ -127,8 +133,8 @@ class RobotSerialNumber(EventPropertyAbstract, SimpleEventPropertyMixin):
 
     @cached_property
     def value(self):
-        super().enforce_validation()
-        return self._params.get(FIELD_EVENT_ROBOT)
+        with self.retrieval_scope():
+            return self._params.get(FIELD_EVENT_ROBOT)
 
     def add_to_warehouse_message(self, message):
         return None
@@ -142,13 +148,18 @@ class RobotUUID(EventPropertyAbstract, ServiceCherrytrackMixin):
     def validate(self):
         return self.robot_serial_number_property.validate()
 
+    @property
+    def errors(self) -> List[str]:
+        self.validate()
+        return self._errors + self.robot_serial_number_property.errors  # type: ignore
+
     @cached_property
     def value(self):
-        super().enforce_validation()
-        val = self._get_robot_uuid()
-        if val is None:
-            raise Exception(f"Unable to determine a uuid for robot '{self.robot_serial_number_property.value}'")
-        return val
+        with self.retrieval_scope():
+            val = self._get_robot_uuid()
+            if val is None:
+                raise Exception(f"Unable to determine a uuid for robot '{self.robot_serial_number_property.value}'")
+            return val
 
     def add_to_warehouse_message(self, message):
         message.add_subject(
@@ -173,13 +184,18 @@ class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
     def validate(self):
         return self.barcode_property.validate()
 
+    @property
+    def errors(self) -> List[str]:
+        self.validate()
+        return self._errors + self.barcode_property.errors  # type: ignore
+
     @cached_property
     def value(self):
-        super().enforce_validation()
-        val = self.get_source_plate_uuid(self.barcode_property.value)
-        if val is None:
-            raise Exception(f"Unable to determine a uuid for source plate '{self.barcode_property.value}'")
-        return val
+        with self.retrieval_scope():
+            val = self.get_source_plate_uuid(self.barcode_property.value)
+            if val is None:
+                raise Exception(f"Unable to determine a uuid for source plate '{self.barcode_property.value}'")
+            return val
 
     def add_to_warehouse_message(self, message):
         message.add_subject(

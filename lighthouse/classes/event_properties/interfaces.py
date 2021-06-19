@@ -8,11 +8,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ValidationError(BaseException):
+class ValidationError(Exception):
     pass
 
 
-class RetrievalError(BaseException):
+class RetrievalError(Exception):
     pass
 
 
@@ -119,7 +119,7 @@ class EventPropertyAbstract(EventPropertyInterface):
         """
         Deletes all errors and clears the validation setting.
         """
-        self._errors = []
+        self._errors: List[str] = []
         self._value = None
         self._validate = True
 
@@ -194,5 +194,32 @@ class EventPropertyAbstract(EventPropertyInterface):
             yield
         except Exception as exc:
             self._validate = False
-            self._errors.append(f"Unexpected exception while trying to validate {exc}")
+            msg = f"Unexpected exception while trying to validate {exc}"
+            if msg not in self._errors:
+                self._errors.append(msg)
             logger.exception(exc)
+
+    @contextmanager
+    def retrieval_scope(self):
+        """
+        Creates an 'unsafe' scope where we can try to retrieve the value.
+        If an exception happens, we mark the instance as invalid, store an
+        error message and reraise the exception again.
+        This is intended to be use only during retrieval operations inside the
+        value() method. It is not recommended in any other case.
+
+        Arguments:
+            None
+
+        Returns:
+            ContextManager - A context specifically created to handle a retrieval process
+        """
+        try:
+            self.enforce_validation()
+            yield
+        except Exception as exc:
+            self._validate = False
+            msg = f"Exception during retrieval: {exc}"
+            if msg not in self._errors:
+                self._errors.append(msg)
+            raise exc
