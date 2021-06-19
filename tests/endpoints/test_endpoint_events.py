@@ -71,6 +71,7 @@ def test_post_event_partially_completed(
     run_id,
     mocked_responses,
     cherrytrack_mock_source_plates,
+    samples_in_cherrytrack,
 ):
     with app.app_context():
         with patch(

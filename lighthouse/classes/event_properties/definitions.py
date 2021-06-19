@@ -10,7 +10,13 @@ from lighthouse.classes.event_properties.validations import SimpleEventPropertyM
 from typing import Any, List, Dict
 from lighthouse.classes.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
 from lighthouse.classes.services.mongo import ServiceMongoMixin  # type: ignore
-from lighthouse.constants.fields import FIELD_EVENT_RUN_ID, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID, FIELD_EVENT_BARCODE
+from lighthouse.constants.fields import (
+    FIELD_CHERRYTRACK_LH_SAMPLE_UUID,
+    FIELD_EVENT_RUN_ID,
+    FIELD_EVENT_ROBOT,
+    FIELD_EVENT_USER_ID,
+    FIELD_EVENT_BARCODE,
+)
 
 from flask import current_app as app
 import logging
@@ -72,7 +78,7 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
         return None
 
 
-class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin):
+class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, ServiceMongoMixin):
     def __init__(self, barcode_property: PlateBarcode, run_id_property: RunID):
         self.reset()
         self.barcode_property = barcode_property
@@ -89,16 +95,17 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin):
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            val: List[Dict[str, Any]] = list(
-                filter(
+            sample_uuids: List[str] = [  # type: ignore
+                sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID]
+                for sample in filter(
                     lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,  # type: ignore
                     filter(
                         self.filter_pickable_samples,
                         self.get_samples_from_source_plates(self.barcode_property.value),
                     ),
                 )
-            )
-
+            ]
+            val: List[Dict[str, Any]] = list(self.get_samples_from_mongo(sample_uuids))
             return val
 
     def add_to_warehouse_message(self, message):

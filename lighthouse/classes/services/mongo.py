@@ -3,16 +3,14 @@ from lighthouse.constants.fields import FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUI
 
 
 class ServiceMongoMixin:
-    def get_samples_from_mongo(self, samples):
-        uuids = [sample[FIELD_LH_SAMPLE_UUID] for sample in samples]
-
+    def get_samples_from_mongo(self, uuids):
         samples_collection = app.data.driver.db.samples  # type: ignore
 
-        samples = samples_collection.find({FIELD_LH_SAMPLE_UUID: {"$in": uuids}})
+        samples = list(samples_collection.find({FIELD_LH_SAMPLE_UUID: {"$in": uuids}}))
 
         obtained_uuids = [sample[FIELD_LH_SAMPLE_UUID] for sample in samples]
 
-        remaining_uuids = uuids - obtained_uuids  # type: ignore
+        remaining_uuids = list(set(uuids) - set(obtained_uuids))
 
         if len(remaining_uuids) > 0:
             raise Exception(

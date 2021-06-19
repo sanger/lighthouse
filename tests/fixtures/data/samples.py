@@ -168,3 +168,56 @@ SAMPLES = [
         FIELD_LAB_ID: "lab_4",
     },
 ]
+
+
+def rows_for_samples_in_cherrytrack(source_barcode):
+    return [
+        {
+            FIELD_COORDINATE: "B01",
+            FIELD_SOURCE: "aLabId1",
+            FIELD_RESULT: "Positive",
+            FIELD_PLATE_BARCODE: source_barcode,
+            FIELD_ROOT_SAMPLE_ID: "aRootSampleId1",
+            FIELD_RNA_ID: "aRNAId1",
+            FIELD_LH_SAMPLE_UUID: "aLighthouseUUID1",
+            FIELD_DATE_TESTED: DATE_TESTED_NOW,
+            FIELD_FILTERED_POSITIVE: True,
+            FIELD_LAB_ID: "aLabId1",
+        },
+        {
+            FIELD_COORDINATE: "B02",
+            FIELD_SOURCE: "aLabId1",
+            FIELD_RESULT: "Positive",
+            FIELD_PLATE_BARCODE: source_barcode,
+            FIELD_ROOT_SAMPLE_ID: "aRootSampleId2",
+            FIELD_RNA_ID: "aRNAId2",
+            FIELD_LH_SAMPLE_UUID: "aLighthouseUUID2",
+            FIELD_DATE_TESTED: DATE_TESTED_NOW,
+            FIELD_FILTERED_POSITIVE: True,
+            FIELD_LAB_ID: "aLabId1",
+        },
+        {
+            FIELD_COORDINATE: "B03",
+            FIELD_SOURCE: "aLabId3",
+            FIELD_RESULT: "Positive",
+            FIELD_PLATE_BARCODE: source_barcode,
+            FIELD_ROOT_SAMPLE_ID: "aRootSampleId3",
+            FIELD_RNA_ID: "aRNAId3",
+            FIELD_LH_SAMPLE_UUID: "aLighthouseUUID3",
+            FIELD_DATE_TESTED: DATE_TESTED_NOW,
+            FIELD_FILTERED_POSITIVE: True,
+            FIELD_LAB_ID: "aLabId3",
+        },
+        {
+            FIELD_COORDINATE: "B04",
+            FIELD_SOURCE: "aLabId4",
+            FIELD_RESULT: "Positive",
+            FIELD_PLATE_BARCODE: source_barcode,
+            FIELD_ROOT_SAMPLE_ID: "aRootSampleId4",
+            FIELD_RNA_ID: "aRNAId4",
+            FIELD_LH_SAMPLE_UUID: "aLighthouseUUID4",
+            FIELD_DATE_TESTED: DATE_TESTED_NOW,
+            FIELD_FILTERED_POSITIVE: True,
+            FIELD_LAB_ID: "aLabId4",
+        },
+    ]

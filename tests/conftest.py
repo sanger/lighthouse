@@ -26,7 +26,7 @@ from tests.fixtures.data.mlwh import (
     SAMPLES_FOR_MLWH_UPDATE,
 )
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
-from tests.fixtures.data.samples import SAMPLES
+from tests.fixtures.data.samples import SAMPLES, rows_for_samples_in_cherrytrack
 from tests.fixtures.data.source_plates import SOURCE_PLATES
 from tests.fixtures.data.plate_events import PLATE_EVENTS
 from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
@@ -599,3 +599,19 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
             },
         ]
     }
+
+
+@pytest.fixture
+def samples_in_cherrytrack(app, source_barcode):
+    samples = rows_for_samples_in_cherrytrack(source_barcode)
+
+    with app.app_context():
+        samples_collection = app.data.driver.db.samples
+        inserted_samples = samples_collection.insert_many(samples)
+
+    #  yield a copy of so that the test change it however it wants
+    yield copy.deepcopy(samples), inserted_samples
+
+    # clear up after the fixture is used
+    with app.app_context():
+        samples_collection.delete_many({})
