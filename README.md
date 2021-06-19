@@ -155,17 +155,25 @@ A wrapper is provided with pipenv (look in the Pipfile's `[scripts]` block for m
 
 ### Running tests with docker
 
-If you are unable to run tests locally because of `pyodbc` you can use the Docker Compose:
+If you are unable to run tests locally (because of `pyodbc` or other issues) then you can use the Docker Compose:
 
         docker compose up
+
+Then in another terminal to get the container id:
+        docker ps
 
 You will then need to setup the MSSQL with:
 
         docker exec -ti <container_id for lighthouse> python ./setup_sqlserver_test_db.py
 
-You can then run the tests (with hot reloading) using:
+And the unified warehouse with:
 
-        docker exec -ti <container_id> python -m pytest -vs
+        docker exec -ti <container_id for lighthouse> python ./setup_test_db.py
+
+You can then run the tests inside the container:
+        docker exec -ti <container_id> bash
+        pipenv shell
+        python -m pytest
 
 ## Deployment
 
