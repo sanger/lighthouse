@@ -72,6 +72,18 @@ class TestEventPropertyAbstract:
         assert test.validate() is False
         assert test.errors == ["Unexpected exception while trying to validate This is an error"]
 
+    def test_retrieval_scope_can_raise_and_log_errors(self):
+        test = DummyEventProperty({})
+        mocking = MagicMock()
+        try:
+            with test.retrieval_scope():
+                raise Exception("This is an error")
+        except Exception:
+            mocking()
+        mocking.assert_called_once()
+        assert test.validate() is False
+        assert test.errors == ["Exception during retrieval: This is an error"]
+
     def test_can_call_other_methods(self):
         test = DummyEventProperty({})
         try:

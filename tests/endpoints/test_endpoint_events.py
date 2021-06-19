@@ -210,6 +210,8 @@ def test_post_event_partially_completed_with_validation_error_after_storing_in_m
                 # And it has errors
                 assert event[FIELD_EVENT_ERRORS] == {
                     "plate_barcode": ["'barcode' should not contain any whitespaces"],
-                    "user_id": ["'user_id' should not contain any whitespaces"],
                     "robot_serial_number": ["'robot' should not contain any whitespaces"],
+                    "source_plate_uuid": ["'barcode' should not contain any whitespaces"],
+                    "picked_samples_from_source": ["'barcode' should not contain any whitespaces"],
+                    "robot_uuid": ["'robot' should not contain any whitespaces"],
                 }
