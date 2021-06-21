@@ -41,7 +41,7 @@ class SourceNoPlateMapData(PlateEvent):
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
 
-        for key in ["user_id", "robot_uuid", "barcode_no_plate_map_data"]:
+        for key in ["user_id", "robot_uuid", "barcode_no_plate_map_data", "run_info"]:
             self.properties[key].add_to_warehouse_message(message)
 
         return message.render()

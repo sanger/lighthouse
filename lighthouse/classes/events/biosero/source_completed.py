@@ -45,7 +45,7 @@ class SourceCompleted(PlateEvent):
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
 
-        for key in ["picked_samples_from_source", "source_plate_uuid", "user_id", "robot_uuid"]:
+        for key in ["picked_samples_from_source", "source_plate_uuid", "user_id", "robot_uuid", "run_info"]:
             self.properties[key].add_to_warehouse_message(message)
 
         return message.render()

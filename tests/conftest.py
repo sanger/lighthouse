@@ -553,7 +553,7 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
                 "control": True,
                 "control_barcode": "aControlBarcode2",
                 "control_coordinate": "A2",
-                "lab_id": "aLabId1",
+                "lab_id": "aLabId2",
                 "picked": False,
                 "rna_id": "aRNAId2",
                 "robot_barcode": "aRobotBarcode",

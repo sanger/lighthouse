@@ -186,7 +186,7 @@ def rows_for_samples_in_cherrytrack(source_barcode):
         },
         {
             FIELD_COORDINATE: "B02",
-            FIELD_SOURCE: "aLabId1",
+            FIELD_SOURCE: "aLabId2",
             FIELD_RESULT: "Positive",
             FIELD_PLATE_BARCODE: source_barcode,
             FIELD_ROOT_SAMPLE_ID: "aRootSampleId2",
@@ -194,7 +194,7 @@ def rows_for_samples_in_cherrytrack(source_barcode):
             FIELD_LH_SAMPLE_UUID: "aLighthouseUUID2",
             FIELD_DATE_TESTED: DATE_TESTED_NOW,
             FIELD_FILTERED_POSITIVE: True,
-            FIELD_LAB_ID: "aLabId1",
+            FIELD_LAB_ID: "aLabId2",
         },
         {
             FIELD_COORDINATE: "B03",

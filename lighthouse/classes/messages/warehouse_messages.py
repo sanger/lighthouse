@@ -21,6 +21,8 @@ ROLE_TYPE_CP_SOURCE_LABWARE = "cherrypicking_source_labware"
 SUBJECT_TYPE_SAMPLE = ROLE_TYPE_SAMPLE
 SUBJECT_TYPE_ROBOT = ROLE_TYPE_ROBOT
 SUBJECT_TYPE_PLATE = "plate"
+ROLE_TYPE_RUN = "run"
+SUBJECT_TYPE_RUN = "run"
 
 
 class WarehouseMessage:

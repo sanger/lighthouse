@@ -11,7 +11,9 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     PickedSamplesFromSource,
     SourcePlateUUID,
     BarcodeNoPlateMapData,
+    AllSamplesFromSource,
 )
+from unittest.mock import MagicMock, PropertyMock
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from lighthouse.constants.fields import (
     FIELD_EVENT_RUN_ID,
@@ -88,9 +90,6 @@ def test_add_to_warehouse(app, params):
             klass({field: valid}).add_to_warehouse_message(message)
         except Exception:
             pytest.fail("Error while adding to message ..")
-
-
-
 
 
 def test_robot_uuid_new(app):
@@ -256,6 +255,45 @@ def test_picked_samples_from_source_value_unsuccessful(
         assert "Response from Cherrytrack is not OK: Failed to get samples for the given source plate barcode." == str(
             myExc.value  # type: ignore
         )
+
+
+@pytest.mark.parametrize("source_barcode", ["DS000050001"])
+def test_all_samples_successful(
+    app,
+    source_barcode,
+    samples_in_cherrytrack,
+):
+    with app.app_context():
+        val = AllSamplesFromSource(
+            PlateBarcode({FIELD_EVENT_BARCODE: source_barcode})
+        ).value
+        samples, _ = samples_in_cherrytrack
+
+        for elem in val:
+            del elem["_id"]
+            del elem["Date Tested"]
+        for elem in samples:
+            del elem["_id"]
+            del elem["Date Tested"]
+
+        assert val == samples
+
+
+@pytest.mark.parametrize("source_barcode", ["aUnknownBarcode"])
+def test_all_samples_unsuccessful(
+    app, source_barcode
+):
+    with app.app_context():
+        myExc = None
+        obj = MagicMock()
+        obj.validate.return_value = True
+        type(obj).value = PropertyMock(side_effect=Exception('boom!'))
+        try:
+            AllSamplesFromSource(obj).value
+        except Exception as exc:
+            myExc = exc
+
+        assert "boom!" == str(myExc)  # type: ignore
 
 
 def test_source_plate_uuid_new(app, source_plates):

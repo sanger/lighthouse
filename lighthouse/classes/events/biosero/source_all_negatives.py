@@ -11,6 +11,7 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     PlateBarcode,
     RunID,
     RobotSerialNumber,
+    AllSamplesFromSource,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,11 +38,12 @@ class SourceAllNegatives(PlateEvent):
         self.properties["source_plate_uuid"] = SourcePlateUUID(self.properties["plate_barcode"])
         self.properties["robot_serial_number"] = RobotSerialNumber(params)
         self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
+        self.properties["all_samples"] = AllSamplesFromSource(self.properties["plate_barcode"])
 
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
 
-        for key in ["source_plate_uuid", "user_id", "robot_uuid"]:
+        for key in ["all_samples", "source_plate_uuid", "user_id", "robot_uuid", "run_info"]:
             self.properties[key].add_to_warehouse_message(message)
 
         return message.render()

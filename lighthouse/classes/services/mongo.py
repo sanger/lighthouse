@@ -1,5 +1,5 @@
 from flask import current_app as app
-from lighthouse.constants.fields import FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUID, FIELD_LH_SAMPLE_UUID
+from lighthouse.constants.fields import FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUID, FIELD_LH_SAMPLE_UUID, FIELD_PLATE_BARCODE
 
 
 class ServiceMongoMixin:
@@ -26,3 +26,10 @@ class ServiceMongoMixin:
             if plate is None:
                 raise Exception(f"Source plate with barcode {barcode} not found")
             return plate[FIELD_LH_SOURCE_PLATE_UUID]
+
+    def get_samples_from_mongo_for_barcode(self, barcode):
+        samples_collection = app.data.driver.db.samples  # type: ignore
+
+        samples = list(samples_collection.find({FIELD_PLATE_BARCODE: barcode}))
+
+        return samples

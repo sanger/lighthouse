@@ -16,27 +16,9 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-# Event source partially completed
-
-
-def test_post_event_no_plate_map_data_missing_barcode(app, client, biosero_auth_headers, clear_events_when_finish):
-    with app.app_context():
-        response = client.post(
-            "/events",
-            data={
-                "automation_system_run_id": 123,
-                "event_type": "lh_biosero_cp_source_no_plate_map_data",
-                "user_id": "user1",
-                "robot": "roboto",
-            },
-            headers=biosero_auth_headers,
-        )
-
-        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-
 
 @pytest.mark.parametrize("run_id", [3])
-def test_post_event_no_plate_map_data(
+def test_post_event_source_unrecognised(
     app,
     client,
     biosero_auth_headers,
@@ -62,8 +44,7 @@ def test_post_event_no_plate_map_data(
                         "/events",
                         data={
                             "automation_system_run_id": 3,
-                            "barcode": "plate_123",
-                            "event_type": "lh_biosero_cp_source_no_plate_map_data",
+                            "event_type": "lh_biosero_cp_source_plate_unrecognised",
                             "user_id": "user1",
                             "robot": "BHRB0001",
                         },
@@ -75,17 +56,17 @@ def test_post_event_no_plate_map_data(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key="test.event.lh_biosero_cp_source_no_plate_map_data",
+                        routing_key="test.event.lh_biosero_cp_source_plate_unrecognised",
                         body='{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (
-                            '", "event_type": "lh_biosero_cp_source_no_plate_map_data", '
+                            '", "event_type": "lh_biosero_cp_source_plate_unrecognised", '
                             '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                             '[{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
                             '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
                             '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
                             '"uuid": "' + int_to_uuid(2) + '"}], '
-                            '"metadata": {"source_plate_barcode": "plate_123"}}, "lims": "LH_TEST"}'
+                            '"metadata": {}}, "lims": "LH_TEST"}'
                         ),
                     )
 
@@ -97,7 +78,7 @@ def test_post_event_no_plate_map_data(
                     assert event[FIELD_EVENT_ERRORS] is None
 
 
-def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mongo(
+def test_post_event_source_unrecognised_with_validation_error_after_storing_in_mongo(
     app, client, biosero_auth_headers, clear_events_when_finish, mocked_rabbit_channel
 ):
     with app.app_context():
@@ -113,8 +94,7 @@ def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mon
                     "/events",
                     data={
                         "automation_system_run_id": 3,
-                        "barcode": "a Barcode",
-                        "event_type": "lh_biosero_cp_source_no_plate_map_data",
+                        "event_type": "lh_biosero_cp_source_plate_unrecognised",
                         "user_id": "us  er1",
                         "robot": "BHR  B0001",
                     },
@@ -133,7 +113,6 @@ def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mon
 
                 # And it has errors
                 assert event[FIELD_EVENT_ERRORS] == {
-                    "plate_barcode": ["'barcode' should not contain any whitespaces"],
                     "robot_serial_number": ["'robot' should not contain any whitespaces"],
                     "robot_uuid": ["'robot' should not contain any whitespaces"],
                 }

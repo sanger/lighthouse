@@ -4,6 +4,8 @@ from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
     SUBJECT_TYPE_PLATE,
     ROLE_TYPE_ROBOT,
     SUBJECT_TYPE_ROBOT,
+    ROLE_TYPE_RUN,
+    SUBJECT_TYPE_RUN,
 )
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError  # type: ignore
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin  # type: ignore
@@ -73,8 +75,16 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
         with self.retrieval_scope():
             return self.get_run_info(self.run_id_property.value)
 
+    @property
+    def run_id(self):
+        return self.value['id']
+
     def add_to_warehouse_message(self, message):
-        return None
+        message.add_subject(
+            role_type=ROLE_TYPE_RUN,
+            subject_type=SUBJECT_TYPE_RUN,
+            friendly_name=self.run_id,
+        )
 
 
 class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, ServiceMongoMixin):
@@ -106,6 +116,29 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, Se
             ]
             val: List[Dict[str, Any]] = list(self.get_samples_from_mongo(sample_uuids))
             return val
+
+    def add_to_warehouse_message(self, message):
+        for sample in self.value:
+            message.add_sample_as_subject(sample)
+
+
+class AllSamplesFromSource(EventPropertyAbstract, ServiceMongoMixin):
+    def __init__(self, barcode_property: PlateBarcode):
+        self.reset()
+        self.barcode_property = barcode_property
+
+    def validate(self):
+        return self.barcode_property.validate()
+
+    @property
+    def errors(self) -> List[str]:
+        self.validate()
+        return self._errors + self.barcode_property.errors  # type: ignore
+
+    @cached_property
+    def value(self):
+        with self.retrieval_scope():
+            return self.get_samples_from_mongo_for_barcode(self.barcode_property.value)
 
     def add_to_warehouse_message(self, message):
         for sample in self.value:
@@ -210,6 +243,8 @@ class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
             friendly_name=self.barcode_property.value,
             uuid=self.value,
         )
+
+
 
 
 class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
