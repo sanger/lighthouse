@@ -47,10 +47,10 @@ def test_construct_event_message(app):
         message = WarehouseMessage("mytype", "myuuid", "at some point")
 
         with pytest.raises(Exception):
-            message.construct_event_message("myuuid", "some date", [])
+            message.construct_event_message("myuuid", "some date", [{'data': 'data2'}], {'test': 'test2'})
 
         message.set_user_id("my user")
-        msg = message.construct_event_message("myuuid", "some date", [])
+        msg = message.construct_event_message("myuuid", "some date", [{'data': 'data2'}], {'test': 'test2'})
 
         assert msg == {
             "event": {
@@ -58,8 +58,8 @@ def test_construct_event_message(app):
                 "event_type": "mytype",
                 "occured_at": "some date",
                 "user_identifier": "my user",
-                "subjects": [],
-                "metadata": {},
+                "subjects": [{'data': 'data2'}],
+                "metadata": {'test': 'test2'},
             },
             "lims": app.config["RMQ_LIMS_ID"],
         }
@@ -77,6 +77,13 @@ def test_add_sample_as_subject(samples):
             "uuid": "0a53e7b6-7ce8-4ebc-95c3-02dd64942531",
         }
     ]
+
+
+def test_add_metadata(app):
+    message = WarehouseMessage("mytype", "myuuid", "at some point")
+    message.add_metadata('myrobot', 'robot1')
+    message.add_metadata('myotherrobot', 'robot2')
+    assert message._metadata == {'myrobot': 'robot1', 'myotherrobot': 'robot2'}
 
 
 def test_render(app):

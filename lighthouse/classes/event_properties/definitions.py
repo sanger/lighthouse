@@ -52,8 +52,7 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_BARCODE)
 
     def add_to_warehouse_message(self, message):
-        for sample in self.value:
-            message.add_sample_as_subject(sample)
+        return None
 
 
 class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
@@ -211,3 +210,18 @@ class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
             friendly_name=self.barcode_property.value,
             uuid=self.value,
         )
+
+
+class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
+    def validate(self):
+        self.validate_param_not_missing(FIELD_EVENT_BARCODE)
+        return self._validate
+
+    @cached_property
+    def value(self):
+        with self.retrieval_scope():
+            return self._params.get(FIELD_EVENT_BARCODE)
+
+    def add_to_warehouse_message(self, message):
+        message.add_metadata('source_plate_barcode', self.value)
+

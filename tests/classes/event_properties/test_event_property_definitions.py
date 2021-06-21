@@ -10,7 +10,9 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     PlateBarcode,
     PickedSamplesFromSource,
     SourcePlateUUID,
+    BarcodeNoPlateMapData,
 )
+from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from lighthouse.constants.fields import (
     FIELD_EVENT_RUN_ID,
     FIELD_EVENT_ROBOT,
@@ -25,6 +27,7 @@ SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS = [
     [PlateBarcode, FIELD_EVENT_BARCODE, ["AA1234"], [None, "AA 1234", ""]],
     [UserID, FIELD_EVENT_USER_ID, ["user1", "user 1"], [None, ""]],
     [RobotSerialNumber, FIELD_EVENT_ROBOT, ["1234"], ["12 34", None, ""]],
+    [BarcodeNoPlateMapData, FIELD_EVENT_BARCODE, ["AA1234", "", "something dodgy"], [None]],
 ]
 
 
@@ -73,6 +76,21 @@ def test_errors_for_simple_event_property(app, params):
 
     for valid in valid_list:
         assert len(klass({field: valid}).errors) == 0
+
+
+@pytest.mark.parametrize("params", SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS)
+def test_add_to_warehouse(app, params):
+    klass, field, valid_list, invalid_list = params
+
+    for valid in valid_list:
+        message = WarehouseMessage("mytype", "myuuid", "at some point")
+        try:
+            klass({field: valid}).add_to_warehouse_message(message)
+        except Exception:
+            pytest.fail("Error while adding to message ..")
+
+
+
 
 
 def test_robot_uuid_new(app):
@@ -284,3 +302,5 @@ def test_source_plate_uuid_errors(app, source_plates):
             source_plate_property.value
 
         assert len(source_plate_property.errors) > 0
+
+

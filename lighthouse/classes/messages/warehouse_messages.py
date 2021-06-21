@@ -1,7 +1,7 @@
 from lighthouse.messages.message import Message
 from lighthouse.types import Subject, EventMessage
 from uuid import uuid4
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from flask import current_app as app
 from lighthouse.constants.fields import (
     FIELD_LAB_ID,
@@ -29,6 +29,7 @@ class WarehouseMessage:
         self._event_uuid = event_uuid
         self._occured_at = occured_at
         self._subjects = []
+        self._metadata = {}
         self._user_id = None
 
     def set_user_id(self, user_id: str) -> None:
@@ -39,6 +40,7 @@ class WarehouseMessage:
             event_uuid=self._event_uuid,
             occured_at=self._occured_at,
             subjects=self._subjects,
+            metadata=self._metadata,
         )
 
         return Message(message_content)
@@ -59,7 +61,10 @@ class WarehouseMessage:
         )
         return self._subjects
 
-    def construct_event_message(self, event_uuid: str, occured_at: str, subjects: List[Subject]) -> EventMessage:
+    def construct_event_message(
+        self, event_uuid: str, occured_at: str, subjects: List[Subject],
+        metadata: Dict[str, str]
+    ) -> EventMessage:
         if self._user_id is None:
             raise Exception("User id needs to be defined to generate a new event message")
 
@@ -70,7 +75,7 @@ class WarehouseMessage:
                 "occured_at": occured_at,
                 "user_identifier": self._user_id,
                 "subjects": subjects,
-                "metadata": {},
+                "metadata": metadata,
             },
             "lims": app.config["RMQ_LIMS_ID"],
         }
@@ -96,3 +101,6 @@ class WarehouseMessage:
             friendly_name=friendly_name,
             uuid=sample[FIELD_LH_SAMPLE_UUID],
         )
+
+    def add_metadata(self, name, value):
+        self._metadata[name] = value
