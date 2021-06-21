@@ -16,29 +16,6 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-def test_post_unauthenticated(app, client, clear_events_when_finish):
-    with app.app_context():
-        response = client.post("/events", data={})
-
-        assert response.status_code == HTTPStatus.UNAUTHORIZED
-
-
-def test_post_unrecognised_event_type(app, client, biosero_auth_headers, clear_events_when_finish):
-    with app.app_context():
-        response = client.post(
-            "/events",
-            data={
-                "automation_system_run_id": 123,
-                "barcode": "plate_barcode_123",
-                "event_type": "COFFEE_MACHINE_BROKEN",
-                "user_id": "user1",
-                "robot": "roboto",
-            },
-            headers=biosero_auth_headers,
-        )
-
-        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-
 
 # Event source partially completed
 
@@ -70,58 +47,65 @@ def test_post_event_partially_completed(
     source_plates,
     run_id,
     mocked_responses,
+    cherrytrack_mock_run_info,
     cherrytrack_mock_source_plates,
     samples_in_cherrytrack,
 ):
     with app.app_context():
         with patch(
             "lighthouse.hooks.events.uuid4",
-            side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
+            side_effect=[int_to_uuid(1)],
         ):
-            with patch(
-                "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
-                "mytime",
-            ):
-                response = client.post(
-                    "/events",
-                    data={
-                        "automation_system_run_id": 3,
-                        "barcode": "plate_123",
-                        "event_type": "lh_biosero_cp_source_partial",
-                        "user_id": "user1",
-                        "robot": "BHRB0001",
-                    },
-                    headers=biosero_auth_headers,
-                )
+            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[
+                int_to_uuid(2)
+            ]):
+                with patch(
+                    "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
+                    "mytime",
+                ):
+                    response = client.post(
+                        "/events",
+                        data={
+                            "automation_system_run_id": 3,
+                            "barcode": "plate_123",
+                            "event_type": "lh_biosero_cp_source_partial",
+                            "user_id": "user1",
+                            "robot": "BHRB0001",
+                        },
+                        headers=biosero_auth_headers,
+                    )
 
-                # Test creates the event
-                assert response.status_code == HTTPStatus.CREATED
+                    # Test creates the event
+                    assert response.status_code == HTTPStatus.CREATED
 
-                mocked_rabbit_channel.basic_publish.assert_called_with(
-                    exchange="lighthouse.test.examples",
-                    routing_key="test.event.lh_biosero_cp_source_partial",
-                    body='{"event": {"uuid": "'
-                    + int_to_uuid(1)
-                    + (
-                        '", "event_type": "lh_biosero_cp_source_partial", '
-                        '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
-                        '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
-                        '"aRootSampleId1__aRNAId1__aLabId1__Positive", "uuid": "aLighthouseUUID1"}, '
-                        '{"role_type": "sample", "subject_type": "sample", "friendly_name": '
-                        '"aRootSampleId3__aRNAId3__aLabId3__Positive", "uuid": "aLighthouseUUID3"}, '
-                        '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
-                        '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
-                        '{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
-                        '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}], "metadata": {}}, "lims": "LH_TEST"}'
-                    ),
-                )
+                    mocked_rabbit_channel.basic_publish.assert_called_with(
+                        exchange="lighthouse.test.examples",
+                        routing_key="test.event.lh_biosero_cp_source_partial",
+                        body='{"event": {"uuid": "'
+                        + int_to_uuid(1)
+                        + (
+                            '", "event_type": "lh_biosero_cp_source_partial", '
+                            '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
+                            '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
+                            '"aRootSampleId1__aRNAId1__aLabId1__Positive", "uuid": "aLighthouseUUID1"}, '
+                            '{"role_type": "sample", "subject_type": "sample", "friendly_name": '
+                            '"aRootSampleId3__aRNAId3__aLabId3__Positive", "uuid": "aLighthouseUUID3"}, '
+                            '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
+                            '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
+                            '{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
+                            '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
+                            '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
+                            '"uuid": "' + int_to_uuid(2) + '"}'
+                            '], "metadata": {}}, "lims": "LH_TEST"}'
+                        ),
+                    )
 
-                # The record is there
-                event = get_event_with_uuid(int_to_uuid(1))
-                assert event is not None
+                    # The record is there
+                    event = get_event_with_uuid(int_to_uuid(1))
+                    assert event is not None
 
-                # And it does not have errors
-                assert event[FIELD_EVENT_ERRORS] is None
+                    # And it does not have errors
+                    assert event[FIELD_EVENT_ERRORS] is None
 
 
 @pytest.mark.parametrize("run_id", [3])
