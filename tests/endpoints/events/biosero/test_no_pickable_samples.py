@@ -17,8 +17,7 @@ def int_to_uuid(value: int) -> str:
 
 
 def test_post_event_source_no_pickable_samples_missing_barcode(
-    app, client, biosero_auth_headers,
-    clear_events_when_finish
+    app, client, biosero_auth_headers, clear_events_when_finish
 ):
     with app.app_context():
         response = client.post(
@@ -54,9 +53,7 @@ def test_post_event_source_no_pickable_samples(
             "lighthouse.hooks.events.uuid4",
             side_effect=[int_to_uuid(1)],
         ):
-            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[
-                int_to_uuid(2)
-            ]):
+            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[int_to_uuid(2)]):
 
                 with patch(
                     "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
@@ -123,7 +120,7 @@ def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_
     clear_events_when_finish,
     mocked_rabbit_channel,
     mocked_responses,
-    cherrytrack_mock_run_info
+    cherrytrack_mock_run_info,
 ):
     with app.app_context():
         with patch(

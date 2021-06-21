@@ -14,7 +14,7 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     AllSamplesFromSource,
 )
 from unittest.mock import MagicMock, PropertyMock
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
+from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type:ignore
 from lighthouse.constants.fields import (
     FIELD_EVENT_RUN_ID,
     FIELD_EVENT_ROBOT,
@@ -264,9 +264,7 @@ def test_all_samples_successful(
     samples_in_cherrytrack,
 ):
     with app.app_context():
-        val = AllSamplesFromSource(
-            PlateBarcode({FIELD_EVENT_BARCODE: source_barcode})
-        ).value
+        val = AllSamplesFromSource(PlateBarcode({FIELD_EVENT_BARCODE: source_barcode})).value
         samples, _ = samples_in_cherrytrack
 
         for elem in val:
@@ -280,20 +278,18 @@ def test_all_samples_successful(
 
 
 @pytest.mark.parametrize("source_barcode", ["aUnknownBarcode"])
-def test_all_samples_unsuccessful(
-    app, source_barcode
-):
+def test_all_samples_unsuccessful(app, source_barcode):
     with app.app_context():
         myExc = None
         obj = MagicMock()
         obj.validate.return_value = True
-        type(obj).value = PropertyMock(side_effect=Exception('boom!'))
+        type(obj).value = PropertyMock(side_effect=Exception("boom!"))
         try:
             AllSamplesFromSource(obj).value
         except Exception as exc:
             myExc = exc
 
-        assert "boom!" == str(myExc)  # type: ignore
+        assert "boom!" == str(myExc)
 
 
 def test_source_plate_uuid_new(app, source_plates):
@@ -340,5 +336,3 @@ def test_source_plate_uuid_errors(app, source_plates):
             source_plate_property.value
 
         assert len(source_plate_property.errors) > 0
-
-

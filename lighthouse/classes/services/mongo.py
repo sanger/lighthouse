@@ -1,5 +1,10 @@
 from flask import current_app as app
-from lighthouse.constants.fields import FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUID, FIELD_LH_SAMPLE_UUID, FIELD_PLATE_BARCODE
+from lighthouse.constants.fields import (
+    FIELD_BARCODE,
+    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_LH_SAMPLE_UUID,
+    FIELD_PLATE_BARCODE,
+)
 
 
 class ServiceMongoMixin:

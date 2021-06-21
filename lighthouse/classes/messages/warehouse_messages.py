@@ -64,8 +64,7 @@ class WarehouseMessage:
         return self._subjects
 
     def construct_event_message(
-        self, event_uuid: str, occured_at: str, subjects: List[Subject],
-        metadata: Dict[str, str]
+        self, event_uuid: str, occured_at: str, subjects: List[Subject], metadata: Dict[str, str]
     ) -> EventMessage:
         if self._user_id is None:
             raise Exception("User id needs to be defined to generate a new event message")

@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+
 def test_post_unauthenticated(app, client, clear_events_when_finish):
     with app.app_context():
         response = client.post("/events", data={})
@@ -22,4 +23,3 @@ def test_post_unrecognised_event_type(app, client, biosero_auth_headers, clear_e
         )
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-

@@ -16,7 +16,6 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-
 @pytest.mark.parametrize("run_id", [3])
 def test_post_event_source_unrecognised(
     app,
@@ -29,13 +28,8 @@ def test_post_event_source_unrecognised(
     cherrytrack_mock_run_info,
 ):
     with app.app_context():
-        with patch(
-            "lighthouse.hooks.events.uuid4",
-            return_value=int_to_uuid(1)
-        ):
-            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[
-                int_to_uuid(2)
-            ]):
+        with patch("lighthouse.hooks.events.uuid4", return_value=int_to_uuid(1)):
+            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[int_to_uuid(2)]):
                 with patch(
                     "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
                     "mytime",

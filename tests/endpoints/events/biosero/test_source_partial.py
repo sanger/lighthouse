@@ -16,7 +16,6 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-
 # Event source partially completed
 
 
@@ -56,9 +55,7 @@ def test_post_event_partially_completed(
             "lighthouse.hooks.events.uuid4",
             side_effect=[int_to_uuid(1)],
         ):
-            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[
-                int_to_uuid(2)
-            ]):
+            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[int_to_uuid(2)]):
                 with patch(
                     "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
                     "mytime",

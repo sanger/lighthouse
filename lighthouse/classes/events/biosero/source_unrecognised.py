@@ -6,10 +6,8 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     RobotUUID,
     RunInfo,
     UserID,
-    PlateBarcode,
     RunID,
     RobotSerialNumber,
-    BarcodeNoPlateMapData,
 )
 
 

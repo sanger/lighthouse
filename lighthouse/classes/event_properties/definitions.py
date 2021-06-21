@@ -77,7 +77,7 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
 
     @property
     def run_id(self):
-        return self.value['id']
+        return self.value["id"]
 
     def add_to_warehouse_message(self, message):
         message.add_subject(
@@ -245,8 +245,6 @@ class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
         )
 
 
-
-
 class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
     def validate(self):
         self.validate_param_not_missing(FIELD_EVENT_BARCODE)
@@ -258,5 +256,4 @@ class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_BARCODE)
 
     def add_to_warehouse_message(self, message):
-        message.add_metadata('source_plate_barcode', self.value)
-
+        message.add_metadata("source_plate_barcode", self.value)

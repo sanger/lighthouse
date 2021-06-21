@@ -2,16 +2,29 @@ import logging
 from typing import Dict, Any
 
 from lighthouse.classes.plate_event import PlateEvent
-from lighthouse.classes.event_properties.definitions import (  # type: ignore
-    PickedSamplesFromSource,
-    RobotUUID,
-    RunInfo,
-    DestinationPlateBarcode,
-    UserID,
-    PlateBarcode,
-    RunID,
-    RobotSerialNumber,
-)
+
+
+# TODO: The commented code in this class is one option of doing it
+# that will require create:
+# - SequencescapeMessage (./messages)
+# - DestinationPlateBarcode (./event_properties)
+# - Wells (./event_properties)
+# - Samples (./event_properties)
+# - Controls (./event_properties)
+# << BEGIN >>
+# from lighthouse.classes.event_properties.definitions import (  # type: ignore
+#     RobotUUID,
+#     RunInfo,
+#     Wells
+#     Samples
+#     Controls
+#     DestinationPlateBarcode,
+#     UserID,
+#     PlateBarcode,
+#     RunID,
+#     RobotSerialNumber,
+# )
+# << END >>
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +36,7 @@ class DestinationCreated(PlateEvent):
 
     def initialize_event(self, params: Dict[str, str]) -> None:
         super().initialize_event(params=params)
-        # TODO: The commented code in this class is one option of doing it
-        # that will require create:
-        # - SequencescapeMessage
-        # - DestinationPlateBarcode
-        # - Wells
-        # - Samples
-        # - Controls
+        # << BEGIN >>
         # self._event_type = params["event_type"]
 
         # self.properties["plate_barcode"] = PlateBarcode(params)
@@ -50,8 +57,11 @@ class DestinationCreated(PlateEvent):
         # self.properties["controls"] = Controls(self.properties["wells"])
         # self.properties["robot_serial_number"] = RobotSerialNumber(params)
         # self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
+        # << END >>
+        ...
 
     def _create_message(self) -> Any:
+        # << BEGIN >>
         # message = self.build_new_warehouse_message()
         # ss_message = self.build_new_sequencescape_message()
 
@@ -63,3 +73,5 @@ class DestinationCreated(PlateEvent):
 
         # ss_message.add_warehouse_message(message)
         # return ss_message.render()
+        # << END >>
+        ...
