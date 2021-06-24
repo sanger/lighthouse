@@ -4,11 +4,11 @@ from typing import Any, Dict, Union, List
 
 
 from lighthouse.messages.message import Message
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type: ignore
+from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 
-from lighthouse.classes.services.warehouse import ServiceWarehouseMixin  # type: ignore
+from lighthouse.classes.services.warehouse import ServiceWarehouseMixin
 from lighthouse.helpers.mongo import set_errors_to_event
-from lighthouse.classes.event_properties.interfaces import EventPropertyInterface  # type: ignore
+from lighthouse.classes.event_properties.interfaces import EventPropertyInterface
 import logging
 
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
         self.properties: Dict[str, EventPropertyInterface] = {}
         self._validation: bool = True
 
-    def initialize_event(self, params: Dict[str, Union[str, Any]]) -> None:
+    def initialize_event(self, params: Dict[str, Any]) -> None:
         """
         Initialize the event by parsing the event params.
         Stores the uuid and creation timestamp in properties; if any of them
@@ -107,7 +107,7 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
 
         self._state = EVENT_INITIALIZED
         self._event_uuid: str = params["event_wh_uuid"]
-        self._message_timestamp: str = params["_created"].isoformat(timespec="seconds")  # type: ignore
+        self._message_timestamp: str = params["_created"].isoformat(timespec="seconds")
 
     @abstractmethod
     def _create_message(self) -> Message:
@@ -193,10 +193,10 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
         """
         error_message = {}
         for event_property_name in self.properties.keys():
-            if len(self.properties[event_property_name].errors) > 0:
+            if len(self.properties[event_property_name].errors) > 0:  # type: ignore
                 error_message[event_property_name] = self.properties[event_property_name].errors
 
-        return error_message
+        return error_message  # type: ignore
 
     def validate(self) -> bool:
         """

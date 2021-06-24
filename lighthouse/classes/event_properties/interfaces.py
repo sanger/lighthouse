@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Dict
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type: ignore
+from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from contextlib import contextmanager
 
 import logging

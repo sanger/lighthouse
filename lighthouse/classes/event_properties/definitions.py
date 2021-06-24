@@ -1,5 +1,5 @@
 from functools import cached_property
-from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
+from lighthouse.classes.messages.warehouse_messages import (
     ROLE_TYPE_CP_SOURCE_LABWARE,
     SUBJECT_TYPE_PLATE,
     ROLE_TYPE_ROBOT,
@@ -7,26 +7,29 @@ from lighthouse.classes.messages.warehouse_messages import (  # type: ignore
     ROLE_TYPE_RUN,
     SUBJECT_TYPE_RUN,
 )
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError  # type: ignore
-from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin  # type: ignore
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
+from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
 from typing import Any, List, Dict
-from lighthouse.classes.services.cherrytrack import ServiceCherrytrackMixin  # type: ignore
-from lighthouse.classes.services.mongo import ServiceMongoMixin  # type: ignore
+from lighthouse.classes.services.cherrytrack import ServiceCherrytrackMixin
+from lighthouse.classes.services.mongo import ServiceMongoMixin
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_LH_SAMPLE_UUID,
     FIELD_EVENT_RUN_ID,
     FIELD_EVENT_ROBOT,
     FIELD_EVENT_USER_ID,
     FIELD_EVENT_BARCODE,
-
-    FIELD_SS_NAME, FIELD_RNA_ID,
-    FIELD_SS_SAMPLE_DESCRIPTION, FIELD_ROOT_SAMPLE_ID,
-    FIELD_SS_SUPPLIER_NAME, FIELD_COG_BARCODE,
-    FIELD_SS_PHENOTYPE, FIELD_RESULT,
-    FIELD_SS_UUID, FIELD_LH_SAMPLE_UUID,
+    FIELD_SS_NAME,
+    FIELD_RNA_ID,
+    FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SS_SUPPLIER_NAME,
+    FIELD_COG_BARCODE,
+    FIELD_SS_PHENOTYPE,
+    FIELD_RESULT,
+    FIELD_SS_UUID,
+    FIELD_LH_SAMPLE_UUID,
     FIELD_SS_CONTROL,
     FIELD_SS_CONTROL_TYPE,
-
     FIELD_CHERRYTRACK_CONTROL,
     FIELD_CHERRYTRACK_CONTROL_BARCODE,
     FIELD_CHERRYTRACK_CONTROL_COORDINATE,
@@ -72,7 +75,7 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
     def add_to_warehouse_message(self, message):
         return None
 
-    def add_to_sequencescape(message):
+    def add_to_sequencescape(self, message):
         message.add_barcode(self.value)
 
 
@@ -87,7 +90,7 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
     @property
     def errors(self) -> List[str]:
         self.validate()
-        return self._errors + self.run_id_property.errors  # type: ignore
+        return self._errors + self.run_id_property.errors
 
     @cached_property
     def value(self):
@@ -118,15 +121,15 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, Se
     @property
     def errors(self) -> List[str]:
         self.validate()
-        return self._errors + self.barcode_property.errors + self.run_id_property.errors  # type: ignore
+        return self._errors + self.barcode_property.errors + self.run_id_property.errors
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            sample_uuids: List[str] = [  # type: ignore
+            sample_uuids: List[str] = [
                 sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID]
                 for sample in filter(
-                    lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,  # type: ignore
+                    lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,
                     filter(
                         self.filter_pickable_samples,
                         self.get_samples_from_source_plates(self.barcode_property.value),
@@ -152,7 +155,7 @@ class AllSamplesFromSource(EventPropertyAbstract, ServiceMongoMixin):
     @property
     def errors(self) -> List[str]:
         self.validate()
-        return self._errors + self.barcode_property.errors  # type: ignore
+        return self._errors + self.barcode_property.errors
 
     @cached_property
     def value(self):
@@ -209,7 +212,7 @@ class RobotUUID(EventPropertyAbstract, ServiceCherrytrackMixin):
     @property
     def errors(self) -> List[str]:
         self.validate()
-        return self._errors + self.robot_serial_number_property.errors  # type: ignore
+        return self._errors + self.robot_serial_number_property.errors
 
     @cached_property
     def value(self):
@@ -245,7 +248,7 @@ class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
     @property
     def errors(self) -> List[str]:
         self.validate()
-        return self._errors + self.barcode_property.errors  # type: ignore
+        return self._errors + self.barcode_property.errors
 
     @cached_property
     def value(self):
@@ -287,15 +290,15 @@ class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackM
         return self.barcode_property.validate() and (len(self._errors) == 0)
 
     def _validate_destination_coordinate_not_duplicated(self, wells):
-        coordinates = [well['destination_coordinate'] for well in wells]
+        coordinates = [well["destination_coordinate"] for well in wells]
         duplicates = set([coor for coor in coordinates if coordinates.count(coor) > 1])
         if len(duplicates) > 0:
-            raise RetrievalError(f'Some coordinates have clashing samples/controls: { duplicates }')
+            raise RetrievalError(f"Some coordinates have clashing samples/controls: { duplicates }")
 
     @property
     def errors(self) -> List[str]:
         self.validate()
-        return self._errors + self.barcode_property.errors  # type: ignore
+        return self._errors + self.barcode_property.errors
 
     @cached_property
     def value(self):
@@ -319,36 +322,36 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     @property
     def errors(self) -> List[str]:
         self.validate()
-        return self._errors + self.cherrytrack_wells_from_destination.errors  # type: ignore
+        return self._errors + self.cherrytrack_wells_from_destination.errors
 
     def _well_samples(self):
         val = []
         for sample in self.cherrytrack_wells_from_destination.value:
-            if sample['type'] == 'sample':
+            if sample["type"] == "sample":
                 val.append(sample)
         return val
 
     def _validate_no_duplicate_uuids(self, uuids):
         duplicates = set([uuid for uuid in uuids if uuids.count(uuid) > 1])
         if len(duplicates) > 0:
-            raise RetrievalError(f'There is duplication in the sample ids provided: { list(duplicates) }')
+            raise RetrievalError(f"There is duplication in the sample ids provided: { list(duplicates) }")
 
     def _get_sample_with_uuid(self, samples, uuid):
         for sample in samples:
-            if sample['lh_sample_uuid'] == uuid:
+            if sample["lh_sample_uuid"] == uuid:
                 return sample
-        raise RetrievalError(f'We could not find sample with uuid {uuid}')
+        raise RetrievalError(f"We could not find sample with uuid {uuid}")
 
     def _mapping_with_samples(self, samples):
         mapping = {}
         for well_sample in self._well_samples():
-            uuid = well_sample['sample_id']
+            uuid = well_sample["sample_id"]
             sample = self._get_sample_with_uuid(samples, uuid)
-            mapping[well_sample['destination_coordinate']] = sample
+            mapping[well_sample["destination_coordinate"]] = sample
         return mapping
 
-    def samples(self) -> List[Dict[str, Any]]:
-        sample_uuids: List[str] = [sample['sample_id'] for sample in self._well_samples()]
+    def samples(self) -> Any:
+        sample_uuids: List[str] = [sample["sample_id"] for sample in self._well_samples()]
         self._validate_no_duplicate_uuids(sample_uuids)
         return self.get_samples_from_mongo(sample_uuids)
 
@@ -358,7 +361,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
             obtained_samples = self.samples()
             return self._mapping_with_samples(obtained_samples)
 
-    def add_to_warehouse_message(self, message) -> None:
+    def add_to_warehouse_message(self, message):
         return None
 
 
@@ -385,14 +388,16 @@ class SamplesWithCogUkId(EventPropertyAbstract):
     def add_to_sequencescape_message(self, message):
         for position in self.value:
             sample = self.value[position]
-            message.set_well_sample(position, {
-                FIELD_SS_NAME:  sample[FIELD_RNA_ID],
-                FIELD_SS_SAMPLE_DESCRIPTION: sample[FIELD_ROOT_SAMPLE_ID],
-                FIELD_SS_SUPPLIER_NAME: sample[FIELD_COG_BARCODE],
-                FIELD_SS_PHENOTYPE: sample[FIELD_RESULT],
-                FIELD_SS_UUID: sample[FIELD_LH_SAMPLE_UUID],
-            })
-
+            message.set_well_sample(
+                position,
+                {
+                    FIELD_SS_NAME: sample[FIELD_RNA_ID],
+                    FIELD_SS_SAMPLE_DESCRIPTION: sample[FIELD_ROOT_SAMPLE_ID],
+                    FIELD_SS_SUPPLIER_NAME: sample[FIELD_COG_BARCODE],
+                    FIELD_SS_PHENOTYPE: sample[FIELD_RESULT],
+                    FIELD_SS_UUID: sample[FIELD_LH_SAMPLE_UUID],
+                },
+            )
 
 
 class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
@@ -406,27 +411,27 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     @property
     def errors(self) -> List[str]:
         self.validate()
-        return self._errors + self.cherrytrack_wells_from_destination.errors  # type: ignore
+        return self._errors + self.cherrytrack_wells_from_destination.errors
 
     def _validate_positive_and_negative_present(self, wells):
-        control_types = [well['control'] for well in wells]
+        control_types = [well["control"] for well in wells]
         control_types.sort()
-        if (control_types != ["negative", "positive"]):
-            raise RetrievalError('We were expecting one positive and one negative control to be present.')
+        if control_types != ["negative", "positive"]:
+            raise RetrievalError("We were expecting one positive and one negative control to be present.")
 
     def _well_controls(self):
         val = []
         for well in self.cherrytrack_wells_from_destination.value:
-            if well['type'] == 'control':
+            if well["type"] == "control":
                 val.append(well)
         return val
 
     def _mapping_with_controls(self):
         mapping = {}
         for control in self._well_controls():
-            if 'uuid' not in control:
-                control['uuid'] = str(uuid4())
-            mapping[control['destination_coordinate']] = control
+            if "uuid" not in control:
+                control["uuid"] = str(uuid4())
+            mapping[control["destination_coordinate"]] = control
         return mapping
 
     @cached_property
@@ -439,10 +444,10 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     def add_to_warehouse_message(self, message):
         for control in self.value.values():
             message.add_subject(
-                role_type='control',
-                subject_type='sample',
+                role_type="control",
+                subject_type="sample",
                 friendly_name=self._supplier_name_for_control(control),
-                uuid=control['uuid']
+                uuid=control["uuid"],
             )
 
     def _supplier_name_for_control(self, control):
@@ -453,10 +458,12 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
 
     def add_to_sequencescape_message(self, message):
         for position, control in self.value:
-            message.set_well_sample(position, {
-                FIELD_SS_SUPPLIER_NAME: self._supplier_name_for_control(control),
-                FIELD_SS_CONTROL: True,
-                FIELD_SS_CONTROL_TYPE: control[FIELD_CHERRYTRACK_CONTROL],
-                FIELD_SS_UUID: control['uuid']
-            })
-
+            message.set_well_sample(
+                position,
+                {
+                    FIELD_SS_SUPPLIER_NAME: self._supplier_name_for_control(control),
+                    FIELD_SS_CONTROL: True,
+                    FIELD_SS_CONTROL_TYPE: control[FIELD_CHERRYTRACK_CONTROL],
+                    FIELD_SS_UUID: control["uuid"],
+                },
+            )

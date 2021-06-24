@@ -1,5 +1,5 @@
 import pytest
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type: ignore
+from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from lighthouse.messages.message import Message
 from unittest.mock import patch
 

@@ -2,7 +2,7 @@ import logging
 from typing import Dict, Any
 
 from lighthouse.classes.plate_event import PlateEvent
-from lighthouse.classes.event_properties.definitions import (  # type: ignore
+from lighthouse.classes.event_properties.definitions import (
     RobotUUID,
     RunInfo,
     UserID,

@@ -496,7 +496,9 @@ def baracoda_mock_barcodes_group(app, mocked_responses, baracoda_mock_responses,
     for centre_prefix in baracoda_mock_responses.keys():
         if baracoda_mock_responses[centre_prefix] is not None:
             num_samples = len(baracoda_mock_responses[centre_prefix]["barcodes_group"]["barcodes"])
-            baracoda_url = f"http://{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
+            baracoda_url = (
+                f"http://{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
+            )
             mocked_responses.add(
                 responses.POST,
                 baracoda_url,
@@ -520,9 +522,11 @@ def cherrytrack_mock_run_info_status():
 def cherrytrack_mock_destination_plate_status():
     return HTTPStatus.OK
 
+
 @pytest.fixture
 def baracoda_mock_status():
     return HTTPStatus.CREATED
+
 
 @pytest.fixture
 def cherrytrack_mock_source_plates(
@@ -570,59 +574,60 @@ def cherrytrack_run_info_response(run_id):
         }
     }
 
+
 @pytest.fixture
 def cherrytrack_destination_plate_response(destination_barcode, source_barcode, run_id):
     return {
         "data": {
             "barcode": destination_barcode,
             "wells": [
-                        {
-                            "type": "sample",
-                            "source_barcode": source_barcode,
-                            "source_coordinate": "A1",
-                            "destination_coordinate": "H08",
-                            "rna_id": f"{source_barcode}_A01",
-                            "root_sample_id": "aRootSampleId1",
-                            "result": "Positive",
-                            "lab_id": "centre_1",
-                            "sample_id": "aLighthouseUUID1",
-                            "run_id": run_id
-                        },
-                        {
-                            "type": "sample",
-                            "source_barcode": source_barcode,
-                            "source_coordinate": "A3",
-                            "destination_coordinate": "H12",
-                            "rna_id": f"{source_barcode}_A03",
-                            "root_sample_id": "aRootSampleId2",
-                            "result": "Positive",
-                            "lab_id": "centre_2",
-                            "sample_id": "aLighthouseUUID3",
-                            "run_id": run_id - 1
-                        },
-                        {
-                            "type": "control",
-                            "control_barcode": "DN1234",
-                            "control_coordinate": "A1",
-                            "destination_coordinate": "E10",
-                            "control": "positive",
-                            "run_id": run_id - 2,
-                        },
-                        {
-                            "type": "control",
-                            "control_barcode": "DN1234",
-                            "control_coordinate": "A1",
-                            "destination_coordinate": "E11",
-                            "control": "negative",
-                            "run_id": run_id - 2,
-                        }
-            ]
+                {
+                    "type": "sample",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "A1",
+                    "destination_coordinate": "H08",
+                    "rna_id": f"{source_barcode}_A01",
+                    "root_sample_id": "aRootSampleId1",
+                    "result": "Positive",
+                    "lab_id": "centre_1",
+                    "sample_id": "aLighthouseUUID1",
+                    "run_id": run_id,
+                },
+                {
+                    "type": "sample",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "A3",
+                    "destination_coordinate": "H12",
+                    "rna_id": f"{source_barcode}_A03",
+                    "root_sample_id": "aRootSampleId2",
+                    "result": "Positive",
+                    "lab_id": "centre_2",
+                    "sample_id": "aLighthouseUUID3",
+                    "run_id": run_id - 1,
+                },
+                {
+                    "type": "control",
+                    "control_barcode": "DN1234",
+                    "control_coordinate": "A1",
+                    "destination_coordinate": "E10",
+                    "control": "positive",
+                    "run_id": run_id - 2,
+                },
+                {
+                    "type": "control",
+                    "control_barcode": "DN1234",
+                    "control_coordinate": "A1",
+                    "destination_coordinate": "E11",
+                    "control": "negative",
+                    "run_id": run_id - 2,
+                },
+            ],
         }
     }
 
 
 def cherrytrack_destination_plate_response_duplicated_wells(cherrytrack_destination_plate_response):
-    cherrytrack_destination_plate_response['wells'][0]['destination_coordinate'] = 'H12'
+    cherrytrack_destination_plate_response["wells"][0]["destination_coordinate"] = "H12"
     return cherrytrack_destination_plate_response
 
 

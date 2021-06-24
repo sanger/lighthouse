@@ -43,14 +43,13 @@ def test_initialize_event(app):
 def test_process_event(app):
     with app.app_context():
         event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
-        event._create_message = MagicMock(name="_create_message")  # type: ignore
-        event.send_warehouse_message = MagicMock(name="_send_warehouse_message")
+        with patch.object(event, "_create_message") as create_message:
+            with patch.object(event, "send_warehouse_message") as send_warehouse_message:
+                event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
+                event.process_event()
 
-        event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
-        event.process_event()
-
-        event._create_message.assert_called_once()
-        event.send_warehouse_message.assert_called_once()
+                create_message.assert_called_once()
+                send_warehouse_message.assert_called_once()
 
 
 def test_build_new_warehouse_message(app):

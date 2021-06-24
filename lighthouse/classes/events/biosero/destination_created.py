@@ -12,7 +12,7 @@ from lighthouse.classes.plate_event import PlateEvent
 # - Samples (./event_properties)
 # - Controls (./event_properties)
 # << BEGIN >>
-# from lighthouse.classes.event_properties.definitions import (  # type: ignore
+# from lighthouse.classes.event_properties.definitions import (
 #     RobotUUID,
 #     RunInfo,
 #     Wells

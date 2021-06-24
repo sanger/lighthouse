@@ -1,7 +1,7 @@
 from pytest import raises
 import pytest
-from lighthouse.classes.event_properties.interfaces import ValidationError, RetrievalError  # type: ignore
-from lighthouse.classes.event_properties.definitions import (  # type: ignore
+from lighthouse.classes.event_properties.interfaces import ValidationError, RetrievalError
+from lighthouse.classes.event_properties.definitions import (
     UserID,
     RobotSerialNumber,
     RobotUUID,
@@ -18,7 +18,7 @@ from lighthouse.classes.event_properties.definitions import (  # type: ignore
     SamplesWithCogUkId,
 )
 from unittest.mock import MagicMock, PropertyMock
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage  # type:ignore
+from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
 from lighthouse.constants.fields import (
     FIELD_EVENT_RUN_ID,
@@ -351,21 +351,21 @@ def test_cherrytrack_wells_from_destination_value_gets_value(
     run_id,
     destination_barcode,
     samples_in_cherrytrack,
-    mocked_responses, cherrytrack_mock_destination_plate,
+    mocked_responses,
+    cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
 ):
     with app.app_context():
         val = CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})).value
-        assert val == cherrytrack_destination_plate_response['data']['wells']
-
+        assert val == cherrytrack_destination_plate_response["data"]["wells"]
 
 
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("cherrytrack_destination_plate_response", [
-        {"data": {"wells": [{"destination_coordinate": "H1"}, {"destination_coordinate": "H1"}]}}
-    ]
+@pytest.mark.parametrize(
+    "cherrytrack_destination_plate_response",
+    [{"data": {"wells": [{"destination_coordinate": "H1"}, {"destination_coordinate": "H1"}]}}],
 )
 def test_cherrytrack_wells_from_destination_value_fails_with_duplicated_wells(
     app,
@@ -373,7 +373,8 @@ def test_cherrytrack_wells_from_destination_value_fails_with_duplicated_wells(
     destination_barcode,
     samples_in_cherrytrack,
     cherrytrack_destination_plate_response,
-    mocked_responses, cherrytrack_mock_destination_plate
+    mocked_responses,
+    cherrytrack_mock_destination_plate,
 ):
     with app.app_context():
         instance = CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
@@ -384,7 +385,9 @@ def test_cherrytrack_wells_from_destination_value_fails_with_duplicated_wells(
             instance.value
 
         assert instance.validate() is False
-        assert instance.errors == ["Exception during retrieval: Some coordinates have clashing samples/controls: {'H1'}"]
+        assert instance.errors == [
+            "Exception during retrieval: Some coordinates have clashing samples/controls: {'H1'}"
+        ]
 
 
 @pytest.mark.parametrize("run_id", [5])
@@ -395,7 +398,8 @@ def test_all_samples_from_destination_value_gets_value(
     run_id,
     destination_barcode,
     samples_in_cherrytrack,
-    mocked_responses, cherrytrack_mock_destination_plate,
+    mocked_responses,
+    cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
 ):
     with app.app_context():
@@ -415,9 +419,9 @@ def test_all_samples_from_destination_value_gets_value(
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("cherrytrack_destination_plate_response", [
-        {"data": {"wells": [{"type": "sample", "sample_id": "unknown", "destination_coordinate": "H1"}]}}
-    ]
+@pytest.mark.parametrize(
+    "cherrytrack_destination_plate_response",
+    [{"data": {"wells": [{"type": "sample", "sample_id": "unknown", "destination_coordinate": "H1"}]}}],
 )
 def test_all_samples_from_destination_value_fails_with_unknown_samples(
     app,
@@ -425,43 +429,8 @@ def test_all_samples_from_destination_value_fails_with_unknown_samples(
     destination_barcode,
     samples_in_cherrytrack,
     cherrytrack_destination_plate_response,
-    mocked_responses, cherrytrack_mock_destination_plate
-):
-    with app.app_context():
-        instance = SamplesFromDestination(CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})))
-        assert instance.validate() is True
-        assert instance.errors == []
-
-        with pytest.raises(Exception):
-            instance.value
-
-        assert instance.validate() is False
-        assert instance.errors == [(
-            "Exception during retrieval: Some samples cannot be obtained because are not present"
-            " in Mongo. Please review: ['unknown']")]
-
-
-@pytest.mark.parametrize("run_id", [5])
-@pytest.mark.parametrize("source_barcode", ["DS000050001"])
-@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("cherrytrack_destination_plate_response", [
-    {
-        "data": {
-            "wells": [
-                {"type": "sample", "sample_id": "uuid1", "destination_coordinate": "H1"},
-                {"type": "sample", "sample_id": "uuid2", "destination_coordinate": "H2"},
-                {"type": "sample", "sample_id": "uuid1", "destination_coordinate": "H3"},
-            ]
-        }
-    }
-])
-def test_all_samples_from_destination_value_fails_with_duplicated_samples(
-    app,
-    run_id,
-    destination_barcode,
-    samples_in_cherrytrack,
-    cherrytrack_destination_plate_response,
-    mocked_responses, cherrytrack_mock_destination_plate
+    mocked_responses,
+    cherrytrack_mock_destination_plate,
 ):
     with app.app_context():
         instance = SamplesFromDestination(
@@ -474,8 +443,54 @@ def test_all_samples_from_destination_value_fails_with_duplicated_samples(
             instance.value
 
         assert instance.validate() is False
-        assert instance.errors == [(
-            "Exception during retrieval: There is duplication in the sample ids provided: ['uuid1']")]
+        assert instance.errors == [
+            (
+                "Exception during retrieval: Some samples cannot be obtained because are not present"
+                " in Mongo. Please review: ['unknown']"
+            )
+        ]
+
+
+@pytest.mark.parametrize("run_id", [5])
+@pytest.mark.parametrize("source_barcode", ["DS000050001"])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+@pytest.mark.parametrize(
+    "cherrytrack_destination_plate_response",
+    [
+        {
+            "data": {
+                "wells": [
+                    {"type": "sample", "sample_id": "uuid1", "destination_coordinate": "H1"},
+                    {"type": "sample", "sample_id": "uuid2", "destination_coordinate": "H2"},
+                    {"type": "sample", "sample_id": "uuid1", "destination_coordinate": "H3"},
+                ]
+            }
+        }
+    ],
+)
+def test_all_samples_from_destination_value_fails_with_duplicated_samples(
+    app,
+    run_id,
+    destination_barcode,
+    samples_in_cherrytrack,
+    cherrytrack_destination_plate_response,
+    mocked_responses,
+    cherrytrack_mock_destination_plate,
+):
+    with app.app_context():
+        instance = SamplesFromDestination(
+            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+        )
+        assert instance.validate() is True
+        assert instance.errors == []
+
+        with pytest.raises(Exception):
+            instance.value
+
+        assert instance.validate() is False
+        assert instance.errors == [
+            ("Exception during retrieval: There is duplication in the sample ids provided: ['uuid1']")
+        ]
 
 
 @pytest.mark.parametrize("run_id", [5])
@@ -486,15 +501,14 @@ def test_all_controls_from_destination_value_gets_value(
     run_id,
     destination_barcode,
     samples_in_cherrytrack,
-    mocked_responses, cherrytrack_mock_destination_plate,
+    mocked_responses,
+    cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
 ):
     with app.app_context():
         wells = cherrytrack_destination_plate_response["data"]["wells"]
         val = ControlsFromDestination(
-            CherrytrackWellsFromDestination(
-                PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})
-            )
+            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         ).value
 
         for well in val.values():
@@ -506,7 +520,9 @@ def test_all_controls_from_destination_value_gets_value(
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("cherrytrack_destination_plate_response", [
+@pytest.mark.parametrize(
+    "cherrytrack_destination_plate_response",
+    [
         {
             "data": {
                 "wells": [
@@ -515,7 +531,7 @@ def test_all_controls_from_destination_value_gets_value(
                 ]
             }
         }
-    ]
+    ],
 )
 def test_all_controls_from_destination_value_fails_with_missing_controls(
     app,
@@ -523,10 +539,13 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
     destination_barcode,
     samples_in_cherrytrack,
     cherrytrack_destination_plate_response,
-    mocked_responses, cherrytrack_mock_destination_plate
+    mocked_responses,
+    cherrytrack_mock_destination_plate,
 ):
     with app.app_context():
-        instance = ControlsFromDestination(CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})))
+        instance = ControlsFromDestination(
+            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+        )
         assert instance.validate() is True
         assert instance.errors == []
 
@@ -534,16 +553,22 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
             instance.value
 
         assert instance.validate() is False
-        assert instance.errors == [(
-            "Exception during retrieval: We were expecting one positive and one negative control to be present.")]
+        assert instance.errors == [
+            ("Exception during retrieval: We were expecting one positive and one negative control to be present.")
+        ]
 
 
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("baracoda_mock_responses", [{
-    "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
-}])
+@pytest.mark.parametrize(
+    "baracoda_mock_responses",
+    [
+        {
+            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
+        }
+    ],
+)
 def test_samples_with_cog_uk_id_from_destination_add_to_warehouse(
     app,
     run_id,
@@ -559,24 +584,40 @@ def test_samples_with_cog_uk_id_from_destination_add_to_warehouse(
 ):
     with app.app_context():
         samples, _ = samples_in_cherrytrack
-        instance = SamplesWithCogUkId(SamplesFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
-        ))
+        instance = SamplesWithCogUkId(
+            SamplesFromDestination(
+                CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            )
+        )
         message = WarehouseMessage("mytype", "myuuid", "at some point")
         instance.add_to_warehouse_message(message)
         assert message._subjects == [
-            {'friendly_name': 'aRootSampleId1__DS000050001_A01__centre_1__Positive',
-                'role_type': 'sample', 'subject_type': 'sample', 'uuid': 'aLighthouseUUID1'},
-            {'friendly_name': 'aRootSampleId3__DS000050001_A03__centre_1__Positive',
-                'role_type': 'sample', 'subject_type': 'sample', 'uuid': 'aLighthouseUUID3'},
+            {
+                "friendly_name": "aRootSampleId1__DS000050001_A01__centre_1__Positive",
+                "role_type": "sample",
+                "subject_type": "sample",
+                "uuid": "aLighthouseUUID1",
+            },
+            {
+                "friendly_name": "aRootSampleId3__DS000050001_A03__centre_1__Positive",
+                "role_type": "sample",
+                "subject_type": "sample",
+                "uuid": "aLighthouseUUID3",
+            },
         ]
+
 
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("baracoda_mock_responses", [{
-    "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
-}])
+@pytest.mark.parametrize(
+    "baracoda_mock_responses",
+    [
+        {
+            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
+        }
+    ],
+)
 def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
     app,
     run_id,
@@ -584,33 +625,34 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
     destination_barcode,
     samples_in_cherrytrack,
     mlwh_samples_in_cherrytrack,
-    mocked_responses, cherrytrack_mock_destination_plate,
+    mocked_responses,
+    cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
     baracoda_mock_barcodes_group,
     baracoda_mock_responses,
 ):
     with app.app_context():
         samples, _ = samples_in_cherrytrack
-        instance = SamplesWithCogUkId(SamplesFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
-        ))
+        instance = SamplesWithCogUkId(
+            SamplesFromDestination(
+                CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            )
+        )
         message = SequencescapeMessage()
         instance.add_to_sequencescape_message(message)
         assert message._contents == {
-            'H08': {
-                'name': 'DS000050001_A01',
-                'phenotype': 'Positive',
-                'sample_description': 'aRootSampleId1',
-                'supplier_name': 'COGUK1',
-                'uuid': 'aLighthouseUUID1'
+            "H08": {
+                "name": "DS000050001_A01",
+                "phenotype": "Positive",
+                "sample_description": "aRootSampleId1",
+                "supplier_name": "COGUK1",
+                "uuid": "aLighthouseUUID1",
             },
-            'H12': {
-                'name': 'DS000050001_A03',
-                'phenotype': 'Positive',
-                'sample_description': 'aRootSampleId3',
-                'supplier_name': 'COGUK2',
-                'uuid': 'aLighthouseUUID3'
-            }
+            "H12": {
+                "name": "DS000050001_A03",
+                "phenotype": "Positive",
+                "sample_description": "aRootSampleId3",
+                "supplier_name": "COGUK2",
+                "uuid": "aLighthouseUUID3",
+            },
         }
-
-

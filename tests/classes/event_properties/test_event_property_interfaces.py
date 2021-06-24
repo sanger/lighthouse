@@ -1,6 +1,6 @@
 from pytest import raises, fail
 from unittest.mock import MagicMock
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, ValidationError  # type: ignore
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, ValidationError
 
 
 class DummyEventProperty(EventPropertyAbstract):
@@ -27,7 +27,7 @@ class DummyEventProperty(EventPropertyAbstract):
 class TestEventPropertyAbstract:
     def test_init_raise_validation_error_without_params(self):
         with raises(ValidationError):
-            DummyEventProperty(None)
+            DummyEventProperty(None)  # type: ignore
 
     def test_init_can_initialize_with_params(self):
         assert DummyEventProperty({}) is not None
