@@ -32,3 +32,7 @@ def get_samples_from_source_plate_barcode_from_cherrytrack(source_plate_barcode:
         requests.Response: the response from the request to Cherrytrack.
     """
     return requests.get(f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_plate_barcode}")
+
+
+def get_wells_from_destination_barcode_from_cherrytrack(destination_plate_barcode: str) -> requests.Response:
+    return requests.get(f"{app.config['CHERRYTRACK_URL']}/destination-plates/{destination_plate_barcode}")

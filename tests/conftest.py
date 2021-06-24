@@ -24,6 +24,7 @@ from tests.fixtures.data.mlwh import (
     MLWH_SAMPLE_LIGHTHOUSE_SAMPLE,
     MLWH_SAMPLE_STOCK_RESOURCE,
     SAMPLES_FOR_MLWH_UPDATE,
+    cherrytrack_mlwh_example,
 )
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
 from tests.fixtures.data.samples import SAMPLES, rows_for_samples_in_cherrytrack
@@ -491,6 +492,21 @@ def cherrytrack_mock_run_info(
 
 
 @pytest.fixture
+def baracoda_mock_barcodes_group(app, mocked_responses, baracoda_mock_responses, baracoda_mock_status):
+    for centre_prefix in baracoda_mock_responses.keys():
+        if baracoda_mock_responses[centre_prefix] is not None:
+            num_samples = len(baracoda_mock_responses[centre_prefix]["barcodes_group"]["barcodes"])
+            baracoda_url = f"http://{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
+            mocked_responses.add(
+                responses.POST,
+                baracoda_url,
+                json=baracoda_mock_responses[centre_prefix],
+                status=baracoda_mock_status,
+            )
+    yield
+
+
+@pytest.fixture
 def cherrytrack_mock_source_plates_status():
     return HTTPStatus.OK
 
@@ -499,6 +515,14 @@ def cherrytrack_mock_source_plates_status():
 def cherrytrack_mock_run_info_status():
     return HTTPStatus.OK
 
+
+@pytest.fixture
+def cherrytrack_mock_destination_plate_status():
+    return HTTPStatus.OK
+
+@pytest.fixture
+def baracoda_mock_status():
+    return HTTPStatus.CREATED
 
 @pytest.fixture
 def cherrytrack_mock_source_plates(
@@ -519,6 +543,24 @@ def cherrytrack_mock_source_plates(
 
 
 @pytest.fixture
+def cherrytrack_mock_destination_plate(
+    app,
+    mocked_responses,
+    destination_barcode,
+    cherrytrack_destination_plate_response,
+    cherrytrack_mock_destination_plate_status,
+):
+    destination_plate_url = f"{app.config['CHERRYTRACK_URL']}/destination-plates/{destination_barcode}"
+    mocked_responses.add(
+        responses.GET,
+        destination_plate_url,
+        json=cherrytrack_destination_plate_response,
+        status=cherrytrack_mock_destination_plate_status,
+    )
+    yield
+
+
+@pytest.fixture
 def cherrytrack_run_info_response(run_id):
     return {
         "data": {
@@ -527,6 +569,61 @@ def cherrytrack_run_info_response(run_id):
             "liquid_handler_serial_number": "aLiquidHandlerSerialNumber",
         }
     }
+
+@pytest.fixture
+def cherrytrack_destination_plate_response(destination_barcode, source_barcode, run_id):
+    return {
+        "data": {
+            "barcode": destination_barcode,
+            "wells": [
+                        {
+                            "type": "sample",
+                            "source_barcode": source_barcode,
+                            "source_coordinate": "A1",
+                            "destination_coordinate": "H08",
+                            "rna_id": f"{source_barcode}_A01",
+                            "root_sample_id": "aRootSampleId1",
+                            "result": "Positive",
+                            "lab_id": "centre_1",
+                            "sample_id": "aLighthouseUUID1",
+                            "run_id": run_id
+                        },
+                        {
+                            "type": "sample",
+                            "source_barcode": source_barcode,
+                            "source_coordinate": "A3",
+                            "destination_coordinate": "H12",
+                            "rna_id": f"{source_barcode}_A03",
+                            "root_sample_id": "aRootSampleId2",
+                            "result": "Positive",
+                            "lab_id": "centre_2",
+                            "sample_id": "aLighthouseUUID3",
+                            "run_id": run_id - 1
+                        },
+                        {
+                            "type": "control",
+                            "control_barcode": "DN1234",
+                            "control_coordinate": "A1",
+                            "destination_coordinate": "E10",
+                            "control": "positive",
+                            "run_id": run_id - 2,
+                        },
+                        {
+                            "type": "control",
+                            "control_barcode": "DN1234",
+                            "control_coordinate": "A1",
+                            "destination_coordinate": "E11",
+                            "control": "negative",
+                            "run_id": run_id - 2,
+                        }
+            ]
+        }
+    }
+
+
+def cherrytrack_destination_plate_response_duplicated_wells(cherrytrack_destination_plate_response):
+    cherrytrack_destination_plate_response['wells'][0]['destination_coordinate'] = 'H12'
+    return cherrytrack_destination_plate_response
 
 
 @pytest.fixture
@@ -537,9 +634,9 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
                 "control": True,
                 "control_barcode": "aControlBarcode1",
                 "control_coordinate": "A1",
-                "lab_id": "aLabId1",
+                "lab_id": "centre_1",
                 "picked": True,
-                "rna_id": "aRNAId1",
+                "rna_id": f"{source_barcode}_A01",
                 "robot_barcode": "aRobotBarcode",
                 "automation_system_run_id": run_id,
                 "sample_id": "aSampleId1",
@@ -553,9 +650,9 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
                 "control": True,
                 "control_barcode": "aControlBarcode2",
                 "control_coordinate": "A2",
-                "lab_id": "aLabId2",
+                "lab_id": "centre_2",
                 "picked": False,
-                "rna_id": "aRNAId2",
+                "rna_id": f"{source_barcode}_A02",
                 "robot_barcode": "aRobotBarcode",
                 "automation_system_run_id": run_id,
                 "sample_id": "aSampleId2",
@@ -569,9 +666,9 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
                 "control": True,
                 "control_barcode": "aControlBarcode3",
                 "control_coordinate": "A3",
-                "lab_id": "aLabId3",
+                "lab_id": "centre_3",
                 "picked": True,
-                "rna_id": "aRNAId3",
+                "rna_id": f"{source_barcode}_A03",
                 "robot_barcode": "aRobotBarcode",
                 "automation_system_run_id": run_id,
                 "sample_id": "aSampleId3",
@@ -585,9 +682,9 @@ def cherrytrack_source_plates_response(run_id, source_barcode):
                 "control": True,
                 "control_barcode": "aControlBarcode4",
                 "control_coordinate": "A4",
-                "lab_id": "aLabId4",
+                "lab_id": "centre_4",
                 "picked": True,
-                "rna_id": "aRNAId4",
+                "rna_id": f"{source_barcode}_A04",
                 "robot_barcode": "aRobotBarcode",
                 "automation_system_run_id": run_id - 1,
                 "sample_id": "aSampleId4",
@@ -616,3 +713,33 @@ def samples_in_cherrytrack(app, source_barcode):
     # clear up after the fixture is used
     finally:
         samples_collection.delete_many({})
+
+
+@pytest.fixture
+def mlwh_samples_in_cherrytrack(app, source_barcode, mlwh_sql_engine):
+    def delete_data():
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+
+    try:
+        delete_data()
+
+        example = cherrytrack_mlwh_example(source_barcode)
+
+        # inserts
+        insert_into_mlwh(
+            app,
+            example["lighthouse_sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"],
+        )
+        insert_into_mlwh(
+            app,
+            example["sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_SAMPLE_TABLE"],
+        )
+
+        yield
+    finally:
+        delete_data()
