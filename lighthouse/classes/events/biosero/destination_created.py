@@ -12,18 +12,20 @@ from lighthouse.classes.plate_event import PlateEvent
 # - Samples (./event_properties)
 # - Controls (./event_properties)
 # << BEGIN >>
-# from lighthouse.classes.event_properties.definitions import (
-#     RobotUUID,
-#     RunInfo,
-#     Wells
-#     Samples
-#     Controls
-#     DestinationPlateBarcode,
-#     UserID,
-#     PlateBarcode,
-#     RunID,
-#     RobotSerialNumber,
-# )
+
+from lighthouse.classes.event_properties.definitions import (
+    RobotUUID,
+    RunInfo,
+    CherrytrackWellsFromDestination,
+    SamplesFromDestination,
+    SamplesWithCogUkId,
+    ControlsFromDestination,
+    SourcePlatesFromDestination,
+    UserID,
+    PlateBarcode,
+    RunID,
+    RobotSerialNumber,
+)
 # << END >>
 
 logger = logging.getLogger(__name__)
@@ -36,42 +38,36 @@ class DestinationCreated(PlateEvent):
 
     def initialize_event(self, params: Dict[str, str]) -> None:
         super().initialize_event(params=params)
-        # << BEGIN >>
-        # self._event_type = params["event_type"]
+        self._event_type = params["event_type"]
 
-        # self.properties["plate_barcode"] = PlateBarcode(params)
-        # self.properties["user_id"] = UserID(params)
-        # self.properties["run_id"] = RunID(params)
+        self.properties["plate_barcode"] = PlateBarcode(params)
+        self.properties["user_id"] = UserID(params)
+        self.properties["run_id"] = RunID(params)
 
-        # for key in ["plate_barcode", "user_id", "run_id"]:
-        #     self.properties[key].validate()
+        for key in ["plate_barcode", "user_id", "run_id"]:
+            self.properties[key].validate()
 
-        # self.properties["run_info"] = RunInfo(self.properties["run_id"])
-        # self.properties["picked_samples_from_source"] = PickedSamplesFromSource(
-        #     self.properties["plate_barcode"], self.properties["run_id"]
-        # )
-        # self.properties["destination_plate"] = DestinationPlateBarcode(self.properties["plate_barcode"])
-        # self.properties["source_plates"] = SourcePlates(self.properties["plate_barcode"])
-        # self.properties["wells"] = Wells(self.properties["plate_barcode"])
-        # self.properties["samples"] = Samples(self.properties["wells"])
-        # self.properties["controls"] = Controls(self.properties["wells"])
-        # self.properties["robot_serial_number"] = RobotSerialNumber(params)
-        # self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
-        # << END >>
-        ...
+        self.properties["run_info"] = RunInfo(self.properties["run_id"])
+
+        self.properties["destination_plate"] = self.properties["plate_barcode"]
+        self.properties["wells"] = CherrytrackWellsFromDestination(self.properties["plate_barcode"])
+        self.properties["source_plates"] = SourcePlatesFromDestination(self.properties["wells"])
+        self.properties["samples"] = SamplesFromDestination(self.properties["wells"])
+        self.properties["samples_with_cog_uk_id"] = SamplesWithCogUkId(self.properties["samples"])
+        self.properties["controls"] = ControlsFromDestination(self.properties["wells"])
+        self.properties["robot_serial_number"] = RobotSerialNumber(params)
+        self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
 
     def _create_message(self) -> Any:
-        # << BEGIN >>
-        # message = self.build_new_warehouse_message()
-        # ss_message = self.build_new_sequencescape_message()
+        message = self.build_new_warehouse_message()
+        #ss_message = self.build_new_sequencescape_message()
 
-        # for key in ["samples", "controls", "source_plates", "destination_plate", "user_id", "robot_uuid", "run_info"]:
-        #     self.properties[key].add_to_warehouse_message(message)
+        for key in ["samples_with_cog_uk_id", "controls", "source_plates", "destination_plate", "user_id", "robot_uuid", "run_info"]:
+            self.properties[key].add_to_warehouse_message(message)
 
         # for key in ["samples", "controls", "destination_plate", "user_id"]:
         #     self.properties[key].add_to_sequencescape_message(ss_message)
 
-        # ss_message.add_warehouse_message(message)
-        # return ss_message.render()
-        # << END >>
-        ...
+        #ss_message.add_warehouse_message(message)
+        #return ss_message.render()
+        return message.render()

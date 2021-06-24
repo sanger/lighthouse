@@ -38,3 +38,20 @@ class ServiceMongoMixin:
         samples = list(samples_collection.find({FIELD_PLATE_BARCODE: barcode}))
 
         return samples
+
+    def get_source_plates_from_barcodes(self, barcodes):
+        with app.app_context():
+            source_plates_collection = app.data.driver.db.source_plates  # type: ignore
+
+            source_plates = list(source_plates_collection.find({FIELD_BARCODE: {"$in": barcodes}}))
+
+            obtained_barcodes = [source_plate[FIELD_BARCODE] for source_plate in source_plates]
+
+            remaining_barcodes = list(set(barcodes) - set(obtained_barcodes))
+
+            if len(remaining_barcodes) > 0:
+                raise Exception(
+                    f"Some source plate barcodes cannot be obtained because are not present in Mongo. Please review: {remaining_barcodes}"
+                )
+
+            return source_plates

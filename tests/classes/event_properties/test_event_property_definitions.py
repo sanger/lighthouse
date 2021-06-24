@@ -16,6 +16,7 @@ from lighthouse.classes.event_properties.definitions import (
     SamplesFromDestination,
     ControlsFromDestination,
     SamplesWithCogUkId,
+    SourcePlatesFromDestination,
 )
 from unittest.mock import MagicMock, PropertyMock
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
@@ -656,3 +657,61 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
                 "uuid": "aLighthouseUUID3",
             },
         }
+
+
+@pytest.mark.parametrize("run_id", [5])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+def test_source_plates_from_destination_value_gets_value(
+    app,
+    run_id,
+    destination_barcode,
+    samples_in_cherrytrack,
+    mocked_responses,
+    source_plates,
+    cherrytrack_mock_destination_plate,
+    cherrytrack_destination_plate_response,
+):
+    with app.app_context():
+        val = SourcePlatesFromDestination(
+            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+        ).value
+
+        for elem in val:
+            del elem["_id"]
+
+        assert val == [{
+                'Lab ID': 'lab_1',
+                'barcode': 'plate_123',
+                'lh_source_plate_uuid': 'a17c38cd-b2df-43a7-9896-582e7855b4cc'
+            }]
+
+
+@pytest.mark.parametrize("run_id", [5])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+def test_source_plates_from_destination_add_to_warehouse(
+    app,
+    run_id,
+    destination_barcode,
+    samples_in_cherrytrack,
+    mocked_responses,
+    source_plates,
+    cherrytrack_mock_destination_plate,
+    cherrytrack_destination_plate_response,
+):
+    with app.app_context():
+        instance = SourcePlatesFromDestination(
+            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+        )
+
+        message = WarehouseMessage("mytype", "myuuid", "at some point")
+        instance.add_to_warehouse_message(message)
+        assert message._subjects == [
+            {
+                'role_type': 'cherrypicking_source_labware',
+                'subject_type': 'plate',
+                'friendly_name': 'plate_123',
+                'uuid': 'a17c38cd-b2df-43a7-9896-582e7855b4cc'
+            }
+        ]

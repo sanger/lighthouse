@@ -33,6 +33,8 @@ from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_CONTROL,
     FIELD_CHERRYTRACK_CONTROL_BARCODE,
     FIELD_CHERRYTRACK_CONTROL_COORDINATE,
+    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_BARCODE,
 )
 
 from lighthouse.helpers.plates import add_cog_barcodes_from_different_centres, update_mlwh_with_cog_uk_ids
@@ -311,6 +313,42 @@ class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackM
         return None
 
 
+class SourcePlatesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
+    def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
+        self.reset()
+        self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
+
+    def validate(self):
+        return self.cherrytrack_wells_from_destination.validate() and (len(self._errors) == 0)
+
+    @property
+    def errors(self) -> List[str]:
+        self.validate()
+        return self._errors + self.cherrytrack_wells_from_destination.errors
+
+    def _source_barcodes(self):
+        val = set()
+        for sample in self.cherrytrack_wells_from_destination.value:
+            if sample["type"] == "sample":
+                if sample["source_barcode"] not in val:
+                    val.add(sample["source_barcode"])
+        return list(val)
+
+    @cached_property
+    def value(self):
+        with self.retrieval_scope():
+            return list(self.get_source_plates_from_barcodes(self._source_barcodes()))
+
+    def add_to_warehouse_message(self, message):
+        for source_plate in self.value:
+            message.add_subject(
+                role_type=ROLE_TYPE_CP_SOURCE_LABWARE,
+                subject_type=SUBJECT_TYPE_PLATE,
+                friendly_name=source_plate[FIELD_BARCODE],
+                uuid=source_plate[FIELD_LH_SOURCE_PLATE_UUID],
+            )
+
+
 class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
         self.reset()
@@ -429,8 +467,6 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     def _mapping_with_controls(self):
         mapping = {}
         for control in self._well_controls():
-            if "uuid" not in control:
-                control["uuid"] = str(uuid4())
             mapping[control["destination_coordinate"]] = control
         return mapping
 
@@ -447,7 +483,6 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
                 role_type="control",
                 subject_type="sample",
                 friendly_name=self._supplier_name_for_control(control),
-                uuid=control["uuid"],
             )
 
     def _supplier_name_for_control(self, control):
