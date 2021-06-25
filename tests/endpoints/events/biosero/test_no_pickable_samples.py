@@ -108,8 +108,9 @@ def test_post_event_source_no_pickable_samples(
                     assert event[FIELD_EVENT_ERRORS] is None
 
 
+# TODO duplicate of test+all_source_negatives?
 @pytest.mark.parametrize("run_id", [3])
-@pytest.mark.parametrize("cherrytrack_run_info_response", [{"data": {"errors": ["One error", "Another error"]}}])
+@pytest.mark.parametrize("cherrytrack_run_info_response", [{"errors": ["One error", "Another error"]}])
 @pytest.mark.parametrize("cherrytrack_mock_run_info_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_for_samples_info(
     app,

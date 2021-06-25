@@ -13,7 +13,7 @@ from typing import Any, List, Dict
 from lighthouse.classes.services.cherrytrack import ServiceCherrytrackMixin
 from lighthouse.classes.services.mongo import ServiceMongoMixin
 from lighthouse.constants.fields import (
-    FIELD_CHERRYTRACK_LH_SAMPLE_UUID,
+    FIELD_CHERRYTRACK_SAMPLE_ID,
     FIELD_EVENT_RUN_ID,
     FIELD_EVENT_ROBOT,
     FIELD_EVENT_USER_ID,
@@ -111,6 +111,7 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
         )
 
 
+# mongo samples, picked from cherrytrack for source plate barcode
 class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, ServiceMongoMixin):
     def __init__(self, barcode_property: PlateBarcode, run_id_property: RunID):
         self.reset()
@@ -128,8 +129,8 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, Se
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            sample_uuids: List[str] = [
-                sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID]
+            sample_ids: List[str] = [
+                sample[FIELD_CHERRYTRACK_SAMPLE_ID]
                 for sample in filter(
                     lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,
                     filter(
@@ -138,7 +139,7 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, Se
                     ),
                 )
             ]
-            val: List[Dict[str, Any]] = list(self.get_samples_from_mongo(sample_uuids))
+            val: List[Dict[str, Any]] = list(self.get_samples_from_mongo(sample_ids))
             return val
 
     def add_to_warehouse_message(self, message):
@@ -146,6 +147,7 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, Se
             message.add_sample_as_subject(sample)
 
 
+# all samples from mongo for source plate barcode
 class AllSamplesFromSource(EventPropertyAbstract, ServiceMongoMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
@@ -362,6 +364,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
         self.validate()
         return self._errors + self.cherrytrack_wells_from_destination.errors
 
+    # cherrytrack samples
     def _well_samples(self):
         val = []
         for sample in self.cherrytrack_wells_from_destination.value:
@@ -369,34 +372,36 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
                 val.append(sample)
         return val
 
-    def _validate_no_duplicate_uuids(self, uuids):
-        duplicates = set([uuid for uuid in uuids if uuids.count(uuid) > 1])
+    def _validate_no_duplicate_ids(self, sample_ids):
+        duplicates = set([id for id in sample_ids if sample_ids.count(id) > 1])
         if len(duplicates) > 0:
             raise RetrievalError(f"There is duplication in the sample ids provided: { list(duplicates) }")
 
-    def _get_sample_with_uuid(self, samples, uuid):
+    def _get_sample_with_id(self, samples, id):
         for sample in samples:
-            if sample["lh_sample_uuid"] == uuid:
+            if sample["lh_sample_uuid"] == id:
                 return sample
-        raise RetrievalError(f"We could not find sample with uuid {uuid}")
+        raise RetrievalError(f"We could not find sample with sample id {id}")
 
     def _mapping_with_samples(self, samples):
         mapping = {}
         for well_sample in self._well_samples():
-            uuid = well_sample["sample_id"]
-            sample = self._get_sample_with_uuid(samples, uuid)
+            # get sample from mongo using cherrytrack sample id
+            sample = self._get_sample_with_id(samples, well_sample["sample_id"])
             mapping[well_sample["destination_coordinate"]] = sample
         return mapping
 
+    # mongo samples from cherrytrack samples
     def samples(self) -> Any:
-        sample_uuids: List[str] = [sample["sample_id"] for sample in self._well_samples()]
-        self._validate_no_duplicate_uuids(sample_uuids)
-        return self.get_samples_from_mongo(sample_uuids)
+        sample_ids: List[str] = [sample["sample_id"] for sample in self._well_samples()]
+        self._validate_no_duplicate_ids(sample_ids)
+        return self.get_samples_from_mongo(sample_ids)
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
             obtained_samples = self.samples()
+            # mapping with mongo samples
             return self._mapping_with_samples(obtained_samples)
 
     def add_to_warehouse_message(self, message):

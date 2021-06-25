@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 class ServiceCherrytrackMixin(object):
     def raise_error_from_response(self, response):
         json = response.json()
-        if json and json["data"] and json["data"]["errors"]:
-            raise Exception(f"Response from Cherrytrack is not OK: {','.join(json['data']['errors'])}")
+        if json and json["errors"]:
+            raise Exception(f"Response from Cherrytrack is not OK: {','.join(json['errors'])}")
         else:
             raise Exception(f"Response from Cherrytrack is not OK: {response.text}")
 
@@ -31,8 +31,7 @@ class ServiceCherrytrackMixin(object):
         response = get_samples_from_source_plate_barcode_from_cherrytrack(source_barcode)
         if response.status_code != HTTPStatus.OK:
             self.raise_error_from_response(response)
-
-        return response.json()["data"]
+        return response.json()["data"]["samples"]
 
     def filter_pickable_samples(self, sample):
         return sample["picked"]

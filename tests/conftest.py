@@ -571,6 +571,8 @@ def cherrytrack_run_info_response(run_id):
             "id": run_id,
             "user_id": "ab1",
             "liquid_handler_serial_number": "aLiquidHandlerSerialNumber",
+            "automation_system_manufacturer": "biosero",
+            "automation_system_name": "CPA",
         }
     }
 
@@ -632,74 +634,59 @@ def cherrytrack_destination_plate_response_duplicated_wells(cherrytrack_destinat
 
 
 @pytest.fixture
-def cherrytrack_source_plates_response(run_id, source_barcode):
+def cherrytrack_source_plates_response(run_id, source_barcode, destination_barcode):
     return {
-        "data": [
-            {
-                "control": True,
-                "control_barcode": "aControlBarcode1",
-                "control_coordinate": "A1",
-                "lab_id": "centre_1",
-                "picked": True,
-                "rna_id": f"{source_barcode}_A01",
-                "robot_barcode": "aRobotBarcode",
-                "automation_system_run_id": run_id,
-                "sample_id": "aSampleId1",
-                "source_barcode": source_barcode,
-                "source_coordinate": "B1",
-                "root_sample_id": "aRootSampleId1",
-                "result": "Positive",
-                "lh_sample_uuid": "aLighthouseUUID1",
-            },
-            {
-                "control": True,
-                "control_barcode": "aControlBarcode2",
-                "control_coordinate": "A2",
-                "lab_id": "centre_2",
-                "picked": False,
-                "rna_id": f"{source_barcode}_A02",
-                "robot_barcode": "aRobotBarcode",
-                "automation_system_run_id": run_id,
-                "sample_id": "aSampleId2",
-                "source_barcode": source_barcode,
-                "source_coordinate": "B2",
-                "root_sample_id": "aRootSampleId2",
-                "result": "Positive",
-                "lh_sample_uuid": "aLighthouseUUID2",
-            },
-            {
-                "control": True,
-                "control_barcode": "aControlBarcode3",
-                "control_coordinate": "A3",
-                "lab_id": "centre_3",
-                "picked": True,
-                "rna_id": f"{source_barcode}_A03",
-                "robot_barcode": "aRobotBarcode",
-                "automation_system_run_id": run_id,
-                "sample_id": "aSampleId3",
-                "source_barcode": source_barcode,
-                "source_coordinate": "B3",
-                "root_sample_id": "aRootSampleId3",
-                "result": "Positive",
-                "lh_sample_uuid": "aLighthouseUUID3",
-            },
-            {
-                "control": True,
-                "control_barcode": "aControlBarcode4",
-                "control_coordinate": "A4",
-                "lab_id": "centre_4",
-                "picked": True,
-                "rna_id": f"{source_barcode}_A04",
-                "robot_barcode": "aRobotBarcode",
-                "automation_system_run_id": run_id - 1,
-                "sample_id": "aSampleId4",
-                "source_barcode": source_barcode,
-                "source_coordinate": "B4",
-                "root_sample_id": "aRootSampleId4",
-                "result": "Positive",
-                "lh_sample_uuid": "aLighthouseUUID4",
-            },
-        ]
+        "data": {
+            "samples": [
+                {
+                    "automation_system_run_id": run_id,
+                    "destination_barcode": destination_barcode,
+                    "destination_coordinate": "A1",
+                    "lab_id": "centre_1",
+                    "picked": True,
+                    "rna_id": f"{source_barcode}_A01",
+                    "sample_id": "aSampleId1",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B1",
+                    "type": "sample",
+                },
+                {
+                    "automation_system_run_id": run_id,
+                    "destination_barcode": "",
+                    "destination_coordinate": "",
+                    "lab_id": "centre_2",
+                    "picked": False,
+                    "rna_id": f"{source_barcode}_A02",
+                    "sample_id": "aSampleId2",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B2",
+                    "type": "sample",
+                },
+                {
+                    "automation_system_run_id": run_id,
+                    "destination_barcode": destination_barcode,
+                    "destination_coordinate": "A1",
+                    "lab_id": "centre_3",
+                    "picked": True,
+                    "rna_id": f"{source_barcode}_A03",
+                    "sample_id": "aSampleId3",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B3",
+                    "type": "sample",
+                },
+                {
+                    "automation_system_run_id": run_id - 1,
+                    "destination_barcode": destination_barcode,
+                    "destination_coordinate": "A1",
+                    "lab_id": "centre_4",
+                    "picked": True,
+                    "rna_id": f"{source_barcode}_A04",
+                    "sample_id": "aSampleId4",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B4",
+                },
+            ]
+        }
     }
 
 

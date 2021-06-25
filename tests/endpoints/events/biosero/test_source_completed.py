@@ -37,6 +37,7 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
 
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("destination_barcode", ["plate_456"])
 def test_post_event_partially_completed(
     app,
     client,
