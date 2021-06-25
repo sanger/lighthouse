@@ -2,17 +2,6 @@ import logging
 from typing import Dict, Any
 
 from lighthouse.classes.plate_event import PlateEvent
-
-
-# TODO: The commented code in this class is one option of doing it
-# that will require create:
-# - SequencescapeMessage (./messages)
-# - DestinationPlateBarcode (./event_properties)
-# - Wells (./event_properties)
-# - Samples (./event_properties)
-# - Controls (./event_properties)
-# << BEGIN >>
-
 from lighthouse.classes.event_properties.definitions import (
     RobotUUID,
     RunInfo,
@@ -26,7 +15,6 @@ from lighthouse.classes.event_properties.definitions import (
     RunID,
     RobotSerialNumber,
 )
-# << END >>
 
 logger = logging.getLogger(__name__)
 
@@ -60,14 +48,34 @@ class DestinationCreated(PlateEvent):
 
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
-        #ss_message = self.build_new_sequencescape_message()
 
-        for key in ["samples_with_cog_uk_id", "controls", "source_plates", "destination_plate", "user_id", "robot_uuid", "run_info"]:
+        for key in [
+            "samples_with_cog_uk_id",
+            "controls",
+            "source_plates",
+            "destination_plate",
+            "user_id",
+            "robot_uuid",
+            "run_info",
+        ]:
             self.properties[key].add_to_warehouse_message(message)
 
-        # for key in ["samples", "controls", "destination_plate", "user_id"]:
-        #     self.properties[key].add_to_sequencescape_message(ss_message)
-
-        #ss_message.add_warehouse_message(message)
-        #return ss_message.render()
         return message.render()
+
+    def _create_sequencescape_message(self) -> Any:
+        ss_message = self.build_new_sequencescape_message()
+
+        for key in ["samples_with_cog_uk_id", "controls", "destination_plate"]:
+            self.properties[key].add_to_sequencescape_message(ss_message)
+
+        return ss_message
+
+    def process_event(self) -> None:
+        super().process_event()
+
+        message = self._create_sequencescape_message()
+        body = message.render()
+        response = message.send_to_ss()
+
+        if not response.ok:
+            raise Exception(f"There was some problem when sending message to Sequencescape: { body }")

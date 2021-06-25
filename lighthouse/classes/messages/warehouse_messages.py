@@ -12,6 +12,10 @@ from lighthouse.constants.fields import (
 )
 from lighthouse.types import SampleDoc
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 ###
 # subjects and roles for the message to the events warehouse
 ###

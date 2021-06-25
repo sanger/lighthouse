@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from lighthouse.helpers.mongo import get_event_with_uuid
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 
@@ -57,7 +57,6 @@ def test_post_event_partially_completed(
     mocked_responses,
     cherrytrack_mock_run_info,
     samples_in_cherrytrack,
-
     centres,
     destination_barcode,
     mlwh_samples_in_cherrytrack,
@@ -65,64 +64,99 @@ def test_post_event_partially_completed(
     cherrytrack_destination_plate_response,
     baracoda_mock_barcodes_group,
     baracoda_mock_responses,
-
 ):
     with app.app_context():
         with patch(
             "lighthouse.hooks.events.uuid4",
             side_effect=[int_to_uuid(1)],
         ):
-            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)]):
+            with patch(
+                "lighthouse.classes.messages.warehouse_messages.uuid4",
+                side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
+            ):
                 with patch(
                     "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
                     "mytime",
                 ):
-                    response = client.post(
-                        "/events",
-                        data={
-                            "automation_system_run_id": 3,
-                            "barcode": "HT-1234",
-                            "event_type": "lh_biosero_cp_destination_created",
-                            "user_id": "user1",
-                            "robot": "BHRB0001",
-                        },
-                        headers=biosero_auth_headers,
-                    )
+                    mock_response_send_ss = MagicMock()
+                    mock_response_send_ss.ok = True
+                    with patch(
+                        "lighthouse.classes.messages.sequencescape_messages.SequencescapeMessage._send_to_ss",
+                        return_value=mock_response_send_ss,
+                    ) as send_to_ss:
 
-                    # Test creates the event
-                    assert response.status_code == HTTPStatus.CREATED
+                        response = client.post(
+                            "/events",
+                            data={
+                                "automation_system_run_id": 3,
+                                "barcode": "HT-1234",
+                                "event_type": "lh_biosero_cp_destination_created",
+                                "user_id": "user1",
+                                "robot": "BHRB0001",
+                            },
+                            headers=biosero_auth_headers,
+                        )
 
-                    mocked_rabbit_channel.basic_publish.assert_called_with(
-                        exchange="lighthouse.test.examples",
-                        routing_key="test.event.lh_biosero_cp_destination_created",
-                        body='{"event": {"uuid": "'
-                        + int_to_uuid(1)
-                        + (
-                            '", "event_type": "lh_biosero_cp_destination_created", '
-                            '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
-                            '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
-                            '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
-                            '{"role_type": "sample", "subject_type": "sample", "friendly_name": '
-                            '"aRootSampleId3__plate_123_A03__centre_1__Positive", "uuid": "aLighthouseUUID3"}, '
-                            '{"role_type": "control", "subject_type": "sample", "friendly_name": "positive control: DN1234_A1", '
-                            '"uuid": "' + int_to_uuid(2) + '"}, '
-                            '{"role_type": "control", "subject_type": "sample", "friendly_name": "negative control: DN1234_A1", '
-                            '"uuid": "' + int_to_uuid(3) + '"}, '
-                            '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
-                            '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
-                            '{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
-                            '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
-                            '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
-                            '"uuid": "' + int_to_uuid(4) + '"}'
-                            '], "metadata": {}}, "lims": "LH_TEST"}'
-                        ),
-                    )
+                        # Test creates the event
+                        assert response.status_code == HTTPStatus.CREATED
 
-                    # The record is there
-                    event = get_event_with_uuid(int_to_uuid(1))
-                    assert event is not None
+                        event_message = (
+                            '{"event": {"uuid": "'
+                            + int_to_uuid(1)
+                            + (
+                                '", "event_type": "lh_biosero_cp_destination_created", '
+                                '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
+                                '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
+                                '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
+                                '{"role_type": "sample", "subject_type": "sample", "friendly_name": '
+                                '"aRootSampleId3__plate_123_A03__centre_1__Positive", "uuid": "aLighthouseUUID3"}, '
+                                '{"role_type": "control", "subject_type": "sample", "friendly_name": '
+                                '"positive control: DN1234_A1", '
+                                '"uuid": "' + int_to_uuid(2) + '"}, '
+                                '{"role_type": "control", "subject_type": "sample", "friendly_name": '
+                                '"negative control: DN1234_A1", '
+                                '"uuid": "' + int_to_uuid(3) + '"}, '
+                                '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
+                                '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
+                                '{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
+                                '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
+                                '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
+                                '"uuid": "' + int_to_uuid(4) + '"}'
+                                '], "metadata": {}}, "lims": "LH_TEST"}'
+                            )
+                        )
 
-                    # And it does not have errors
-                    assert event[FIELD_EVENT_ERRORS] is None
+                        mocked_rabbit_channel.basic_publish.assert_called_with(
+                            exchange="lighthouse.test.examples",
+                            routing_key="test.event.lh_biosero_cp_destination_created",
+                            body=event_message,
+                        )
 
+                        ss_message = (
+                            '{"data": {"type": "plates", "attributes": {"barcode": "HT-1234", '
+                            '"purpose_uuid": "ss_uuid_plate_purpose", '
+                            '"study_uuid": "ss_uuid_study", "wells": '
+                            '{"H08": {"name": "plate_123_A01", "sample_description": "aRootSampleId1", '
+                            '"supplier_name": "COGUK1", "phenotype": "Positive", "uuid": "aLighthouseUUID1"}, '
+                            '"H12": {"name": "plate_123_A03", "sample_description": "aRootSampleId3", '
+                            '"supplier_name": "COGUK2", '
+                            '"phenotype": "Positive", "uuid": "aLighthouseUUID3"}, '
+                            '"E10": {"supplier_name": "positive control: DN1234_A1", "control": true, '
+                            '"control_type": "positive"}, '
+                            '"E11": {"supplier_name": "negative control: DN1234_A1", "control": true, '
+                            '"control_type": "negative"}}, '
+                            '"events": []}}}'
+                        )
 
+                        send_to_ss.assert_called_once_with(
+                            ss_url=f"http://{app.config['SS_HOST']}/api/v2/heron/plates",
+                            headers={"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]},
+                            body=ss_message,
+                        )
+
+                        # The record is there
+                        event = get_event_with_uuid(int_to_uuid(1))
+                        assert event is not None
+
+                        # And it does not have errors
+                        assert event[FIELD_EVENT_ERRORS] is None

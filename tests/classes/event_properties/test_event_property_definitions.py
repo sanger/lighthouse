@@ -512,9 +512,6 @@ def test_all_controls_from_destination_value_gets_value(
             CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         ).value
 
-        for well in val.values():
-            del well["uuid"]
-
         assert val == {"E10": wells[2], "E11": wells[3]}
 
 
@@ -680,11 +677,9 @@ def test_source_plates_from_destination_value_gets_value(
         for elem in val:
             del elem["_id"]
 
-        assert val == [{
-                'Lab ID': 'lab_1',
-                'barcode': 'plate_123',
-                'lh_source_plate_uuid': 'a17c38cd-b2df-43a7-9896-582e7855b4cc'
-            }]
+        assert val == [
+            {"Lab ID": "lab_1", "barcode": "plate_123", "lh_source_plate_uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}
+        ]
 
 
 @pytest.mark.parametrize("run_id", [5])
@@ -709,9 +704,9 @@ def test_source_plates_from_destination_add_to_warehouse(
         instance.add_to_warehouse_message(message)
         assert message._subjects == [
             {
-                'role_type': 'cherrypicking_source_labware',
-                'subject_type': 'plate',
-                'friendly_name': 'plate_123',
-                'uuid': 'a17c38cd-b2df-43a7-9896-582e7855b4cc'
+                "role_type": "cherrypicking_source_labware",
+                "subject_type": "plate",
+                "friendly_name": "plate_123",
+                "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
             }
         ]

@@ -5,6 +5,7 @@ from typing import Any, Dict, Union, List
 
 from lighthouse.messages.message import Message
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
+from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
 
 from lighthouse.classes.services.warehouse import ServiceWarehouseMixin
 from lighthouse.helpers.mongo import set_errors_to_event
@@ -182,6 +183,11 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
         if self.state == EVENT_NOT_INITIALIZED:
             raise EventNotInitialized("We cannot build a new message because the event is not initialized")
         return WarehouseMessage(self.event_type, self.event_uuid, self.message_timestamp)
+
+    def build_new_sequencescape_message(self) -> SequencescapeMessage:
+        if self.state == EVENT_NOT_INITIALIZED:
+            raise EventNotInitialized("We cannot build a new message because the event is not initialized")
+        return SequencescapeMessage()
 
     @property
     def errors(self) -> Dict[str, List[str]]:

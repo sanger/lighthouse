@@ -39,7 +39,6 @@ from lighthouse.constants.fields import (
 
 from lighthouse.helpers.plates import add_cog_barcodes_from_different_centres, update_mlwh_with_cog_uk_ids
 
-from uuid import uuid4
 
 from flask import current_app as app
 import logging
@@ -77,8 +76,8 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
     def add_to_warehouse_message(self, message):
         return None
 
-    def add_to_sequencescape(self, message):
-        message.add_barcode(self.value)
+    def add_to_sequencescape_message(self, message):
+        message.set_barcode(self.value)
 
 
 class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
@@ -492,13 +491,13 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
         )
 
     def add_to_sequencescape_message(self, message):
-        for position, control in self.value:
+        for position in self.value:
+            control = self.value[position]
             message.set_well_sample(
                 position,
                 {
                     FIELD_SS_SUPPLIER_NAME: self._supplier_name_for_control(control),
                     FIELD_SS_CONTROL: True,
                     FIELD_SS_CONTROL_TYPE: control[FIELD_CHERRYTRACK_CONTROL],
-                    FIELD_SS_UUID: control["uuid"],
                 },
             )
