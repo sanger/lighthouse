@@ -42,5 +42,5 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             plate_event.process_errors()
         except Exception as e:
             plate_event.process_exception(e)
-            if (event_type == Biosero.EVENT_DESTINATION_CREATED):
+            if event_type == Biosero.EVENT_DESTINATION_CREATED:
                 abort(HTTPStatus.INTERNAL_SERVER_ERROR, "The plate could not be created because an error has happened.")

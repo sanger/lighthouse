@@ -14,9 +14,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-EVENT_INITIALIZED = "initialized"
-EVENT_NOT_INITIALIZED = "not_initialized"
-
 
 class EventNotInitialized(BaseException):
     pass
@@ -75,6 +72,9 @@ class PlateEventInterface(ABC):
 
 
 class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
+    EVENT_INITIALIZED = "initialized"
+    EVENT_NOT_INITIALIZED = "not_initialized"
+
     class PlateTypeEnum(Enum):
         SOURCE = auto()
         DESTINATION = auto()
@@ -89,7 +89,7 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
         """
         self._event_type = event_type
         self._plate_type = plate_type
-        self._state: str = EVENT_NOT_INITIALIZED
+        self._state: str = PlateEvent.EVENT_NOT_INITIALIZED
         self.properties: Dict[str, EventPropertyInterface] = {}
         self._validation: bool = True
 
@@ -106,7 +106,7 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
         if "_created" not in params.keys():
             raise EventNotInitialized("Missing _created")
 
-        self._state = EVENT_INITIALIZED
+        self._state = PlateEvent.EVENT_INITIALIZED
         self._event_uuid: str = params["event_wh_uuid"]
         self._message_timestamp: str = params["_created"].isoformat(timespec="seconds")
 
@@ -164,7 +164,7 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
         - create a new message to send to the warehouse
         - send the message to the warehouse
         """
-        if not self.state == EVENT_INITIALIZED:
+        if not self.state == PlateEvent.EVENT_INITIALIZED:
             raise EventNotInitialized("Not initialized event")
 
         message = self._create_message()
@@ -180,12 +180,12 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
             {WarehouseMessage} - Message that we are building in order to publish to
             the warehouse
         """
-        if self.state == EVENT_NOT_INITIALIZED:
+        if self.state == PlateEvent.EVENT_NOT_INITIALIZED:
             raise EventNotInitialized("We cannot build a new message because the event is not initialized")
         return WarehouseMessage(self.event_type, self.event_uuid, self.message_timestamp)
 
     def build_new_sequencescape_message(self) -> SequencescapeMessage:
-        if self.state == EVENT_NOT_INITIALIZED:
+        if self.state == PlateEvent.EVENT_NOT_INITIALIZED:
             raise EventNotInitialized("We cannot build a new message because the event is not initialized")
         return SequencescapeMessage()
 
@@ -199,10 +199,10 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
         """
         error_message = {}
         for event_property_name in self.properties.keys():
-            if len(self.properties[event_property_name].errors) > 0:  # type: ignore
+            if len(self.properties[event_property_name].errors) > 0:
                 error_message[event_property_name] = self.properties[event_property_name].errors
 
-        return error_message  # type: ignore
+        return error_message
 
     def is_valid(self) -> bool:
         """
