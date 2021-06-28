@@ -38,7 +38,7 @@ SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS = [
     [UserID, FIELD_EVENT_USER_ID, ["user1", "user 1"], [None, ""]],
     [RobotSerialNumber, FIELD_EVENT_ROBOT, ["1234"], ["12 34", None, ""]],
     [BarcodeNoPlateMapData, FIELD_EVENT_BARCODE, ["AA1234", "", "something dodgy"], [None]],
-    [FailureType, FIELD_FAILURE_TYPE, ["my_error"], [None, "", "my error"]]
+    [FailureType, FIELD_FAILURE_TYPE, ["my_error"], [None, "", "my error"]],
 ]
 
 

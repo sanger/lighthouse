@@ -61,4 +61,3 @@ class DestinationPartial(PlateEvent):
             self.properties[key].add_to_warehouse_message(message)
 
         return message.render()
-

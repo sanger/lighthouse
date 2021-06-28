@@ -48,7 +48,6 @@ class DestinationFailed(PlateEvent):
         self.properties["robot_serial_number"] = RobotSerialNumber(params)
         self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
 
-
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
 
@@ -65,4 +64,3 @@ class DestinationFailed(PlateEvent):
             self.properties[key].add_to_warehouse_message(message)
 
         return message.render()
-
