@@ -40,6 +40,7 @@ class EventPropertyInterface(ABC):
         """
         ...
 
+    @property
     @abstractmethod
     def errors(self) -> List[str]:
         """
