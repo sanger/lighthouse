@@ -48,10 +48,10 @@ logger = logging.getLogger(__name__)
 
 
 class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_RUN_ID)
-        self.validate_param_is_integer(FIELD_EVENT_RUN_ID)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_RUN_ID)
+        self.is_valid_param_is_integer(FIELD_EVENT_RUN_ID)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -63,11 +63,11 @@ class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
 
 
 class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_BARCODE)
-        self.validate_param_not_empty(FIELD_EVENT_BARCODE)
-        self.validate_param_no_whitespaces(FIELD_EVENT_BARCODE)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_BARCODE)
+        self.is_valid_param_not_empty(FIELD_EVENT_BARCODE)
+        self.is_valid_param_no_whitespaces(FIELD_EVENT_BARCODE)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -86,12 +86,12 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
         self.reset()
         self.run_id_property = run_id_property
 
-    def validate(self):
-        return self.run_id_property.validate()
+    def is_valid(self):
+        return self.run_id_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.run_id_property.errors
 
     @cached_property
@@ -117,12 +117,12 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, Se
         self.barcode_property = barcode_property
         self.run_id_property = run_id_property
 
-    def validate(self):
-        return self.barcode_property.validate() and self.run_id_property.validate()
+    def is_valid(self):
+        return self.barcode_property.is_valid() and self.run_id_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.barcode_property.errors + self.run_id_property.errors
 
     @cached_property
@@ -151,12 +151,12 @@ class AllSamplesFromSource(EventPropertyAbstract, ServiceMongoMixin):
         self.reset()
         self.barcode_property = barcode_property
 
-    def validate(self):
-        return self.barcode_property.validate()
+    def is_valid(self):
+        return self.barcode_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.barcode_property.errors
 
     @cached_property
@@ -170,10 +170,10 @@ class AllSamplesFromSource(EventPropertyAbstract, ServiceMongoMixin):
 
 
 class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_USER_ID)
-        self.validate_param_not_empty(FIELD_EVENT_USER_ID)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_USER_ID)
+        self.is_valid_param_not_empty(FIELD_EVENT_USER_ID)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -188,11 +188,11 @@ class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
 
 
 class RobotSerialNumber(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_ROBOT)
-        self.validate_param_not_empty(FIELD_EVENT_ROBOT)
-        self.validate_param_no_whitespaces(FIELD_EVENT_ROBOT)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_ROBOT)
+        self.is_valid_param_not_empty(FIELD_EVENT_ROBOT)
+        self.is_valid_param_no_whitespaces(FIELD_EVENT_ROBOT)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -208,12 +208,12 @@ class RobotUUID(EventPropertyAbstract, ServiceCherrytrackMixin):
         self.reset()
         self.robot_serial_number_property = robot_serial_number_property
 
-    def validate(self):
-        return self.robot_serial_number_property.validate()
+    def is_valid(self):
+        return self.robot_serial_number_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.robot_serial_number_property.errors
 
     @cached_property
@@ -244,12 +244,12 @@ class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
         self.reset()
         self.barcode_property = barcode_property
 
-    def validate(self):
-        return self.barcode_property.validate()
+    def is_valid(self):
+        return self.barcode_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.barcode_property.errors
 
     @cached_property
@@ -270,9 +270,9 @@ class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
 
 
 class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_BARCODE)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_BARCODE)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -288,10 +288,10 @@ class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackM
         self.reset()
         self.barcode_property = barcode_property
 
-    def validate(self):
-        return self.barcode_property.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.barcode_property.is_valid() and (len(self._errors) == 0)
 
-    def _validate_destination_coordinate_not_duplicated(self, wells):
+    def _is_valid_destination_coordinate_not_duplicated(self, wells):
         coordinates = [well["destination_coordinate"] for well in wells]
         duplicates = set([coor for coor in coordinates if coordinates.count(coor) > 1])
         if len(duplicates) > 0:
@@ -299,14 +299,14 @@ class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackM
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.barcode_property.errors
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
             val = self.get_wells_from_destination_plate(self.barcode_property.value)
-            self._validate_destination_coordinate_not_duplicated(val)
+            self._is_valid_destination_coordinate_not_duplicated(val)
             return val
 
     def add_to_warehouse_message(self, message):
@@ -318,12 +318,12 @@ class SourcePlatesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
 
-    def validate(self):
-        return self.cherrytrack_wells_from_destination.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.cherrytrack_wells_from_destination.errors
 
     def _source_barcodes(self):
@@ -354,12 +354,12 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
 
-    def validate(self):
-        return self.cherrytrack_wells_from_destination.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.cherrytrack_wells_from_destination.errors
 
     def _well_samples(self):
@@ -369,7 +369,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
                 val.append(sample)
         return val
 
-    def _validate_no_duplicate_uuids(self, uuids):
+    def _is_valid_no_duplicate_uuids(self, uuids):
         duplicates = set([uuid for uuid in uuids if uuids.count(uuid) > 1])
         if len(duplicates) > 0:
             raise RetrievalError(f"There is duplication in the sample ids provided: { list(duplicates) }")
@@ -390,7 +390,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
 
     def samples(self) -> Any:
         sample_uuids: List[str] = [sample["sample_id"] for sample in self._well_samples()]
-        self._validate_no_duplicate_uuids(sample_uuids)
+        self._is_valid_no_duplicate_uuids(sample_uuids)
         return self.get_samples_from_mongo(sample_uuids)
 
     @cached_property
@@ -408,8 +408,8 @@ class SamplesWithCogUkId(EventPropertyAbstract):
         self.reset()
         self.samples_from_destination = samples_from_destination
 
-    def validate(self):
-        return self.samples_from_destination.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.samples_from_destination.is_valid() and (len(self._errors) == 0)
 
     @cached_property
     def value(self):
@@ -443,15 +443,15 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
 
-    def validate(self):
-        return self.cherrytrack_wells_from_destination.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.cherrytrack_wells_from_destination.errors
 
-    def _validate_positive_and_negative_present(self, wells):
+    def _is_valid_positive_and_negative_present(self, wells):
         control_types = [well["control"] for well in wells]
         control_types.sort()
         if control_types != ["negative", "positive"]:
@@ -474,7 +474,7 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     def value(self):
         with self.retrieval_scope():
             val = self._well_controls()
-            self._validate_positive_and_negative_present(val)
+            self._is_valid_positive_and_negative_present(val)
             return self._mapping_with_controls()
 
     def add_to_warehouse_message(self, message):
@@ -505,11 +505,11 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
 
 
 class FailureType(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_FAILURE_TYPE)
-        self.validate_param_not_empty(FIELD_FAILURE_TYPE)
-        self.validate_param_no_whitespaces(FIELD_FAILURE_TYPE)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_FAILURE_TYPE)
+        self.is_valid_param_not_empty(FIELD_FAILURE_TYPE)
+        self.is_valid_param_no_whitespaces(FIELD_FAILURE_TYPE)
+        return self._is_valid
 
     @cached_property
     def value(self):

@@ -19,9 +19,9 @@ class EventPropertyProtocol(Protocol):
 class SimpleEventPropertyMixin:
     """Set of tools to perform validation on simple event properties."""
 
-    def validate_param_not_missing(self: EventPropertyProtocol, param: str) -> None:
+    def is_valid_param_not_missing(self: EventPropertyProtocol, param: str) -> None:
         """
-        Validates that the params dictionary contains a value for the
+        is_valids that the params dictionary contains a value for the
         key provided as argument
 
         Arguments
@@ -33,9 +33,9 @@ class SimpleEventPropertyMixin:
         with self.validation_scope():
             self.process_validation(self._params.get(param) is not None, f"'{ param }' is missing")
 
-    def validate_param_not_empty(self: EventPropertyProtocol, param: str) -> None:
+    def is_valid_param_not_empty(self: EventPropertyProtocol, param: str) -> None:
         """
-        Validates that the params dictionary contains a value for the
+        is_valids that the params dictionary contains a value for the
         key provided as argument that is not an empty string ('')
 
         Arguments
@@ -47,9 +47,9 @@ class SimpleEventPropertyMixin:
         with self.validation_scope():
             self.process_validation(self._params.get(param) != "", f"'{ param }' should not be an empty string")
 
-    def validate_param_no_whitespaces(self: EventPropertyProtocol, param: str) -> None:
+    def is_valid_param_no_whitespaces(self: EventPropertyProtocol, param: str) -> None:
         """
-        Validates that the params dictionary contains a value for the
+        is_valids that the params dictionary contains a value for the
         key provided as argument that does not contain any whitespaces.
 
         Arguments
@@ -64,9 +64,9 @@ class SimpleEventPropertyMixin:
                 text_to_check is None or (" " not in text_to_check), f"'{ param }' should not contain any whitespaces"
             )
 
-    def validate_param_is_integer(self: EventPropertyProtocol, param: str) -> None:
+    def is_valid_param_is_integer(self: EventPropertyProtocol, param: str) -> None:
         """
-        Validates that the params dictionary contains a value for the
+        is_valids that the params dictionary contains a value for the
         key provided as argument that it represents an integer.
         This string can contain the sign of integer (+ for positive, - for negative)
         and could include whitespaces.

@@ -68,14 +68,14 @@ def test_value_for_simple_event_property(app, params):
 
 
 @pytest.mark.parametrize("params", SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS)
-def test_validate_for_simple_event_property(app, params):
+def test_is_valid_for_simple_event_property(app, params):
     klass, field, valid_list, invalid_list = params
 
     for invalid in invalid_list:
-        assert klass({field: invalid}).validate() is False
+        assert klass({field: invalid}).is_valid() is False
 
     for valid in valid_list:
-        assert klass({field: valid}).validate() is True
+        assert klass({field: valid}).is_valid() is True
 
 
 @pytest.mark.parametrize("params", SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS)
@@ -107,10 +107,10 @@ def test_robot_uuid_new(app):
     assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "a test"})) is not None
 
 
-def test_robot_uuid_validate(app):
-    assert RobotUUID(RobotSerialNumber({})).validate() is False
-    assert RobotUUID(RobotSerialNumber({"test": "another test"})).validate() is False
-    assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"})).validate() is True
+def test_robot_uuid_is_valid(app):
+    assert RobotUUID(RobotSerialNumber({})).is_valid() is False
+    assert RobotUUID(RobotSerialNumber({"test": "another test"})).is_valid() is False
+    assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"})).is_valid() is True
 
 
 def test_robot_uuid_value(app):
@@ -133,9 +133,9 @@ def test_robot_uuid_errors(app):
         robot.value
         assert len(robot.errors) == 0
 
-        # After validate false
+        # After is_valid false
         robot = RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "12 34"}))
-        robot.validate()
+        robot.is_valid()
         assert len(robot.errors) > 0
 
         # After retrieval error
@@ -291,7 +291,7 @@ def test_all_samples_unsuccessful(app, source_barcode):
     with app.app_context():
         myExc = None
         obj = MagicMock()
-        obj.validate.return_value = True
+        obj.is_valid.return_value = True
         type(obj).value = PropertyMock(side_effect=Exception("boom!"))
         try:
             AllSamplesFromSource(obj).value
@@ -307,10 +307,10 @@ def test_source_plate_uuid_new(app, source_plates):
     assert SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate_123"})) is not None
 
 
-def test_source_plate_uuid_validate(app, source_plates):
-    assert SourcePlateUUID(PlateBarcode({})).validate() is False
-    assert SourcePlateUUID(PlateBarcode({"test": "another test"})).validate() is False
-    assert SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate_123"})).validate() is True
+def test_source_plate_uuid_is_valid(app, source_plates):
+    assert SourcePlateUUID(PlateBarcode({})).is_valid() is False
+    assert SourcePlateUUID(PlateBarcode({"test": "another test"})).is_valid() is False
+    assert SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate_123"})).is_valid() is True
 
 
 def test_source_plate_uuid_value(app, source_plates):
@@ -334,9 +334,9 @@ def test_source_plate_uuid_errors(app, source_plates):
         source_plate_property.value
         assert len(source_plate_property.errors) == 0
 
-        # After validate false
+        # After is_valid false
         source_plate_property = SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "plate _123"}))
-        source_plate_property.validate()
+        source_plate_property.is_valid()
         assert len(source_plate_property.errors) > 0
 
         # After retrieval error
@@ -382,13 +382,13 @@ def test_cherrytrack_wells_from_destination_value_fails_with_duplicated_wells(
 ):
     with app.app_context():
         instance = CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
-        assert instance.validate() is True
+        assert instance.is_valid() is True
         assert instance.errors == []
 
         with pytest.raises(Exception):
             instance.value
 
-        assert instance.validate() is False
+        assert instance.is_valid() is False
         assert instance.errors == [
             "Exception during retrieval: Some coordinates have clashing samples/controls: {'H1'}"
         ]
@@ -440,13 +440,13 @@ def test_all_samples_from_destination_value_fails_with_unknown_samples(
         instance = SamplesFromDestination(
             CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         )
-        assert instance.validate() is True
+        assert instance.is_valid() is True
         assert instance.errors == []
 
         with pytest.raises(Exception):
             instance.value
 
-        assert instance.validate() is False
+        assert instance.is_valid() is False
         assert instance.errors == [
             (
                 "Exception during retrieval: Some samples cannot be obtained because are not present"
@@ -485,13 +485,13 @@ def test_all_samples_from_destination_value_fails_with_duplicated_samples(
         instance = SamplesFromDestination(
             CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         )
-        assert instance.validate() is True
+        assert instance.is_valid() is True
         assert instance.errors == []
 
         with pytest.raises(Exception):
             instance.value
 
-        assert instance.validate() is False
+        assert instance.is_valid() is False
         assert instance.errors == [
             ("Exception during retrieval: There is duplication in the sample ids provided: ['uuid1']")
         ]
@@ -547,13 +547,13 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
         instance = ControlsFromDestination(
             CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         )
-        assert instance.validate() is True
+        assert instance.is_valid() is True
         assert instance.errors == []
 
         with pytest.raises(Exception):
             instance.value
 
-        assert instance.validate() is False
+        assert instance.is_valid() is False
         assert instance.errors == [
             ("Exception during retrieval: We were expecting one positive and one negative control to be present.")
         ]

@@ -49,7 +49,7 @@ class PlateEventInterface(ABC):
         ...
 
     @abstractmethod
-    def validate(self) -> bool:
+    def is_valid(self) -> bool:
         """This method will perform a validation of all event properties.
         Returns:
             {bool} - True if all properties are valid, False if not
@@ -204,7 +204,7 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
 
         return error_message  # type: ignore
 
-    def validate(self) -> bool:
+    def is_valid(self) -> bool:
         """
         Performs a validation on all event properties and returns True/False indicating if
         the current instance is valid
@@ -214,7 +214,7 @@ class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
         """
         self._validation = True
         for event_property_name in self.properties.keys():
-            self._validation = self._validation and self.properties[event_property_name].validate()
+            self._validation = self._validation and self.properties[event_property_name].is_valid()
         return self._validation
 
     def process_errors(self) -> bool:

@@ -31,7 +31,7 @@ class SourceNoPlateMapData(PlateEvent):
         self.properties["run_id"] = RunID(params)
 
         for key in ["plate_barcode", "user_id", "run_id"]:
-            self.properties[key].validate()
+            self.properties[key].is_valid()
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
         self.properties["robot_serial_number"] = RobotSerialNumber(params)

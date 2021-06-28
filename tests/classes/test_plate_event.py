@@ -75,20 +75,20 @@ def test_errors(app):
         assert event.errors == {"myprop1": ["an error"], "myprop2": ["another error", "other one"]}
 
 
-def test_validate(app):
+def test_is_valid(app):
     with app.app_context():
         event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
-        assert event.validate() is True
+        assert event.is_valid() is True
 
         mock = MagicMock()
-        mock.validate = MagicMock(name="validate", return_value=True)
+        mock.is_valid = MagicMock(name="is_valid", return_value=True)
         event.properties["myprop1"] = mock
-        assert event.validate() is True
+        assert event.is_valid() is True
 
         mock2 = MagicMock()
-        mock2.validate = MagicMock(name="validate", return_value=False)
+        mock2.is_valid = MagicMock(name="is_valid", return_value=False)
         event.properties["myprop2"] = mock2
-        assert event.validate() is False
+        assert event.is_valid() is False
 
 
 def test_process_errors(app):

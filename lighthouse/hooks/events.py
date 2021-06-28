@@ -34,7 +34,7 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             plate_event = biosero.get_plate_event(event_type)
 
             plate_event.initialize_event(event)
-            if plate_event.validate():
+            if plate_event.is_valid():
                 plate_event.process_event()
 
             plate_event.process_errors()

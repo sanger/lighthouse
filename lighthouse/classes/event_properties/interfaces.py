@@ -24,7 +24,7 @@ class EventPropertyInterface(ABC):
     """
 
     @abstractmethod
-    def validate(self) -> bool:
+    def is_valid(self) -> bool:
         """
         Retuns a boolean (True or False) indicating if the params received for this
         EventProperty are correct in order to retrieve the data. If there is an error
@@ -59,7 +59,7 @@ class EventPropertyInterface(ABC):
         Returns the value for the property. If the value cannot be obtained or
         does not have a valid value, then it raises an exception.
         NB: To avoid this it, the instance should be checked first with the
-        validate() method.
+        is_valid() method.
 
         Arguments:
             None
@@ -88,7 +88,7 @@ class EventPropertyInterface(ABC):
 
 class EventPropertyAbstract(EventPropertyInterface):
     """
-    This class provide some tools to validate data obtained directly
+    This class provide some tools to is_valid data obtained directly
     from the params argument.
     It is an abstract class that will need to define the methods specified
     in its interface class (EventPropertyInterface).
@@ -121,12 +121,12 @@ class EventPropertyAbstract(EventPropertyInterface):
         """
         self._errors: List[str] = []
         self._value = None
-        self._validate = True
+        self._is_valid = True
 
     @property
     def errors(self) -> List[str]:
         """
-        Validates the instance and returns the complete list of errors found (this
+        is_valids the instance and returns the complete list of errors found (this
         errors are not just validations; it could also be previous exceptions
         thrown during the lifetime of this instance).
 
@@ -136,13 +136,13 @@ class EventPropertyAbstract(EventPropertyInterface):
         Returns:
             List[str] - List of error messages found currently
         """
-        self.validate()
+        self.is_valid()
         return self._errors
 
     def valid(self) -> bool:
-        """Alias for #validate()"""
+        """Alias for #is_valid()"""
 
-        return self.validate()
+        return self.is_valid()
 
     def enforce_validation(self) -> None:
         """
@@ -151,7 +151,7 @@ class EventPropertyAbstract(EventPropertyInterface):
         Returns:
             ValidationError - Raises exception
         """
-        if not self.validate():
+        if not self.is_valid():
             raise ValidationError("Validation error")
 
     def process_validation(self, condition: bool, message: str) -> None:
@@ -173,8 +173,8 @@ class EventPropertyAbstract(EventPropertyInterface):
         if not condition:
             if message not in self._errors:
                 self._errors.append(message)
-            self._validate = False
-        self._validate = self._validate and True
+            self._is_valid = False
+        self._is_valid = self._is_valid and True
 
     @contextmanager
     def validation_scope(self):
@@ -182,7 +182,7 @@ class EventPropertyAbstract(EventPropertyInterface):
         Creates a 'safe' scope where we can perform a validation check without
         raising the exception, but log this situations if it happens.
         This is intended to be use only with small validation operations inside the
-        validate() method. It is not recommended in any other case.
+        is_valid() method. It is not recommended in any other case.
 
         Arguments:
             None
@@ -193,8 +193,8 @@ class EventPropertyAbstract(EventPropertyInterface):
         try:
             yield
         except Exception as exc:
-            self._validate = False
-            msg = f"Unexpected exception while trying to validate {exc}"
+            self._is_valid = False
+            msg = f"Unexpected exception while trying to is_valid {exc}"
             if msg not in self._errors:
                 self._errors.append(msg)
             logger.exception(exc)
@@ -218,7 +218,7 @@ class EventPropertyAbstract(EventPropertyInterface):
             self.enforce_validation()
             yield
         except Exception as exc:
-            self._validate = False
+            self._is_valid = False
             msg = f"Exception during retrieval: {exc}"
             if msg not in self._errors:
                 self._errors.append(msg)
