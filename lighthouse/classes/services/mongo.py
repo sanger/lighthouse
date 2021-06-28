@@ -8,10 +8,10 @@ from lighthouse.constants.fields import (
 
 
 class ServiceMongoMixin:
-    def get_samples_from_mongo(self, ids):
+    def get_samples_from_mongo(self, uuids):
         samples_collection = app.data.driver.db.samples  # type: ignore
 
-        samples = list(samples_collection.find({FIELD_LH_SAMPLE_UUID: {"$in": ids}}))
+        samples = list(samples_collection.find({FIELD_LH_SAMPLE_UUID: {"$in": uuids}}))
 
         obtained_uuids = [sample[FIELD_LH_SAMPLE_UUID] for sample in samples]
 

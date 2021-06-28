@@ -425,7 +425,7 @@ def test_all_samples_from_destination_value_gets_value(
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
 @pytest.mark.parametrize(
     "cherrytrack_destination_plate_response",
-    [{"data": {"wells": [{"type": "sample", "sample_id": "unknown", "destination_coordinate": "H1"}]}}],
+    [{"data": {"wells": [{"type": "sample", "lh_sample_uuid": "unknown", "destination_coordinate": "H1"}]}}],
 )
 def test_all_samples_from_destination_value_fails_with_unknown_samples(
     app,
@@ -464,9 +464,9 @@ def test_all_samples_from_destination_value_fails_with_unknown_samples(
         {
             "data": {
                 "wells": [
-                    {"type": "sample", "sample_id": "uuid1", "destination_coordinate": "H1"},
-                    {"type": "sample", "sample_id": "uuid2", "destination_coordinate": "H2"},
-                    {"type": "sample", "sample_id": "uuid1", "destination_coordinate": "H3"},
+                    {"type": "sample", "lh_sample_uuid": "uuid1", "destination_coordinate": "H1"},
+                    {"type": "sample", "lh_sample_uuid": "uuid2", "destination_coordinate": "H2"},
+                    {"type": "sample", "lh_sample_uuid": "uuid1", "destination_coordinate": "H3"},
                 ]
             }
         }
