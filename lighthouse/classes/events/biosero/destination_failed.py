@@ -34,8 +34,8 @@ class DestinationFailed(PlateEvent):
         self.properties["run_id"] = RunID(params)
         self.properties["failure_type"] = FailureType(params)
 
-        for key in ["plate_barcode", "user_id", "run_id", "failure_type"]:
-            self.properties[key].is_valid()
+        for property_name in ["plate_barcode", "user_id", "run_id", "failure_type"]:
+            self.properties[property_name].is_valid()
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
 
@@ -51,7 +51,7 @@ class DestinationFailed(PlateEvent):
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
 
-        for key in [
+        for property_name in [
             "samples_with_cog_uk_id",
             "controls",
             "source_plates",
@@ -61,6 +61,6 @@ class DestinationFailed(PlateEvent):
             "run_info",
             "failure_type",
         ]:
-            self.properties[key].add_to_warehouse_message(message)
+            self.properties[property_name].add_to_warehouse_message(message)
 
         return message.render()

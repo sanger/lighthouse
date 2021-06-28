@@ -35,6 +35,43 @@ def test_post_destination_created_missing_barcode(app, client, biosero_auth_head
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
+@pytest.mark.parametrize("run_id", [3])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+@pytest.mark.parametrize("cherrytrack_mock_destination_plate_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
+def test_post_destination_created_cherrytrack_fails(
+    app,
+    client,
+    biosero_auth_headers,
+    clear_events_when_finish,
+    mocked_rabbit_channel,
+    source_plates,
+    run_id,
+    mocked_responses,
+    samples_in_cherrytrack,
+    centres,
+    destination_barcode,
+    mlwh_samples_in_cherrytrack,
+    cherrytrack_mock_destination_plate,
+    cherrytrack_destination_plate_response,
+    cherrytrack_mock_destination_plate_status,
+):
+    with app.app_context():
+        response = client.post(
+            "/events",
+            data={
+                "automation_system_run_id": 3,
+                "barcode": "HT-1234",
+                "event_type": "lh_biosero_cp_destination_plate_completed",
+                "user_id": "user1",
+                "robot": "BHRB0001",
+            },
+            headers=biosero_auth_headers,
+        )
+
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 @pytest.mark.parametrize(
     "baracoda_mock_responses",
     [

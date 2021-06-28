@@ -81,7 +81,7 @@ class SimpleEventPropertyMixin:
         with self.validation_scope():
             self.process_validation(self.is_integer(self._params.get(param)), f"'{ param }' should be an integer")
 
-    def is_integer(self: EventPropertyProtocol, n: Optional[str]) -> bool:
+    def is_integer(self: EventPropertyProtocol, param: Optional[str]) -> bool:
         """
         Function that returns if the string provided can represent an integer.
         This string can contain the sign of integer (+ for positive, - for negative)
@@ -93,11 +93,11 @@ class SimpleEventPropertyMixin:
         Returns
             bool - True/False indicating if this condition is met
         """
-        if n is None:
+        if param is None:
             return False
         try:
-            float(n)
+            float(param)
         except ValueError:
             return False
         else:
-            return float(n).is_integer()
+            return float(param).is_integer()

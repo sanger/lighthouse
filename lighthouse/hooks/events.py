@@ -1,6 +1,8 @@
 #  https://docs.python-eve.org/en/stable/features.html#database-event-hooks
 import logging
 from typing import Any, Dict, List
+from flask import abort
+from http import HTTPStatus
 
 from lighthouse.classes.automation_system import AutomationSystem
 from lighthouse.classes.biosero import Biosero
@@ -40,3 +42,5 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             plate_event.process_errors()
         except Exception as e:
             plate_event.process_exception(e)
+            if (event_type == Biosero.EVENT_DESTINATION_CREATED):
+                abort(HTTPStatus.INTERNAL_SERVER_ERROR, "The plate could not be created because an error has happened.")

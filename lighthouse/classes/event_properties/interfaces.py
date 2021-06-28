@@ -54,6 +54,7 @@ class EventPropertyInterface(ABC):
         """
         ...
 
+    @property
     @abstractmethod
     def value(self) -> Any:
         """
@@ -93,9 +94,6 @@ class EventPropertyAbstract(EventPropertyInterface):
     from the params argument.
     It is an abstract class that will need to define the methods specified
     in its interface class (EventPropertyInterface).
-    If a more advanced process is needed (like accessing an external service),
-    then the methods of this class should be rewritten (or a new class
-    should be created).
     This class also contains methods that will be needed for internal
     process for the class but should not be called from outside of this
     instance (they should be considered all protected methods).
