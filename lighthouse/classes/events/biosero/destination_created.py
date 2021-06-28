@@ -26,6 +26,7 @@ from lighthouse.classes.event_properties.definitions import (
     RunID,
     RobotSerialNumber,
 )
+
 # << END >>
 
 logger = logging.getLogger(__name__)
@@ -60,14 +61,22 @@ class DestinationCreated(PlateEvent):
 
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
-        #ss_message = self.build_new_sequencescape_message()
+        # ss_message = self.build_new_sequencescape_message()
 
-        for key in ["samples_with_cog_uk_id", "controls", "source_plates", "destination_plate", "user_id", "robot_uuid", "run_info"]:
+        for key in [
+            "samples_with_cog_uk_id",
+            "controls",
+            "source_plates",
+            "destination_plate",
+            "user_id",
+            "robot_uuid",
+            "run_info",
+        ]:
             self.properties[key].add_to_warehouse_message(message)
 
         # for key in ["samples", "controls", "destination_plate", "user_id"]:
         #     self.properties[key].add_to_sequencescape_message(ss_message)
 
-        #ss_message.add_warehouse_message(message)
-        #return ss_message.render()
+        # ss_message.add_warehouse_message(message)
+        # return ss_message.render()
         return message.render()

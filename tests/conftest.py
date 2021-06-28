@@ -533,6 +533,7 @@ def cherrytrack_mock_source_plates(
     app,
     mocked_responses,
     source_barcode,
+    destination_barcode,
     cherrytrack_source_plates_response,
     cherrytrack_mock_source_plates_status,
 ):
@@ -644,8 +645,8 @@ def cherrytrack_source_plates_response(run_id, source_barcode, destination_barco
                     "destination_coordinate": "A1",
                     "lab_id": "centre_1",
                     "picked": True,
-                    "rna_id": f"{source_barcode}_A01",
-                    "lh_sample_uuid": "aSampleId1",
+                    "rna_id": f"{source_barcode}_B1",
+                    "lh_sample_uuid": "aLighthouseUUID1",
                     "source_barcode": source_barcode,
                     "source_coordinate": "B1",
                     "type": "sample",
@@ -656,8 +657,8 @@ def cherrytrack_source_plates_response(run_id, source_barcode, destination_barco
                     "destination_coordinate": "",
                     "lab_id": "centre_2",
                     "picked": False,
-                    "rna_id": f"{source_barcode}_A02",
-                    "lh_sample_uuid": "aSampleId2",
+                    "rna_id": f"{source_barcode}_B2",
+                    "lh_sample_uuid": "aLighthouseUUID2",
                     "source_barcode": source_barcode,
                     "source_coordinate": "B2",
                     "type": "sample",
@@ -668,8 +669,8 @@ def cherrytrack_source_plates_response(run_id, source_barcode, destination_barco
                     "destination_coordinate": "A1",
                     "lab_id": "centre_3",
                     "picked": True,
-                    "rna_id": f"{source_barcode}_A03",
-                    "lh_sample_uuid": "aSampleId3",
+                    "rna_id": f"{source_barcode}_B3",
+                    "lh_sample_uuid": "aLighthouseUUID3",
                     "source_barcode": source_barcode,
                     "source_coordinate": "B3",
                     "type": "sample",
@@ -680,8 +681,8 @@ def cherrytrack_source_plates_response(run_id, source_barcode, destination_barco
                     "destination_coordinate": "A1",
                     "lab_id": "centre_4",
                     "picked": True,
-                    "rna_id": f"{source_barcode}_A04",
-                    "lh_sample_uuid": "aSampleId4",
+                    "rna_id": f"{source_barcode}_B4",
+                    "lh_sample_uuid": "aLighthouseUUID4",
                     "source_barcode": source_barcode,
                     "source_coordinate": "B4",
                 },
@@ -691,7 +692,7 @@ def cherrytrack_source_plates_response(run_id, source_barcode, destination_barco
 
 
 @pytest.fixture
-def samples_in_cherrytrack(app, source_barcode):
+def samples_from_cherrytrack_into_mongo(app, source_barcode):
     try:
         samples = rows_for_samples_in_cherrytrack(source_barcode)
 

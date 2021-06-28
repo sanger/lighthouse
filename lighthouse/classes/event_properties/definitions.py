@@ -394,7 +394,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     # mongo samples from cherrytrack samples
     def samples(self) -> Any:
         lh_sample_uuids: List[str] = [sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID] for sample in self._well_samples()]
-        self._validate_no_duplicate_ids(lh_sample_uuids)
+        self._validate_no_duplicate_uuids(lh_sample_uuids)
         return self.get_samples_from_mongo(lh_sample_uuids)
 
     @cached_property

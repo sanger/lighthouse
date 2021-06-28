@@ -56,8 +56,7 @@ def test_post_event_partially_completed(
     run_id,
     mocked_responses,
     cherrytrack_mock_run_info,
-    samples_in_cherrytrack,
-
+    samples_from_cherrytrack_into_mongo,
     centres,
     destination_barcode,
     mlwh_samples_in_cherrytrack,
@@ -65,14 +64,16 @@ def test_post_event_partially_completed(
     cherrytrack_destination_plate_response,
     baracoda_mock_barcodes_group,
     baracoda_mock_responses,
-
 ):
     with app.app_context():
         with patch(
             "lighthouse.hooks.events.uuid4",
             side_effect=[int_to_uuid(1)],
         ):
-            with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)]):
+            with patch(
+                "lighthouse.classes.messages.warehouse_messages.uuid4",
+                side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
+            ):
                 with patch(
                     "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
                     "mytime",
@@ -124,5 +125,3 @@ def test_post_event_partially_completed(
 
                     # And it does not have errors
                     assert event[FIELD_EVENT_ERRORS] is None
-
-

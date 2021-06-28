@@ -15,7 +15,7 @@ class ServiceMongoMixin:
 
         obtained_uuids = [sample[FIELD_LH_SAMPLE_UUID] for sample in samples]
 
-        remaining_uuids = list(set(ids) - set(obtained_uuids))
+        remaining_uuids = list(set(uuids) - set(obtained_uuids))
 
         if len(remaining_uuids) > 0:
             raise Exception(

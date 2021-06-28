@@ -46,7 +46,7 @@ def test_post_event_source_no_pickable_samples(
     run_id,
     mocked_responses,
     cherrytrack_mock_run_info,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
 ):
     with app.app_context():
         with patch(
