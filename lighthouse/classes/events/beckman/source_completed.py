@@ -4,7 +4,7 @@ from typing import Dict
 
 from flask import current_app as app
 
-from lighthouse.classes.services.labwhere import LabWhereMixin
+from lighthouse.classes.services.labwhere import LabwhereServiceMixin
 from lighthouse.classes.plate_event import PlateEvent
 from lighthouse.helpers import mongo
 from lighthouse.messages.broker import Broker
@@ -13,7 +13,7 @@ from lighthouse.messages.message import Message
 logger = logging.getLogger(__name__)
 
 
-class SourceCompleted(PlateEvent, LabWhereMixin):
+class SourceCompleted(PlateEvent, LabwhereServiceMixin):
     @property
     def robot_serial_number(self) -> str:
         return self._robot_serial_number

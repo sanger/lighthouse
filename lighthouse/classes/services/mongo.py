@@ -7,7 +7,7 @@ from lighthouse.constants.fields import (
 )
 
 
-class ServiceMongoMixin:
+class MongoServiceMixin:
     def get_samples_from_mongo(self, uuids):
         samples_collection = app.data.driver.db.samples  # type: ignore
 

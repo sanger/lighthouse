@@ -7,7 +7,7 @@ from lighthouse.messages.message import Message
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
 
-from lighthouse.classes.services.warehouse import ServiceWarehouseMixin
+from lighthouse.classes.services.warehouse import WarehouseServiceMixin
 from lighthouse.helpers.mongo import set_errors_to_event
 from lighthouse.classes.event_properties.interfaces import EventPropertyInterface
 import logging
@@ -71,7 +71,7 @@ class PlateEventInterface(ABC):
         ...
 
 
-class PlateEvent(PlateEventInterface, ServiceWarehouseMixin):
+class PlateEvent(PlateEventInterface, WarehouseServiceMixin):
     EVENT_INITIALIZED = "initialized"
     EVENT_NOT_INITIALIZED = "not_initialized"
 

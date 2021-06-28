@@ -10,8 +10,8 @@ from lighthouse.classes.messages.warehouse_messages import (
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
 from typing import Any, List, Dict
-from lighthouse.classes.services.cherrytrack import ServiceCherrytrackMixin
-from lighthouse.classes.services.mongo import ServiceMongoMixin
+from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
+from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_LH_SAMPLE_UUID,
     FIELD_EVENT_RUN_ID,
@@ -81,7 +81,7 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
         message.set_barcode(self.value)
 
 
-class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
+class RunInfo(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, run_id_property: RunID):
         self.reset()
         self.run_id_property = run_id_property
@@ -111,7 +111,7 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
         )
 
 
-class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, ServiceMongoMixin):
+class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode, run_id_property: RunID):
         self.reset()
         self.barcode_property = barcode_property
@@ -146,7 +146,7 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, Se
             message.add_sample_as_subject(sample)
 
 
-class AllSamplesFromSource(EventPropertyAbstract, ServiceMongoMixin):
+class AllSamplesFromSource(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
         self.barcode_property = barcode_property
@@ -203,7 +203,7 @@ class RobotSerialNumber(EventPropertyAbstract, SimpleEventPropertyMixin):
         pass
 
 
-class RobotUUID(EventPropertyAbstract, ServiceCherrytrackMixin):
+class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, robot_serial_number_property: RobotSerialNumber):
         self.reset()
         self.robot_serial_number_property = robot_serial_number_property
@@ -239,7 +239,7 @@ class RobotUUID(EventPropertyAbstract, ServiceCherrytrackMixin):
             raise RetrievalError(f"Robot with barcode %{self.robot_serial_number_property.value} not found")
 
 
-class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
+class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
         self.barcode_property = barcode_property
@@ -283,7 +283,7 @@ class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
         message.add_metadata("source_plate_barcode", self.value)
 
 
-class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackMixin):
+class CherrytrackWellsFromDestination(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
         self.barcode_property = barcode_property
@@ -313,7 +313,7 @@ class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackM
         pass
 
 
-class SourcePlatesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
+class SourcePlatesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
@@ -349,7 +349,7 @@ class SourcePlatesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
             )
 
 
-class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
+class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
@@ -438,7 +438,7 @@ class SamplesWithCogUkId(EventPropertyAbstract):
             )
 
 
-class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
+class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
