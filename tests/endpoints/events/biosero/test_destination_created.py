@@ -25,7 +25,7 @@ def test_post_destination_created_missing_barcode(app, client, biosero_auth_head
             "/events",
             data={
                 "automation_system_run_id": 123,
-                "event_type": "lh_biosero_cp_destination_created",
+                "event_type": "lh_biosero_cp_destination_plate_completed",
                 "user_id": "user1",
                 "robot": "roboto",
             },
@@ -90,7 +90,7 @@ def test_post_event_partially_completed(
                             data={
                                 "automation_system_run_id": 3,
                                 "barcode": "HT-1234",
-                                "event_type": "lh_biosero_cp_destination_created",
+                                "event_type": "lh_biosero_cp_destination_plate_completed",
                                 "user_id": "user1",
                                 "robot": "BHRB0001",
                             },
@@ -104,7 +104,7 @@ def test_post_event_partially_completed(
                             '{"event": {"uuid": "'
                             + int_to_uuid(1)
                             + (
-                                '", "event_type": "lh_biosero_cp_destination_created", '
+                                '", "event_type": "lh_biosero_cp_destination_plate_completed", '
                                 '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                                 '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
                                 '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
@@ -128,7 +128,7 @@ def test_post_event_partially_completed(
 
                         mocked_rabbit_channel.basic_publish.assert_called_with(
                             exchange="lighthouse.test.examples",
-                            routing_key="test.event.lh_biosero_cp_destination_created",
+                            routing_key="test.event.lh_biosero_cp_destination_plate_completed",
                             body=event_message,
                         )
 

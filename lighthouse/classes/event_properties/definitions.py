@@ -59,7 +59,7 @@ class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_RUN_ID)
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
 
 class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
@@ -75,7 +75,7 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_BARCODE)
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
     def add_to_sequencescape_message(self, message):
         message.set_barcode(self.value)
@@ -200,7 +200,7 @@ class RobotSerialNumber(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_ROBOT)
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
 
 class RobotUUID(EventPropertyAbstract, ServiceCherrytrackMixin):
@@ -310,7 +310,7 @@ class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackM
             return val
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
 
 class SourcePlatesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
@@ -400,7 +400,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
             return self._mapping_with_samples(obtained_samples)
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
 
 class SamplesWithCogUkId(EventPropertyAbstract):

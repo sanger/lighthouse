@@ -21,11 +21,11 @@ class Biosero(AutomationSystem):
     # Events: https://ssg-confluence.internal.sanger.ac.uk/display/PSDPUB/%5BBiosero%5D+Cherrypicking+Events
     ###
     # Destination plate has been created successfully
-    EVENT_DESTINATION_CREATED = "lh_biosero_cp_destination_created"
+    EVENT_DESTINATION_CREATED = "lh_biosero_cp_destination_plate_completed"
     # Destination plate failed to be created successfully
     EVENT_DESTINATION_FAILED = "lh_biosero_cp_destination_failed"
     # Destination plate has been partially filled
-    EVENT_DESTINATION_PARTIAL = "lh_biosero_cp_destination_partial"
+    EVENT_DESTINATION_PARTIAL = "lh_biosero_cp_destination_plate_partial"
     # Source plate only contains negatives, nothing to cherrypick, and the plate is put into the output stacks
     EVENT_SOURCE_ALL_NEGATIVES = "lh_biosero_cp_source_all_negatives"
     # Source plate has had all pickable wells cherrypicked into destination plate(s)
