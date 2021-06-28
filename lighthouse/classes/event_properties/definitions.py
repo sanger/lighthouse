@@ -35,6 +35,7 @@ from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_CONTROL_COORDINATE,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_BARCODE,
+    FIELD_FAILURE_TYPE,
 )
 
 from lighthouse.helpers.plates import add_cog_barcodes_from_different_centres, update_mlwh_with_cog_uk_ids
@@ -501,3 +502,21 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
                     FIELD_SS_CONTROL_TYPE: control[FIELD_CHERRYTRACK_CONTROL],
                 },
             )
+
+
+class FailureType(EventPropertyAbstract, SimpleEventPropertyMixin):
+    def validate(self):
+        self.validate_param_not_missing(FIELD_FAILURE_TYPE)
+        self.validate_param_not_empty(FIELD_FAILURE_TYPE)
+        self.validate_param_no_whitespaces(FIELD_FAILURE_TYPE)
+        return self._validate
+
+    @cached_property
+    def value(self):
+        with self.retrieval_scope():
+            return self._params.get(FIELD_FAILURE_TYPE)
+
+    def add_to_warehouse_message(self, message):
+        message.add_metadata("failure_type", self.value)
+
+

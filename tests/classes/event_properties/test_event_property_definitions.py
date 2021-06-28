@@ -17,6 +17,7 @@ from lighthouse.classes.event_properties.definitions import (
     ControlsFromDestination,
     SamplesWithCogUkId,
     SourcePlatesFromDestination,
+    FailureType,
 )
 from unittest.mock import MagicMock, PropertyMock
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
@@ -27,6 +28,7 @@ from lighthouse.constants.fields import (
     FIELD_EVENT_USER_ID,
     FIELD_EVENT_BARCODE,
     FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_FAILURE_TYPE,
 )
 from http import HTTPStatus
 
@@ -36,6 +38,7 @@ SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS = [
     [UserID, FIELD_EVENT_USER_ID, ["user1", "user 1"], [None, ""]],
     [RobotSerialNumber, FIELD_EVENT_ROBOT, ["1234"], ["12 34", None, ""]],
     [BarcodeNoPlateMapData, FIELD_EVENT_BARCODE, ["AA1234", "", "something dodgy"], [None]],
+    [FailureType, FIELD_FAILURE_TYPE, ["my_error"], [None, "", "my error"]]
 ]
 
 
