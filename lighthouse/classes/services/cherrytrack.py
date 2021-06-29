@@ -9,7 +9,7 @@ from http import HTTPStatus
 logger = logging.getLogger(__name__)
 
 
-class ServiceCherrytrackMixin(object):
+class CherrytrackServiceMixin(object):
     def raise_error_from_response(self, response):
         json = response.json()
         if json and json["errors"]:

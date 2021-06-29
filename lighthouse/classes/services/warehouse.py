@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ServiceWarehouseMixin:
+class WarehouseServiceMixin:
     @property
     def routing_key(self) -> str:
         """Determines the routing key for a plate event message.

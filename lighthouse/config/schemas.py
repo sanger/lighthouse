@@ -30,6 +30,9 @@ EVENTS_SCHEMA = {
         "nullable": True,
         "allow_unknown": True,
     },
+    "failure_type": {
+        "type": "string",
+    },
 }
 
 

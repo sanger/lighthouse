@@ -7,7 +7,7 @@ from lighthouse.constants.fields import (
 )
 
 
-class ServiceMongoMixin:
+class MongoServiceMixin:
     def get_samples_from_mongo(self, uuids):
         samples_collection = app.data.driver.db.samples  # type: ignore
 
@@ -51,7 +51,10 @@ class ServiceMongoMixin:
 
             if len(remaining_barcodes) > 0:
                 raise Exception(
-                    f"Some source plate barcodes cannot be obtained because are not present in Mongo. Please review: {remaining_barcodes}"
+                    (
+                        "Some source plate barcodes cannot be obtained because are not present in Mongo. "
+                        f"Please review: {remaining_barcodes}"
+                    )
                 )
 
             return source_plates

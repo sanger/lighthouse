@@ -4,7 +4,7 @@ from lighthouse.helpers.labwhere import set_locations_in_labwhere
 from lighthouse.types import PlateEvent
 
 
-class LabWhereMixin:
+class LabwhereServiceMixin:
     def transfer_to_bin(self: PlateEvent) -> None:
         """Record a transfer of the cherrypicking_source_labware to the bin
 
@@ -17,7 +17,7 @@ class LabWhereMixin:
         """
         # currently assuming only one event so only one plate_barcode
         labware_barcodes = [self.plate_barcode]
-        location_barcode = LabWhereMixin._destroyed_barcode()
+        location_barcode = LabwhereServiceMixin._destroyed_barcode()
         robot_barcode = self.robot_serial_number
 
         set_locations_in_labwhere(

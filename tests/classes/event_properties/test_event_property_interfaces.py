@@ -7,8 +7,8 @@ class DummyEventProperty(EventPropertyAbstract):
     def add_to_warehouse_message(self):
         return None
 
-    def validate(self):
-        return self._validate
+    def is_valid(self):
+        return self._is_valid
 
     def value(self):
         return self._value
@@ -18,7 +18,7 @@ class DummyEventProperty(EventPropertyAbstract):
         self._value = val
 
     def set_validation(self, valid):
-        self._validate = valid
+        self._is_valid = valid
 
     def set_errors(self, errors):
         self._errors = errors
@@ -34,7 +34,7 @@ class TestEventPropertyAbstract:
         assert DummyEventProperty({"test": "another test"}) is not None
         assert DummyEventProperty({"user_id": "1234"}) is not None
 
-    def test_reset_can_reset_both_errors_and_validate(self):
+    def test_reset_can_reset_both_errors_and_is_valid(self):
         test = DummyEventProperty({})
         test.set_validation(False)
         test.set_errors(["an error"])
@@ -69,8 +69,8 @@ class TestEventPropertyAbstract:
         except Exception:
             mocking()
         mocking.assert_not_called()
-        assert test.validate() is False
-        assert test.errors == ["Unexpected exception while trying to validate This is an error"]
+        assert test.is_valid() is False
+        assert test.errors == ["Unexpected exception while trying to is_valid This is an error"]
 
     def test_retrieval_scope_can_raise_and_log_errors(self):
         test = DummyEventProperty({})
@@ -81,14 +81,14 @@ class TestEventPropertyAbstract:
         except Exception:
             mocking()
         mocking.assert_called_once()
-        assert test.validate() is False
+        assert test.is_valid() is False
         assert test.errors == ["Exception during retrieval: This is an error"]
 
     def test_can_call_other_methods(self):
         test = DummyEventProperty({})
         try:
             test.valid()
-            test.validate()
+            test.is_valid()
             test.value()
             test.add_to_warehouse_message()
         except Exception as exception:

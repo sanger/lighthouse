@@ -10,8 +10,8 @@ from lighthouse.classes.messages.warehouse_messages import (
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
 from typing import Any, List, Dict
-from lighthouse.classes.services.cherrytrack import ServiceCherrytrackMixin
-from lighthouse.classes.services.mongo import ServiceMongoMixin
+from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
+from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_LH_SAMPLE_UUID,
     FIELD_EVENT_RUN_ID,
@@ -35,6 +35,7 @@ from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_CONTROL_COORDINATE,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_BARCODE,
+    FIELD_FAILURE_TYPE,
 )
 
 from lighthouse.helpers.plates import add_cog_barcodes_from_different_centres, update_mlwh_with_cog_uk_ids
@@ -46,10 +47,10 @@ logger = logging.getLogger(__name__)
 
 
 class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_RUN_ID)
-        self.validate_param_is_integer(FIELD_EVENT_RUN_ID)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_RUN_ID)
+        self.is_valid_param_is_integer(FIELD_EVENT_RUN_ID)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -57,15 +58,15 @@ class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_RUN_ID)
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
 
 class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_BARCODE)
-        self.validate_param_not_empty(FIELD_EVENT_BARCODE)
-        self.validate_param_no_whitespaces(FIELD_EVENT_BARCODE)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_BARCODE)
+        self.is_valid_param_not_empty(FIELD_EVENT_BARCODE)
+        self.is_valid_param_no_whitespaces(FIELD_EVENT_BARCODE)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -73,23 +74,23 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_BARCODE)
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
-    def add_to_sequencescape(self, message):
-        message.add_barcode(self.value)
+    def add_to_sequencescape_message(self, message):
+        message.set_barcode(self.value)
 
 
-class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
+class RunInfo(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, run_id_property: RunID):
         self.reset()
         self.run_id_property = run_id_property
 
-    def validate(self):
-        return self.run_id_property.validate()
+    def is_valid(self):
+        return self.run_id_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.run_id_property.errors
 
     @cached_property
@@ -110,18 +111,18 @@ class RunInfo(EventPropertyAbstract, ServiceCherrytrackMixin):
 
 
 # mongo samples, picked from cherrytrack for source plate barcode
-class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, ServiceMongoMixin):
+class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode, run_id_property: RunID):
         self.reset()
         self.barcode_property = barcode_property
         self.run_id_property = run_id_property
 
-    def validate(self):
-        return self.barcode_property.validate() and self.run_id_property.validate()
+    def is_valid(self):
+        return self.barcode_property.is_valid() and self.run_id_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.barcode_property.errors + self.run_id_property.errors
 
     @cached_property
@@ -146,17 +147,17 @@ class PickedSamplesFromSource(EventPropertyAbstract, ServiceCherrytrackMixin, Se
 
 
 # all samples from mongo for source plate barcode
-class AllSamplesFromSource(EventPropertyAbstract, ServiceMongoMixin):
+class AllSamplesFromSource(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
         self.barcode_property = barcode_property
 
-    def validate(self):
-        return self.barcode_property.validate()
+    def is_valid(self):
+        return self.barcode_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.barcode_property.errors
 
     @cached_property
@@ -170,10 +171,10 @@ class AllSamplesFromSource(EventPropertyAbstract, ServiceMongoMixin):
 
 
 class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_USER_ID)
-        self.validate_param_not_empty(FIELD_EVENT_USER_ID)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_USER_ID)
+        self.is_valid_param_not_empty(FIELD_EVENT_USER_ID)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -188,11 +189,11 @@ class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
 
 
 class RobotSerialNumber(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_ROBOT)
-        self.validate_param_not_empty(FIELD_EVENT_ROBOT)
-        self.validate_param_no_whitespaces(FIELD_EVENT_ROBOT)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_ROBOT)
+        self.is_valid_param_not_empty(FIELD_EVENT_ROBOT)
+        self.is_valid_param_no_whitespaces(FIELD_EVENT_ROBOT)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -200,20 +201,20 @@ class RobotSerialNumber(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_ROBOT)
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
 
-class RobotUUID(EventPropertyAbstract, ServiceCherrytrackMixin):
+class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, robot_serial_number_property: RobotSerialNumber):
         self.reset()
         self.robot_serial_number_property = robot_serial_number_property
 
-    def validate(self):
-        return self.robot_serial_number_property.validate()
+    def is_valid(self):
+        return self.robot_serial_number_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.robot_serial_number_property.errors
 
     @cached_property
@@ -239,17 +240,17 @@ class RobotUUID(EventPropertyAbstract, ServiceCherrytrackMixin):
             raise RetrievalError(f"Robot with barcode %{self.robot_serial_number_property.value} not found")
 
 
-class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
+class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
         self.barcode_property = barcode_property
 
-    def validate(self):
-        return self.barcode_property.validate()
+    def is_valid(self):
+        return self.barcode_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.barcode_property.errors
 
     @cached_property
@@ -270,9 +271,9 @@ class SourcePlateUUID(EventPropertyAbstract, ServiceMongoMixin):
 
 
 class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def validate(self):
-        self.validate_param_not_missing(FIELD_EVENT_BARCODE)
-        return self._validate
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_EVENT_BARCODE)
+        return self._is_valid
 
     @cached_property
     def value(self):
@@ -283,15 +284,15 @@ class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
         message.add_metadata("source_plate_barcode", self.value)
 
 
-class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackMixin):
+class CherrytrackWellsFromDestination(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
         self.barcode_property = barcode_property
 
-    def validate(self):
-        return self.barcode_property.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.barcode_property.is_valid() and (len(self._errors) == 0)
 
-    def _validate_destination_coordinate_not_duplicated(self, wells):
+    def _is_valid_destination_coordinate_not_duplicated(self, wells):
         coordinates = [well["destination_coordinate"] for well in wells]
         duplicates = set([coor for coor in coordinates if coordinates.count(coor) > 1])
         if len(duplicates) > 0:
@@ -299,31 +300,31 @@ class CherrytrackWellsFromDestination(EventPropertyAbstract, ServiceCherrytrackM
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.barcode_property.errors
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
             val = self.get_wells_from_destination_plate(self.barcode_property.value)
-            self._validate_destination_coordinate_not_duplicated(val)
+            self._is_valid_destination_coordinate_not_duplicated(val)
             return val
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
 
-class SourcePlatesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
+class SourcePlatesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
 
-    def validate(self):
-        return self.cherrytrack_wells_from_destination.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.cherrytrack_wells_from_destination.errors
 
     def _source_barcodes(self):
@@ -349,17 +350,17 @@ class SourcePlatesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
             )
 
 
-class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
+class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
 
-    def validate(self):
-        return self.cherrytrack_wells_from_destination.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.cherrytrack_wells_from_destination.errors
 
     # cherrytrack samples
@@ -370,7 +371,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
                 val.append(sample)
         return val
 
-    def _validate_no_duplicate_uuids(self, uuids):
+    def _is_valid_no_duplicate_uuids(self, uuids):
         duplicates = set([uuid for uuid in uuids if uuids.count(uuid) > 1])
         if len(duplicates) > 0:
             raise RetrievalError(f"There is duplication in the lh sample uuids provided: { list(duplicates) }")
@@ -392,7 +393,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     # mongo samples from cherrytrack samples
     def samples(self) -> Any:
         lh_sample_uuids: List[str] = [sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID] for sample in self._well_samples()]
-        self._validate_no_duplicate_uuids(lh_sample_uuids)
+        self._is_valid_no_duplicate_uuids(lh_sample_uuids)
         return self.get_samples_from_mongo(lh_sample_uuids)
 
     @cached_property
@@ -403,7 +404,7 @@ class SamplesFromDestination(EventPropertyAbstract, ServiceMongoMixin):
             return self._mapping_with_samples(obtained_samples)
 
     def add_to_warehouse_message(self, message):
-        return None
+        pass
 
 
 class SamplesWithCogUkId(EventPropertyAbstract):
@@ -411,8 +412,8 @@ class SamplesWithCogUkId(EventPropertyAbstract):
         self.reset()
         self.samples_from_destination = samples_from_destination
 
-    def validate(self):
-        return self.samples_from_destination.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.samples_from_destination.is_valid() and (len(self._errors) == 0)
 
     @cached_property
     def value(self):
@@ -441,20 +442,20 @@ class SamplesWithCogUkId(EventPropertyAbstract):
             )
 
 
-class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
+class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
         self.reset()
         self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
 
-    def validate(self):
-        return self.cherrytrack_wells_from_destination.validate() and (len(self._errors) == 0)
+    def is_valid(self):
+        return self.cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
-        self.validate()
+        self.is_valid()
         return self._errors + self.cherrytrack_wells_from_destination.errors
 
-    def _validate_positive_and_negative_present(self, wells):
+    def _is_valid_positive_and_negative_present(self, wells):
         control_types = [well["control"] for well in wells]
         control_types.sort()
         if control_types != ["negative", "positive"]:
@@ -477,7 +478,7 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
     def value(self):
         with self.retrieval_scope():
             val = self._well_controls()
-            self._validate_positive_and_negative_present(val)
+            self._is_valid_positive_and_negative_present(val)
             return self._mapping_with_controls()
 
     def add_to_warehouse_message(self, message):
@@ -495,13 +496,29 @@ class ControlsFromDestination(EventPropertyAbstract, ServiceMongoMixin):
         )
 
     def add_to_sequencescape_message(self, message):
-        for position, control in self.value:
+        for position in self.value:
+            control = self.value[position]
             message.set_well_sample(
                 position,
                 {
                     FIELD_SS_SUPPLIER_NAME: self._supplier_name_for_control(control),
                     FIELD_SS_CONTROL: True,
                     FIELD_SS_CONTROL_TYPE: control[FIELD_CHERRYTRACK_CONTROL],
-                    FIELD_SS_UUID: control["uuid"],
                 },
             )
+
+
+class FailureType(EventPropertyAbstract, SimpleEventPropertyMixin):
+    def is_valid(self):
+        self.is_valid_param_not_missing(FIELD_FAILURE_TYPE)
+        self.is_valid_param_not_empty(FIELD_FAILURE_TYPE)
+        self.is_valid_param_no_whitespaces(FIELD_FAILURE_TYPE)
+        return self._is_valid
+
+    @cached_property
+    def value(self):
+        with self.retrieval_scope():
+            return self._params.get(FIELD_FAILURE_TYPE)
+
+    def add_to_warehouse_message(self, message):
+        message.add_metadata("failure_type", self.value)

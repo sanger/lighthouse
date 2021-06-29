@@ -35,6 +35,7 @@ FIELD_EVENT_USER_ID = "user_id"
 FIELD_EVENT_ROBOT = "robot"
 FIELD_EVENT_UUID = "event_wh_uuid"
 FIELD_EVENT_ERRORS = "errors"
+FIELD_FAILURE_TYPE = "failure_type"
 
 ###
 # DART specific column names:

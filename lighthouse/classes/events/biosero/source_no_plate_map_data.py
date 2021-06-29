@@ -30,8 +30,8 @@ class SourceNoPlateMapData(PlateEvent):
         self.properties["user_id"] = UserID(params)
         self.properties["run_id"] = RunID(params)
 
-        for key in ["plate_barcode", "user_id", "run_id"]:
-            self.properties[key].validate()
+        for property_name in ["plate_barcode", "user_id", "run_id"]:
+            self.properties[property_name].is_valid()
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
         self.properties["robot_serial_number"] = RobotSerialNumber(params)
@@ -41,7 +41,7 @@ class SourceNoPlateMapData(PlateEvent):
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
 
-        for key in ["user_id", "robot_uuid", "barcode_no_plate_map_data", "run_info"]:
-            self.properties[key].add_to_warehouse_message(message)
+        for property_name in ["user_id", "robot_uuid", "barcode_no_plate_map_data", "run_info"]:
+            self.properties[property_name].add_to_warehouse_message(message)
 
         return message.render()
