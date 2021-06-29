@@ -1,14 +1,14 @@
 from http import HTTPStatus
 
 
-def test_post_unauthenticated(app, client, clear_events_when_finish):
+def test_post_unauthenticated(app, client, clear_events):
     with app.app_context():
         response = client.post("/events", data={})
 
         assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-def test_post_unrecognised_event_type(app, client, biosero_auth_headers, clear_events_when_finish):
+def test_post_unrecognised_event_type(app, client, biosero_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",

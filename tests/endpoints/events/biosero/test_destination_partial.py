@@ -19,7 +19,7 @@ def int_to_uuid(value: int) -> str:
 # Event source partially completed
 
 
-def test_post_destination_created_missing_barcode(app, client, biosero_auth_headers, clear_events_when_finish):
+def test_post_destination_created_missing_barcode(app, client, biosero_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",
@@ -50,7 +50,7 @@ def test_post_event_partially_completed(
     app,
     client,
     biosero_auth_headers,
-    clear_events_when_finish,
+    clear_events,
     mocked_rabbit_channel,
     source_plates,
     run_id,

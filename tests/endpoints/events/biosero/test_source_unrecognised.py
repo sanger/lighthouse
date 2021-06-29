@@ -21,7 +21,7 @@ def test_post_event_source_unrecognised(
     app,
     client,
     biosero_auth_headers,
-    clear_events_when_finish,
+    clear_events,
     mocked_rabbit_channel,
     run_id,
     mocked_responses,
@@ -73,7 +73,7 @@ def test_post_event_source_unrecognised(
 
 
 def test_post_event_source_unrecognised_with_validation_error_after_storing_in_mongo(
-    app, client, biosero_auth_headers, clear_events_when_finish, mocked_rabbit_channel
+    app, client, biosero_auth_headers, clear_events, mocked_rabbit_channel
 ):
     with app.app_context():
         with patch(

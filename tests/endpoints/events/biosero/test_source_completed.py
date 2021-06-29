@@ -19,7 +19,7 @@ def int_to_uuid(value: int) -> str:
 # Event source partially completed
 
 
-def test_post_event_partially_completed_missing_barcode(app, client, biosero_auth_headers, clear_events_when_finish):
+def test_post_event_partially_completed_missing_barcode(app, client, biosero_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",
@@ -41,7 +41,7 @@ def test_post_event_partially_completed(
     app,
     client,
     biosero_auth_headers,
-    clear_events_when_finish,
+    clear_events,
     mocked_rabbit_channel,
     source_plates,
     run_id,
@@ -115,7 +115,7 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
     biosero_auth_headers,
     source_plates,
     run_id,
-    clear_events_when_finish,
+    clear_events,
     mocked_rabbit_channel,
     mocked_responses,
     cherrytrack_mock_source_plates,
@@ -158,7 +158,7 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
 
 
 def test_post_event_partially_completed_with_validation_error_after_storing_in_mongo(
-    app, client, biosero_auth_headers, clear_events_when_finish, mocked_rabbit_channel
+    app, client, biosero_auth_headers, clear_events, mocked_rabbit_channel
 ):
     with app.app_context():
         with patch(
