@@ -16,9 +16,7 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-def test_post_event_source_no_pickable_samples_missing_barcode(
-    app, client, biosero_auth_headers, clear_events_when_finish
-):
+def test_post_event_source_no_pickable_samples_missing_barcode(app, client, biosero_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",
@@ -40,7 +38,7 @@ def test_post_event_source_no_pickable_samples(
     app,
     client,
     biosero_auth_headers,
-    clear_events_when_finish,
+    clear_events,
     mocked_rabbit_channel,
     source_plates,
     run_id,
@@ -117,7 +115,7 @@ def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_
     biosero_auth_headers,
     source_plates,
     run_id,
-    clear_events_when_finish,
+    clear_events,
     mocked_rabbit_channel,
     mocked_responses,
     cherrytrack_mock_run_info,
@@ -160,7 +158,7 @@ def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_
 
 
 def test_post_event_source_no_pickable_samples_with_validation_error_after_storing_in_mongo(
-    app, client, biosero_auth_headers, clear_events_when_finish, mocked_rabbit_channel
+    app, client, biosero_auth_headers, clear_events, mocked_rabbit_channel
 ):
     with app.app_context():
         with patch(

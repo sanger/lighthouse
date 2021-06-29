@@ -83,7 +83,7 @@ def samples(app):
 
 
 @pytest.fixture
-def clear_events_when_finish(app):
+def clear_events(app):
     try:
         yield
     finally:

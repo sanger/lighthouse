@@ -19,7 +19,7 @@ def int_to_uuid(value: int) -> str:
 # Event source partially completed
 
 
-def test_post_event_no_plate_map_data_missing_barcode(app, client, biosero_auth_headers, clear_events_when_finish):
+def test_post_event_no_plate_map_data_missing_barcode(app, client, biosero_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",
@@ -40,7 +40,7 @@ def test_post_event_no_plate_map_data(
     app,
     client,
     biosero_auth_headers,
-    clear_events_when_finish,
+    clear_events,
     mocked_rabbit_channel,
     run_id,
     mocked_responses,
@@ -93,7 +93,7 @@ def test_post_event_no_plate_map_data(
 
 
 def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mongo(
-    app, client, biosero_auth_headers, clear_events_when_finish, mocked_rabbit_channel
+    app, client, biosero_auth_headers, clear_events, mocked_rabbit_channel
 ):
     with app.app_context():
         with patch(
