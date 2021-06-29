@@ -237,7 +237,7 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
         if self.robot_serial_number_property.value in app.config["BIOSERO_ROBOTS"].keys():
             return app.config["BIOSERO_ROBOTS"][self.robot_serial_number_property.value]["uuid"]
         else:
-            raise RetrievalError(f"Robot with barcode %{self.robot_serial_number_property.value} not found")
+            raise RetrievalError(f"Robot with barcode {self.robot_serial_number_property.value} not found")
 
 
 class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
