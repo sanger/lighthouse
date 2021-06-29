@@ -39,8 +39,6 @@ from lighthouse.constants.fields import (
 
 from lighthouse.helpers.plates import add_cog_barcodes_from_different_centres, update_mlwh_with_cog_uk_ids
 
-from uuid import uuid4
-
 from flask import current_app as app
 import logging
 
