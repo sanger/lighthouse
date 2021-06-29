@@ -37,6 +37,7 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
 
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("destination_barcode", ["plate_456"])
 def test_post_event_partially_completed(
     app,
     client,
@@ -45,10 +46,12 @@ def test_post_event_partially_completed(
     mocked_rabbit_channel,
     source_plates,
     run_id,
+    source_barcode,
+    destination_barcode,
     mocked_responses,
     cherrytrack_mock_run_info,
     cherrytrack_mock_source_plates,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
 ):
     with app.app_context():
         with patch(
@@ -63,8 +66,8 @@ def test_post_event_partially_completed(
                     response = client.post(
                         "/events",
                         data={
-                            "automation_system_run_id": 3,
-                            "barcode": "plate_123",
+                            "automation_system_run_id": run_id,
+                            "barcode": source_barcode,
                             "event_type": "lh_biosero_cp_source_completed",
                             "user_id": "user1",
                             "robot": "BHRB0001",
@@ -107,7 +110,8 @@ def test_post_event_partially_completed(
 
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
-@pytest.mark.parametrize("cherrytrack_source_plates_response", [{"data": {"errors": ["One error", "Another error"]}}])
+@pytest.mark.parametrize("destination_barcode", ["plate_456"])
+@pytest.mark.parametrize("cherrytrack_source_plates_response", [{"errors": ["One error", "Another error"]}])
 @pytest.mark.parametrize("cherrytrack_mock_source_plates_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_samples_info(
     app,
@@ -116,6 +120,8 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
     source_plates,
     run_id,
     clear_events,
+    source_barcode,
+    destination_barcode,
     mocked_rabbit_channel,
     mocked_responses,
     cherrytrack_mock_source_plates,
@@ -132,8 +138,8 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
                 response = client.post(
                     "/events",
                     data={
-                        "automation_system_run_id": 3,
-                        "barcode": "plate_123",
+                        "automation_system_run_id": run_id,
+                        "barcode": source_barcode,
                         "event_type": "lh_biosero_cp_source_completed",
                         "user_id": "user1",
                         "robot": "BHRB0001",

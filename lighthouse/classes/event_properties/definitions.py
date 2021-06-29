@@ -40,7 +40,6 @@ from lighthouse.constants.fields import (
 
 from lighthouse.helpers.plates import add_cog_barcodes_from_different_centres, update_mlwh_with_cog_uk_ids
 
-
 from flask import current_app as app
 import logging
 
@@ -111,6 +110,7 @@ class RunInfo(EventPropertyAbstract, CherrytrackServiceMixin):
         )
 
 
+# mongo samples, picked from cherrytrack for source plate barcode
 class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode, run_id_property: RunID):
         self.reset()
@@ -128,7 +128,7 @@ class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, Mo
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            sample_uuids: List[str] = [
+            lh_sample_uuids: List[str] = [
                 sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID]
                 for sample in filter(
                     lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,
@@ -138,7 +138,7 @@ class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, Mo
                     ),
                 )
             ]
-            val: List[Dict[str, Any]] = list(self.get_samples_from_mongo(sample_uuids))
+            val: List[Dict[str, Any]] = list(self.get_samples_from_mongo(lh_sample_uuids))
             return val
 
     def add_to_warehouse_message(self, message):
@@ -146,6 +146,7 @@ class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, Mo
             message.add_sample_as_subject(sample)
 
 
+# all samples from mongo for source plate barcode
 class AllSamplesFromSource(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
@@ -362,6 +363,7 @@ class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
         self.is_valid()
         return self._errors + self.cherrytrack_wells_from_destination.errors
 
+    # cherrytrack samples
     def _well_samples(self):
         val = []
         for sample in self.cherrytrack_wells_from_destination.value:
@@ -372,31 +374,33 @@ class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def _is_valid_no_duplicate_uuids(self, uuids):
         duplicates = set([uuid for uuid in uuids if uuids.count(uuid) > 1])
         if len(duplicates) > 0:
-            raise RetrievalError(f"There is duplication in the sample ids provided: { list(duplicates) }")
+            raise RetrievalError(f"There is duplication in the lh sample uuids provided: { list(duplicates) }")
 
     def _get_sample_with_uuid(self, samples, uuid):
         for sample in samples:
-            if sample["lh_sample_uuid"] == uuid:
+            if sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID] == uuid:
                 return sample
-        raise RetrievalError(f"We could not find sample with uuid {uuid}")
+        raise RetrievalError(f"We could not find sample with lh sample uuid {uuid}")
 
     def _mapping_with_samples(self, samples):
         mapping = {}
         for well_sample in self._well_samples():
-            uuid = well_sample["sample_id"]
-            sample = self._get_sample_with_uuid(samples, uuid)
+            # get sample from mongo using cherrytrack sample id
+            sample = self._get_sample_with_uuid(samples, well_sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID])
             mapping[well_sample["destination_coordinate"]] = sample
         return mapping
 
+    # mongo samples from cherrytrack samples
     def samples(self) -> Any:
-        sample_uuids: List[str] = [sample["sample_id"] for sample in self._well_samples()]
-        self._is_valid_no_duplicate_uuids(sample_uuids)
-        return self.get_samples_from_mongo(sample_uuids)
+        lh_sample_uuids: List[str] = [sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID] for sample in self._well_samples()]
+        self._is_valid_no_duplicate_uuids(lh_sample_uuids)
+        return self.get_samples_from_mongo(lh_sample_uuids)
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
             obtained_samples = self.samples()
+            # mapping with mongo samples
             return self._mapping_with_samples(obtained_samples)
 
     def add_to_warehouse_message(self, message):

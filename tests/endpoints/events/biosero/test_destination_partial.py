@@ -56,7 +56,7 @@ def test_post_event_partially_completed(
     run_id,
     mocked_responses,
     cherrytrack_mock_run_info,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     centres,
     destination_barcode,
     mlwh_samples_in_cherrytrack,

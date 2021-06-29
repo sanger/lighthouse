@@ -159,6 +159,8 @@ def test_run_info_value_successful(app, run_id, mocked_responses, cherrytrack_mo
                 "id": run_id,
                 FIELD_EVENT_USER_ID: "ab1",
                 "liquid_handler_serial_number": "aLiquidHandlerSerialNumber",
+                "automation_system_manufacturer": "biosero",
+                "automation_system_name": "CPA",
             }
         }
 
@@ -170,7 +172,7 @@ def test_run_info_value_successful(app, run_id, mocked_responses, cherrytrack_mo
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize(
     "cherrytrack_run_info_response",
-    [{"data": {"errors": ["Failed to get automation system run info for the given run id"]}}],
+    [{"errors": ["Failed to get automation system run info for the given run id"]}],
 )
 @pytest.mark.parametrize("cherrytrack_mock_run_info_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_run_info_value_unsuccessful(app, mocked_responses, cherrytrack_mock_run_info):
@@ -217,20 +219,22 @@ def test_picked_samples_from_source_valid(app):
 
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
+@pytest.mark.parametrize("destination_barcode", ["DS000010001"])
 def test_picked_samples_from_source_value_successful(
     app,
     run_id,
     source_barcode,
+    destination_barcode,
     cherrytrack_source_plates_response,
     mocked_responses,
     cherrytrack_mock_source_plates,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
 ):
     with app.app_context():
         val = PickedSamplesFromSource(
             PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: run_id})
         ).value
-        samples, _ = samples_in_cherrytrack
+        samples, _ = samples_from_cherrytrack_into_mongo
 
         for elem in val:
             del elem["_id"]
@@ -238,16 +242,16 @@ def test_picked_samples_from_source_value_successful(
         for elem in samples:
             del elem["_id"]
             del elem["Date Tested"]
-
         assert val == [samples[0], samples[2]]
         assert len(val) == 2
 
 
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["aUnknownBarcode"])
+@pytest.mark.parametrize("destination_barcode", [""])
 @pytest.mark.parametrize(
     "cherrytrack_source_plates_response",
-    [{"data": {"errors": ["Failed to get samples for the given source plate barcode."]}}],
+    [{"errors": ["Failed to get samples for the given source plate barcode."]}],
 )
 @pytest.mark.parametrize("cherrytrack_mock_source_plates_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_picked_samples_from_source_value_unsuccessful(
@@ -270,11 +274,11 @@ def test_picked_samples_from_source_value_unsuccessful(
 def test_all_samples_successful(
     app,
     source_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
 ):
     with app.app_context():
         val = AllSamplesFromSource(PlateBarcode({FIELD_EVENT_BARCODE: source_barcode})).value
-        samples, _ = samples_in_cherrytrack
+        samples, _ = samples_from_cherrytrack_into_mongo
 
         for elem in val:
             del elem["_id"]
@@ -354,7 +358,6 @@ def test_cherrytrack_wells_from_destination_value_gets_value(
     app,
     run_id,
     destination_barcode,
-    samples_in_cherrytrack,
     mocked_responses,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
@@ -375,7 +378,7 @@ def test_cherrytrack_wells_from_destination_value_fails_with_duplicated_wells(
     app,
     run_id,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     cherrytrack_destination_plate_response,
     mocked_responses,
     cherrytrack_mock_destination_plate,
@@ -401,16 +404,17 @@ def test_all_samples_from_destination_value_gets_value(
     app,
     run_id,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     mocked_responses,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
 ):
     with app.app_context():
-        samples, _ = samples_in_cherrytrack
         val = SamplesFromDestination(
             CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         ).value
+        samples, _ = samples_from_cherrytrack_into_mongo
+
         for sample in val.values():
             del sample["_id"]
             del sample["Date Tested"]
@@ -425,13 +429,13 @@ def test_all_samples_from_destination_value_gets_value(
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
 @pytest.mark.parametrize(
     "cherrytrack_destination_plate_response",
-    [{"data": {"wells": [{"type": "sample", "sample_id": "unknown", "destination_coordinate": "H1"}]}}],
+    [{"data": {"wells": [{"type": "sample", "lh_sample_uuid": "unknown", "destination_coordinate": "H1"}]}}],
 )
 def test_all_samples_from_destination_value_fails_with_unknown_samples(
     app,
     run_id,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     cherrytrack_destination_plate_response,
     mocked_responses,
     cherrytrack_mock_destination_plate,
@@ -464,9 +468,9 @@ def test_all_samples_from_destination_value_fails_with_unknown_samples(
         {
             "data": {
                 "wells": [
-                    {"type": "sample", "sample_id": "uuid1", "destination_coordinate": "H1"},
-                    {"type": "sample", "sample_id": "uuid2", "destination_coordinate": "H2"},
-                    {"type": "sample", "sample_id": "uuid1", "destination_coordinate": "H3"},
+                    {"type": "sample", "lh_sample_uuid": "uuid1", "destination_coordinate": "H1"},
+                    {"type": "sample", "lh_sample_uuid": "uuid2", "destination_coordinate": "H2"},
+                    {"type": "sample", "lh_sample_uuid": "uuid1", "destination_coordinate": "H3"},
                 ]
             }
         }
@@ -476,7 +480,7 @@ def test_all_samples_from_destination_value_fails_with_duplicated_samples(
     app,
     run_id,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     cherrytrack_destination_plate_response,
     mocked_responses,
     cherrytrack_mock_destination_plate,
@@ -493,7 +497,7 @@ def test_all_samples_from_destination_value_fails_with_duplicated_samples(
 
         assert instance.is_valid() is False
         assert instance.errors == [
-            ("Exception during retrieval: There is duplication in the sample ids provided: ['uuid1']")
+            ("Exception during retrieval: There is duplication in the lh sample uuids provided: ['uuid1']")
         ]
 
 
@@ -504,7 +508,7 @@ def test_all_controls_from_destination_value_gets_value(
     app,
     run_id,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     mocked_responses,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
@@ -518,8 +522,6 @@ def test_all_controls_from_destination_value_gets_value(
         assert val == {"E10": wells[2], "E11": wells[3]}
 
 
-@pytest.mark.parametrize("run_id", [5])
-@pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
 @pytest.mark.parametrize(
     "cherrytrack_destination_plate_response",
@@ -536,10 +538,7 @@ def test_all_controls_from_destination_value_gets_value(
 )
 def test_all_controls_from_destination_value_fails_with_missing_controls(
     app,
-    run_id,
     destination_barcode,
-    samples_in_cherrytrack,
-    cherrytrack_destination_plate_response,
     mocked_responses,
     cherrytrack_mock_destination_plate,
 ):
@@ -575,7 +574,7 @@ def test_samples_with_cog_uk_id_from_destination_add_to_warehouse(
     run_id,
     centres,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     mlwh_samples_in_cherrytrack,
     mocked_responses,
     cherrytrack_mock_destination_plate,
@@ -584,7 +583,7 @@ def test_samples_with_cog_uk_id_from_destination_add_to_warehouse(
     baracoda_mock_responses,
 ):
     with app.app_context():
-        samples, _ = samples_in_cherrytrack
+        samples, _ = samples_from_cherrytrack_into_mongo
         instance = SamplesWithCogUkId(
             SamplesFromDestination(
                 CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
@@ -624,7 +623,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
     run_id,
     centres,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     mlwh_samples_in_cherrytrack,
     mocked_responses,
     cherrytrack_mock_destination_plate,
@@ -633,7 +632,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
     baracoda_mock_responses,
 ):
     with app.app_context():
-        samples, _ = samples_in_cherrytrack
+        samples, _ = samples_from_cherrytrack_into_mongo
         instance = SamplesWithCogUkId(
             SamplesFromDestination(
                 CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
@@ -666,7 +665,7 @@ def test_source_plates_from_destination_value_gets_value(
     app,
     run_id,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     mocked_responses,
     source_plates,
     cherrytrack_mock_destination_plate,
@@ -692,7 +691,7 @@ def test_source_plates_from_destination_add_to_warehouse(
     app,
     run_id,
     destination_barcode,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
     mocked_responses,
     source_plates,
     cherrytrack_mock_destination_plate,

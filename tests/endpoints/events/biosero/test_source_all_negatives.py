@@ -44,7 +44,7 @@ def test_post_event_source_no_pickable_samples(
     run_id,
     mocked_responses,
     cherrytrack_mock_run_info,
-    samples_in_cherrytrack,
+    samples_from_cherrytrack_into_mongo,
 ):
     with app.app_context():
         with patch(
@@ -107,7 +107,7 @@ def test_post_event_source_no_pickable_samples(
 
 
 @pytest.mark.parametrize("run_id", [3])
-@pytest.mark.parametrize("cherrytrack_run_info_response", [{"data": {"errors": ["One error", "Another error"]}}])
+@pytest.mark.parametrize("cherrytrack_run_info_response", [{"errors": ["One error", "Another error"]}])
 @pytest.mark.parametrize("cherrytrack_mock_run_info_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_for_samples_info(
     app,
