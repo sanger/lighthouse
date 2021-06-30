@@ -1,6 +1,6 @@
 from pytest import raises
 import pytest
-from lighthouse.classes.event_properties.interfaces import ValidationError, RetrievalError
+from lighthouse.classes.event_properties.exceptions import ValidationError, RetrievalError
 from lighthouse.classes.event_properties.definitions import (
     UserID,
     RobotSerialNumber,

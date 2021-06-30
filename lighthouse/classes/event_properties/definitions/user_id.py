@@ -1,5 +1,6 @@
 from functools import cached_property
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.event_properties.exceptions import RetrievalError
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
 from lighthouse.constants.fields import FIELD_EVENT_USER_ID
 

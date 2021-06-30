@@ -1,19 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Dict
+from lighthouse.classes.event_properties.exceptions import ValidationError
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from contextlib import contextmanager
-
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-class ValidationError(Exception):
-    pass
-
-
-class RetrievalError(Exception):
-    pass
 
 
 def qualified_class_name(instance):

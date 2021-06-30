@@ -1,7 +1,8 @@
 from typing import List
 from functools import cached_property
 from .cherrytrack_wells_from_destination import CherrytrackWellsFromDestination
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.event_properties.exceptions import RetrievalError
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_CONTROL,
