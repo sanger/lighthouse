@@ -13,20 +13,20 @@ logger = logging.getLogger(__name__)
 class AllSamplesFromSource(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
-        self.barcode_property = barcode_property
+        self._barcode_property = barcode_property
 
     def is_valid(self):
-        return self.barcode_property.is_valid()
+        return self._barcode_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self.barcode_property.errors
+        return self._errors + self._barcode_property.errors
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            return self.get_samples_from_mongo_for_barcode(self.barcode_property.value)
+            return self.get_samples_from_mongo_for_barcode(self._barcode_property.value)
 
     def add_to_warehouse_message(self, message):
         for sample in self.value:

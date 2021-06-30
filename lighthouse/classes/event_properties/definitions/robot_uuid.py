@@ -14,34 +14,34 @@ logger = logging.getLogger(__name__)
 class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, robot_serial_number_property: RobotSerialNumber):
         self.reset()
-        self.robot_serial_number_property = robot_serial_number_property
+        self._robot_serial_number_property = robot_serial_number_property
 
     def is_valid(self):
-        return self.robot_serial_number_property.is_valid()
+        return self._robot_serial_number_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self.robot_serial_number_property.errors
+        return self._errors + self._robot_serial_number_property.errors
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
             val = self._get_robot_uuid()
             if val is None:
-                raise Exception(f"Unable to determine a uuid for robot '{self.robot_serial_number_property.value}'")
+                raise Exception(f"Unable to determine a uuid for robot '{self._robot_serial_number_property.value}'")
             return val
 
     def add_to_warehouse_message(self, message):
         message.add_subject(
             role_type=ROLE_TYPE_ROBOT,
             subject_type=SUBJECT_TYPE_ROBOT,
-            friendly_name=self.robot_serial_number_property.value,
+            friendly_name=self._robot_serial_number_property.value,
             uuid=self.value,
         )
 
     def _get_robot_uuid(self):
-        if self.robot_serial_number_property.value in app.config["BIOSERO_ROBOTS"].keys():
-            return app.config["BIOSERO_ROBOTS"][self.robot_serial_number_property.value]["uuid"]
+        if self._robot_serial_number_property.value in app.config["BIOSERO_ROBOTS"].keys():
+            return app.config["BIOSERO_ROBOTS"][self._robot_serial_number_property.value]["uuid"]
         else:
-            raise RetrievalError(f"Robot with barcode {self.robot_serial_number_property.value} not found")
+            raise RetrievalError(f"Robot with barcode {self._robot_serial_number_property.value} not found")

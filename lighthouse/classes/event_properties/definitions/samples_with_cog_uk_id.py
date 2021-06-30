@@ -23,18 +23,18 @@ logger = logging.getLogger(__name__)
 class SamplesWithCogUkId(EventPropertyAbstract):
     def __init__(self, samples_from_destination: SamplesFromDestination):
         self.reset()
-        self.samples_from_destination = samples_from_destination
+        self._samples_from_destination = samples_from_destination
 
     def is_valid(self):
-        return self.samples_from_destination.is_valid() and (len(self._errors) == 0)
+        return self._samples_from_destination.is_valid() and (len(self._errors) == 0)
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            samples = list(self.samples_from_destination.value.values())
+            samples = list(self._samples_from_destination.value.values())
             add_cog_barcodes_from_different_centres(samples)
             update_mlwh_with_cog_uk_ids(samples)
-            return self.samples_from_destination.value
+            return self._samples_from_destination.value
 
     def add_to_warehouse_message(self, message):
         for sample in self.value.values():

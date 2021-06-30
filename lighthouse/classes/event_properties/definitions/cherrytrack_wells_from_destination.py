@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 class CherrytrackWellsFromDestination(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
-        self.barcode_property = barcode_property
+        self._barcode_property = barcode_property
 
     def is_valid(self):
-        return self.barcode_property.is_valid() and (len(self._errors) == 0)
+        return self._barcode_property.is_valid() and (len(self._errors) == 0)
 
     def _is_valid_destination_coordinate_not_duplicated(self, wells):
         coordinates = [well["destination_coordinate"] for well in wells]
@@ -26,12 +26,12 @@ class CherrytrackWellsFromDestination(EventPropertyAbstract, CherrytrackServiceM
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self.barcode_property.errors
+        return self._errors + self._barcode_property.errors
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            val = self.get_wells_from_destination_plate(self.barcode_property.value)
+            val = self.get_wells_from_destination_plate(self._barcode_property.value)
             self._is_valid_destination_coordinate_not_duplicated(val)
             return val
 

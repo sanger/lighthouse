@@ -13,20 +13,20 @@ logger = logging.getLogger(__name__)
 class RunInfo(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, run_id_property: RunID):
         self.reset()
-        self.run_id_property = run_id_property
+        self._run_id_property = run_id_property
 
     def is_valid(self):
-        return self.run_id_property.is_valid()
+        return self._run_id_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self.run_id_property.errors
+        return self._errors + self._run_id_property.errors
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            return self.get_run_info(self.run_id_property.value)
+            return self.get_run_info(self._run_id_property.value)
 
     @property
     def run_id(self):

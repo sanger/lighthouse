@@ -15,16 +15,16 @@ logger = logging.getLogger(__name__)
 class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode, run_id_property: RunID):
         self.reset()
-        self.barcode_property = barcode_property
-        self.run_id_property = run_id_property
+        self._barcode_property = barcode_property
+        self._run_id_property = run_id_property
 
     def is_valid(self):
-        return self.barcode_property.is_valid() and self.run_id_property.is_valid()
+        return self._barcode_property.is_valid() and self._run_id_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self.barcode_property.errors + self.run_id_property.errors
+        return self._errors + self._barcode_property.errors + self._run_id_property.errors
 
     @cached_property
     def value(self):
@@ -32,10 +32,10 @@ class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, Mo
             lh_sample_uuids: List[str] = [
                 sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID]
                 for sample in filter(
-                    lambda sample: sample[FIELD_EVENT_RUN_ID] == self.run_id_property.value,
+                    lambda sample: sample[FIELD_EVENT_RUN_ID] == self._run_id_property.value,
                     filter(
                         self.filter_pickable_samples,
-                        self.get_samples_from_source_plates(self.barcode_property.value),
+                        self.get_samples_from_source_plates(self._barcode_property.value),
                     ),
                 )
             ]

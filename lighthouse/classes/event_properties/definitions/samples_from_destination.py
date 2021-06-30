@@ -13,20 +13,20 @@ logger = logging.getLogger(__name__)
 class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
         self.reset()
-        self.cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
+        self._cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
 
     def is_valid(self):
-        return self.cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
+        return self._cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self.cherrytrack_wells_from_destination.errors
+        return self._errors + self._cherrytrack_wells_from_destination.errors
 
     # cherrytrack samples
     def _well_samples(self):
         val = []
-        for sample in self.cherrytrack_wells_from_destination.value:
+        for sample in self._cherrytrack_wells_from_destination.value:
             if sample["type"] == "sample":
                 val.append(sample)
         return val

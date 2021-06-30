@@ -13,28 +13,28 @@ logger = logging.getLogger(__name__)
 class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
-        self.barcode_property = barcode_property
+        self._barcode_property = barcode_property
 
     def is_valid(self):
-        return self.barcode_property.is_valid()
+        return self._barcode_property.is_valid()
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self.barcode_property.errors
+        return self._errors + self._barcode_property.errors
 
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            val = self.get_source_plate_uuid(self.barcode_property.value)
+            val = self.get_source_plate_uuid(self._barcode_property.value)
             if val is None:
-                raise Exception(f"Unable to determine a uuid for source plate '{self.barcode_property.value}'")
+                raise Exception(f"Unable to determine a uuid for source plate '{self._barcode_property.value}'")
             return val
 
     def add_to_warehouse_message(self, message):
         message.add_subject(
             role_type=ROLE_TYPE_CP_SOURCE_LABWARE,
             subject_type=SUBJECT_TYPE_PLATE,
-            friendly_name=self.barcode_property.value,
+            friendly_name=self._barcode_property.value,
             uuid=self.value,
         )
