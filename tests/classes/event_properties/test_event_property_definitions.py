@@ -19,7 +19,7 @@ from lighthouse.classes.event_properties.definitions import (
     SourcePlatesFromDestination,
     FailureType,
 )
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock, PropertyMock, patch
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
 from lighthouse.constants.fields import (
@@ -268,6 +268,55 @@ def test_picked_samples_from_source_value_unsuccessful(
         assert "Response from Cherrytrack is not OK: Failed to get samples for the given source plate barcode." == str(
             myExc.value  # type: ignore
         )
+
+@pytest.mark.parametrize("run_id", [1])
+@pytest.mark.parametrize("source_barcode", ["aBarcodeWithNoSamples"])
+@pytest.mark.parametrize("destination_barcode", [""])
+@pytest.mark.parametrize(
+    "cherrytrack_source_plates_response",
+    [{
+        "data": {
+            "samples": [
+                {
+                    "automation_system_run_id": 1,
+                    "destination_barcode": "",
+                    "destination_coordinate": "",
+                    "lab_id": "",
+                    "picked": False,
+                    "rna_id": "",
+                    "lh_sample_uuid": "",
+                    "source_barcode": "aBarcodeWithNoSamples",
+                    "source_coordinate": "B1",
+                    "type": "sample",
+                },
+                {
+                    "automation_system_run_id": 1,
+                    "destination_barcode": "",
+                    "destination_coordinate": "",
+                    "lab_id": "",
+                    "picked": False,
+                    "rna_id": "",
+                    "lh_sample_uuid": "",
+                    "source_barcode": "aBarcodeWithNoSamples",
+                    "source_coordinate": "B2",
+                    "type": "sample",
+                },
+            ]
+        }
+    }],
+)
+def test_picked_samples_from_source_no_lh_sample_uuids(
+    app, run_id, source_barcode, mocked_responses, cherrytrack_mock_source_plates
+):
+    with app.app_context():
+        with patch("lighthouse.classes.services.mongo.app.data.driver.db.samples") as samples_collection:
+            val = PickedSamplesFromSource(
+                PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: run_id})
+            ).value
+
+            samples_collection.find.assert_not_called()
+            assert val == []
+            assert len(val) == 0
 
 
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])

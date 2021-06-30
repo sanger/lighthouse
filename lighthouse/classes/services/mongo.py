@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 class MongoServiceMixin:
     def get_samples_from_mongo(self, uuids):
         logger.debug("> get_samples_from_mongo")
+        if len(uuids) == 0:
+            return []
+
         samples_collection = app.data.driver.db.samples  # type: ignore
 
         samples = list(samples_collection.find({FIELD_LH_SAMPLE_UUID: {"$in": uuids}}))

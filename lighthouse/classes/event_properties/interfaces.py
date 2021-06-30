@@ -16,6 +16,16 @@ class RetrievalError(Exception):
     pass
 
 
+def qualified_class_name(instance):
+    import sys
+    klass = type(instance)
+    frame = sys._getframe(3)
+    function_name = frame.f_code.co_name
+    line_no = frame.f_lineno
+
+    return f"{ klass.__qualname__ }::{ function_name } - line { line_no }"
+
+
 class EventPropertyInterface(ABC):
     """
     This class defines the public interface offered by an event property.
@@ -189,14 +199,20 @@ class EventPropertyAbstract(EventPropertyInterface):
         Returns:
             ContextManager - A context specifically created to handle a validation error
         """
+        logger.debug(f"At { qualified_class_name(self) } - Start validation")
+
         try:
             yield
         except Exception as exc:
+            logger.debug(f"At { qualified_class_name(self) } - Exception during validation")
+
             self._is_valid = False
             msg = f"Unexpected exception while trying to is_valid {exc}"
             if msg not in self._errors:
                 self._errors.append(msg)
             logger.exception(exc)
+
+        logger.debug(f"At { qualified_class_name(self) } - End validation")
 
     @contextmanager
     def retrieval_scope(self):
@@ -213,12 +229,18 @@ class EventPropertyAbstract(EventPropertyInterface):
         Returns:
             ContextManager - A context specifically created to handle a retrieval process
         """
+        logger.debug(f"At { qualified_class_name(self) } - Start retrieval")
+
         try:
             self.enforce_validation()
             yield
         except Exception as exc:
+            logger.debug(f"At { qualified_class_name(self) } - Exception during retrieval")
+
             self._is_valid = False
             msg = f"Exception during retrieval: {exc}"
             if msg not in self._errors:
                 self._errors.append(msg)
             raise exc
+
+        logger.debug(f"At { qualified_class_name(self) } - End retrieval")
