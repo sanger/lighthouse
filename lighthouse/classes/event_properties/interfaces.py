@@ -200,7 +200,7 @@ class EventPropertyAbstract(EventPropertyInterface):
         Returns:
             ContextManager - A context specifically created to handle a validation error
         """
-        logger.debug(f"At { qualified_class_name(self) } - Start validation")
+        #logger.debug(f"At { qualified_class_name(self) } - Start validation")
 
         try:
             yield
@@ -213,7 +213,7 @@ class EventPropertyAbstract(EventPropertyInterface):
                 self._errors.append(msg)
             logger.exception(exc)
 
-        logger.debug(f"At { qualified_class_name(self) } - End validation")
+        #logger.debug(f"At { qualified_class_name(self) } - End validation")
 
     @contextmanager
     def retrieval_scope(self):

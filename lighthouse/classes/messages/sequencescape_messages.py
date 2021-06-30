@@ -43,7 +43,7 @@ class SequencescapeMessage(Message):
     def send_to_ss(self):
         message = self.render()
         return self._send_to_ss(
-            ss_url=f"http://{app.config['SS_HOST']}/api/v2/heron/plates",
+            ss_url=app.config["SS_PLATE_CREATION_ENDPOINT"],
             headers={"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]},
             body=message.payload(),
         )
