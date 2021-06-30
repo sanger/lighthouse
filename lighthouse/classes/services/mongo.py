@@ -30,7 +30,7 @@ class MongoServiceMixin:
 
         if len(remaining_uuids) > 0:
             raise Exception(
-                f"Some samples cannot be obtained because are not present in Mongo. Please review: {remaining_uuids}"
+                f"Some samples cannot be obtained because they are not present in Mongo. Please review: {remaining_uuids}"
             )
         return samples
 
