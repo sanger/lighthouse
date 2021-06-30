@@ -2,10 +2,9 @@ import logging
 
 from lighthouse.classes.automation_system import AutomationSystem
 from lighthouse.classes.events.biosero import (
-    DestinationCreated,
+    DestinationCompleted,
     DestinationFailed,
     DestinationPartial,
-    SourceAllNegatives,
     SourceCompleted,
     SourceNoPickableSamples,
     SourceNoPlateMapData,
@@ -21,13 +20,11 @@ class Biosero(AutomationSystem):
     # Events: https://ssg-confluence.internal.sanger.ac.uk/display/PSDPUB/%5BBiosero%5D+Cherrypicking+Events
     ###
     # Destination plate has been created successfully
-    EVENT_DESTINATION_CREATED = "lh_biosero_cp_destination_plate_completed"
+    EVENT_DESTINATION_COMPLETED = "lh_biosero_cp_destination_plate_completed"
     # Destination plate failed to be created successfully
     EVENT_DESTINATION_FAILED = "lh_biosero_cp_destination_failed"
     # Destination plate has been partially filled
     EVENT_DESTINATION_PARTIAL = "lh_biosero_cp_destination_plate_partial"
-    # Source plate only contains negatives, nothing to cherrypick, and the plate is put into the output stacks
-    EVENT_SOURCE_ALL_NEGATIVES = "lh_biosero_cp_source_all_negatives"
     # Source plate has had all pickable wells cherrypicked into destination plate(s)
     EVENT_SOURCE_COMPLETED = "lh_biosero_cp_source_completed"
     # Source plate has no pickable sample wells
@@ -41,10 +38,9 @@ class Biosero(AutomationSystem):
 
     # needs to be an immutable object: https://docs.python.org/3/tutorial/classes.html#class-and-instance-variables
     PLATE_EVENT_NAMES = (
-        EVENT_DESTINATION_CREATED,
+        EVENT_DESTINATION_COMPLETED,
         EVENT_DESTINATION_FAILED,
         EVENT_DESTINATION_PARTIAL,
-        EVENT_SOURCE_ALL_NEGATIVES,
         EVENT_SOURCE_COMPLETED,
         EVENT_SOURCE_NO_PICKABLE_SAMPLES,
         EVENT_SOURCE_NO_PLATE_MAP_DATA,
@@ -55,10 +51,9 @@ class Biosero(AutomationSystem):
     def __init__(self) -> None:
         self._name = AutomationSystem.AutomationSystemEnum.BIOSERO.name
 
-        self._event_destination_created = DestinationCreated(event_type=self.EVENT_DESTINATION_CREATED)
+        self._event_destination_completed = DestinationCompleted(event_type=self.EVENT_DESTINATION_COMPLETED)
         self._event_destination_failed = DestinationFailed(event_type=self.EVENT_DESTINATION_FAILED)
         self._event_destination_partial = DestinationPartial(event_type=self.EVENT_DESTINATION_PARTIAL)
-        self._event_source_all_negatives = SourceAllNegatives(event_type=self.EVENT_SOURCE_ALL_NEGATIVES)
         self._event_source_completed = SourceCompleted(event_type=self.EVENT_SOURCE_COMPLETED)
         self._event_source_no_pickable_samples = SourceNoPickableSamples(
             event_type=self.EVENT_SOURCE_NO_PICKABLE_SAMPLES
@@ -68,10 +63,9 @@ class Biosero(AutomationSystem):
         self._event_source_unrecognised = SourceUnrecognised(event_type=self.EVENT_SOURCE_UNRECOGNISED)
 
         self._plate_events = {
-            self._event_destination_created,
+            self._event_destination_completed,
             self._event_destination_failed,
             self._event_destination_partial,
-            self._event_source_all_negatives,
             self._event_source_completed,
             self._event_source_no_pickable_samples,
             self._event_source_no_plate_map_data,

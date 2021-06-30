@@ -19,7 +19,7 @@ from lighthouse.classes.event_properties.definitions import (
 logger = logging.getLogger(__name__)
 
 
-class DestinationCreated(PlateEvent):
+class DestinationCompleted(PlateEvent):
     def __init__(self, event_type: str) -> None:
         super().__init__(event_type=event_type, plate_type=PlateEvent.PlateTypeEnum.DESTINATION)
         self.properties: Dict[str, Any] = {}

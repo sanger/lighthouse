@@ -19,7 +19,7 @@ def int_to_uuid(value: int) -> str:
 # Event source partially completed
 
 
-def test_post_destination_created_missing_barcode(app, client, biosero_auth_headers, clear_events):
+def test_post_destination_completed_missing_barcode(app, client, biosero_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",
@@ -39,7 +39,7 @@ def test_post_destination_created_missing_barcode(app, client, biosero_auth_head
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
 @pytest.mark.parametrize("cherrytrack_mock_destination_plate_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
-def test_post_destination_created_cherrytrack_fails(
+def test_post_destination_completed_cherrytrack_fails(
     app,
     client,
     biosero_auth_headers,
