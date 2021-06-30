@@ -112,7 +112,7 @@ def test_post_event_partially_completed(
                 side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
             ):
                 with patch(
-                    "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
+                    "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",
                 ):
                     mock_response_send_ss = MagicMock()

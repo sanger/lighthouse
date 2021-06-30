@@ -1,7 +1,7 @@
 import logging
 from typing import Dict
 
-from lighthouse.classes.plate_event import PlateEvent
+from lighthouse.classes.events import PlateEvent
 from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)

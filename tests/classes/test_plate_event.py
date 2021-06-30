@@ -1,4 +1,4 @@
-from lighthouse.classes.plate_event import PlateEvent, EventNotInitialized
+from lighthouse.classes.events import PlateEvent, EventNotInitializedError
 from pytest import raises
 from datetime import datetime
 from unittest.mock import MagicMock, patch
@@ -17,7 +17,7 @@ def test_source_partial_new(app):
 
 def test_process_event_uninitialized(app):
     event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
-    with raises(EventNotInitialized):
+    with raises(EventNotInitializedError):
         event.process_event()
 
 
@@ -25,11 +25,11 @@ def test_initialize_event(app):
     mytime = datetime.now()
     event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
 
-    with raises(EventNotInitialized):
+    with raises(EventNotInitializedError):
         event.initialize_event({"_created": mytime})
     assert event.state == PlateEvent.EVENT_NOT_INITIALIZED
 
-    with raises(EventNotInitialized):
+    with raises(EventNotInitializedError):
         event.initialize_event({"event_wh_uuid": "uuid"})
     assert event.state == PlateEvent.EVENT_NOT_INITIALIZED
 
@@ -54,7 +54,7 @@ def test_process_event(app):
 def test_build_new_warehouse_message(app):
     with app.app_context():
         event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
-        with raises(EventNotInitialized):
+        with raises(EventNotInitializedError):
             event.build_new_warehouse_message()
 
         event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
@@ -95,7 +95,7 @@ def test_process_errors(app):
         event = TestDummy(event_type="source_partial", plate_type=PlateEvent.PlateTypeEnum.SOURCE)
         event.initialize_event({"event_wh_uuid": "uuid", "_created": datetime.now()})
 
-        with patch("lighthouse.classes.plate_event.set_errors_to_event") as mock:
+        with patch("lighthouse.classes.events.plate_event.set_errors_to_event") as mock:
             event.process_errors()
             mock.assert_not_called()
 
@@ -113,6 +113,6 @@ def test_process_exception(app):
 
         exc = Exception("boom!")
 
-        with patch("lighthouse.classes.plate_event.set_errors_to_event") as mock:
+        with patch("lighthouse.classes.events.plate_event.set_errors_to_event") as mock:
             event.process_exception(exc)
             mock.assert_called_once_with("uuid", {"base": ["boom!"]})

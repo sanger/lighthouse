@@ -54,7 +54,7 @@ def test_post_event_source_no_pickable_samples(
             with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[int_to_uuid(2)]):
 
                 with patch(
-                    "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
+                    "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",
                 ):
                     response = client.post(
@@ -127,7 +127,7 @@ def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_
             side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
         ):
             with patch(
-                "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
+                "lighthouse.classes.events.PlateEvent.message_timestamp",
                 return_value="mytime",
             ):
                 response = client.post(
@@ -167,7 +167,7 @@ def test_post_event_source_no_pickable_samples_with_validation_error_after_stori
             side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
         ):
             with patch(
-                "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
+                "lighthouse.classes.events.PlateEvent.message_timestamp",
                 return_value="mytime",
             ):
                 response = client.post(

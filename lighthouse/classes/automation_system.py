@@ -4,7 +4,7 @@ from abc import ABC
 from enum import Enum, auto
 from typing import List, Set
 
-from lighthouse.classes.plate_event import PlateEvent
+from lighthouse.classes.events import PlateEvent
 
 logger = logging.getLogger(__name__)
 

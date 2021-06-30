@@ -50,7 +50,7 @@ def test_post_event_no_plate_map_data(
         with patch("lighthouse.hooks.events.uuid4", return_value=int_to_uuid(1)):
             with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[int_to_uuid(2)]):
                 with patch(
-                    "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
+                    "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",
                 ):
                     response = client.post(
@@ -101,7 +101,7 @@ def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mon
             side_effect=[int_to_uuid(1), int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
         ):
             with patch(
-                "lighthouse.classes.plate_event.PlateEvent.message_timestamp",
+                "lighthouse.classes.events.PlateEvent.message_timestamp",
                 return_value="mytime",
             ):
                 response = client.post(

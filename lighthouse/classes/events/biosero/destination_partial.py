@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any
 
-from lighthouse.classes.plate_event import PlateEvent
+from lighthouse.classes.events import PlateEvent
 from lighthouse.classes.event_properties.definitions import (
     RobotUUID,
     RunInfo,

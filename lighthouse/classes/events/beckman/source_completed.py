@@ -5,7 +5,7 @@ from typing import Dict
 from flask import current_app as app
 
 from lighthouse.classes.services.labwhere import LabwhereServiceMixin
-from lighthouse.classes.plate_event import PlateEvent
+from lighthouse.classes.events import PlateEvent
 from lighthouse.helpers import mongo
 from lighthouse.messages.broker import Broker
 from lighthouse.messages.message import Message
