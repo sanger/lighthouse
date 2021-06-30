@@ -84,5 +84,8 @@ BECKMAN_ENABLE = True
 BECKMAN_FAILURE_TYPES = {key: BECKMAN_FAILURE_TYPES[key] for key in ("robot_crashed", "sample_contamination", "other")}
 
 
+###
+# SS plate creation config (UUID for the plate purpose and study of the plate created)
+###
 SS_UUID_PLATE_PURPOSE_CHERRYPICKED = "ss_uuid_plate_purpose"
 SS_UUID_STUDY_CHERRYPICKED = "ss_uuid_study"
