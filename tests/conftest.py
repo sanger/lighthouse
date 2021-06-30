@@ -32,6 +32,7 @@ from tests.fixtures.data.source_plates import SOURCE_PLATES
 from tests.fixtures.data.plate_events import PLATE_EVENTS
 from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
 from tests.fixtures.data.biosero.destination_plate_wells import build_cherrytrack_destination_plate_response
+from tests.fixtures.data.biosero.source_plate_wells import build_cherrytrack_source_plates_response
 
 
 @pytest.fixture
@@ -591,59 +592,7 @@ def cherrytrack_destination_plate_response_duplicated_wells(cherrytrack_destinat
 
 @pytest.fixture
 def cherrytrack_source_plates_response(run_id, source_barcode, destination_barcode):
-    return {
-        "data": {
-            "samples": [
-                {
-                    "automation_system_run_id": run_id,
-                    "destination_barcode": destination_barcode,
-                    "destination_coordinate": "A1",
-                    "lab_id": "centre_1",
-                    "picked": True,
-                    "rna_id": f"{source_barcode}_B1",
-                    "lh_sample_uuid": "aLighthouseUUID1",
-                    "source_barcode": source_barcode,
-                    "source_coordinate": "B1",
-                    "type": "sample",
-                },
-                {
-                    "automation_system_run_id": run_id,
-                    "destination_barcode": "",
-                    "destination_coordinate": "",
-                    "lab_id": "centre_2",
-                    "picked": False,
-                    "rna_id": f"{source_barcode}_B2",
-                    "lh_sample_uuid": "aLighthouseUUID2",
-                    "source_barcode": source_barcode,
-                    "source_coordinate": "B2",
-                    "type": "sample",
-                },
-                {
-                    "automation_system_run_id": run_id,
-                    "destination_barcode": destination_barcode,
-                    "destination_coordinate": "A1",
-                    "lab_id": "centre_3",
-                    "picked": True,
-                    "rna_id": f"{source_barcode}_B3",
-                    "lh_sample_uuid": "aLighthouseUUID3",
-                    "source_barcode": source_barcode,
-                    "source_coordinate": "B3",
-                    "type": "sample",
-                },
-                {
-                    "automation_system_run_id": run_id - 1,
-                    "destination_barcode": destination_barcode,
-                    "destination_coordinate": "A1",
-                    "lab_id": "centre_4",
-                    "picked": True,
-                    "rna_id": f"{source_barcode}_B4",
-                    "lh_sample_uuid": "aLighthouseUUID4",
-                    "source_barcode": source_barcode,
-                    "source_coordinate": "B4",
-                },
-            ]
-        }
-    }
+    return build_cherrytrack_source_plates_response(run_id, source_barcode, destination_barcode)
 
 
 @pytest.fixture

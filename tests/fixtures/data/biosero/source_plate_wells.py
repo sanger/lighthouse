@@ -63,3 +63,59 @@ SOURCE_PLATE_WELLS = [
         FIELD_CHERRYTRACK_TYPE: "sample",
     },
 ]
+
+
+def build_cherrytrack_source_plates_response(run_id, source_barcode, destination_barcode):
+    return {
+        "data": {
+            "samples": [
+                {
+                    "automation_system_run_id": run_id,
+                    "destination_barcode": destination_barcode,
+                    "destination_coordinate": "A1",
+                    "lab_id": "centre_1",
+                    "picked": True,
+                    "rna_id": f"{source_barcode}_B1",
+                    "lh_sample_uuid": "aLighthouseUUID1",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B1",
+                    "type": "sample",
+                },
+                {
+                    "automation_system_run_id": run_id,
+                    "destination_barcode": "",
+                    "destination_coordinate": "",
+                    "lab_id": "centre_2",
+                    "picked": False,
+                    "rna_id": f"{source_barcode}_B2",
+                    "lh_sample_uuid": "aLighthouseUUID2",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B2",
+                    "type": "sample",
+                },
+                {
+                    "automation_system_run_id": run_id,
+                    "destination_barcode": destination_barcode,
+                    "destination_coordinate": "A1",
+                    "lab_id": "centre_3",
+                    "picked": True,
+                    "rna_id": f"{source_barcode}_B3",
+                    "lh_sample_uuid": "aLighthouseUUID3",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B3",
+                    "type": "sample",
+                },
+                {
+                    "automation_system_run_id": run_id - 1,
+                    "destination_barcode": destination_barcode,
+                    "destination_coordinate": "A1",
+                    "lab_id": "centre_4",
+                    "picked": True,
+                    "rna_id": f"{source_barcode}_B4",
+                    "lh_sample_uuid": "aLighthouseUUID4",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "B4",
+                },
+            ]
+        }
+    }

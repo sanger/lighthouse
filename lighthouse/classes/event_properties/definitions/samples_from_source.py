@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 # all samples from mongo for source plate barcode
-class AllSamplesFromSource(EventPropertyAbstract, MongoServiceMixin):
+class SamplesFromSource(EventPropertyAbstract, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
         self._barcode_property = barcode_property

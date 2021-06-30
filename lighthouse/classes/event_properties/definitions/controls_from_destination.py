@@ -1,6 +1,6 @@
 from typing import List
 from functools import cached_property
-from .cherrytrack_wells_from_destination import CherrytrackWellsFromDestination
+from .wells_from_destination import WellsFromDestination
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.event_properties.exceptions import RetrievalError
 from lighthouse.classes.services.mongo import MongoServiceMixin
@@ -19,17 +19,17 @@ logger = logging.getLogger(__name__)
 
 
 class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
-    def __init__(self, cherrytrack_wells_from_destination: CherrytrackWellsFromDestination):
+    def __init__(self, wells_from_destination: WellsFromDestination):
         self.reset()
-        self._cherrytrack_wells_from_destination = cherrytrack_wells_from_destination
+        self._wells_from_destination = wells_from_destination
 
     def is_valid(self):
-        return self._cherrytrack_wells_from_destination.is_valid() and (len(self._errors) == 0)
+        return self._wells_from_destination.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self._cherrytrack_wells_from_destination.errors
+        return self._errors + self._wells_from_destination.errors
 
     def _is_valid_positive_and_negative_present(self, wells):
         control_types = [well["control"] for well in wells]
@@ -39,7 +39,7 @@ class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
 
     def _well_controls(self):
         val = []
-        for well in self._cherrytrack_wells_from_destination.value:
+        for well in self._wells_from_destination.value:
             if well["type"] == "control":
                 val.append(well)
         return val

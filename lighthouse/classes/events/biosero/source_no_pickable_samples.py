@@ -11,7 +11,7 @@ from lighthouse.classes.event_properties.definitions import (
     PlateBarcode,
     RunID,
     RobotSerialNumber,
-    AllSamplesFromSource,
+    SamplesFromSource,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class SourceNoPickableSamples(PlateEvent):
         self.properties["source_plate_uuid"] = SourcePlateUUID(self.properties["plate_barcode"])
         self.properties["robot_serial_number"] = RobotSerialNumber(params)
         self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
-        self.properties["all_samples"] = AllSamplesFromSource(self.properties["plate_barcode"])
+        self.properties["all_samples"] = SamplesFromSource(self.properties["plate_barcode"])
 
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()

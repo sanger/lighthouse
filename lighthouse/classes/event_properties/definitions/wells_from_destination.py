@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class CherrytrackWellsFromDestination(EventPropertyAbstract, CherrytrackServiceMixin):
+class WellsFromDestination(EventPropertyAbstract, CherrytrackServiceMixin):
     def __init__(self, barcode_property: PlateBarcode):
         self.reset()
         self._barcode_property = barcode_property

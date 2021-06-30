@@ -5,7 +5,7 @@ from lighthouse.classes.events import PlateEvent
 from lighthouse.classes.event_properties.definitions import (
     RobotUUID,
     RunInfo,
-    CherrytrackWellsFromDestination,
+    WellsFromDestination,
     SamplesFromDestination,
     SamplesWithCogUkId,
     ControlsFromDestination,
@@ -38,7 +38,7 @@ class DestinationPartial(PlateEvent):
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
 
         self.properties["destination_plate"] = self.properties["plate_barcode"]
-        self.properties["wells"] = CherrytrackWellsFromDestination(self.properties["plate_barcode"])
+        self.properties["wells"] = WellsFromDestination(self.properties["plate_barcode"])
         self.properties["source_plates"] = SourcePlatesFromDestination(self.properties["wells"])
         self.properties["samples"] = SamplesFromDestination(self.properties["wells"])
         self.properties["samples_with_cog_uk_id"] = SamplesWithCogUkId(self.properties["samples"])

@@ -11,8 +11,8 @@ from lighthouse.classes.event_properties.definitions import (
     PickedSamplesFromSource,
     SourcePlateUUID,
     BarcodeNoPlateMapData,
-    AllSamplesFromSource,
-    CherrytrackWellsFromDestination,
+    SamplesFromSource,
+    WellsFromDestination,
     SamplesFromDestination,
     ControlsFromDestination,
     SamplesWithCogUkId,
@@ -329,7 +329,7 @@ def test_all_samples_successful(
     samples_from_cherrytrack_into_mongo,
 ):
     with app.app_context():
-        val = AllSamplesFromSource(PlateBarcode({FIELD_EVENT_BARCODE: source_barcode})).value
+        val = SamplesFromSource(PlateBarcode({FIELD_EVENT_BARCODE: source_barcode})).value
         samples, _ = samples_from_cherrytrack_into_mongo
 
         for elem in val:
@@ -350,7 +350,7 @@ def test_all_samples_unsuccessful(app, source_barcode):
         obj.is_valid.return_value = True
         type(obj).value = PropertyMock(side_effect=Exception("boom!"))
         try:
-            AllSamplesFromSource(obj).value
+            SamplesFromSource(obj).value
         except Exception as exc:
             myExc = exc
 
@@ -406,7 +406,7 @@ def test_source_plate_uuid_errors(app, source_plates):
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-def test_cherrytrack_wells_from_destination_value_gets_value(
+def test_wells_from_destination_value_gets_value(
     app,
     run_id,
     destination_barcode,
@@ -415,7 +415,7 @@ def test_cherrytrack_wells_from_destination_value_gets_value(
     cherrytrack_destination_plate_response,
 ):
     with app.app_context():
-        val = CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})).value
+        val = WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})).value
         assert val == cherrytrack_destination_plate_response["data"]["wells"]
 
 
@@ -426,7 +426,7 @@ def test_cherrytrack_wells_from_destination_value_gets_value(
     "cherrytrack_destination_plate_response",
     [{"data": {"wells": [{"destination_coordinate": "H1"}, {"destination_coordinate": "H1"}]}}],
 )
-def test_cherrytrack_wells_from_destination_value_fails_with_duplicated_wells(
+def test_wells_from_destination_value_fails_with_duplicated_wells(
     app,
     run_id,
     destination_barcode,
@@ -436,7 +436,7 @@ def test_cherrytrack_wells_from_destination_value_fails_with_duplicated_wells(
     cherrytrack_mock_destination_plate,
 ):
     with app.app_context():
-        instance = CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+        instance = WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         assert instance.is_valid() is True
         assert instance.errors == []
 
@@ -463,7 +463,7 @@ def test_all_samples_from_destination_value_gets_value(
 ):
     with app.app_context():
         val = SamplesFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         ).value
         samples, _ = samples_from_cherrytrack_into_mongo
 
@@ -494,7 +494,7 @@ def test_all_samples_from_destination_value_fails_with_unknown_samples(
 ):
     with app.app_context():
         instance = SamplesFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         )
         assert instance.is_valid() is True
         assert instance.errors == []
@@ -539,7 +539,7 @@ def test_all_samples_from_destination_value_fails_with_duplicated_samples(
 ):
     with app.app_context():
         instance = SamplesFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         )
         assert instance.is_valid() is True
         assert instance.errors == []
@@ -568,7 +568,7 @@ def test_all_controls_from_destination_value_gets_value(
     with app.app_context():
         wells = cherrytrack_destination_plate_response["data"]["wells"]
         val = ControlsFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         ).value
 
         assert val == {"E10": wells[2], "E11": wells[3]}
@@ -596,7 +596,7 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
 ):
     with app.app_context():
         instance = ControlsFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         )
         assert instance.is_valid() is True
         assert instance.errors == []
@@ -638,7 +638,7 @@ def test_samples_with_cog_uk_id_from_destination_add_to_warehouse(
         samples, _ = samples_from_cherrytrack_into_mongo
         instance = SamplesWithCogUkId(
             SamplesFromDestination(
-                CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+                WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
             )
         )
         message = WarehouseMessage("mytype", "myuuid", "at some point")
@@ -687,7 +687,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
         samples, _ = samples_from_cherrytrack_into_mongo
         instance = SamplesWithCogUkId(
             SamplesFromDestination(
-                CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+                WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
             )
         )
         message = SequencescapeMessage()
@@ -725,7 +725,7 @@ def test_source_plates_from_destination_value_gets_value(
 ):
     with app.app_context():
         val = SourcePlatesFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         ).value
 
         for elem in val:
@@ -751,7 +751,7 @@ def test_source_plates_from_destination_add_to_warehouse(
 ):
     with app.app_context():
         instance = SourcePlatesFromDestination(
-            CherrytrackWellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
         )
 
         message = WarehouseMessage("mytype", "myuuid", "at some point")
