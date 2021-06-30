@@ -1,4 +1,5 @@
 from functools import cached_property
+from typing import List
 from .samples_from_destination import SamplesFromDestination
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.constants.fields import (
@@ -27,6 +28,11 @@ class SamplesWithCogUkId(EventPropertyAbstract):
 
     def is_valid(self):
         return self._samples_from_destination.is_valid() and (len(self._errors) == 0)
+
+    @property
+    def errors(self) -> List[str]:
+        self.is_valid()
+        return self._errors + self._samples_from_destination.errors
 
     @cached_property
     def value(self):

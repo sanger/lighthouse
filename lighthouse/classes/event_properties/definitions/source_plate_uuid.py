@@ -2,6 +2,7 @@ from typing import List
 from functools import cached_property
 from .plate_barcode import PlateBarcode
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.event_properties.exceptions import RetrievalError
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
 
@@ -28,7 +29,7 @@ class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
         with self.retrieval_scope():
             val = self.get_source_plate_uuid(self._barcode_property.value)
             if val is None:
-                raise Exception(f"Unable to determine a uuid for source plate '{self._barcode_property.value}'")
+                raise RetrievalError(f"Unable to determine a uuid for source plate '{self._barcode_property.value}'")
             return val
 
     def add_to_warehouse_message(self, message):

@@ -19,10 +19,7 @@ class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            val = self._params.get(FIELD_EVENT_USER_ID)
-            if val is None:
-                raise RetrievalError("Unable to determine a user id")
-            return val
+            return self._params.get(FIELD_EVENT_USER_ID)
 
     def add_to_warehouse_message(self, message):
         message.set_user_id(self.value)

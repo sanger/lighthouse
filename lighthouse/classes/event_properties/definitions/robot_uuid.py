@@ -28,10 +28,7 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            val = self._get_robot_uuid()
-            if val is None:
-                raise Exception(f"Unable to determine a uuid for robot '{self._robot_serial_number_property.value}'")
-            return val
+            return self._get_robot_uuid()
 
     def add_to_warehouse_message(self, message):
         message.add_subject(
@@ -43,6 +40,9 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
 
     def _get_robot_uuid(self):
         if self._robot_serial_number_property.value in app.config["BIOSERO_ROBOTS"].keys():
-            return app.config["BIOSERO_ROBOTS"][self._robot_serial_number_property.value]["uuid"]
+            val = app.config["BIOSERO_ROBOTS"][self._robot_serial_number_property.value]["uuid"]
+            if val is None:
+                raise RetrievalError(f"Unable to determine a uuid for robot '{self._robot_serial_number_property.value}'")
+            return val
         else:
             raise RetrievalError(f"Robot with barcode {self._robot_serial_number_property.value} not found")
