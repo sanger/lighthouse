@@ -505,7 +505,7 @@ def test_all_samples_from_destination_value_fails_with_unknown_samples(
         assert instance.is_valid() is False
         assert instance.errors == [
             (
-                "Exception during retrieval: Some samples cannot be obtained because are not present"
+                "Exception during retrieval: Some samples cannot be obtained because they are not present"
                 " in Mongo. Please review: ['unknown']"
             )
         ]
