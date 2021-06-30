@@ -51,3 +51,53 @@ DESTINATION_PLATE_WELLS = [
         FIELD_CHERRYTRACK_TYPE: "sample",
     },
 ]
+
+
+def build_cherrytrack_destination_plate_response(destination_barcode, source_barcode, run_id):
+    return {
+        "data": {
+            "barcode": destination_barcode,
+            "wells": [
+                {
+                    "type": "sample",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "A1",
+                    "destination_coordinate": "H08",
+                    "rna_id": f"{source_barcode}_A01",
+                    "root_sample_id": "aRootSampleId1",
+                    "result": "Positive",
+                    "lab_id": "centre_1",
+                    "lh_sample_uuid": "aLighthouseUUID1",
+                    "run_id": run_id,
+                },
+                {
+                    "type": "sample",
+                    "source_barcode": source_barcode,
+                    "source_coordinate": "A3",
+                    "destination_coordinate": "H12",
+                    "rna_id": f"{source_barcode}_A03",
+                    "root_sample_id": "aRootSampleId2",
+                    "result": "Positive",
+                    "lab_id": "centre_2",
+                    "lh_sample_uuid": "aLighthouseUUID3",
+                    "run_id": run_id - 1,
+                },
+                {
+                    "type": "control",
+                    "control_barcode": "DN1234",
+                    "control_coordinate": "A1",
+                    "destination_coordinate": "E10",
+                    "control": "positive",
+                    "run_id": run_id - 2,
+                },
+                {
+                    "type": "control",
+                    "control_barcode": "DN1234",
+                    "control_coordinate": "A1",
+                    "destination_coordinate": "E11",
+                    "control": "negative",
+                    "run_id": run_id - 2,
+                },
+            ],
+        }
+    }
