@@ -1,3 +1,5 @@
+from typing import List, Dict, Any
+
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
@@ -5,7 +7,7 @@ from lighthouse.constants.fields import (
     FIELD_EVENT_USER_ID,
 )
 
-RUNS = [
+RUNS: List[Dict[str, Any]] = [
     {
         "id": 1,
         FIELD_EVENT_USER_ID: "ab1",

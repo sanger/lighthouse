@@ -18,6 +18,7 @@ class RetrievalError(Exception):
 
 def qualified_class_name(instance):
     import sys
+
     klass = type(instance)
     frame = sys._getframe(3)
     function_name = frame.f_code.co_name
