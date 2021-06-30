@@ -1,6 +1,6 @@
 from typing import List
 from functools import cached_property
-from .robot_serial_number import RobotSerialNumber
+from lighthouse.classes.event_properties.definitions import RobotSerialNumber
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.event_properties.exceptions import RetrievalError
 from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin

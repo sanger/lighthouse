@@ -1,7 +1,6 @@
 from typing import List
 from functools import cached_property
-from .wells_from_destination import WellsFromDestination
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
 from lighthouse.classes.event_properties.exceptions import RetrievalError
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.constants.fields import (
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
-    def __init__(self, wells_from_destination: WellsFromDestination):
+    def __init__(self, wells_from_destination: EventPropertyInterface):
         self.reset()
         self._wells_from_destination = wells_from_destination
 

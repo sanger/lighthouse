@@ -4,21 +4,24 @@ from lighthouse.classes.event_properties.exceptions import ValidationError, Retr
 from lighthouse.classes.event_properties.definitions import (
     UserID,
     RobotSerialNumber,
-    RobotUUID,
-    RunInfo,
     RunID,
     PlateBarcode,
-    PickedSamplesFromSource,
     SourcePlateUUID,
     BarcodeNoPlateMapData,
     SamplesFromSource,
-    WellsFromDestination,
     SamplesFromDestination,
     ControlsFromDestination,
     SamplesWithCogUkId,
     SourcePlatesFromDestination,
     FailureType,
 )
+from lighthouse.classes.event_properties.definitions.biosero import (
+    RobotUUID,
+    RunInfo,
+    PickedSamplesFromSource,
+    WellsFromDestination,
+)
+
 from unittest.mock import MagicMock, PropertyMock, patch
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
 from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
@@ -637,9 +640,7 @@ def test_samples_with_cog_uk_id_from_destination_add_to_warehouse(
     with app.app_context():
         samples, _ = samples_from_cherrytrack_into_mongo
         instance = SamplesWithCogUkId(
-            SamplesFromDestination(
-                WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
-            )
+            SamplesFromDestination(WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})))
         )
         message = WarehouseMessage("mytype", "myuuid", "at some point")
         instance.add_to_warehouse_message(message)
@@ -686,9 +687,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
     with app.app_context():
         samples, _ = samples_from_cherrytrack_into_mongo
         instance = SamplesWithCogUkId(
-            SamplesFromDestination(
-                WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
-            )
+            SamplesFromDestination(WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})))
         )
         message = SequencescapeMessage()
         instance.add_to_sequencescape_message(message)

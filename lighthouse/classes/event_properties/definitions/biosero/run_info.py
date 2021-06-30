@@ -1,6 +1,6 @@
 from typing import List
 from functools import cached_property
-from .run_id import RunID
+from lighthouse.classes.event_properties.definitions import RunID
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
 from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_RUN, SUBJECT_TYPE_RUN

@@ -1,7 +1,6 @@
 from typing import List, Dict, Any
 from functools import cached_property
-from .run_id import RunID
-from .plate_barcode import PlateBarcode
+from lighthouse.classes.event_properties.definitions import RunID, PlateBarcode
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin

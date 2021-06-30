@@ -1,6 +1,6 @@
 from typing import List
 from functools import cached_property
-from .plate_barcode import PlateBarcode
+from lighthouse.classes.event_properties.definitions import PlateBarcode
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
 from lighthouse.classes.event_properties.exceptions import RetrievalError

@@ -4,8 +4,6 @@ from typing import Dict, Any
 from lighthouse.classes.events import PlateEvent
 
 from lighthouse.classes.event_properties.definitions import (
-    RobotUUID,
-    RunInfo,
     SourcePlateUUID,
     UserID,
     PlateBarcode,
@@ -13,6 +11,11 @@ from lighthouse.classes.event_properties.definitions import (
     RobotSerialNumber,
     SamplesFromSource,
 )
+from lighthouse.classes.event_properties.definitions.biosero import (
+    RobotUUID,
+    RunInfo,
+)
+
 
 logger = logging.getLogger(__name__)
 
