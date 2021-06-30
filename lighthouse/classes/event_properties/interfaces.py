@@ -200,8 +200,6 @@ class EventPropertyAbstract(EventPropertyInterface):
         Returns:
             ContextManager - A context specifically created to handle a validation error
         """
-        # logger.debug(f"At { qualified_class_name(self) } - Start validation")
-
         try:
             yield
         except Exception as exc:
@@ -212,8 +210,6 @@ class EventPropertyAbstract(EventPropertyInterface):
             if msg not in self._errors:
                 self._errors.append(msg)
             logger.exception(exc)
-
-        # logger.debug(f"At { qualified_class_name(self) } - End validation")
 
     @contextmanager
     def retrieval_scope(self):
@@ -230,13 +226,13 @@ class EventPropertyAbstract(EventPropertyInterface):
         Returns:
             ContextManager - A context specifically created to handle a retrieval process
         """
-        logger.debug(f"At { qualified_class_name(self) } - Start retrieval")
+        logger.info(f"At { qualified_class_name(self) } - Start retrieval")
 
         try:
             self.enforce_validation()
             yield
         except Exception as exc:
-            logger.debug(f"At { qualified_class_name(self) } - Exception during retrieval")
+            logger.error(f"At { qualified_class_name(self) } - Exception during retrieval")
 
             self._is_valid = False
             msg = f"Exception during retrieval: {exc}"
@@ -244,4 +240,4 @@ class EventPropertyAbstract(EventPropertyInterface):
                 self._errors.append(msg)
             raise exc
 
-        logger.debug(f"At { qualified_class_name(self) } - End retrieval")
+        logger.info(f"At { qualified_class_name(self) } - End retrieval")
