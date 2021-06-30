@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Protocol, Tuple, Union
+from typing import Any, Dict, List, Protocol, Tuple, Union, Optional
 
 SampleDoc = Dict[str, Any]
 SampleDocs = List[SampleDoc]
@@ -21,4 +21,19 @@ class PlateEvent(Protocol):
 
     @property
     def robot_serial_number(self) -> str:
+        ...
+
+
+class EventPropertyProtocol(Protocol):
+    @property
+    def _params(self) -> Dict[str, str]:
+        ...
+
+    def process_validation(self, condition: bool, message: str) -> None:
+        ...
+
+    def validation_scope(self):
+        ...
+
+    def is_integer(self, n: Optional[str]) -> bool:
         ...

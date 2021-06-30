@@ -1,19 +1,5 @@
-from typing import Protocol, Dict, Optional
-
-
-class EventPropertyProtocol(Protocol):
-    @property
-    def _params(self) -> Dict[str, str]:
-        ...
-
-    def process_validation(self, condition: bool, message: str) -> None:
-        ...
-
-    def validation_scope(self):
-        ...
-
-    def is_integer(self, n: Optional[str]) -> bool:
-        ...
+from typing import Optional
+from lighthouse.types import EventPropertyProtocol
 
 
 class SimpleEventPropertyMixin:
