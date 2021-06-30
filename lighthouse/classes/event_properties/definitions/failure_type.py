@@ -1,8 +1,6 @@
 from functools import cached_property
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
-from lighthouse.constants.fields import (
-    FIELD_FAILURE_TYPE
-)
+from lighthouse.constants.fields import FIELD_FAILURE_TYPE
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
 
 import logging

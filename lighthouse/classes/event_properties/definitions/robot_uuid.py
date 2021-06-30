@@ -3,9 +3,7 @@ from functools import cached_property
 from .robot_serial_number import RobotSerialNumber
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
 from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
-from lighthouse.classes.messages.warehouse_messages import (
-    ROLE_TYPE_ROBOT, SUBJECT_TYPE_ROBOT
-)
+from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_ROBOT, SUBJECT_TYPE_ROBOT
 from flask import current_app as app
 
 import logging

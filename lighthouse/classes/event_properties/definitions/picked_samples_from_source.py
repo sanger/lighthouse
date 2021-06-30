@@ -5,9 +5,7 @@ from .plate_barcode import PlateBarcode
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
-from lighthouse.constants.fields import (
-    FIELD_CHERRYTRACK_LH_SAMPLE_UUID, FIELD_EVENT_RUN_ID
-)
+from lighthouse.constants.fields import FIELD_CHERRYTRACK_LH_SAMPLE_UUID, FIELD_EVENT_RUN_ID
 
 import logging
 
@@ -47,4 +45,3 @@ class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, Mo
     def add_to_warehouse_message(self, message):
         for sample in self.value:
             message.add_sample_as_subject(sample)
-

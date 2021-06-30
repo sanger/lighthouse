@@ -2,9 +2,16 @@ from functools import cached_property
 from .samples_from_destination import SamplesFromDestination
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.constants.fields import (
-    FIELD_SS_NAME, FIELD_RNA_ID, FIELD_SS_SAMPLE_DESCRIPTION,
-    FIELD_SS_SUPPLIER_NAME, FIELD_ROOT_SAMPLE_ID, FIELD_COG_BARCODE, FIELD_SS_PHENOTYPE,
-    FIELD_RESULT, FIELD_SS_UUID, FIELD_LH_SAMPLE_UUID,
+    FIELD_SS_NAME,
+    FIELD_RNA_ID,
+    FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_SS_SUPPLIER_NAME,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_COG_BARCODE,
+    FIELD_SS_PHENOTYPE,
+    FIELD_RESULT,
+    FIELD_SS_UUID,
+    FIELD_LH_SAMPLE_UUID,
 )
 from lighthouse.helpers.plates import add_cog_barcodes_from_different_centres, update_mlwh_with_cog_uk_ids
 
@@ -46,4 +53,3 @@ class SamplesWithCogUkId(EventPropertyAbstract):
                     FIELD_SS_UUID: sample[FIELD_LH_SAMPLE_UUID],
                 },
             )
-

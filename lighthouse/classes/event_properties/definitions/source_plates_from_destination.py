@@ -3,12 +3,8 @@ from functools import cached_property
 from .cherrytrack_wells_from_destination import CherrytrackWellsFromDestination
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.services.mongo import MongoServiceMixin
-from lighthouse.classes.messages.warehouse_messages import (
-    ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
-)
-from lighthouse.constants.fields import (
-    FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUID
-)
+from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
+from lighthouse.constants.fields import FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUID
 
 
 import logging
@@ -50,4 +46,3 @@ class SourcePlatesFromDestination(EventPropertyAbstract, MongoServiceMixin):
                 friendly_name=source_plate[FIELD_BARCODE],
                 uuid=source_plate[FIELD_LH_SOURCE_PLATE_UUID],
             )
-

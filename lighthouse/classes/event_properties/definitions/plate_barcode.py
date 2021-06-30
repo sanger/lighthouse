@@ -25,4 +25,3 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
 
     def add_to_sequencescape_message(self, message):
         message.set_barcode(self.value)
-

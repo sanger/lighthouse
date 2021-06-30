@@ -4,8 +4,12 @@ from .cherrytrack_wells_from_destination import CherrytrackWellsFromDestination
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.constants.fields import (
-    FIELD_CHERRYTRACK_CONTROL, FIELD_CHERRYTRACK_CONTROL_BARCODE, FIELD_CHERRYTRACK_CONTROL_COORDINATE,
-    FIELD_SS_SUPPLIER_NAME, FIELD_SS_CONTROL, FIELD_SS_CONTROL_TYPE,
+    FIELD_CHERRYTRACK_CONTROL,
+    FIELD_CHERRYTRACK_CONTROL_BARCODE,
+    FIELD_CHERRYTRACK_CONTROL_COORDINATE,
+    FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
 )
 
 import logging
@@ -77,4 +81,3 @@ class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
                     FIELD_SS_CONTROL_TYPE: control[FIELD_CHERRYTRACK_CONTROL],
                 },
             )
-

@@ -3,9 +3,7 @@ from functools import cached_property
 from .plate_barcode import PlateBarcode
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.services.mongo import MongoServiceMixin
-from lighthouse.classes.messages.warehouse_messages import (
-    ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
-)
+from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
 
 import logging
 

@@ -3,9 +3,7 @@ from functools import cached_property
 from .cherrytrack_wells_from_destination import CherrytrackWellsFromDestination
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, RetrievalError
 from lighthouse.classes.services.mongo import MongoServiceMixin
-from lighthouse.constants.fields import (
-    FIELD_CHERRYTRACK_LH_SAMPLE_UUID
-)
+from lighthouse.constants.fields import FIELD_CHERRYTRACK_LH_SAMPLE_UUID
 
 import logging
 
@@ -67,4 +65,3 @@ class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
 
     def add_to_warehouse_message(self, message):
         pass
-
