@@ -1,10 +1,13 @@
 from flask import current_app as app
+from eve import Eve
+from typing import cast
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_LH_SAMPLE_UUID,
     FIELD_PLATE_BARCODE,
 )
+
 
 import logging
 
@@ -17,7 +20,7 @@ class MongoServiceMixin:
         if len(uuids) == 0:
             return []
 
-        samples_collection = app.data.driver.db.samples  # type: ignore
+        samples_collection = cast(Eve, app).data.driver.db.samples
 
         samples = list(samples_collection.find({FIELD_LH_SAMPLE_UUID: {"$in": uuids}}))
 
@@ -33,7 +36,7 @@ class MongoServiceMixin:
 
     def get_source_plate_uuid(self, barcode):
         with app.app_context():
-            source_plates_collection = app.data.driver.db.source_plates  # type: ignore
+            source_plates_collection = cast(Eve, app).data.driver.db.source_plates
 
             plate = source_plates_collection.find_one({FIELD_BARCODE: barcode})
             if plate is None:
@@ -41,7 +44,7 @@ class MongoServiceMixin:
             return plate[FIELD_LH_SOURCE_PLATE_UUID]
 
     def get_samples_from_mongo_for_barcode(self, barcode):
-        samples_collection = app.data.driver.db.samples  # type: ignore
+        samples_collection = cast(Eve, app).data.driver.db.samples
 
         samples = list(samples_collection.find({FIELD_PLATE_BARCODE: barcode}))
 
@@ -49,7 +52,7 @@ class MongoServiceMixin:
 
     def get_source_plates_from_barcodes(self, barcodes):
         with app.app_context():
-            source_plates_collection = app.data.driver.db.source_plates  # type: ignore
+            source_plates_collection = cast(Eve, app).data.driver.db.source_plates
 
             source_plates = list(source_plates_collection.find({FIELD_BARCODE: {"$in": barcodes}}))
 
