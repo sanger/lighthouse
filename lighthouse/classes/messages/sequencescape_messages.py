@@ -44,7 +44,7 @@ class SequencescapeMessage(Message):
         message = self.render()
         return self._send_to_ss(
             ss_url=app.config["SS_PLATE_CREATION_ENDPOINT"],
-            headers={"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]},
+            headers={"X-Sequencescape-Client-Id": app.config["SS_API_KEY"], "Content-type": "application/json"},
             data=message.payload(),
         )
 
