@@ -37,7 +37,7 @@ services:
 
   # Setup Lighthouse
   lighthouse:
-    image: lighthouse:develop
+    build: .
     ports:
       - "8000:8000"
     environment:
