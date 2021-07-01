@@ -45,10 +45,10 @@ class SequencescapeMessage(Message):
         return self._send_to_ss(
             ss_url=app.config["SS_PLATE_CREATION_ENDPOINT"],
             headers={"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]},
-            body=message.payload(),
+            data=message.payload(),
         )
 
-    def _send_to_ss(self, ss_url: str, headers: Dict[str, str], body: str) -> requests.Response:
+    def _send_to_ss(self, ss_url: str, headers: Dict[str, str], data: str) -> requests.Response:
         """Send JSON body to the Sequencescape /heron/plates endpoint. This should create the plate in Sequencescape.
 
         Arguments:
@@ -64,7 +64,7 @@ class SequencescapeMessage(Message):
         logger.info(f"Sending request to: {ss_url}")
 
         try:
-            response = requests.post(ss_url, json=body, headers=headers)
+            response = requests.post(ss_url, data=data, headers=headers)
 
             logger.debug(f"Response status code: {response.status_code}")
 

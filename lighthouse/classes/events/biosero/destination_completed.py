@@ -77,8 +77,7 @@ class DestinationCompleted(PlateEvent):
         super().process_event()
 
         message = self._create_sequencescape_message()
-        body = message.render()
         response = message.send_to_ss()
 
         if not response.ok:
-            raise Exception(f"There was some problem when sending message to Sequencescape: { body }")
+            raise Exception(f"There was some problem when sending message to Sequencescape: { response }")
