@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class PickedSamplesFromSource(EventPropertyAbstract, CherrytrackServiceMixin, MongoServiceMixin):
+class SamplesPickedFromSource(EventPropertyAbstract, CherrytrackServiceMixin, MongoServiceMixin):
     def __init__(self, barcode_property: PlateBarcode, run_id_property: RunID):
         self.reset()
         self._barcode_property = barcode_property

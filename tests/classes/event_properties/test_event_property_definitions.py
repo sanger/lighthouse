@@ -693,18 +693,22 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
         instance.add_to_sequencescape_message(message)
         assert message._contents == {
             "H08": {
-                "name": "DS000050001_A01",
-                "phenotype": "Positive",
-                "sample_description": "aRootSampleId1",
-                "supplier_name": "COGUK1",
-                "uuid": "aLighthouseUUID1",
+                "content": {
+                    "name": "DS000050001_A01",
+                    "phenotype": "Positive",
+                    "sample_description": "aRootSampleId1",
+                    "supplier_name": "COGUK1",
+                    "uuid": "aLighthouseUUID1",
+                }
             },
             "H12": {
-                "name": "DS000050001_A03",
-                "phenotype": "Positive",
-                "sample_description": "aRootSampleId3",
-                "supplier_name": "COGUK2",
-                "uuid": "aLighthouseUUID3",
+                "content": {
+                    "name": "DS000050001_A03",
+                    "phenotype": "Positive",
+                    "sample_description": "aRootSampleId3",
+                    "supplier_name": "COGUK2",
+                    "uuid": "aLighthouseUUID3",
+                }
             },
         }
 

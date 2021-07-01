@@ -16,7 +16,7 @@ class SequencescapeMessage(Message):
         self._barcode = barcode
 
     def set_well_sample(self, location, sample_info):
-        self._contents[location] = sample_info
+        self._contents[location] = {"content": sample_info}
 
     def render(self) -> Message:
         message_content = self.construct_sequencescape_message(

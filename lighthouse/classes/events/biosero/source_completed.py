@@ -11,7 +11,7 @@ from lighthouse.classes.event_properties.definitions import (
     RobotSerialNumber,
 )
 from lighthouse.classes.event_properties.definitions.biosero import (
-    PickedSamplesFromSource,
+    SamplesPickedFromSource,
     RobotUUID,
     RunInfo,
 )
@@ -38,7 +38,7 @@ class SourceCompleted(PlateEvent):
             self.properties[property_name].is_valid()
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
-        self.properties["picked_samples_from_source"] = PickedSamplesFromSource(
+        self.properties["samples_picked_from_source"] = SamplesPickedFromSource(
             self.properties["plate_barcode"], self.properties["run_id"]
         )
         self.properties["source_plate_uuid"] = SourcePlateUUID(self.properties["plate_barcode"])
@@ -48,7 +48,7 @@ class SourceCompleted(PlateEvent):
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
 
-        for property_name in ["picked_samples_from_source", "source_plate_uuid", "user_id", "robot_uuid", "run_info"]:
+        for property_name in ["samples_picked_from_source", "source_plate_uuid", "user_id", "robot_uuid", "run_info"]:
             self.properties[property_name].add_to_warehouse_message(message)
 
         return message.render()

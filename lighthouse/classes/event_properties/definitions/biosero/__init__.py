@@ -1,12 +1,12 @@
-from .wells_from_destination import WellsFromDestination
-from .picked_samples_from_source import PickedSamplesFromSource
 from .robot_uuid import RobotUUID
 from .run_info import RunInfo
+from .samples_picked_from_source import SamplesPickedFromSource
+from .wells_from_destination import WellsFromDestination
 
 
 __all__ = [
-    "WellsFromDestination",
-    "PickedSamplesFromSource",
     "RobotUUID",
     "RunInfo",
+    "SamplesPickedFromSource",
+    "WellsFromDestination",
 ]

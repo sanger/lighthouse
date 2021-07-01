@@ -13,7 +13,6 @@ from .user_id import UserID
 
 
 __all__ = [
-    "SamplesFromSource",
     "BarcodeNoPlateMapData",
     "ControlsFromDestination",
     "FailureType",
@@ -21,6 +20,7 @@ __all__ = [
     "RobotSerialNumber",
     "RunID",
     "SamplesFromDestination",
+    "SamplesFromSource",
     "SamplesWithCogUkId",
     "SourcePlateUUID",
     "SourcePlatesFromDestination",
