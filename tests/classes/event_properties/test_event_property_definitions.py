@@ -18,7 +18,7 @@ from lighthouse.classes.event_properties.definitions import (
 from lighthouse.classes.event_properties.definitions.biosero import (
     RobotUUID,
     RunInfo,
-    PickedSamplesFromSource,
+    SamplesPickedFromSource,
     WellsFromDestination,
 )
 
@@ -200,15 +200,15 @@ def test_run_info_value_unsuccessful(app, mocked_responses, cherrytrack_mock_run
         assert len(run_info.errors) == 1
 
 
-def test_picked_samples_from_source_valid(app):
+def test_samples_picked_from_source_valid(app):
     assert (
-        PickedSamplesFromSource(
+        SamplesPickedFromSource(
             PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}), RunID({FIELD_EVENT_RUN_ID: "5"})
         ).valid()
         is True
     )
     assert (
-        PickedSamplesFromSource(
+        SamplesPickedFromSource(
             PlateBarcode(
                 {
                     "missing_barcode_field": "aBarcode",
@@ -223,7 +223,7 @@ def test_picked_samples_from_source_valid(app):
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["DS000010001"])
-def test_picked_samples_from_source_value_successful(
+def test_samples_picked_from_source_value_successful(
     app,
     run_id,
     source_barcode,
@@ -234,7 +234,7 @@ def test_picked_samples_from_source_value_successful(
     samples_from_cherrytrack_into_mongo,
 ):
     with app.app_context():
-        val = PickedSamplesFromSource(
+        val = SamplesPickedFromSource(
             PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: run_id})
         ).value
         samples, _ = samples_from_cherrytrack_into_mongo
@@ -257,14 +257,14 @@ def test_picked_samples_from_source_value_successful(
     [{"errors": ["Failed to get samples for the given source plate barcode."]}],
 )
 @pytest.mark.parametrize("cherrytrack_mock_source_plates_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
-def test_picked_samples_from_source_value_unsuccessful(
+def test_samples_picked_from_source_value_unsuccessful(
     app, run_id, source_barcode, mocked_responses, cherrytrack_mock_source_plates
 ):
     with app.app_context():
         myExc = None
         with raises(Exception) as exc:
             myExc = exc
-            PickedSamplesFromSource(
+            SamplesPickedFromSource(
                 PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: run_id})
             ).value
 
@@ -311,12 +311,12 @@ def test_picked_samples_from_source_value_unsuccessful(
         }
     ],
 )
-def test_picked_samples_from_source_no_lh_sample_uuids(
+def test_samples_picked_from_source_no_lh_sample_uuids(
     app, run_id, source_barcode, mocked_responses, cherrytrack_mock_source_plates
 ):
     with app.app_context():
         with patch("lighthouse.classes.services.mongo.app.data.driver.db.samples") as samples_collection:
-            val = PickedSamplesFromSource(
+            val = SamplesPickedFromSource(
                 PlateBarcode({FIELD_EVENT_BARCODE: source_barcode}), RunID({FIELD_EVENT_RUN_ID: run_id})
             ).value
 
