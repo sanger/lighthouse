@@ -2,7 +2,7 @@ from functools import cached_property
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.constants.fields import FIELD_EVENT_BARCODE
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
-
+from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_DESTINATION_LABWARE, SUBJECT_TYPE_PLATE
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,11 @@ class PlateBarcode(EventPropertyAbstract, SimpleEventPropertyMixin):
             return self._params.get(FIELD_EVENT_BARCODE)
 
     def add_to_warehouse_message(self, message):
-        pass
+        message.add_subject(
+            role_type=ROLE_TYPE_CP_DESTINATION_LABWARE,
+            subject_type=SUBJECT_TYPE_PLATE,
+            friendly_name=self.value,
+        )
 
     def add_to_sequencescape_message(self, message):
         message.set_barcode(self.value)

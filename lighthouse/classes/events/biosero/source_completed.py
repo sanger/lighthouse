@@ -1,3 +1,4 @@
+from lighthouse.classes.services.labwhere import LabwhereServiceMixin
 import logging
 from typing import Dict, Any
 
@@ -20,7 +21,7 @@ from lighthouse.classes.event_properties.definitions.biosero import (
 logger = logging.getLogger(__name__)
 
 
-class SourceCompleted(PlateEvent):
+class SourceCompleted(PlateEvent, LabwhereServiceMixin):
     def __init__(self, event_type: str) -> None:
         super().__init__(event_type=event_type, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
         self.properties: Dict[str, Any] = {}
@@ -52,3 +53,10 @@ class SourceCompleted(PlateEvent):
             self.properties[property_name].add_to_warehouse_message(message)
 
         return message.render()
+
+    def process_event(self) -> None:
+        super().process_event()
+
+        response = self.transfer_to_bin()
+        if not response.ok:
+            raise Exception(f"There was some problem when sending changing location in labwhere: { response.text }")

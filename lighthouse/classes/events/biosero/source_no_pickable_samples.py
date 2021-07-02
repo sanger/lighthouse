@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any
 
 from lighthouse.classes.events import PlateEvent
+from lighthouse.classes.services.labwhere import LabwhereServiceMixin
 
 from lighthouse.classes.event_properties.definitions import (
     SourcePlateUUID,
@@ -20,7 +21,7 @@ from lighthouse.classes.event_properties.definitions.biosero import (
 logger = logging.getLogger(__name__)
 
 
-class SourceNoPickableSamples(PlateEvent):
+class SourceNoPickableSamples(PlateEvent, LabwhereServiceMixin):
     def __init__(self, event_type: str) -> None:
         super().__init__(event_type=event_type, plate_type=PlateEvent.PlateTypeEnum.SOURCE)
         self.properties: Dict[str, Any] = {}
@@ -50,3 +51,8 @@ class SourceNoPickableSamples(PlateEvent):
             self.properties[property_name].add_to_warehouse_message(message)
 
         return message.render()
+
+    def process_event(self) -> None:
+        super().process_event()
+
+        self.transfer_to_bin()

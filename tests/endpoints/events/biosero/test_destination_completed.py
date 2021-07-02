@@ -102,7 +102,7 @@ def test_post_event_partially_completed(
         ):
             with patch(
                 "lighthouse.classes.messages.warehouse_messages.uuid4",
-                side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
+                side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4), int_to_uuid(5)],
             ):
                 with patch(
                     "lighthouse.classes.events.PlateEvent.message_timestamp",
@@ -146,10 +146,12 @@ def test_post_event_partially_completed(
                                 '"uuid": "' + int_to_uuid(3) + '"}, '
                                 '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
                                 '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
+                                '{"role_type": "cherrypicking_destination_labware", "subject_type": "plate", '
+                                '"friendly_name": "HT-1234", "uuid": "' + int_to_uuid(4) + '"}, '
                                 '{"role_type": "robot", "subject_type": "robot", "friendly_name": "CPA", '
                                 '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
                                 '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
-                                '"uuid": "' + int_to_uuid(4) + '"}'
+                                '"uuid": "' + int_to_uuid(5) + '"}'
                                 '], "metadata": {}}, "lims": "LH_TEST"}'
                             )
                         )

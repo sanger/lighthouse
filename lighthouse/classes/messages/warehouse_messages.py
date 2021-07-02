@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 ROLE_TYPE_ROBOT = "robot"
 ROLE_TYPE_SAMPLE = "sample"
 ROLE_TYPE_CP_SOURCE_LABWARE = "cherrypicking_source_labware"
+ROLE_TYPE_CP_DESTINATION_LABWARE = "cherrypicking_destination_labware"
 SUBJECT_TYPE_SAMPLE = ROLE_TYPE_SAMPLE
 SUBJECT_TYPE_ROBOT = ROLE_TYPE_ROBOT
 SUBJECT_TYPE_PLATE = "plate"

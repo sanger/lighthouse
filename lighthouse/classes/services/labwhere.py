@@ -1,11 +1,11 @@
 from flask import current_app as app
-
+import requests
 from lighthouse.helpers.labwhere import set_locations_in_labwhere
-from lighthouse.types import PlateEvent
+from typing import Any
 
 
 class LabwhereServiceMixin:
-    def transfer_to_bin(self: PlateEvent) -> None:
+    def transfer_to_bin(self: Any) -> requests.Response:
         """Record a transfer of the cherrypicking_source_labware to the bin
 
         Args:
@@ -16,11 +16,11 @@ class LabwhereServiceMixin:
             message, otherwise an empty array.
         """
         # currently assuming only one event so only one plate_barcode
-        labware_barcodes = [self.plate_barcode]
+        labware_barcodes = [self.properties["plate_barcode"].value]
         location_barcode = LabwhereServiceMixin._destroyed_barcode()
-        robot_barcode = self.robot_serial_number
+        robot_barcode = self.properties["automation_system_name"].value
 
-        set_locations_in_labwhere(
+        return set_locations_in_labwhere(
             labware_barcodes=labware_barcodes,
             location_barcode=location_barcode,
             user_barcode=robot_barcode,
