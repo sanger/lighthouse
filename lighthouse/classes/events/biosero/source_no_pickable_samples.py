@@ -5,15 +5,15 @@ from lighthouse.classes.events import PlateEvent
 
 from lighthouse.classes.event_properties.definitions import (
     SourcePlateUUID,
-    UserID,
     PlateBarcode,
     RunID,
-    RobotSerialNumber,
     SamplesFromSource,
 )
 from lighthouse.classes.event_properties.definitions.biosero import (
+    AutomationSystemName,
     RobotUUID,
     RunInfo,
+    UserID,
 )
 
 
@@ -31,16 +31,16 @@ class SourceNoPickableSamples(PlateEvent):
         self._event_type = params["event_type"]
 
         self.properties["plate_barcode"] = PlateBarcode(params)
-        self.properties["user_id"] = UserID(params)
         self.properties["run_id"] = RunID(params)
 
-        for property_name in ["plate_barcode", "user_id", "run_id"]:
+        for property_name in ["plate_barcode", "run_id"]:
             self.properties[property_name].is_valid()
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
         self.properties["source_plate_uuid"] = SourcePlateUUID(self.properties["plate_barcode"])
-        self.properties["robot_serial_number"] = RobotSerialNumber(params)
-        self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
+        self.properties["user_id"] = UserID(self.properties["run_info"])
+        self.properties["automation_system_name"] = AutomationSystemName(self.properties["run_info"])
+        self.properties["robot_uuid"] = RobotUUID(self.properties["automation_system_name"])
         self.properties["all_samples"] = SamplesFromSource(self.properties["plate_barcode"])
 
     def _create_message(self) -> Any:

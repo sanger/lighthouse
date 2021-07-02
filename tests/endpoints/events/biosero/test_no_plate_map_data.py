@@ -26,8 +26,6 @@ def test_post_event_no_plate_map_data_missing_barcode(app, client, biosero_auth_
             data={
                 "automation_system_run_id": 123,
                 "event_type": "lh_biosero_cp_source_no_plate_map_data",
-                "user_id": "user1",
-                "robot": "roboto",
             },
             headers=biosero_auth_headers,
         )
@@ -59,8 +57,6 @@ def test_post_event_no_plate_map_data(
                             "automation_system_run_id": 3,
                             "barcode": "plate_123",
                             "event_type": "lh_biosero_cp_source_no_plate_map_data",
-                            "user_id": "user1",
-                            "robot": "BHRB0001",
                         },
                         headers=biosero_auth_headers,
                     )
@@ -76,7 +72,7 @@ def test_post_event_no_plate_map_data(
                         + (
                             '", "event_type": "lh_biosero_cp_source_no_plate_map_data", '
                             '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
-                            '[{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
+                            '[{"role_type": "robot", "subject_type": "robot", "friendly_name": "CPA", '
                             '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
                             '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
                             '"uuid": "' + int_to_uuid(2) + '"}], '
@@ -110,8 +106,6 @@ def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mon
                         "automation_system_run_id": 3,
                         "barcode": "a Barcode",
                         "event_type": "lh_biosero_cp_source_no_plate_map_data",
-                        "user_id": "us  er1",
-                        "robot": "BHR  B0001",
                     },
                     headers=biosero_auth_headers,
                 )
@@ -129,6 +123,4 @@ def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mon
                 # And it has errors
                 assert event[FIELD_EVENT_ERRORS] == {
                     "plate_barcode": ["'barcode' should not contain any whitespaces"],
-                    "robot_serial_number": ["'robot' should not contain any whitespaces"],
-                    "robot_uuid": ["'robot' should not contain any whitespaces"],
                 }

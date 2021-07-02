@@ -23,8 +23,6 @@ def test_post_event_source_no_pickable_samples_missing_barcode(app, client, bios
             data={
                 "automation_system_run_id": 123,
                 "event_type": "lh_biosero_cp_source_no_pickable_samples",
-                "user_id": "user1",
-                "robot": "roboto",
             },
             headers=biosero_auth_headers,
         )
@@ -63,8 +61,6 @@ def test_post_event_source_no_pickable_samples(
                             "automation_system_run_id": 3,
                             "barcode": "plate_123",
                             "event_type": "lh_biosero_cp_source_no_pickable_samples",
-                            "user_id": "user1",
-                            "robot": "BHRB0001",
                         },
                         headers=biosero_auth_headers,
                     )
@@ -90,7 +86,7 @@ def test_post_event_source_no_pickable_samples(
                             '"aRootSampleId4__plate_123_A04__centre_2__Positive", "uuid": "aLighthouseUUID4"}, '
                             '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
                             '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
-                            '{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
+                            '{"role_type": "robot", "subject_type": "robot", "friendly_name": "CPA", '
                             '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
                             '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
                             '"uuid": "' + int_to_uuid(2) + '"}], '
@@ -136,8 +132,6 @@ def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_
                         "automation_system_run_id": 3,
                         "barcode": "plate_123",
                         "event_type": "lh_biosero_cp_source_no_pickable_samples",
-                        "user_id": "user1",
-                        "robot": "BHRB0001",
                     },
                     headers=biosero_auth_headers,
                 )
@@ -176,8 +170,6 @@ def test_post_event_source_no_pickable_samples_with_validation_error_after_stori
                         "automation_system_run_id": 3,
                         "barcode": "a Barcode",
                         "event_type": "lh_biosero_cp_source_no_pickable_samples",
-                        "user_id": "us  er1",
-                        "robot": "BHR  B0001",
                     },
                     headers=biosero_auth_headers,
                 )
@@ -195,8 +187,6 @@ def test_post_event_source_no_pickable_samples_with_validation_error_after_stori
                 # And it has errors
                 assert event[FIELD_EVENT_ERRORS] == {
                     "plate_barcode": ["'barcode' should not contain any whitespaces"],
-                    "robot_serial_number": ["'robot' should not contain any whitespaces"],
                     "source_plate_uuid": ["'barcode' should not contain any whitespaces"],
                     "all_samples": ["'barcode' should not contain any whitespaces"],
-                    "robot_uuid": ["'robot' should not contain any whitespaces"],
                 }

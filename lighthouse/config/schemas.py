@@ -11,14 +11,6 @@ EVENTS_SCHEMA = {
         "type": "string",
         "check_with": "plate_events_dependent_parameters",
     },
-    "user_id": {
-        "required": True,
-        "type": "string",
-    },
-    "robot": {
-        "required": True,
-        "type": "string",
-    },
     "event_wh_uuid": {
         "type": "string",
         "unique": True,

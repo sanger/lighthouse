@@ -1,7 +1,6 @@
 from typing import List
 from functools import cached_property
-from lighthouse.classes.event_properties.definitions import RobotSerialNumber
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
 from lighthouse.classes.event_properties.exceptions import RetrievalError
 from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
 from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_ROBOT, SUBJECT_TYPE_ROBOT
@@ -13,17 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
-    def __init__(self, robot_serial_number_property: RobotSerialNumber):
+    def __init__(self, automation_system_name: EventPropertyInterface):
         self.reset()
-        self._robot_serial_number_property = robot_serial_number_property
+        self._automation_system_name = automation_system_name
 
     def is_valid(self):
-        return self._robot_serial_number_property.is_valid()
+        return self._automation_system_name.is_valid()
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self._robot_serial_number_property.errors
+        return self._errors + self._automation_system_name.errors
 
     @cached_property
     def value(self):
@@ -34,17 +33,17 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
         message.add_subject(
             role_type=ROLE_TYPE_ROBOT,
             subject_type=SUBJECT_TYPE_ROBOT,
-            friendly_name=self._robot_serial_number_property.value,
+            friendly_name=self._automation_system_name.value,
             uuid=self.value,
         )
 
     def _get_robot_uuid(self):
-        if self._robot_serial_number_property.value in app.config["BIOSERO_ROBOTS"].keys():
-            val = app.config["BIOSERO_ROBOTS"][self._robot_serial_number_property.value]["uuid"]
+        if self._automation_system_name.value in app.config["BIOSERO_ROBOTS"].keys():
+            val = app.config["BIOSERO_ROBOTS"][self._automation_system_name.value]["uuid"]
             if val is None:
                 raise RetrievalError(
-                    f"Unable to determine a uuid for robot '{self._robot_serial_number_property.value}'"
+                    f"Unable to determine a uuid for robot '{self._automation_system_name.value}'"
                 )
             return val
         else:
-            raise RetrievalError(f"Robot with barcode {self._robot_serial_number_property.value} not found")
+            raise RetrievalError(f"Robot with barcode {self._automation_system_name.value} not found")

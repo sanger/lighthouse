@@ -32,6 +32,8 @@ from lighthouse.constants.fields import (
     FIELD_EVENT_BARCODE,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_FAILURE_TYPE,
+    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
+    FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER
 )
 from http import HTTPStatus
 
@@ -125,14 +127,14 @@ def test_robot_uuid_value(app):
         with raises(RetrievalError):
             RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "1234"})).value
 
-        uuid = app.config["BIOSERO_ROBOTS"]["BHRB0001"]["uuid"]
-        assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "BHRB0001"})).value == uuid
+        uuid = app.config["BIOSERO_ROBOTS"]["CPA"]["uuid"]
+        assert RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "CPA"})).value == uuid
 
 
 def test_robot_uuid_errors(app):
     with app.app_context():
         # After success
-        robot = RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "BHRB0001"}))
+        robot = RobotUUID(RobotSerialNumber({FIELD_EVENT_ROBOT: "CPA"}))
         robot.value
         assert len(robot.errors) == 0
 
@@ -160,9 +162,9 @@ def test_run_info_value_successful(app, run_id, mocked_responses, cherrytrack_mo
         expected_response = {
             "data": {
                 "id": run_id,
-                FIELD_EVENT_USER_ID: "ab1",
-                "liquid_handler_serial_number": "aLiquidHandlerSerialNumber",
-                "automation_system_manufacturer": "biosero",
+                FIELD_EVENT_USER_ID: "user1",
+                FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER: "aLiquidHandlerSerialNumber",
+                FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER: "biosero",
                 "automation_system_name": "CPA",
             }
         }

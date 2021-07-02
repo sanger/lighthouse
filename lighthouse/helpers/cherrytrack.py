@@ -7,7 +7,7 @@ def get_automation_system_run_info_from_cherrytrack(run_id: int) -> requests.Res
 
     Example record from Cherrytrack:
 
-    `return { 'data': {'id': 1, 'user_id': 'ab1', 'liquid_handler_serial_number': 'aLiquidHandlerSerialNumber'} }`
+    `return { 'data': {'id': 1, 'user_id': 'u', 'liquid_handler_serial_number': 'aLiquidHandlerSerialNumber'} }`
 
     Args:
         run_id (int): The internal Mongo DB id of the automation system run
