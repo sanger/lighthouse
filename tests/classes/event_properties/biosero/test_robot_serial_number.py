@@ -1,8 +1,15 @@
 import pytest
 from lighthouse.classes.event_properties.definitions import RunID
 from lighthouse.classes.event_properties.definitions.biosero import RobotSerialNumber, RunInfo
-from lighthouse.constants.fields import FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER, FIELD_EVENT_RUN_ID, FIELD_CHERRYTRACK_USER_ID, FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER, FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME
+from lighthouse.constants.fields import (
+    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
+    FIELD_EVENT_RUN_ID,
+    FIELD_CHERRYTRACK_USER_ID,
+    FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
+    FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
+)
 from http import HTTPStatus
+
 
 def test_robot_serial_number_valid(app):
     assert RobotSerialNumber(RunInfo(RunID({FIELD_EVENT_RUN_ID: 1}))).valid() is True
@@ -45,4 +52,3 @@ def test_user_id_value_unsuccessful(app, mocked_responses, cherrytrack_mock_run_
         msg = "Response from Cherrytrack is not OK: Failed to get automation system run info for the given run id"
         assert msg == str(myExc)
         assert ["Exception during retrieval: " + msg] == robot.errors
-

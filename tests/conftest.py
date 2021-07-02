@@ -8,7 +8,13 @@ import responses
 
 from lighthouse import create_app
 from lighthouse.constants.events import PE_BECKMAN_SOURCE_ALL_NEGATIVES, PE_BECKMAN_SOURCE_COMPLETED
-from lighthouse.constants.fields import FIELD_SAMPLE_ID, FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER, FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER, FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME, FIELD_CHERRYTRACK_USER_ID
+from lighthouse.constants.fields import (
+    FIELD_SAMPLE_ID,
+    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
+    FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
+    FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
+    FIELD_CHERRYTRACK_USER_ID,
+)
 from lighthouse.db.dart import load_sql_server_script
 from lighthouse.helpers.dart import create_dart_connection
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table

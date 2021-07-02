@@ -50,7 +50,6 @@ class DestinationCompleted(PlateEvent):
 
         self.properties["user_id"] = UserID(self.properties["run_info"])
 
-
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()
 

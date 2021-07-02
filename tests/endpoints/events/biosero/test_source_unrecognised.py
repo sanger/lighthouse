@@ -68,5 +68,3 @@ def test_post_event_source_unrecognised(
 
                     # And it does not have errors
                     assert event[FIELD_EVENT_ERRORS] is None
-
-

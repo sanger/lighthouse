@@ -23,10 +23,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
     with app.app_context():
         response = client.post(
             "/events",
-            data={
-                "automation_system_run_id": 123,
-                "event_type": "lh_biosero_cp_destination_plate_completed"
-            },
+            data={"automation_system_run_id": 123, "event_type": "lh_biosero_cp_destination_plate_completed"},
             headers=biosero_auth_headers,
         )
 

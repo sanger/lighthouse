@@ -41,9 +41,7 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
         if self._automation_system_name.value in app.config["BIOSERO_ROBOTS"].keys():
             val = app.config["BIOSERO_ROBOTS"][self._automation_system_name.value]["uuid"]
             if val is None:
-                raise RetrievalError(
-                    f"Unable to determine a uuid for robot '{self._automation_system_name.value}'"
-                )
+                raise RetrievalError(f"Unable to determine a uuid for robot '{self._automation_system_name.value}'")
             return val
         else:
             raise RetrievalError(f"Robot with barcode {self._automation_system_name.value} not found")
