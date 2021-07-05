@@ -38,7 +38,6 @@ class DestinationPartial(PlateEvent):
             self.properties[property_name].is_valid()
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
-
         self.properties["destination_plate"] = self.properties["plate_barcode"]
         self.properties["wells"] = WellsFromDestination(self.properties["plate_barcode"])
         self.properties["source_plates"] = SourcePlatesFromDestination(self.properties["wells"])

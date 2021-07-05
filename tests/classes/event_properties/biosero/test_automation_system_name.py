@@ -12,7 +12,7 @@ from http import HTTPStatus
 
 
 def test_robot_serial_number_valid(app):
-    assert AutomationSystemName(RunInfo(RunID({FIELD_EVENT_RUN_ID: 1}))).valid() is True
+    assert AutomationSystemName(RunInfo(RunID({FIELD_EVENT_RUN_ID: 1}))).is_valid() is True
 
 
 @pytest.mark.parametrize("run_id", [5])

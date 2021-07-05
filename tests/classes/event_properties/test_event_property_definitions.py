@@ -152,7 +152,7 @@ def test_robot_uuid_errors(app):
 
 
 def test_run_info_valid(app):
-    assert RunInfo(RunID({FIELD_EVENT_RUN_ID: 1})).valid() is True
+    assert RunInfo(RunID({FIELD_EVENT_RUN_ID: 1})).is_valid() is True
 
 
 @pytest.mark.parametrize("run_id", [5])
@@ -206,7 +206,7 @@ def test_samples_picked_from_source_valid(app):
     assert (
         SamplesPickedFromSource(
             PlateBarcode({FIELD_EVENT_BARCODE: "aBarcode"}), RunID({FIELD_EVENT_RUN_ID: "5"})
-        ).valid()
+        ).is_valid()
         is True
     )
     assert (
@@ -217,7 +217,7 @@ def test_samples_picked_from_source_valid(app):
                 }
             ),
             RunID({FIELD_EVENT_RUN_ID: "5"}),
-        ).valid()
+        ).is_valid()
         is False
     )
 

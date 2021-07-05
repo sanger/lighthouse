@@ -12,7 +12,7 @@ from http import HTTPStatus
 
 
 def test_user_id_valid(app):
-    assert UserID(RunInfo(RunID({FIELD_EVENT_RUN_ID: 1}))).valid() is True
+    assert UserID(RunInfo(RunID({FIELD_EVENT_RUN_ID: 1}))).is_valid() is True
 
 
 @pytest.mark.parametrize("run_id", [5])

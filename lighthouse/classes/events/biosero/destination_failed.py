@@ -41,14 +41,12 @@ class DestinationFailed(PlateEvent):
             self.properties[property_name].is_valid()
 
         self.properties["run_info"] = RunInfo(self.properties["run_id"])
-
         self.properties["destination_plate"] = self.properties["plate_barcode"]
         self.properties["wells"] = WellsFromDestination(self.properties["plate_barcode"])
         self.properties["source_plates"] = SourcePlatesFromDestination(self.properties["wells"])
         self.properties["samples"] = SamplesFromDestination(self.properties["wells"])
         self.properties["samples_with_cog_uk_id"] = SamplesWithCogUkId(self.properties["samples"])
         self.properties["controls"] = ControlsFromDestination(self.properties["wells"])
-
         self.properties["user_id"] = UserID(self.properties["run_info"])
         self.properties["automation_system_name"] = AutomationSystemName(self.properties["run_info"])
         self.properties["robot_uuid"] = RobotUUID(self.properties["automation_system_name"])
