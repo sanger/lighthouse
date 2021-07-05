@@ -16,7 +16,7 @@ class RunInfo(EventPropertyAbstract, CherrytrackServiceMixin):
         self._run_id_property = run_id_property
 
     def is_valid(self):
-        return (self._run_id_property.is_valid() and (len(self._errors) == 0))
+        return self._run_id_property.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
