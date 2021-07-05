@@ -21,7 +21,7 @@ class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self._wells_from_destination.errors
+        return list(set(self._errors + self._wells_from_destination.errors))
 
     # cherrytrack samples
     def _well_samples(self):

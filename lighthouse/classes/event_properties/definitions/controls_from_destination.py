@@ -28,7 +28,7 @@ class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self._wells_from_destination.errors
+        return list(set(self._errors + self._wells_from_destination.errors))
 
     def _is_valid_positive_and_negative_present(self, wells):
         control_types = [well["control"] for well in wells]

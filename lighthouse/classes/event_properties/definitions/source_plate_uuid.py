@@ -22,7 +22,7 @@ class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self._barcode_property.errors
+        return list(set(self._errors + self._barcode_property.errors))
 
     @cached_property
     def value(self):
