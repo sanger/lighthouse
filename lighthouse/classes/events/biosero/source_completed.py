@@ -57,6 +57,4 @@ class SourceCompleted(PlateEvent, LabwhereServiceMixin):
     def process_event(self) -> None:
         super().process_event()
 
-        response = self.transfer_to_bin()
-        if not response.ok:
-            raise Exception(f"There was some problem when sending changing location in labwhere: { response.text }")
+        self.transfer_to_bin()

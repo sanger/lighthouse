@@ -1,11 +1,10 @@
 from flask import current_app as app
-import requests
 from lighthouse.helpers.labwhere import set_locations_in_labwhere
 from typing import Any
 
 
 class LabwhereServiceMixin:
-    def transfer_to_bin(self: Any) -> requests.Response:
+    def transfer_to_bin(self: Any) -> None:
         """Record a transfer of the cherrypicking_source_labware to the bin
 
         Args:
@@ -20,11 +19,16 @@ class LabwhereServiceMixin:
         location_barcode = LabwhereServiceMixin._destroyed_barcode()
         robot_barcode = self.properties["automation_system_name"].value
 
-        return set_locations_in_labwhere(
+        response = set_locations_in_labwhere(
             labware_barcodes=labware_barcodes,
             location_barcode=location_barcode,
             user_barcode=robot_barcode,
         )
+        if not response.ok:
+            raise Exception(
+                f"There was some problem when sending changing location in labwhere: { response.text }"
+            )
+
 
     @staticmethod
     def _destroyed_barcode() -> str:
