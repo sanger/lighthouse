@@ -40,11 +40,3 @@ class PlateEvent(Protocol):
     @property
     def robot_serial_number(self) -> str:
         ...
-
-
-class SourceNoPickableSamples(PlateEvent):
-    ...
-
-
-class SourceCompleted(PlateEvent):
-    ...
