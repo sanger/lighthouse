@@ -39,10 +39,10 @@ class TestEventPropertyAbstract:
         test = DummyEventProperty({})
         test.set_validation(False)
         test.set_errors(["an error"])
-        assert test.valid() is False
+        assert test.is_valid() is False
         assert test.errors == ["an error"]
         test.reset()
-        assert test.valid() is True
+        assert test.is_valid() is True
         assert test.errors == []
 
     def test_enforce_validation_raises_exception_when_not_valid(self):
@@ -88,7 +88,7 @@ class TestEventPropertyAbstract:
     def test_can_call_other_methods(self):
         test = DummyEventProperty({})
         try:
-            test.valid()
+            test.is_valid()
             test.is_valid()
             test.value()
             test.add_to_warehouse_message()

@@ -26,8 +26,6 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
             data={
                 "automation_system_run_id": 123,
                 "event_type": "lh_biosero_cp_source_completed",
-                "user_id": "user1",
-                "robot": "roboto",
             },
             headers=biosero_auth_headers,
         )
@@ -63,49 +61,55 @@ def test_post_event_partially_completed(
                     "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",
                 ):
-                    response = client.post(
-                        "/events",
-                        data={
-                            "automation_system_run_id": run_id,
-                            "barcode": source_barcode,
-                            "event_type": "lh_biosero_cp_source_completed",
-                            "user_id": "user1",
-                            "robot": "BHRB0001",
-                        },
-                        headers=biosero_auth_headers,
-                    )
+                    with patch("lighthouse.classes.services.labwhere.set_locations_in_labwhere") as mocked_labwhere:
 
-                    # Test creates the event
-                    assert response.status_code == HTTPStatus.CREATED
+                        response = client.post(
+                            "/events",
+                            data={
+                                "automation_system_run_id": run_id,
+                                "barcode": source_barcode,
+                                "event_type": "lh_biosero_cp_source_completed",
+                            },
+                            headers=biosero_auth_headers,
+                        )
 
-                    mocked_rabbit_channel.basic_publish.assert_called_with(
-                        exchange="lighthouse.test.examples",
-                        routing_key="test.event.lh_biosero_cp_source_completed",
-                        body='{"event": {"uuid": "'
-                        + int_to_uuid(1)
-                        + (
-                            '", "event_type": "lh_biosero_cp_source_completed", '
-                            '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
-                            '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
-                            '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
-                            '{"role_type": "sample", "subject_type": "sample", "friendly_name": '
-                            '"aRootSampleId3__plate_123_A03__centre_1__Positive", "uuid": "aLighthouseUUID3"}, '
-                            '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
-                            '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
-                            '{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
-                            '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
-                            '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
-                            '"uuid": "' + int_to_uuid(2) + '"}'
-                            '], "metadata": {}}, "lims": "LH_TEST"}'
-                        ),
-                    )
+                        # Test creates the event
+                        assert response.status_code == HTTPStatus.CREATED
 
-                    # The record is there
-                    event = get_event_with_uuid(int_to_uuid(1))
-                    assert event is not None
+                        mocked_rabbit_channel.basic_publish.assert_called_with(
+                            exchange="lighthouse.test.examples",
+                            routing_key="test.event.lh_biosero_cp_source_completed",
+                            body='{"event": {"uuid": "'
+                            + int_to_uuid(1)
+                            + (
+                                '", "event_type": "lh_biosero_cp_source_completed", '
+                                '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
+                                '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
+                                '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
+                                '{"role_type": "sample", "subject_type": "sample", "friendly_name": '
+                                '"aRootSampleId3__plate_123_A03__centre_1__Positive", "uuid": "aLighthouseUUID3"}, '
+                                '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
+                                '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
+                                '{"role_type": "robot", "subject_type": "robot", "friendly_name": "CPA", '
+                                '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
+                                '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
+                                '"uuid": "' + int_to_uuid(2) + '"}'
+                                '], "metadata": {}}, "lims": "LH_TEST"}'
+                            ),
+                        )
 
-                    # And it does not have errors
-                    assert event[FIELD_EVENT_ERRORS] is None
+                        mocked_labwhere.assert_called_once_with(
+                            labware_barcodes=[source_barcode],
+                            location_barcode=app.config["LABWHERE_DESTROYED_BARCODE"],
+                            user_barcode="CPA",
+                        )
+
+                        # The record is there
+                        event = get_event_with_uuid(int_to_uuid(1))
+                        assert event is not None
+
+                        # And it does not have errors
+                        assert event[FIELD_EVENT_ERRORS] is None
 
 
 @pytest.mark.parametrize("run_id", [3])
@@ -141,8 +145,6 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
                         "automation_system_run_id": run_id,
                         "barcode": source_barcode,
                         "event_type": "lh_biosero_cp_source_completed",
-                        "user_id": "user1",
-                        "robot": "BHRB0001",
                     },
                     headers=biosero_auth_headers,
                 )
@@ -181,8 +183,6 @@ def test_post_event_partially_completed_with_validation_error_after_storing_in_m
                         "automation_system_run_id": 3,
                         "barcode": "a Barcode",
                         "event_type": "lh_biosero_cp_source_completed",
-                        "user_id": "us  er1",
-                        "robot": "BHR  B0001",
                     },
                     headers=biosero_auth_headers,
                 )
@@ -200,8 +200,6 @@ def test_post_event_partially_completed_with_validation_error_after_storing_in_m
                 # And it has errors
                 assert event[FIELD_EVENT_ERRORS] == {
                     "plate_barcode": ["'barcode' should not contain any whitespaces"],
-                    "robot_serial_number": ["'robot' should not contain any whitespaces"],
                     "source_plate_uuid": ["'barcode' should not contain any whitespaces"],
                     "samples_picked_from_source": ["'barcode' should not contain any whitespaces"],
-                    "robot_uuid": ["'robot' should not contain any whitespaces"],
                 }

@@ -16,8 +16,6 @@ def test_post_unrecognised_event_type(app, client, biosero_auth_headers, clear_e
                 "automation_system_run_id": 123,
                 "barcode": "plate_barcode_123",
                 "event_type": "COFFEE_MACHINE_BROKEN",
-                "user_id": "user1",
-                "robot": "roboto",
             },
             headers=biosero_auth_headers,
         )

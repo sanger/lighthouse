@@ -12,21 +12,8 @@ Event = Dict[str, Union[str, List[Subject], Dict]]
 EventMessage = Dict[str, Union[str, Event]]
 
 
-class PlateEvent(Protocol):
-    """This class is used to assist the mixin while type checking."""
-
-    @property
-    def plate_barcode(self) -> str:
-        ...
-
-    @property
-    def robot_serial_number(self) -> str:
-        ...
-
-
 class EventPropertyProtocol(Protocol):
-    @property
-    def _params(self) -> Dict[str, str]:
+    def get_param_value(self, param_name: str) -> Optional[Any]:
         ...
 
     def process_validation(self, condition: bool, message: str) -> None:
@@ -36,4 +23,20 @@ class EventPropertyProtocol(Protocol):
         ...
 
     def is_integer(self, n: Optional[str]) -> bool:
+        ...
+
+
+class PlateEvent(Protocol):
+    """This class is used to assist the mixin while type checking."""
+
+    @property
+    def properties(self) -> Dict[str, Any]:
+        ...
+
+    @property
+    def plate_barcode(self) -> str:
+        ...
+
+    @property
+    def robot_serial_number(self) -> str:
         ...

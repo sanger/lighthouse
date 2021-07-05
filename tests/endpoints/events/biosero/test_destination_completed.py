@@ -23,12 +23,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
     with app.app_context():
         response = client.post(
             "/events",
-            data={
-                "automation_system_run_id": 123,
-                "event_type": "lh_biosero_cp_destination_plate_completed",
-                "user_id": "user1",
-                "robot": "roboto",
-            },
+            data={"automation_system_run_id": 123, "event_type": "lh_biosero_cp_destination_plate_completed"},
             headers=biosero_auth_headers,
         )
 
@@ -63,8 +58,6 @@ def test_post_destination_completed_cherrytrack_fails(
                 "automation_system_run_id": 3,
                 "barcode": "HT-1234",
                 "event_type": "lh_biosero_cp_destination_plate_completed",
-                "user_id": "user1",
-                "robot": "BHRB0001",
             },
             headers=biosero_auth_headers,
         )
@@ -109,7 +102,7 @@ def test_post_event_partially_completed(
         ):
             with patch(
                 "lighthouse.classes.messages.warehouse_messages.uuid4",
-                side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4)],
+                side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4), int_to_uuid(5)],
             ):
                 with patch(
                     "lighthouse.classes.events.PlateEvent.message_timestamp",
@@ -128,8 +121,6 @@ def test_post_event_partially_completed(
                                 "automation_system_run_id": 3,
                                 "barcode": "HT-1234",
                                 "event_type": "lh_biosero_cp_destination_plate_completed",
-                                "user_id": "user1",
-                                "robot": "BHRB0001",
                             },
                             headers=biosero_auth_headers,
                         )
@@ -155,10 +146,12 @@ def test_post_event_partially_completed(
                                 '"uuid": "' + int_to_uuid(3) + '"}, '
                                 '{"role_type": "cherrypicking_source_labware", "subject_type": "plate", '
                                 '"friendly_name": "plate_123", "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc"}, '
-                                '{"role_type": "robot", "subject_type": "robot", "friendly_name": "BHRB0001", '
+                                '{"role_type": "cherrypicking_destination_labware", "subject_type": "plate", '
+                                '"friendly_name": "HT-1234", "uuid": "' + int_to_uuid(4) + '"}, '
+                                '{"role_type": "robot", "subject_type": "robot", "friendly_name": "CPA", '
                                 '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
                                 '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
-                                '"uuid": "' + int_to_uuid(4) + '"}'
+                                '"uuid": "' + int_to_uuid(5) + '"}'
                                 '], "metadata": {}}, "lims": "LH_TEST"}'
                             )
                         )
