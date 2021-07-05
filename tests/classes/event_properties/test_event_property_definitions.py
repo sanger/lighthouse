@@ -194,13 +194,6 @@ def test_run_info_value_unsuccessful(app, mocked_responses, cherrytrack_mock_run
         assert len(run_info.errors) == 1
         assert ["Exception during retrieval: " + msg] == run_info.errors
 
-        # Another try does not add more errors
-        try:
-            run_info.value
-        except Exception:
-            ...
-        assert len(run_info.errors) == 1
-
 
 def test_samples_picked_from_source_valid(app):
     assert (

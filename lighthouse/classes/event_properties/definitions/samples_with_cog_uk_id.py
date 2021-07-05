@@ -32,7 +32,7 @@ class SamplesWithCogUkId(EventPropertyAbstract):
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self._samples_from_destination.errors
+        return list(set(self._errors + self._samples_from_destination.errors))
 
     @cached_property
     def value(self):

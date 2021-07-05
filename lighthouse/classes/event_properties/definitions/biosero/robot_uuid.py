@@ -17,12 +17,12 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
         self._automation_system_name = automation_system_name
 
     def is_valid(self):
-        return self._automation_system_name.is_valid()
+        return self._automation_system_name.is_valid() and (len(self._errors) == 0)
 
     @property
     def errors(self) -> List[str]:
         self.is_valid()
-        return self._errors + self._automation_system_name.errors
+        return list(set(self._errors + self._automation_system_name.errors))
 
     @cached_property
     def value(self):
