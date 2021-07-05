@@ -13,8 +13,7 @@ EventMessage = Dict[str, Union[str, Event]]
 
 
 class EventPropertyProtocol(Protocol):
-    @property
-    def _params(self) -> Dict[str, str]:
+    def get_param_value(self, param_name: str) -> Optional[Any]:
         ...
 
     def process_validation(self, condition: bool, message: str) -> None:

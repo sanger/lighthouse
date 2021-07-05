@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from .event_property_interface import EventPropertyInterface
 from lighthouse.classes.event_properties.exceptions import ValidationError
 from contextlib import contextmanager
@@ -34,6 +34,18 @@ class EventPropertyAbstract(EventPropertyInterface):
         self._params = params
         if self._params is None:
             raise ValidationError("You need to define params to create the EventProperty")
+
+    def get_param_value(self, param_name: str) -> Optional[Any]:
+        """
+        Returns the param of the value
+
+        Arguments:
+            param_name: str - Name of the param to get the value
+
+        Returns:
+            Optional[Any] - value for the param, or None if no value
+        """
+        return self._params.get(param_name)
 
     def reset(self):
         """
