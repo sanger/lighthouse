@@ -1,23 +1,12 @@
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
-from lighthouse.classes.events import PlateEvent
 from lighthouse.classes.event_properties.definitions import (
-    SamplesFromDestination,
-    SamplesWithCogUkId,
-    ControlsFromDestination,
-    SourcePlatesFromDestination,
-    PlateBarcode,
-    RunID,
-)
-
+    ControlsFromDestination, PlateBarcode, RunID, SamplesFromDestination,
+    SamplesWithCogUkId, SourcePlatesFromDestination)
 from lighthouse.classes.event_properties.definitions.biosero import (
-    AutomationSystemName,
-    RobotUUID,
-    RunInfo,
-    UserID,
-    WellsFromDestination,
-)
+    AutomationSystemName, RobotUUID, RunInfo, UserID, WellsFromDestination)
+from lighthouse.classes.events import PlateEvent
 
 logger = logging.getLogger(__name__)
 
