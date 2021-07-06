@@ -53,15 +53,3 @@ class TestEventPropertyValidations:
         assert test.is_valid() is False
         assert test.errors == ["'jkl' should be an integer"]
 
-    def test_is_integer(self):
-        test = DummyEventProperty({})
-        assert test.is_integer("123")
-        assert not test.is_integer("1.23")
-        assert test.is_integer("123 ")
-        assert test.is_integer("   123 ")
-        assert test.is_integer("   123")
-        assert test.is_integer("-123")
-        assert test.is_integer("+123")
-        assert not test.is_integer("- 123")
-        assert not test.is_integer("1,23")
-        assert not test.is_integer("123 123")

@@ -1,6 +1,6 @@
 from typing import Optional
 from lighthouse.types import EventPropertyProtocol
-
+from lighthouse.helpers.general import is_integer
 
 class SimpleEventPropertyMixin:
     """Set of tools to perform validation on simple event properties."""
@@ -65,25 +65,5 @@ class SimpleEventPropertyMixin:
             bool - True/False indicating if this condition is met
         """
         with self.validation_scope():
-            self.process_validation(self.is_integer(self.get_param_value(param)), f"'{ param }' should be an integer")
+            self.process_validation(is_integer(self.get_param_value(param)), f"'{ param }' should be an integer")
 
-    def is_integer(self: EventPropertyProtocol, param: Optional[str]) -> bool:
-        """
-        Function that returns if the string provided can represent an integer.
-        This string can contain the sign of integer (+ for positive, - for negative)
-        and could include whitespaces.
-
-        Arguments
-            param: str - value to check if it represents an integer string.
-
-        Returns
-            bool - True/False indicating if this condition is met
-        """
-        if param is None:
-            return False
-        try:
-            float(param)
-        except ValueError:
-            return False
-        else:
-            return float(param).is_integer()
