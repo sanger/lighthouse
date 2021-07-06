@@ -1,14 +1,16 @@
+from http import HTTPStatus
+
 import pytest
+
 from lighthouse.classes.event_properties.definitions import RunID
-from lighthouse.classes.event_properties.definitions.biosero import UserID, RunInfo
+from lighthouse.classes.event_properties.definitions.biosero import RunInfo, UserID
 from lighthouse.constants.fields import (
-    FIELD_EVENT_RUN_ID,
-    FIELD_CHERRYTRACK_USER_ID,
-    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
+    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
+    FIELD_CHERRYTRACK_USER_ID,
+    FIELD_EVENT_RUN_ID,
 )
-from http import HTTPStatus
 
 
 def test_user_id_valid(app):
@@ -42,14 +44,14 @@ def test_user_id_value_successful(app, run_id, mocked_responses, cherrytrack_moc
 @pytest.mark.parametrize("cherrytrack_mock_run_info_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_user_id_value_unsuccessful(app, mocked_responses, cherrytrack_mock_run_info):
     with app.app_context():
-        myExc = None
+        exception = None
         user_id = UserID(RunInfo(RunID({FIELD_EVENT_RUN_ID: 5})))
         try:
             user_id.value
-        except Exception as exc:
-            myExc = exc
+        except Exception as e:
+            exception = e
 
         msg = "Response from Cherrytrack is not OK: Failed to get automation system run info for the given run id"
-        assert msg == str(myExc)
+        assert msg == str(exception)
         assert len(user_id.errors) == 1
         assert ["Exception during retrieval: " + msg] == user_id.errors
