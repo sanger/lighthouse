@@ -76,16 +76,6 @@ class EventPropertyAbstract(EventPropertyInterface):
 
         return self.is_valid()
 
-    def enforce_validation(self) -> None:
-        """
-        Raises a ValidationError exception if the instance does not pass validation.
-
-        Returns:
-            ValidationError - Raises exception
-        """
-        if not self.is_valid():
-            raise ValidationError("Validation error")
-
     def process_validation(self, condition: bool, message: str) -> None:
         """
         Stores the error message if the condition is not True.
@@ -151,7 +141,8 @@ class EventPropertyAbstract(EventPropertyInterface):
         logger.info(f"At { self._source_code_position_for_logging() } - Start retrieval")
 
         try:
-            self.enforce_validation()
+            if not self.is_valid():
+                raise ValidationError(f"At { self._source_code_position_for_logging() } - Exception during validation")
             yield
         except Exception as exc:
             logger.error(f"At { self._source_code_position_for_logging() } - Exception during retrieval")

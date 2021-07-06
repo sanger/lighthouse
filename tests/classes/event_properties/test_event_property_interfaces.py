@@ -48,14 +48,6 @@ class TestEventPropertyAbstract:
         assert test.is_valid() is True
         assert test.errors == []
 
-    def test_enforce_validation_raises_exception_when_not_valid(self):
-        test = DummyEventProperty({})
-        test.set_validation(True)
-        test.enforce_validation()
-        test.set_validation(False)
-        with raises(ValidationError):
-            test.enforce_validation()
-
     def test_process_validation_can_add_errors(self):
         test = DummyEventProperty({})
         test.process_validation(1 == 1, "This is right")
@@ -75,6 +67,16 @@ class TestEventPropertyAbstract:
         mocking.assert_not_called()
         assert test.is_valid() is False
         assert test.errors == ["Unexpected exception while trying to is_valid This is an error"]
+
+    def test_retrieval_scope_raises_exception_when_not_valid(self):
+        test = DummyEventProperty({})
+        test.set_validation(True)
+        with test.retrieval_scope():
+            pass
+        test.set_validation(False)
+        with raises(ValidationError):
+            with test.retrieval_scope():
+                pass
 
     def test_retrieval_scope_can_raise_and_log_errors(self):
         test = DummyEventProperty({})
