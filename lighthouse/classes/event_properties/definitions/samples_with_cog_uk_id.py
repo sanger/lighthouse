@@ -47,10 +47,10 @@ class SamplesWithCogUkId(EventPropertyAbstract):
             message.add_sample_as_subject(sample)
 
     def add_to_sequencescape_message(self, message):
-        for position in self.value:
-            sample = self.value[position]
+        for coordinate in self.value:
+            sample = self.value[coordinate]
             message.set_well_sample(
-                position,
+                coordinate,
                 {
                     FIELD_SS_NAME: sample[FIELD_RNA_ID],
                     FIELD_SS_SAMPLE_DESCRIPTION: sample[FIELD_ROOT_SAMPLE_ID],
