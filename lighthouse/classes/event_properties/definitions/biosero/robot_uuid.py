@@ -6,8 +6,8 @@ from flask import current_app as app
 
 from lighthouse.classes.event_properties.exceptions import RetrievalError
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
-from lighthouse.classes.messages import SequencescapeMessage
-from lighthouse.classes.messages import ROLE_TYPE_ROBOT, SUBJECT_TYPE_ROBOT, WarehouseMessage
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
+from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_ROBOT, SUBJECT_TYPE_ROBOT
 from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
 
 logger = logging.getLogger(__name__)

@@ -44,11 +44,11 @@ class SamplesWithCogUkId(EventPropertyAbstract):
             update_mlwh_with_cog_uk_ids(samples)
             return self._samples_from_destination.value
 
-    def add_to_warehouse_message(self, message: SequencescapeMessage):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         for sample in self.value.values():
             message.add_sample_as_subject(sample)
 
-    def add_to_sequencescape_message(self, message: WarehouseMessage):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         for coordinate in self.value:
             sample = self.value[coordinate]
             message.set_well_sample(
