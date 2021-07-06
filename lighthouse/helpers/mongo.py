@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, cast, Dict, Any
+from typing import Any, Dict, List, Optional, cast
 
 from eve import Eve
 from flask import current_app as app
@@ -7,10 +7,10 @@ from pymongo.collection import Collection
 
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
+    FIELD_EVENT_ERRORS,
+    FIELD_EVENT_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_RESULT,
-    FIELD_EVENT_UUID,
-    FIELD_EVENT_ERRORS,
 )
 from lighthouse.types import SampleDoc, SourcePlateDoc
 

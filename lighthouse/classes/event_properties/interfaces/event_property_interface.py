@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import Any, List
 
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
-from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 
 
 class EventPropertyInterface(ABC):
@@ -43,7 +43,7 @@ class EventPropertyInterface(ABC):
         """
         ...
 
-    @property
+    @cached_property
     @abstractmethod
     def value(self) -> Any:
         """

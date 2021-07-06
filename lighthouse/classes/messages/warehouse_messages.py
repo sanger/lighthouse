@@ -1,8 +1,9 @@
-from lighthouse.messages.message import Message
-from lighthouse.types import Subject, EventMessage
+import logging
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
-from typing import List, Optional, Any, Dict
+
 from flask import current_app as app
+
 from lighthouse.constants.fields import (
     FIELD_LAB_ID,
     FIELD_LH_SAMPLE_UUID,
@@ -10,9 +11,8 @@ from lighthouse.constants.fields import (
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
 )
-from lighthouse.types import SampleDoc
-
-import logging
+from lighthouse.messages.message import Message
+from lighthouse.types import EventMessage, SampleDoc, Subject
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 import copy
 import os
 from http import HTTPStatus
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import responses
@@ -9,17 +9,19 @@ import responses
 from lighthouse import create_app
 from lighthouse.constants.events import PE_BECKMAN_SOURCE_ALL_NEGATIVES, PE_BECKMAN_SOURCE_COMPLETED
 from lighthouse.constants.fields import (
-    FIELD_SAMPLE_ID,
-    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
+    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
     FIELD_CHERRYTRACK_USER_ID,
+    FIELD_SAMPLE_ID,
 )
 from lighthouse.db.dart import load_sql_server_script
 from lighthouse.helpers.dart import create_dart_connection
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
 from lighthouse.types import EventMessage
+from tests.fixtures.data.biosero.destination_plate_wells import build_cherrytrack_destination_plate_response
+from tests.fixtures.data.biosero.source_plate_wells import build_cherrytrack_source_plates_response
 from tests.fixtures.data.centres import CENTRES
 from tests.fixtures.data.dart import DART_MONGO_MERGED_SAMPLES
 from tests.fixtures.data.event_wh import EVENT_WH_DATA
@@ -32,13 +34,11 @@ from tests.fixtures.data.mlwh import (
     SAMPLES_FOR_MLWH_UPDATE,
     cherrytrack_mlwh_example,
 )
+from tests.fixtures.data.plate_events import PLATE_EVENTS
+from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
 from tests.fixtures.data.samples import SAMPLES, rows_for_samples_in_cherrytrack
 from tests.fixtures.data.source_plates import SOURCE_PLATES
-from tests.fixtures.data.plate_events import PLATE_EVENTS
-from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
-from tests.fixtures.data.biosero.destination_plate_wells import build_cherrytrack_destination_plate_response
-from tests.fixtures.data.biosero.source_plate_wells import build_cherrytrack_source_plates_response
 
 
 @pytest.fixture

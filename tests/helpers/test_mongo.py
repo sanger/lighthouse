@@ -1,20 +1,20 @@
+from typing import Dict, List
 from unittest.mock import patch
 
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_DATE_TESTED,
+    FIELD_EVENT_ERRORS,
+    FIELD_EVENT_USER_ID,
+    FIELD_EVENT_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_RESULT,
-    FIELD_EVENT_UUID,
-    FIELD_EVENT_USER_ID,
-    FIELD_EVENT_ERRORS,
 )
-from typing import Dict, List
 from lighthouse.helpers.mongo import (
+    get_event_with_uuid,
     get_positive_samples_in_source_plate,
     get_source_plate_uuid,
     set_errors_to_event,
-    get_event_with_uuid,
 )
 
 

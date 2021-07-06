@@ -1,9 +1,11 @@
+import logging
 from functools import cached_property
 from typing import List
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
-from lighthouse.constants.fields import FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER
 
-import logging
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
+from lighthouse.classes.messages import SequencescapeMessage
+from lighthouse.classes.messages import WarehouseMessage
+from lighthouse.constants.fields import FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +28,8 @@ class RobotSerialNumber(EventPropertyAbstract):
         with self.retrieval_scope():
             return self._run_info.value[FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER]
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         pass
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass

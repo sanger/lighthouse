@@ -1,19 +1,22 @@
-from pytest import raises
+from http import HTTPStatus
+from unittest.mock import MagicMock, PropertyMock, patch
+
 import pytest
-from lighthouse.classes.event_properties.exceptions import ValidationError, RetrievalError
+from pytest import raises
+
 from lighthouse.classes.event_properties.definitions import (
-    UserID,
+    BarcodeNoPlateMapData,
+    ControlsFromDestination,
+    FailureType,
+    PlateBarcode,
     RobotSerialNumber,
     RunID,
-    PlateBarcode,
-    SourcePlateUUID,
-    BarcodeNoPlateMapData,
-    SamplesFromSource,
     SamplesFromDestination,
-    ControlsFromDestination,
+    SamplesFromSource,
     SamplesWithCogUkId,
     SourcePlatesFromDestination,
-    FailureType,
+    SourcePlateUUID,
+    UserID,
 )
 from lighthouse.classes.event_properties.definitions.biosero import (
     RobotUUID,
@@ -21,21 +24,18 @@ from lighthouse.classes.event_properties.definitions.biosero import (
     SamplesPickedFromSource,
     WellsFromDestination,
 )
-
-from unittest.mock import MagicMock, PropertyMock, patch
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
-from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
+from lighthouse.classes.event_properties.exceptions import RetrievalError, ValidationError
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 from lighthouse.constants.fields import (
-    FIELD_EVENT_RUN_ID,
-    FIELD_EVENT_ROBOT,
-    FIELD_EVENT_USER_ID,
-    FIELD_EVENT_BARCODE,
-    FIELD_LH_SOURCE_PLATE_UUID,
-    FIELD_FAILURE_TYPE,
-    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
+    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
+    FIELD_EVENT_BARCODE,
+    FIELD_EVENT_ROBOT,
+    FIELD_EVENT_RUN_ID,
+    FIELD_EVENT_USER_ID,
+    FIELD_FAILURE_TYPE,
+    FIELD_LH_SOURCE_PLATE_UUID,
 )
-from http import HTTPStatus
 
 SIMPLE_CLASS_VALID_PARAM_INVALID_PARAMS = [
     [RunID, FIELD_EVENT_RUN_ID, ["1234"], [None, "12 34", "12.34"]],

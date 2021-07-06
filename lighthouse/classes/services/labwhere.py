@@ -1,6 +1,8 @@
-from flask import current_app as app
-from lighthouse.helpers.labwhere import set_locations_in_labwhere
 from typing import Any
+
+from flask import current_app as app
+
+from lighthouse.helpers.labwhere import set_locations_in_labwhere
 
 
 class LabwhereServiceMixin:

@@ -8,8 +8,8 @@ from lighthouse.classes.events.biosero import (
     SourceCompleted,
     SourceNoPickableSamples,
     SourceNoPlateMapData,
-    SourceUnrecognised,
     SourcePartial,
+    SourceUnrecognised,
 )
 
 logger = logging.getLogger(__name__)

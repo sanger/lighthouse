@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from tests.fixtures.data.uuids import testing_uuid_utf8
-
 from lighthouse.constants.fields import (
     FIELD_COG_BARCODE,
     FIELD_RESULT,
@@ -11,6 +9,7 @@ from lighthouse.constants.fields import (
     MLWH_LH_SAMPLE_RNA_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
+from tests.fixtures.data.uuids import testing_uuid_utf8
 
 COG_UK_IDS = ["cog_1", "cog_2", "cog_3", "cog_4", "cog_5"]
 

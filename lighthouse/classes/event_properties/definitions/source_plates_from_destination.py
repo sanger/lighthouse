@@ -1,12 +1,13 @@
-from typing import List
-from functools import cached_property
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
-from lighthouse.classes.services.mongo import MongoServiceMixin
-from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
-from lighthouse.constants.fields import FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUID
-from lighthouse.classes.event_properties.exceptions import RetrievalError
-
 import logging
+from functools import cached_property
+from typing import List
+
+from lighthouse.classes.event_properties.exceptions import RetrievalError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
+from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
+from lighthouse.classes.services.mongo import MongoServiceMixin
+from lighthouse.constants.fields import FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUID
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class SourcePlatesFromDestination(EventPropertyAbstract, MongoServiceMixin):
         with self.retrieval_scope():
             return list(self.get_source_plates_from_barcodes(self._source_barcodes()))
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         for source_plate in self.value:
             message.add_subject(
                 role_type=ROLE_TYPE_CP_SOURCE_LABWARE,
@@ -52,5 +53,5 @@ class SourcePlatesFromDestination(EventPropertyAbstract, MongoServiceMixin):
                 uuid=source_plate[FIELD_LH_SOURCE_PLATE_UUID],
             )
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass

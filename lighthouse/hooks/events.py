@@ -1,15 +1,14 @@
 #  https://docs.python-eve.org/en/stable/features.html#database-event-hooks
 import logging
-from typing import Any, Dict, List
-from flask import abort
 from http import HTTPStatus
+from typing import Any, Dict, List
+from uuid import uuid4
+
+from flask import abort
 
 from lighthouse.classes.automation_system import AutomationSystem
 from lighthouse.classes.biosero import Biosero
-
 from lighthouse.constants.fields import FIELD_EVENT_TYPE, FIELD_EVENT_UUID
-
-from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 

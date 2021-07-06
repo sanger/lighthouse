@@ -1,17 +1,15 @@
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
-from lighthouse.classes.events import PlateEvent
 from lighthouse.classes.event_properties.definitions import (
-    SamplesFromDestination,
-    SamplesWithCogUkId,
     ControlsFromDestination,
-    SourcePlatesFromDestination,
+    FailureType,
     PlateBarcode,
     RunID,
-    FailureType,
+    SamplesFromDestination,
+    SamplesWithCogUkId,
+    SourcePlatesFromDestination,
 )
-
 from lighthouse.classes.event_properties.definitions.biosero import (
     AutomationSystemName,
     RobotUUID,
@@ -19,7 +17,7 @@ from lighthouse.classes.event_properties.definitions.biosero import (
     UserID,
     WellsFromDestination,
 )
-
+from lighthouse.classes.events import PlateEvent
 
 logger = logging.getLogger(__name__)
 
@@ -55,14 +53,14 @@ class DestinationFailed(PlateEvent):
         message = self.build_new_warehouse_message()
 
         for property_name in [
-            "samples_with_cog_uk_id",
             "controls",
-            "source_plates",
             "destination_plate",
-            "user_id",
+            "failure_type",
             "robot_uuid",
             "run_info",
-            "failure_type",
+            "samples_with_cog_uk_id",
+            "source_plates",
+            "user_id",
         ]:
             self.properties[property_name].add_to_warehouse_message(message)
 

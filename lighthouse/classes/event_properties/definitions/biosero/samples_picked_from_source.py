@@ -1,12 +1,13 @@
-from typing import List, Dict, Any
-from functools import cached_property
-from lighthouse.classes.event_properties.definitions import RunID, PlateBarcode
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
-from lighthouse.classes.services.mongo import MongoServiceMixin
-from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
-from lighthouse.constants.fields import FIELD_CHERRYTRACK_LH_SAMPLE_UUID, FIELD_EVENT_RUN_ID
-
 import logging
+from functools import cached_property
+from typing import Any, Dict, List
+
+from lighthouse.classes.event_properties.definitions import PlateBarcode, RunID
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
+from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
+from lighthouse.classes.services.mongo import MongoServiceMixin
+from lighthouse.constants.fields import FIELD_CHERRYTRACK_LH_SAMPLE_UUID, FIELD_EVENT_RUN_ID
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +42,9 @@ class SamplesPickedFromSource(EventPropertyAbstract, CherrytrackServiceMixin, Mo
             val: List[Dict[str, Any]] = list(self.get_samples_from_mongo(lh_sample_uuids))
             return val
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         for sample in self.value:
             message.add_sample_as_subject(sample)
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass

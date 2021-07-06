@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Protocol, Tuple, Union, Optional
+from typing import Any, Dict, List, Optional, Protocol, Tuple, Union
 
 SampleDoc = Dict[str, Any]
 SampleDocs = List[SampleDoc]

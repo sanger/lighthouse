@@ -1,18 +1,16 @@
+import logging
 from abc import abstractmethod
 from enum import Enum, auto
 from typing import Any, Dict, List
 
-from .exceptions import EventNotInitializedError
-from .plate_event_interface import PlateEventInterface
-
-from lighthouse.messages.message import Message
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
-from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
-
+from lighthouse.classes.event_properties.interfaces import EventPropertyInterface
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 from lighthouse.classes.services.warehouse import WarehouseServiceMixin
 from lighthouse.helpers.mongo import set_errors_to_event
-from lighthouse.classes.event_properties.interfaces import EventPropertyInterface
-import logging
+from lighthouse.messages.message import Message
+
+from .exceptions import EventNotInitializedError
+from .plate_event_interface import PlateEventInterface
 
 logger = logging.getLogger(__name__)
 

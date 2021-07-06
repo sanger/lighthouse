@@ -1,14 +1,16 @@
+from http import HTTPStatus
+
 import pytest
+
 from lighthouse.classes.event_properties.definitions import RunID
 from lighthouse.classes.event_properties.definitions.biosero import AutomationSystemName, RunInfo
 from lighthouse.constants.fields import (
-    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
-    FIELD_EVENT_RUN_ID,
-    FIELD_CHERRYTRACK_USER_ID,
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
+    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
+    FIELD_CHERRYTRACK_USER_ID,
+    FIELD_EVENT_RUN_ID,
 )
-from http import HTTPStatus
 
 
 def test_robot_serial_number_valid(app):

@@ -11,7 +11,6 @@ from .source_plate_uuid import SourcePlateUUID
 from .source_plates_from_destination import SourcePlatesFromDestination
 from .user_id import UserID
 
-
 __all__ = [
     "BarcodeNoPlateMapData",
     "ControlsFromDestination",

@@ -1,9 +1,10 @@
+import logging
 from functools import cached_property
 from typing import List
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
-from lighthouse.constants.fields import FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME
 
-import logging
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
+from lighthouse.constants.fields import FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +27,8 @@ class AutomationSystemName(EventPropertyAbstract):
         with self.retrieval_scope():
             return self._run_info.value[FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME]
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         pass
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass

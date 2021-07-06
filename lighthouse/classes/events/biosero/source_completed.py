@@ -1,22 +1,16 @@
-from lighthouse.classes.services.labwhere import LabwhereServiceMixin
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
-from lighthouse.classes.events import PlateEvent
-
-from lighthouse.classes.event_properties.definitions import (
-    SourcePlateUUID,
-    PlateBarcode,
-    RunID,
-)
+from lighthouse.classes.event_properties.definitions import PlateBarcode, RunID, SourcePlateUUID
 from lighthouse.classes.event_properties.definitions.biosero import (
     AutomationSystemName,
-    SamplesPickedFromSource,
     RobotUUID,
     RunInfo,
+    SamplesPickedFromSource,
     UserID,
 )
-
+from lighthouse.classes.events import PlateEvent
+from lighthouse.classes.services.labwhere import LabwhereServiceMixin
 
 logger = logging.getLogger(__name__)
 

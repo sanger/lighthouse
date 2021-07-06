@@ -1,7 +1,9 @@
-from lighthouse.classes.events import PlateEvent, EventNotInitializedError
-from pytest import raises
 from datetime import datetime
 from unittest.mock import MagicMock, patch
+
+from pytest import raises
+
+from lighthouse.classes.events import EventNotInitializedError, PlateEvent
 
 
 class TestDummy(PlateEvent):

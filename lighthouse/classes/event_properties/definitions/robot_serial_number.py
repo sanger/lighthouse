@@ -1,9 +1,10 @@
+import logging
 from functools import cached_property
+
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.event_properties.validations import SimpleEventPropertyMixin
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 from lighthouse.constants.fields import FIELD_EVENT_ROBOT
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +21,8 @@ class RobotSerialNumber(EventPropertyAbstract, SimpleEventPropertyMixin):
         with self.retrieval_scope():
             return self._params.get(FIELD_EVENT_ROBOT)
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         pass
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass
