@@ -4,7 +4,7 @@ from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
 from lighthouse.constants.fields import FIELD_BARCODE, FIELD_LH_SOURCE_PLATE_UUID
-
+from lighthouse.classes.event_properties.exceptions import RetrievalError
 
 import logging
 
@@ -27,9 +27,15 @@ class SourcePlatesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def _source_barcodes(self):
         val = set()
         for sample in self._wells_from_destination.value:
-            if sample["type"] == "sample":
-                if sample["source_barcode"] not in val:
-                    val.add(sample["source_barcode"])
+            sample_type = sample.get("type")
+            if sample_type is None:
+                raise RetrievalError(f"Cannot extract type from the well: {sample}")
+            if sample_type == "sample":
+                sample_source_barcode = sample.get("source_barcode")
+                if sample_source_barcode is None:
+                    raise RetrievalError(f"Cannot extract source barcode from the well: {sample}")
+                if sample_source_barcode not in val:
+                    val.add(sample_source_barcode)
         return list(val)
 
     @cached_property
