@@ -45,3 +45,6 @@ class SourcePlatesFromDestination(EventPropertyAbstract, MongoServiceMixin):
                 friendly_name=source_plate[FIELD_BARCODE],
                 uuid=source_plate[FIELD_LH_SOURCE_PLATE_UUID],
             )
+
+    def add_to_sequencescape_message(self, message):
+        pass

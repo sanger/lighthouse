@@ -39,3 +39,6 @@ class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
             friendly_name=self._barcode_property.value,
             uuid=self.value,
         )
+
+    def add_to_sequencescape_message(self, message):
+        pass

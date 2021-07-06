@@ -3,7 +3,10 @@ from lighthouse.classes.event_properties.validations import SimpleEventPropertyM
 
 
 class DummyEventProperty(EventPropertyAbstract, SimpleEventPropertyMixin):
-    def add_to_warehouse_message(self):
+    def add_to_warehouse_message(self, message):
+        return None
+
+    def add_to_sequencescape_message(self, message):
         return None
 
     def is_valid(self):

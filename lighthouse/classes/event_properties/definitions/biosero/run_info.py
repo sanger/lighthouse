@@ -38,3 +38,6 @@ class RunInfo(EventPropertyAbstract, CherrytrackServiceMixin):
             subject_type=SUBJECT_TYPE_RUN,
             friendly_name=self.run_id,
         )
+
+    def add_to_sequencescape_message(self, message):
+        pass

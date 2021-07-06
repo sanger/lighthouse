@@ -22,3 +22,6 @@ class FailureType(EventPropertyAbstract, SimpleEventPropertyMixin):
 
     def add_to_warehouse_message(self, message):
         message.add_metadata("failure_type", self.value)
+
+    def add_to_sequencescape_message(self, message):
+        pass

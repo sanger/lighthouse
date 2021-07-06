@@ -5,7 +5,10 @@ from lighthouse.classes.event_properties.exceptions import ValidationError
 
 
 class DummyEventProperty(EventPropertyAbstract):
-    def add_to_warehouse_message(self):
+    def add_to_warehouse_message(self, message):
+        return None
+
+    def add_to_sequencescape_message(self, message):
         return None
 
     def is_valid(self):
@@ -91,6 +94,7 @@ class TestEventPropertyAbstract:
             test.is_valid()
             test.is_valid()
             test.value()
-            test.add_to_warehouse_message()
+            test.add_to_warehouse_message({})
+            test.add_to_sequencescape_message({})
         except Exception as exception:
             raise fail("DID RAISE {0}".format(exception))

@@ -37,6 +37,9 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
             uuid=self.value,
         )
 
+    def add_to_sequencescape_message(self, message):
+        pass
+
     def _get_robot_uuid(self):
         if self._automation_system_name.value in app.config["BIOSERO_ROBOTS"].keys():
             val = app.config["BIOSERO_ROBOTS"][self._automation_system_name.value]["uuid"]

@@ -20,3 +20,6 @@ class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
 
     def add_to_warehouse_message(self, message):
         message.add_metadata("source_plate_barcode", self.value)
+
+    def add_to_sequencescape_message(self, message):
+        pass

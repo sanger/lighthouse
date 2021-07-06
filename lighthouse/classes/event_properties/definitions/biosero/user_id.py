@@ -29,3 +29,6 @@ class UserID(EventPropertyAbstract):
 
     def add_to_warehouse_message(self, message):
         message.set_user_id(self.value)
+
+    def add_to_sequencescape_message(self, message):
+        pass

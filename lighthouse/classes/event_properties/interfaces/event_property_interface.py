@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, List
 
 from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
+from lighthouse.classes.messages.sequencescape_messages import SequencescapeMessage
 
 
 class EventPropertyInterface(ABC):
@@ -68,6 +69,22 @@ class EventPropertyInterface(ABC):
         Arguments:
             message: WarehouseMessage - A building message where we want to write
             the information from this event property
+
+        Returns:
+            None
+
+        """
+        ...
+
+    @abstractmethod
+    def add_to_sequencescape_message(self, message: SequencescapeMessage) -> None:
+        """
+        Adds this event property information into the sequencescape message
+        for plate creation
+
+        Arguments:
+            message: SequencescapeMessage - A message that will be sent to
+            sequencescape to create a plate.
 
         Returns:
             None

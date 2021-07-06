@@ -28,3 +28,6 @@ class RobotSerialNumber(EventPropertyAbstract):
 
     def add_to_warehouse_message(self, message):
         pass
+
+    def add_to_sequencescape_message(self, message):
+        pass

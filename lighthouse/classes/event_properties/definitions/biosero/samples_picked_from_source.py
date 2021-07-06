@@ -44,3 +44,6 @@ class SamplesPickedFromSource(EventPropertyAbstract, CherrytrackServiceMixin, Mo
     def add_to_warehouse_message(self, message):
         for sample in self.value:
             message.add_sample_as_subject(sample)
+
+    def add_to_sequencescape_message(self, message):
+        pass
