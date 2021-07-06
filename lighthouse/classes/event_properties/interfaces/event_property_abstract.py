@@ -92,11 +92,12 @@ class EventPropertyAbstract(EventPropertyInterface):
             None
 
         """
+        new_value = True
         if not condition:
             if message not in self._errors:
                 self._errors.append(message)
-            self._is_valid = False
-        self._is_valid = self._is_valid and True
+            new_value = False
+        self._is_valid = self._is_valid and new_value
 
     @contextmanager
     def validation_scope(self):
@@ -115,8 +116,6 @@ class EventPropertyAbstract(EventPropertyInterface):
         try:
             yield
         except Exception as exc:
-            logger.debug(f"At { self._source_code_position_for_logging() } - Exception during validation")
-
             self._is_valid = False
             msg = f"Unexpected exception while trying to is_valid {exc}"
             if msg not in self._errors:
