@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 class RunID(EventPropertyAbstract, SimpleEventPropertyMixin):
     def is_valid(self):
-        self.is_valid_param_not_missing(FIELD_EVENT_RUN_ID)
-        self.is_valid_param_is_integer(FIELD_EVENT_RUN_ID)
+        self.validate_param_not_missing(FIELD_EVENT_RUN_ID)
+        self.validate_param_is_integer(FIELD_EVENT_RUN_ID)
         return self._is_valid
 
     @cached_property

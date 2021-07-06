@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class BarcodeNoPlateMapData(EventPropertyAbstract, SimpleEventPropertyMixin):
     def is_valid(self):
-        self.is_valid_param_not_missing(FIELD_EVENT_BARCODE)
+        self.validate_param_not_missing(FIELD_EVENT_BARCODE)
         return self._is_valid
 
     @cached_property

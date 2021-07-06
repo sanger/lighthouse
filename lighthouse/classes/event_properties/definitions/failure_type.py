@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 class FailureType(EventPropertyAbstract, SimpleEventPropertyMixin):
     def is_valid(self):
-        self.is_valid_param_not_missing(FIELD_FAILURE_TYPE)
-        self.is_valid_param_not_empty(FIELD_FAILURE_TYPE)
-        self.is_valid_param_no_whitespaces(FIELD_FAILURE_TYPE)
+        self.validate_param_not_missing(FIELD_FAILURE_TYPE)
+        self.validate_param_not_empty(FIELD_FAILURE_TYPE)
+        self.validate_param_no_whitespaces(FIELD_FAILURE_TYPE)
         return self._is_valid
 
     @cached_property

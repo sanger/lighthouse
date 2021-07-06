@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 class UserID(EventPropertyAbstract, SimpleEventPropertyMixin):
     def is_valid(self):
-        self.is_valid_param_not_missing(FIELD_EVENT_USER_ID)
-        self.is_valid_param_not_empty(FIELD_EVENT_USER_ID)
+        self.validate_param_not_missing(FIELD_EVENT_USER_ID)
+        self.validate_param_not_empty(FIELD_EVENT_USER_ID)
         return self._is_valid
 
     @cached_property
