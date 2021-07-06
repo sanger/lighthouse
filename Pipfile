@@ -13,6 +13,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-freezegun = "*"
 responses = "*"
+types-requests = "*"
 
 [packages]
 colorlog = "~=5.0"
