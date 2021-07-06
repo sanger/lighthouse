@@ -29,7 +29,7 @@ class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
         with self.retrieval_scope():
             val = self.get_source_plate_uuid(self._barcode_property.value)
             if val is None:
-                raise RetrievalError(f"Unable to determine a uuid for source plate '{self._barcode_property.value}'")
+                raise RetrievalError(f"Unable to determine a UUID for source plate '{self._barcode_property.value}'")
             return val
 
     def add_to_warehouse_message(self, message):
