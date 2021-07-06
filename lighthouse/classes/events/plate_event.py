@@ -110,7 +110,7 @@ class PlateEvent(PlateEventInterface, WarehouseServiceMixin):
         - create a new message to send to the warehouse
         - send the message to the warehouse
         """
-        if not self.state == PlateEvent.EVENT_INITIALIZED:
+        if not (self.state == PlateEvent.EVENT_INITIALIZED):
             raise EventNotInitializedError("Not initialized event")
 
         message = self._create_message()
