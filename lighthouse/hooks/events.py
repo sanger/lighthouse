@@ -4,7 +4,7 @@ from http import HTTPStatus
 from typing import Any, Dict, List
 from uuid import uuid4
 
-from flask import abort
+from flask import abort, make_response, jsonify
 
 from lighthouse.classes.automation_system import AutomationSystem
 from lighthouse.classes.biosero import Biosero
@@ -41,5 +41,7 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             plate_event.process_errors()
         except Exception as e:
             plate_event.process_exception(e)
-            if event_type == Biosero.EVENT_DESTINATION_COMPLETED:
-                abort(HTTPStatus.INTERNAL_SERVER_ERROR, "The plate could not be created because an error has happened.")
+            if event_type in [Biosero.EVENT_DESTINATION_COMPLETED, Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED]:
+                abort(make_response(jsonify({
+                    'errors': plate_event.errors
+                }), HTTPStatus.INTERNAL_SERVER_ERROR))

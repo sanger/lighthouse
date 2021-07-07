@@ -61,8 +61,6 @@ def test_post_destination_partial_completed_cherrytrack_fails(
             },
             headers=biosero_auth_headers,
         )
-        import pdb
-        pdb.set_trace()
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
 

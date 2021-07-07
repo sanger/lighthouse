@@ -33,6 +33,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+@pytest.mark.parametrize("cherrytrack_destination_plate_response", [{"errors": ['Wrong response']}])
 @pytest.mark.parametrize("cherrytrack_mock_destination_plate_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_destination_completed_cherrytrack_fails(
     app,
@@ -61,8 +62,22 @@ def test_post_destination_completed_cherrytrack_fails(
             },
             headers=biosero_auth_headers,
         )
-
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert response.json == {
+            'errors': {
+                'controls': ['Exception during retrieval: Response from '
+                             'Cherrytrack is not OK: Wrong response'],
+                'samples': ['Exception during retrieval: Response from Cherrytrack '
+                            'is not OK: Wrong response'],
+                'samples_with_cog_uk_id': ['Exception during retrieval: Response '
+                                           'from Cherrytrack is not OK: Wrong '
+                                           'response'],
+                'source_plates': ['Exception during retrieval: Response from '
+                                  'Cherrytrack is not OK: Wrong response'],
+                'wells': ['Exception during retrieval: Response from Cherrytrack '
+                          'is not OK: Wrong response']
+            }
+        }
 
 
 @pytest.mark.parametrize(

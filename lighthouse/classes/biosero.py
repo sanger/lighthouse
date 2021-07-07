@@ -5,6 +5,7 @@ from lighthouse.classes.events.biosero import (
     DestinationCompleted,
     DestinationFailed,
     DestinationPartial,
+    DestinationPartialCompleted,
     SourceCompleted,
     SourceNoPickableSamples,
     SourceNoPlateMapData,
@@ -64,11 +65,15 @@ class Biosero(AutomationSystem):
         self._event_source_no_plate_map_data = SourceNoPlateMapData(event_type=self.EVENT_SOURCE_NO_PLATE_MAP_DATA)
         self._event_source_partial = SourcePartial(event_type=self.EVENT_SOURCE_PARTIAL)
         self._event_source_unrecognised = SourceUnrecognised(event_type=self.EVENT_SOURCE_UNRECOGNISED)
+        self._event_destination_partial_completed = DestinationPartialCompleted(
+            event_type=self.EVENT_DESTINATION_PARTIAL_COMPLETED
+        )
 
         self._plate_events = {
             self._event_destination_completed,
             self._event_destination_failed,
             self._event_destination_partial,
+            self._event_destination_partial_completed,
             self._event_source_completed,
             self._event_source_no_pickable_samples,
             self._event_source_no_plate_map_data,
