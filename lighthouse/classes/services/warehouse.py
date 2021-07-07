@@ -22,7 +22,7 @@ class WarehouseServiceMixin:
         return str(app.config["RMQ_ROUTING_KEY"].replace("#", self.event_type))  # type: ignore
 
     def send_warehouse_message(self, message: Message) -> None:
-        """Publishes a message in the exchange as specified in configuration."""
+        """Publishes a message to the exchange as specified in configuration."""
         logger.info("Attempting to publish the constructed plate event message")
         with Broker() as broker_channel:
             broker_channel.basic_publish(
