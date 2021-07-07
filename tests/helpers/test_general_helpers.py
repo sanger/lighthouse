@@ -31,7 +31,7 @@ def test_has_plate_map_data(app, samples):
         assert has_plate_map_data("plate_123") is True
 
 
-def test_is_integer(self):
+def test_is_integer():
     assert is_integer("123")
     assert not is_integer("1.23")
     assert is_integer("123 ")

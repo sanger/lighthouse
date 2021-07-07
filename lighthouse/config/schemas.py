@@ -1,6 +1,5 @@
 EVENTS_SCHEMA = {
     "automation_system_run_id": {
-        "required": True,
         "type": "integer",
     },
     "barcode": {
@@ -23,6 +22,9 @@ EVENTS_SCHEMA = {
         "allow_unknown": True,
     },
     "failure_type": {
+        "type": "string",
+    },
+    "user_id": {
         "type": "string",
     },
 }

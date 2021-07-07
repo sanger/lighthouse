@@ -53,13 +53,13 @@ class DestinationFailed(PlateEvent):
         message = self.build_new_warehouse_message()
 
         for property_name in [
+            "samples_with_cog_uk_id",
             "controls",
+            "source_plates",
             "destination_plate",
-            "failure_type",
             "robot_uuid",
             "run_info",
-            "samples_with_cog_uk_id",
-            "source_plates",
+            "failure_type",
             "user_id",
         ]:
             self.properties[property_name].add_to_warehouse_message(message)
