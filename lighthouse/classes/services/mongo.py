@@ -43,7 +43,7 @@ class MongoServiceMixin:
 
             plate = source_plates_collection.find_one({FIELD_BARCODE: barcode})
             if plate is None:
-                raise Exception(f"Source plate with barcode {barcode} not found")
+                raise Exception(f"Source plate with barcode '{barcode}' not found")
             return plate[FIELD_LH_SOURCE_PLATE_UUID]
 
     def get_samples_from_mongo_for_barcode(self, barcode):
