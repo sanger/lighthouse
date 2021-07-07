@@ -41,7 +41,7 @@ class CherrytrackServiceMixin(object):
         return sample["picked"]
 
     def get_wells_from_destination_plate(self, destination_barcode):
-        logger.info(f"Getting samples info from Cherrytrack for destination place barcode {destination_barcode}")
+        logger.info(f"Getting samples info from Cherrytrack for destination place barcode '{destination_barcode}'")
         response = get_wells_from_destination_barcode_from_cherrytrack(destination_barcode)
         if response.status_code != HTTPStatus.OK:
             self.raise_error_from_response(response)
