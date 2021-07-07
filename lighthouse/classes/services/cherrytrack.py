@@ -31,7 +31,7 @@ class CherrytrackServiceMixin(object):
         return response.json()["data"]
 
     def get_samples_from_source_plates(self, source_barcode):
-        logger.info(f"Getting samples info from Cherrytrack for source place barcode {source_barcode}")
+        logger.info(f"Getting samples info from Cherrytrack for source place barcode '{source_barcode}'")
         response = get_samples_from_source_plate_barcode_from_cherrytrack(source_barcode)
         if response.status_code != HTTPStatus.OK:
             self.raise_error_from_response(response)
