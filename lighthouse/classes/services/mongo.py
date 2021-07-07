@@ -66,7 +66,7 @@ class MongoServiceMixin:
             if len(remaining_barcodes) > 0:
                 raise Exception(
                     (
-                        "Some source plate barcodes cannot be obtained because are not present in Mongo. "
+                        "Some source plate barcodes cannot be obtained because they are not present in Mongo. "
                         f"Please review: {remaining_barcodes}"
                     )
                 )
