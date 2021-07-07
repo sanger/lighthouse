@@ -1,6 +1,8 @@
 import requests
 from flask import current_app as app
 
+# TODO: You can drop the _from_cherrytrack since these methods are namespaced
+
 
 def get_automation_system_run_info_from_cherrytrack(run_id: int) -> requests.Response:
     """Retrieve automation system run infomation from Cherrytrack for the given run id

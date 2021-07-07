@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 class MongoServiceMixin:
     def get_samples_from_mongo(self, uuids):
-        logger.debug("> get_samples_from_mongo")
         if len(uuids) == 0:
             return []
 

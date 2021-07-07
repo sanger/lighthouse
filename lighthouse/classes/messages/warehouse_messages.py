@@ -39,6 +39,7 @@ class WarehouseMessage:
         self._metadata = {}
         self._user_id = None
 
+    # TODO: this looks like a property
     def set_user_id(self, user_id: str) -> None:
         self._user_id = user_id
 

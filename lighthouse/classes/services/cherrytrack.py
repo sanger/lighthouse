@@ -10,7 +10,7 @@ from lighthouse.helpers.cherrytrack import (
 logger = logging.getLogger(__name__)
 
 
-class CherrytrackServiceMixin(object):
+class CherrytrackServiceMixin:
     def raise_error_from_response(self, response):
         json = response.json()
         if not (isinstance(json, dict)):

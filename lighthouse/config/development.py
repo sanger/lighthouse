@@ -50,8 +50,3 @@ MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 # Beckman config
 ###
 BECKMAN_ENABLE = True
-
-###
-# Cherrytrack config
-###
-CHERRYTRACK_URL = f"http://{LOCALHOST}:3020"
