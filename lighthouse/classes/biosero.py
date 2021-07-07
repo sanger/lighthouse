@@ -35,6 +35,8 @@ class Biosero(AutomationSystem):
     EVENT_SOURCE_PARTIAL = "lh_biosero_cp_source_partial"
     # Source plate barcode cannot be read (damaged or missing), and the plate is put into the output stack
     EVENT_SOURCE_UNRECOGNISED = "lh_biosero_cp_source_plate_unrecognised"
+    # Partial Destination plate created by user from lighthouse UI
+    EVENT_DESTINATION_PARTIAL_COMPLETED = "lh_biosero_cp_destination_plate_partial_completed"
 
     # needs to be an immutable object: https://docs.python.org/3/tutorial/classes.html#class-and-instance-variables
     PLATE_EVENT_NAMES = (
@@ -46,6 +48,7 @@ class Biosero(AutomationSystem):
         EVENT_SOURCE_NO_PLATE_MAP_DATA,
         EVENT_SOURCE_PARTIAL,
         EVENT_SOURCE_UNRECOGNISED,
+        EVENT_DESTINATION_PARTIAL_COMPLETED,
     )
 
     def __init__(self) -> None:

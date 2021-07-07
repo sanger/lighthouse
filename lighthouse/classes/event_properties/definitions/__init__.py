@@ -4,6 +4,7 @@ from .failure_type import FailureType
 from .plate_barcode import PlateBarcode
 from .robot_serial_number import RobotSerialNumber
 from .run_id import RunID
+from .run_id_from_wells import RunIDFromWells
 from .samples_from_destination import SamplesFromDestination
 from .samples_from_source import SamplesFromSource
 from .samples_with_cog_uk_id import SamplesWithCogUkId
@@ -19,6 +20,7 @@ __all__ = [
     "PlateBarcode",
     "RobotSerialNumber",
     "RunID",
+    "RunIDFromWells",
     "SamplesFromDestination",
     "SamplesFromSource",
     "SamplesWithCogUkId",

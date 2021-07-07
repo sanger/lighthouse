@@ -17,39 +17,39 @@ class DummyEventProperty(EventPropertyAbstract, SimpleEventPropertyMixin):
 
 
 class TestEventPropertyValidations:
-    def test_is_valid_param_not_missing(self):
+    def test_validate_param_not_missing(self):
         test = DummyEventProperty({"asdf": 1})
-        test.is_valid_param_not_missing("asdf")
+        test.validate_param_not_missing("asdf")
         assert test.is_valid() is True
         assert test.errors == []
-        test.is_valid_param_not_missing("jkl")
+        test.validate_param_not_missing("jkl")
         assert test.is_valid() is False
         assert test.errors == ["'jkl' is missing"]
 
-    def test_is_valid_param_not_empty(self):
+    def test_validate_param_not_empty(self):
         test = DummyEventProperty({"asdf": "1", "jkl": ""})
-        test.is_valid_param_not_empty("asdf")
+        test.validate_param_not_empty("asdf")
         assert test.is_valid() is True
         assert test.errors == []
-        test.is_valid_param_not_empty("jkl")
+        test.validate_param_not_empty("jkl")
         assert test.is_valid() is False
         assert test.errors == ["'jkl' should not be an empty string"]
 
-    def test_is_valid_param_no_whitespaces(self):
+    def test_validate_param_no_whitespaces(self):
         test = DummyEventProperty({"asdf": "12", "jkl": "1 2"})
-        test.is_valid_param_no_whitespaces("asdf")
+        test.validate_param_no_whitespaces("asdf")
         assert test.is_valid() is True
         assert test.errors == []
-        test.is_valid_param_no_whitespaces("jkl")
+        test.validate_param_no_whitespaces("jkl")
         assert test.is_valid() is False
         assert test.errors == ["'jkl' should not contain any whitespaces"]
 
-    def test_is_valid_param_is_integer(self):
+    def test_validate_param_is_integer(self):
         test = DummyEventProperty({"asdf": "12", "jkl": "1 2"})
-        test.is_valid_param_is_integer("asdf")
+        test.validate_param_is_integer("asdf")
         assert test.is_valid() is True
         assert test.errors == []
-        test.is_valid_param_is_integer("jkl")
+        test.validate_param_is_integer("jkl")
         assert test.is_valid() is False
         assert test.errors == ["'jkl' should be an integer"]
 

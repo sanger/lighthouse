@@ -2,18 +2,19 @@ from pytest import raises
 import pytest
 from lighthouse.classes.event_properties.exceptions import ValidationError, RetrievalError
 from lighthouse.classes.event_properties.definitions import (
-    UserID,
+    BarcodeNoPlateMapData,
+    ControlsFromDestination,
+    FailureType,
+    PlateBarcode,
     RobotSerialNumber,
     RunID,
-    PlateBarcode,
-    SourcePlateUUID,
-    BarcodeNoPlateMapData,
+    RunIDFromWells,
     SamplesFromSource,
     SamplesFromDestination,
-    ControlsFromDestination,
     SamplesWithCogUkId,
     SourcePlatesFromDestination,
-    FailureType,
+    SourcePlateUUID,
+    UserID,
 )
 from lighthouse.classes.event_properties.definitions.biosero import (
     RobotUUID,
@@ -762,3 +763,24 @@ def test_source_plates_from_destination_add_to_warehouse(
                 "uuid": "a17c38cd-b2df-43a7-9896-582e7855b4cc",
             }
         ]
+
+
+@pytest.mark.parametrize("run_id", [5])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+def test_run_id_from_wells_value(
+    app,
+    run_id,
+    destination_barcode,
+    samples_from_cherrytrack_into_mongo,
+    mocked_responses,
+    source_plates,
+    cherrytrack_mock_destination_plate,
+    cherrytrack_destination_plate_response,
+):
+    with app.app_context():
+        val = RunIDFromWells(
+            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
+        ).value
+
+        assert val == 5

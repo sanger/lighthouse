@@ -11,6 +11,7 @@ __all__ = [
     "DestinationCompleted",
     "DestinationFailed",
     "DestinationPartial",
+    "DestinationPartialCompleted",
     "SourceCompleted",
     "SourceNoPickableSamples",
     "SourceNoPlateMapData",
