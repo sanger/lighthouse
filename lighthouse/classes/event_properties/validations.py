@@ -1,4 +1,5 @@
 from typing import Optional
+
 from lighthouse.types import EventPropertyProtocol
 from lighthouse.helpers.general import is_integer
 

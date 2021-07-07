@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Union, Any, List
+from typing import Any, Dict, List, Union
 
 
 class PlateEventInterface(ABC):
@@ -18,6 +18,7 @@ class PlateEventInterface(ABC):
         """
         ...
 
+    @property
     @abstractmethod
     def errors(self) -> Dict[str, List[str]]:
         """This method will return all errors that have happened during the lifetime of

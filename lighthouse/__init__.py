@@ -5,7 +5,7 @@ from http import HTTPStatus
 from eve import Eve
 from flask_apscheduler import APScheduler
 
-from lighthouse.hooks.events import inserted_events_hook, insert_events_hook
+from lighthouse.hooks.events import insert_events_hook, inserted_events_hook
 from lighthouse.validator import LighthouseValidator
 
 scheduler = APScheduler()

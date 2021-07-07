@@ -1,10 +1,11 @@
-from typing import Dict, Any, List, Optional
-from .event_property_interface import EventPropertyInterface
-from lighthouse.classes.event_properties.exceptions import ValidationError
-from contextlib import contextmanager
-
-import sys
 import logging
+import sys
+from contextlib import contextmanager
+from typing import Any, Dict, List, Optional
+
+from lighthouse.classes.event_properties.exceptions import ValidationError
+
+from .event_property_interface import EventPropertyInterface
 
 logger = logging.getLogger(__name__)
 

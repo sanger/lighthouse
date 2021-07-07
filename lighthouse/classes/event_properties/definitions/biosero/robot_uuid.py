@@ -1,12 +1,14 @@
-from typing import List
+import logging
 from functools import cached_property
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
-from lighthouse.classes.event_properties.exceptions import RetrievalError
-from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
-from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_ROBOT, SUBJECT_TYPE_ROBOT
+from typing import List
+
 from flask import current_app as app
 
-import logging
+from lighthouse.classes.event_properties.exceptions import RetrievalError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
+from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_ROBOT, SUBJECT_TYPE_ROBOT
+from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,7 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
         with self.retrieval_scope():
             return self._get_robot_uuid()
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         message.add_subject(
             role_type=ROLE_TYPE_ROBOT,
             subject_type=SUBJECT_TYPE_ROBOT,
@@ -37,12 +39,12 @@ class RobotUUID(EventPropertyAbstract, CherrytrackServiceMixin):
             uuid=self.value,
         )
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass
 
-    def _get_robot_uuid(self):
+    def _get_robot_uuid(self) -> str:
         if self._automation_system_name.value in app.config["BIOSERO_ROBOTS"].keys():
-            val = app.config["BIOSERO_ROBOTS"][self._automation_system_name.value]["uuid"]
+            val: str = app.config["BIOSERO_ROBOTS"][self._automation_system_name.value]["uuid"]
             if val is None:
                 raise RetrievalError(f"Unable to determine a uuid for robot '{self._automation_system_name.value}'")
             return val

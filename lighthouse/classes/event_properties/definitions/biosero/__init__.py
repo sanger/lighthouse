@@ -6,7 +6,6 @@ from .samples_picked_from_source import SamplesPickedFromSource
 from .user_id import UserID
 from .wells_from_destination import WellsFromDestination
 
-
 __all__ = [
     "AutomationSystemName",
     "RobotSerialNumber",

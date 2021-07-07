@@ -1,13 +1,12 @@
 from lighthouse.constants.fields import (
-    FIELD_EVENT_RUN_ID,
     FIELD_EVENT_BARCODE,
+    FIELD_EVENT_ERRORS,
+    FIELD_EVENT_ROBOT,
+    FIELD_EVENT_RUN_ID,
     FIELD_EVENT_TYPE,
     FIELD_EVENT_USER_ID,
-    FIELD_EVENT_ROBOT,
     FIELD_EVENT_UUID,
-    FIELD_EVENT_ERRORS,
 )
-
 
 # NOTE: Remember that the samples of 'plate_123' are joined to the priority samples
 #   There should be 7 fit to pick samples from all the plates below

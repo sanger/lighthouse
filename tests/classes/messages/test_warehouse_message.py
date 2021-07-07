@@ -1,7 +1,9 @@
-import pytest
-from lighthouse.classes.messages.warehouse_messages import WarehouseMessage
-from lighthouse.messages.message import Message
 from unittest.mock import patch
+
+import pytest
+
+from lighthouse.classes.messages import WarehouseMessage
+from lighthouse.messages.message import Message
 
 
 def test_can_set_user_id():

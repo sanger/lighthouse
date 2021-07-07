@@ -7,10 +7,9 @@ from lighthouse.helpers.cherrytrack import (
     get_samples_from_source_plate_barcode_from_cherrytrack,
     get_wells_from_destination_barcode_from_cherrytrack,
 )
-
 from tests.fixtures.data.biosero.automation_system_runs import RUNS
-from tests.fixtures.data.biosero.source_plate_wells import SOURCE_PLATE_WELLS
 from tests.fixtures.data.biosero.destination_plate_wells import DESTINATION_PLATE_WELLS
+from tests.fixtures.data.biosero.source_plate_wells import SOURCE_PLATE_WELLS
 
 
 def test_get_automation_system_run_info_from_cherrytrack(app, mocked_responses):

@@ -1,7 +1,9 @@
-from pytest import raises, fail
 from unittest.mock import MagicMock
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+
+from pytest import fail, raises
+
 from lighthouse.classes.event_properties.exceptions import ValidationError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 
 
 class DummyEventProperty(EventPropertyAbstract):

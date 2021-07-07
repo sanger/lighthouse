@@ -1,11 +1,12 @@
-from typing import List
+import logging
 from functools import cached_property
+from typing import List
+
 from lighthouse.classes.event_properties.definitions import RunID
 from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
-from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_RUN, SUBJECT_TYPE_RUN
-
-import logging
+from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +33,12 @@ class RunInfo(EventPropertyAbstract, CherrytrackServiceMixin):
     def run_id(self):
         return self.value["id"]
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         message.add_subject(
             role_type=ROLE_TYPE_RUN,
             subject_type=SUBJECT_TYPE_RUN,
             friendly_name=self.run_id,
         )
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass

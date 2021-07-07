@@ -1,8 +1,9 @@
-from flask import current_app as app
-from lighthouse.messages.message import Message
-from lighthouse.messages.broker import Broker
-
 import logging
+
+from flask import current_app as app
+
+from lighthouse.messages.broker import Broker
+from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
 

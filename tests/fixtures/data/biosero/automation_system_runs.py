@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,

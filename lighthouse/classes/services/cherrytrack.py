@@ -1,10 +1,11 @@
+import logging
+from http import HTTPStatus
+
 from lighthouse.helpers.cherrytrack import (
     get_automation_system_run_info_from_cherrytrack,
     get_samples_from_source_plate_barcode_from_cherrytrack,
     get_wells_from_destination_barcode_from_cherrytrack,
 )
-import logging
-from http import HTTPStatus
 
 logger = logging.getLogger(__name__)
 

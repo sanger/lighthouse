@@ -1,12 +1,14 @@
-from typing import List
-from functools import cached_property
-from .plate_barcode import PlateBarcode
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
-from lighthouse.classes.event_properties.exceptions import RetrievalError
-from lighthouse.classes.services.mongo import MongoServiceMixin
-from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
-
 import logging
+from functools import cached_property
+from typing import List
+
+from lighthouse.classes.event_properties.exceptions import RetrievalError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
+from lighthouse.classes.messages.warehouse_messages import ROLE_TYPE_CP_SOURCE_LABWARE, SUBJECT_TYPE_PLATE
+from lighthouse.classes.services.mongo import MongoServiceMixin
+
+from .plate_barcode import PlateBarcode
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
                 raise RetrievalError(f"Unable to determine a UUID for source plate '{self._barcode_property.value}'")
             return val
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         message.add_subject(
             role_type=ROLE_TYPE_CP_SOURCE_LABWARE,
             subject_type=SUBJECT_TYPE_PLATE,
@@ -40,5 +42,5 @@ class SourcePlateUUID(EventPropertyAbstract, MongoServiceMixin):
             uuid=self.value,
         )
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass

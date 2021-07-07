@@ -1,11 +1,12 @@
-from typing import List, Any
+import logging
 from functools import cached_property
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
+from typing import Any, List
+
 from lighthouse.classes.event_properties.exceptions import RetrievalError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.constants.fields import FIELD_CHERRYTRACK_LH_SAMPLE_UUID
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +51,10 @@ class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
             mapping[well_sample["destination_coordinate"]] = sample
         return mapping
 
-    # mongo samples from cherrytrack samples
     def samples(self) -> Any:
+        """
+        Mongo samples from cherrytrack samples
+        """
         lh_sample_uuids: List[str] = [sample[FIELD_CHERRYTRACK_LH_SAMPLE_UUID] for sample in self._well_samples()]
         self._is_valid_no_duplicate_uuids(lh_sample_uuids)
         return self.get_samples_from_mongo(lh_sample_uuids)
@@ -63,8 +66,8 @@ class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
             # mapping with mongo samples
             return self._mapping_with_samples(obtained_samples)
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         pass
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass

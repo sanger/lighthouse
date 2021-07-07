@@ -1,10 +1,12 @@
-from typing import List
-from functools import cached_property
-from lighthouse.classes.event_properties.definitions import PlateBarcode
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
-from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
-from lighthouse.classes.event_properties.exceptions import RetrievalError
 import logging
+from functools import cached_property
+from typing import List
+
+from lighthouse.classes.event_properties.definitions import PlateBarcode
+from lighthouse.classes.event_properties.exceptions import RetrievalError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
+from lighthouse.classes.services.cherrytrack import CherrytrackServiceMixin
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +37,8 @@ class WellsFromDestination(EventPropertyAbstract, CherrytrackServiceMixin):
             self._is_valid_destination_coordinate_not_duplicated(val)
             return val
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         pass
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         pass

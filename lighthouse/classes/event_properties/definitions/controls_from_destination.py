@@ -1,18 +1,19 @@
-from typing import List
+import logging
 from functools import cached_property
-from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
+from typing import List
+
 from lighthouse.classes.event_properties.exceptions import RetrievalError
+from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract, EventPropertyInterface
+from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 from lighthouse.classes.services.mongo import MongoServiceMixin
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_CONTROL,
     FIELD_CHERRYTRACK_CONTROL_BARCODE,
     FIELD_CHERRYTRACK_CONTROL_COORDINATE,
-    FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_CONTROL,
     FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_SUPPLIER_NAME,
 )
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
             self._is_valid_positive_and_negative_present(val)
             return self._mapping_with_controls()
 
-    def add_to_warehouse_message(self, message):
+    def add_to_warehouse_message(self, message: WarehouseMessage):
         for control in self.value.values():
             message.add_subject(
                 role_type="control",
@@ -70,7 +71,7 @@ class ControlsFromDestination(EventPropertyAbstract, MongoServiceMixin):
             f"{control[FIELD_CHERRYTRACK_CONTROL_COORDINATE]}"
         )
 
-    def add_to_sequencescape_message(self, message):
+    def add_to_sequencescape_message(self, message: SequencescapeMessage):
         for position in self.value:
             control = self.value[position]
             message.set_well_sample(

@@ -1,8 +1,10 @@
-from flask import current_app as app
-from lighthouse.messages.message import Message
-from typing import Dict
-import requests
 import logging
+from typing import Dict
+
+import requests
+from flask import current_app as app
+
+from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,12 @@ class SequencescapeMessage(Message):
             "events": events,
         }
 
-        return {"data": {"type": "plates", "attributes": body}}
+        return {
+            "data": {
+                "type": "plates",
+                "attributes": body,
+            }
+        }
 
     def send_to_ss(self):
         message = self.render()

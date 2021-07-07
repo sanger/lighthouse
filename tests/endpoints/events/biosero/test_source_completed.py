@@ -1,11 +1,11 @@
 from http import HTTPStatus
 from unittest.mock import patch
-from lighthouse.helpers.mongo import get_event_with_uuid
-from lighthouse.constants.fields import FIELD_EVENT_ERRORS
-
+from uuid import uuid4
 
 import pytest
-from uuid import uuid4
+
+from lighthouse.constants.fields import FIELD_EVENT_ERRORS
+from lighthouse.helpers.mongo import get_event_with_uuid
 
 CACHE = {}
 
