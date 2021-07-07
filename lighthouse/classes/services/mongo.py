@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 class MongoServiceMixin:
     def get_samples_from_mongo(self, uuids):
-        logger.debug("> get_samples_from_mongo")
         if len(uuids) == 0:
             return []
 
@@ -43,7 +42,7 @@ class MongoServiceMixin:
 
             plate = source_plates_collection.find_one({FIELD_BARCODE: barcode})
             if plate is None:
-                raise Exception(f"Source plate with barcode {barcode} not found")
+                raise Exception(f"Source plate with barcode '{barcode}' not found")
             return plate[FIELD_LH_SOURCE_PLATE_UUID]
 
     def get_samples_from_mongo_for_barcode(self, barcode):
@@ -66,7 +65,7 @@ class MongoServiceMixin:
             if len(remaining_barcodes) > 0:
                 raise Exception(
                     (
-                        "Some source plate barcodes cannot be obtained because are not present in Mongo. "
+                        "Some source plate barcodes cannot be obtained because they are not present in Mongo. "
                         f"Please review: {remaining_barcodes}"
                     )
                 )

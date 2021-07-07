@@ -13,9 +13,6 @@ class WarehouseServiceMixin:
     def routing_key(self) -> str:
         """Determines the routing key for a plate event message.
 
-        Arguments:
-            event_type {str} -- The event type for which to determine the routing key.
-
         Returns:
             {str} -- The message routing key.
         """

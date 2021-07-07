@@ -19,7 +19,7 @@ EVENTS_SCHEMA = {
         "type": "dict",
         "default": None,
         "nullable": True,
-        "allow_unknown": True,
+        "allow_unknown": True,  # TODO: Are we should we want to allow unknown here?
     },
     "failure_type": {
         "type": "string",

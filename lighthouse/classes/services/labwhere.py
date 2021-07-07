@@ -27,7 +27,7 @@ class LabwhereServiceMixin:
             user_barcode=robot_barcode,
         )
         if not response.ok:
-            raise Exception(f"There was some problem when sending changing location in labwhere: { response.text }")
+            raise Exception(f"There was a problem attempting to change a location in LabWhere: { response.text }")
 
     @staticmethod
     def _destroyed_barcode() -> str:
