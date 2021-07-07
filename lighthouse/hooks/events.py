@@ -42,6 +42,18 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
         except Exception as e:
             plate_event.process_exception(e)
             if event_type in [Biosero.EVENT_DESTINATION_COMPLETED, Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED]:
-                abort(make_response(jsonify({
-                    'errors': plate_event.errors
-                }), HTTPStatus.INTERNAL_SERVER_ERROR))
+                abort(
+                    make_response(
+                        jsonify(
+                            {
+                                "_status": "ERR",
+                                "_issues": plate_event.errors,
+                                "_error": {
+                                    "code": HTTPStatus.INTERNAL_SERVER_ERROR,
+                                    "message": "The plate creation has failed.",
+                                },
+                            }
+                        ),
+                        HTTPStatus.INTERNAL_SERVER_ERROR,
+                    )
+                )

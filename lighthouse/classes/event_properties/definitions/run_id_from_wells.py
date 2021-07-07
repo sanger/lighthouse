@@ -32,9 +32,7 @@ class RunIDFromWells(EventPropertyAbstract):
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            return max(
-                [sample[FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_RUN_ID] for sample in self._well_samples()]
-            )
+            return max([sample[FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_RUN_ID] for sample in self._well_samples()])
 
     def add_to_warehouse_message(self, message):
         pass

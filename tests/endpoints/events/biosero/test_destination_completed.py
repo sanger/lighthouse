@@ -26,14 +26,13 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
             data={"automation_system_run_id": 123, "event_type": "lh_biosero_cp_destination_plate_completed"},
             headers=biosero_auth_headers,
         )
-
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("cherrytrack_destination_plate_response", [{"errors": ['Wrong response']}])
+@pytest.mark.parametrize("cherrytrack_destination_plate_response", [{"errors": ["Wrong response"]}])
 @pytest.mark.parametrize("cherrytrack_mock_destination_plate_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
 def test_post_destination_completed_cherrytrack_fails(
     app,
@@ -64,19 +63,67 @@ def test_post_destination_completed_cherrytrack_fails(
         )
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert response.json == {
-            'errors': {
-                'controls': ['Exception during retrieval: Response from '
-                             'Cherrytrack is not OK: Wrong response'],
-                'samples': ['Exception during retrieval: Response from Cherrytrack '
-                            'is not OK: Wrong response'],
-                'samples_with_cog_uk_id': ['Exception during retrieval: Response '
-                                           'from Cherrytrack is not OK: Wrong '
-                                           'response'],
-                'source_plates': ['Exception during retrieval: Response from '
-                                  'Cherrytrack is not OK: Wrong response'],
-                'wells': ['Exception during retrieval: Response from Cherrytrack '
-                          'is not OK: Wrong response']
-            }
+            "_status": "ERR",
+            "_issues": {
+                "wells": ["Exception during retrieval: Response from Cherrytrack is not OK: Wrong response"],
+                "source_plates": ["Exception during retrieval: Response from Cherrytrack is not OK: Wrong response"],
+                "samples": ["Exception during retrieval: Response from Cherrytrack is not OK: Wrong response"],
+                "samples_with_cog_uk_id": [
+                    "Exception during retrieval: Response from Cherrytrack is not OK: Wrong response"
+                ],
+                "controls": ["Exception during retrieval: Response from Cherrytrack is not OK: Wrong response"],
+            },
+            "_error": {"code": 500, "message": "The plate creation has failed."},
+        }
+
+
+@pytest.mark.parametrize("run_id", [3])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+@pytest.mark.parametrize("baracoda_mock_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
+@pytest.mark.parametrize(
+    "baracoda_mock_responses",
+    [
+        {
+            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
+        }
+    ],
+)
+def test_post_destination_completed_baracoda_fails(
+    app,
+    client,
+    biosero_auth_headers,
+    clear_events,
+    mocked_rabbit_channel,
+    source_plates,
+    run_id,
+    mocked_responses,
+    samples_from_cherrytrack_into_mongo,
+    centres,
+    destination_barcode,
+    mlwh_samples_in_cherrytrack,
+    cherrytrack_mock_destination_plate,
+    cherrytrack_destination_plate_response,
+    baracoda_mock_barcodes_group,
+    baracoda_mock_responses,
+):
+    with app.app_context():
+        response = client.post(
+            "/events",
+            data={
+                "automation_system_run_id": 3,
+                "barcode": "HT-1234",
+                "event_type": "lh_biosero_cp_destination_plate_completed",
+            },
+            headers=biosero_auth_headers,
+        )
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert response.json == {
+            "_status": "ERR",
+            "_issues": {
+                "samples_with_cog_uk_id": ["Exception during retrieval: Unable to create COG barcodes"],
+            },
+            "_error": {"code": 500, "message": "The plate creation has failed."},
         }
 
 

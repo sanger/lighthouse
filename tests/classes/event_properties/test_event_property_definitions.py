@@ -779,8 +779,6 @@ def test_run_id_from_wells_value(
     cherrytrack_destination_plate_response,
 ):
     with app.app_context():
-        val = RunIDFromWells(
-            WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))
-        ).value
+        val = RunIDFromWells(WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode}))).value
 
         assert val == 5

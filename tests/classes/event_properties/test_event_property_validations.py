@@ -52,4 +52,3 @@ class TestEventPropertyValidations:
         test.validate_param_is_integer("jkl")
         assert test.is_valid() is False
         assert test.errors == ["'jkl' should be an integer"]
-

@@ -64,6 +64,50 @@ def test_post_destination_partial_completed_cherrytrack_fails(
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@pytest.mark.parametrize("run_id", [3])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+@pytest.mark.parametrize("baracoda_mock_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
+@pytest.mark.parametrize(
+    "baracoda_mock_responses",
+    [
+        {
+            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
+        }
+    ],
+)
+def test_post_destination_partial_completed_baracoda_fails(
+    app,
+    client,
+    biosero_auth_headers,
+    clear_events,
+    mocked_rabbit_channel,
+    source_plates,
+    run_id,
+    mocked_responses,
+    samples_from_cherrytrack_into_mongo,
+    centres,
+    destination_barcode,
+    mlwh_samples_in_cherrytrack,
+    cherrytrack_mock_destination_plate,
+    cherrytrack_destination_plate_response,
+    cherrytrack_mock_destination_plate_status,
+    baracoda_mock_barcodes_group,
+    baracoda_mock_responses,
+):
+    with app.app_context():
+        response = client.post(
+            "/events",
+            data={
+                "user_id": "user1",
+                "barcode": "HT-1234",
+                "event_type": "lh_biosero_cp_destination_plate_partial_completed",
+            },
+            headers=biosero_auth_headers,
+        )
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+
+
 @pytest.mark.parametrize(
     "baracoda_mock_responses",
     [
