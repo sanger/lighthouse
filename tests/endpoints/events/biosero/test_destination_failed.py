@@ -24,7 +24,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
         response = client.post(
             "/events",
             data={
-                "automation_system_run_id": 123,
+                "user_id": "user1",
                 "event_type": "lh_biosero_cp_destination_failed",
             },
             headers=biosero_auth_headers,
@@ -79,10 +79,10 @@ def test_post_event_partially_completed(
                     response = client.post(
                         "/events",
                         data={
-                            "automation_system_run_id": 3,
                             "barcode": "HT-1234",
                             "event_type": "lh_biosero_cp_destination_failed",
                             "failure_type": "my_error_1",
+                            "user_id": "user1",
                         },
                         headers=biosero_auth_headers,
                     )

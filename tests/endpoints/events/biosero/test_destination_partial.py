@@ -16,9 +16,6 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-# Event source partially completed
-
-
 def test_post_destination_completed_missing_barcode(app, client, biosero_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
@@ -29,8 +26,37 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
             },
             headers=biosero_auth_headers,
         )
-
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        assert response.json == {
+            "_status": "ERR",
+            "_issues": {
+                "event_type": ("'barcode' cannot be empty with the 'lh_biosero_cp_destination_plate_partial' event")
+            },
+            "_error": {"code": 422, "message": "Insertion failure: 1 document(s) contain(s) error(s)"},
+        }
+
+
+def test_post_destination_partial_missing_run_id(app, client, biosero_auth_headers, clear_events):
+    with app.app_context():
+        response = client.post(
+            "/events",
+            data={
+                "barcode": "HT-1234",
+                "event_type": "lh_biosero_cp_destination_plate_partial",
+            },
+            headers=biosero_auth_headers,
+        )
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        assert response.json == {
+            "_status": "ERR",
+            "_issues": {
+                "event_type": (
+                    "Document cannot contain an event without run id with the "
+                    "'lh_biosero_cp_destination_plate_partial' event"
+                )
+            },
+            "_error": {"code": 422, "message": "Insertion failure: 1 document(s) contain(s) error(s)"},
+        }
 
 
 @pytest.mark.parametrize(
