@@ -27,6 +27,16 @@ FIELD_PROCESSED = "processed"
 # source_plates collection
 FIELD_BARCODE = "barcode"
 
+# events collection
+FIELD_EVENT_RUN_ID = "automation_system_run_id"
+FIELD_EVENT_BARCODE = "barcode"
+FIELD_EVENT_TYPE = "event_type"
+FIELD_EVENT_USER_ID = "user_id"
+FIELD_EVENT_ROBOT = "robot"
+FIELD_EVENT_UUID = "event_wh_uuid"
+FIELD_EVENT_ERRORS = "errors"
+FIELD_FAILURE_TYPE = "failure_type"
+
 ###
 # DART specific column names:
 ###
@@ -72,3 +82,28 @@ FIELD_SS_CONTROL_TYPE = "control_type"
 FIELD_SS_UUID = "uuid"
 FIELD_SS_COORDINATE = "coordinate"
 FIELD_SS_BARCODE = "barcode"
+
+###
+# Cherrytrack fields
+FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER = "automation_system_manufacturer"
+FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME = "automation_system_name"
+FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER = "liquid_handler_serial_number"
+FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_RUN_ID = "automation_system_run_id"
+
+FIELD_CHERRYTRACK_SOURCE_BARCODE = "source_barcode"
+FIELD_CHERRYTRACK_SOURCE_COORDINATE = "source_coordinate"
+FIELD_CHERRYTRACK_DESTINATION_BARCODE = "destination_barcode"
+FIELD_CHERRYTRACK_DESTINATION_COORDINATE = "destination_coordinate"
+
+FIELD_CHERRYTRACK_ROOT_SAMPLE_ID = "root_sample_id"
+FIELD_CHERRYTRACK_RNA_ID = "rna_id"
+FIELD_CHERRYTRACK_LAB_ID = "lab_id"
+FIELD_CHERRYTRACK_RESULT = "result"
+FIELD_CHERRYTRACK_LH_SAMPLE_UUID = "lh_sample_uuid"
+FIELD_CHERRYTRACK_CONTROL = "control"
+FIELD_CHERRYTRACK_TYPE = "type"
+FIELD_CHERRYTRACK_PICKED = "picked"
+FIELD_CHERRYTRACK_USER_ID = "user_id"
+
+FIELD_CHERRYTRACK_CONTROL_BARCODE = "control_barcode"
+FIELD_CHERRYTRACK_CONTROL_COORDINATE = "control_coordinate"

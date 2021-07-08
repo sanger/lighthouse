@@ -92,6 +92,11 @@ MONGO_DBNAME = ""
 BARACODA_URL = f"{LOCALHOST}:5000"
 BARACODA_RETRY_ATTEMPTS = 3
 
+##
+# Cherrytrack url
+##
+CHERRYTRACK_URL = f"http://{LOCALHOST}:3020"
+
 ###
 # Labwhere config
 ###
@@ -103,11 +108,12 @@ LABWHERE_DESTROYED_BARCODE = os.environ.get("LABWHERE_DESTROYED_BARCODE", "lw-he
 ###
 SS_API_KEY = "develop"
 SS_HOST = f"{LOCALHOST}:3000"
-SS_URL = f"{LOCALHOST}:3000"
+SS_URL = f"http://{LOCALHOST}:3000"
 SS_UUID_PLATE_PURPOSE = ""
 SS_UUID_PLATE_PURPOSE_CHERRYPICKED = ""
 SS_UUID_STUDY = ""
 SS_UUID_STUDY_CHERRYPICKED = ""
+SS_PLATE_CREATION_ENDPOINT = f"{ SS_URL }/api/v2/heron/plates"
 
 ###
 # MLWH config
@@ -199,4 +205,11 @@ BECKMAN_FAILURE_TYPES = {
     "SILAS_error": "Internal communication error in Beckman system",
     "instrument_loaded_incorrectly": "Labware has been incorrectly loaded onto instrument",
     "other": "Any other failure",
+}
+
+BIOSERO_ROBOTS = {
+    "CPA": {"name": "Robot 5", "uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"},
+    "CPB": {"name": "Robot 6", "uuid": "13325f3b-5f10-4c72-a590-8aa7203f108b"},
+    "CPC": {"name": "Robot 7", "uuid": "41fe349d-0bcb-4839-a469-946611dd3ba9"},
+    "CPD": {"name": "Robot 8", "uuid": "948c3a0c-7544-4a72-85cc-6b4e489c9725"},
 }

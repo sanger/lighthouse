@@ -3,6 +3,7 @@ import logging
 from eve.io.mongo import Validator
 
 from lighthouse.classes.biosero import Biosero
+from lighthouse.constants.fields import FIELD_EVENT_RUN_ID
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,19 @@ class LighthouseValidator(Validator):
             if event_type not in Biosero.PLATE_EVENT_NAMES:
                 self._error(field, f"unallowed event type '{event_type}'")
                 return
+
+            events_that_create_a_plate = [
+                Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
+                Biosero.EVENT_DESTINATION_COMPLETED,
+                Biosero.EVENT_DESTINATION_FAILED,
+            ]
+            if event_type not in events_that_create_a_plate:
+                if self.document.get(FIELD_EVENT_RUN_ID) is None:
+                    self._error(
+                        field,
+                        f"Document cannot contain an event without run id with the '{event_type}' event",
+                    )
+                    return
 
             if event_type == Biosero.EVENT_SOURCE_UNRECOGNISED and self.document.get("barcode") is not None:
                 self._error(

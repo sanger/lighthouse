@@ -1,6 +1,5 @@
 EVENTS_SCHEMA = {
     "automation_system_run_id": {
-        "required": True,
         "type": "integer",
     },
     "barcode": {
@@ -10,6 +9,23 @@ EVENTS_SCHEMA = {
         "required": True,
         "type": "string",
         "check_with": "plate_events_dependent_parameters",
+    },
+    "event_wh_uuid": {
+        "type": "string",
+        "unique": True,
+        "readonly": True,
+    },
+    "errors": {
+        "type": "dict",
+        "default": None,
+        "nullable": True,
+        "allow_unknown": True,  # TODO: Are we should we want to allow unknown here?
+    },
+    "failure_type": {
+        "type": "string",
+    },
+    "user_id": {
+        "type": "string",
     },
 }
 
