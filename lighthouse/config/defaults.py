@@ -213,3 +213,8 @@ BIOSERO_ROBOTS = {
     "CPC": {"name": "Robot 7", "uuid": "41fe349d-0bcb-4839-a469-946611dd3ba9"},
     "CPD": {"name": "Robot 8", "uuid": "948c3a0c-7544-4a72-85cc-6b4e489c9725"},
 }
+
+###
+# Cherrypicker Test Data
+###
+CHERRYPICKER_ENABLED = False  # Safeguards it being on by accident in production
