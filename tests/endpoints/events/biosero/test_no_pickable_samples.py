@@ -6,6 +6,7 @@ import pytest
 
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 from lighthouse.helpers.mongo import get_event_with_uuid
+from lighthouse.classes.biosero import Biosero
 
 CACHE = {}
 
@@ -22,7 +23,7 @@ def test_post_event_source_no_pickable_samples_missing_barcode(app, client, bios
             "/events",
             data={
                 "automation_system_run_id": 123,
-                "event_type": "lh_biosero_cp_source_no_pickable_samples",
+                "event_type": Biosero.EVENT_SOURCE_NO_PICKABLE_SAMPLES,
             },
             headers=biosero_auth_headers,
         )
@@ -62,7 +63,7 @@ def test_post_event_source_no_pickable_samples(
                             data={
                                 "automation_system_run_id": 3,
                                 "barcode": "plate_123",
-                                "event_type": "lh_biosero_cp_source_no_pickable_samples",
+                                "event_type": Biosero.EVENT_SOURCE_NO_PICKABLE_SAMPLES,
                             },
                             headers=biosero_auth_headers,
                         )
@@ -72,11 +73,11 @@ def test_post_event_source_no_pickable_samples(
 
                         mocked_rabbit_channel.basic_publish.assert_called_with(
                             exchange="lighthouse.test.examples",
-                            routing_key="test.event.lh_biosero_cp_source_no_pickable_samples",
+                            routing_key=f"test.event.{ Biosero.EVENT_SOURCE_NO_PICKABLE_SAMPLES }",
                             body='{"event": {"uuid": "'
                             + int_to_uuid(1)
                             + (
-                                '", "event_type": "lh_biosero_cp_source_no_pickable_samples", '
+                                '", "event_type": "' + Biosero.EVENT_SOURCE_NO_PICKABLE_SAMPLES + '", '
                                 '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                                 '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
                                 '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
@@ -139,7 +140,7 @@ def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_
                     data={
                         "automation_system_run_id": 3,
                         "barcode": "plate_123",
-                        "event_type": "lh_biosero_cp_source_no_pickable_samples",
+                        "event_type": Biosero.EVENT_SOURCE_NO_PICKABLE_SAMPLES,
                     },
                     headers=biosero_auth_headers,
                 )
@@ -177,7 +178,7 @@ def test_post_event_source_no_pickable_samples_with_validation_error_after_stori
                     data={
                         "automation_system_run_id": 3,
                         "barcode": "a Barcode",
-                        "event_type": "lh_biosero_cp_source_no_pickable_samples",
+                        "event_type": Biosero.EVENT_SOURCE_NO_PICKABLE_SAMPLES,
                     },
                     headers=biosero_auth_headers,
                 )

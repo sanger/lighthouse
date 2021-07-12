@@ -2,7 +2,7 @@ from http import HTTPStatus
 from unittest.mock import patch, MagicMock
 from lighthouse.helpers.mongo import get_event_with_uuid
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
-
+from lighthouse.classes.biosero import Biosero
 
 import pytest
 from uuid import uuid4
@@ -23,7 +23,7 @@ def test_post_destination_partial_completed_missing_barcode(app, client, biosero
     with app.app_context():
         response = client.post(
             "/events",
-            data={"user_id": "user1", "event_type": "lh_biosero_cp_destination_plate_partial_completed"},
+            data={"user_id": "user1", "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED},
             headers=biosero_auth_headers,
         )
 
@@ -57,7 +57,7 @@ def test_post_destination_partial_completed_cherrytrack_fails(
             data={
                 "user_id": "user1",
                 "barcode": "HT-1234",
-                "event_type": "lh_biosero_cp_destination_plate_partial_completed",
+                "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
             },
             headers=biosero_auth_headers,
         )
@@ -101,7 +101,7 @@ def test_post_destination_partial_completed_baracoda_fails(
             data={
                 "user_id": "user1",
                 "barcode": "HT-1234",
-                "event_type": "lh_biosero_cp_destination_plate_partial_completed",
+                "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
             },
             headers=biosero_auth_headers,
         )
@@ -163,7 +163,7 @@ def test_post_event_partially_completed(
                             data={
                                 "user_id": "user1",
                                 "barcode": "HT-1234",
-                                "event_type": "lh_biosero_cp_destination_plate_partial_completed",
+                                "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
                             },
                             headers=biosero_auth_headers,
                         )
@@ -175,7 +175,7 @@ def test_post_event_partially_completed(
                             '{"event": {"uuid": "'
                             + int_to_uuid(1)
                             + (
-                                '", "event_type": "lh_biosero_cp_destination_plate_partial_completed", '
+                                '", "event_type": "' + Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED + '", '
                                 '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                                 '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
                                 '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
@@ -201,7 +201,7 @@ def test_post_event_partially_completed(
 
                         mocked_rabbit_channel.basic_publish.assert_called_with(
                             exchange="lighthouse.test.examples",
-                            routing_key="test.event.lh_biosero_cp_destination_plate_partial_completed",
+                            routing_key=f"test.event.{ Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED }",
                             body=event_message,
                         )
 
