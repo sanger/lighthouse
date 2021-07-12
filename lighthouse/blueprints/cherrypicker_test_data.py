@@ -1,14 +1,13 @@
 import logging
+from datetime import datetime, time, timezone
 
-from flask import Blueprint
-from flask import current_app as app
-from flask import request
+from flask import Blueprint, request
 from flask_cors import CORS
 
-from lighthouse.helpers.requests import get_required_params
+from lighthouse.constants.general import ARG_ADD_TO_DART, ARG_PLATE_SPECS
+from lighthouse.helpers.requests import get_required_params_from_json_body
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
-from lighthouse.messages.broker import Broker
-from lighthouse.types import FlaskResponse
+from lighthouse.types import EndpointParamsException, FlaskResponse
 
 logger = logging.getLogger(__name__)
 
@@ -58,3 +57,24 @@ def generate_test_data() -> FlaskResponse:
     }
     ```
     """
+    logger.info("Started generating cherrypicker test data.")
+
+    timestamp = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+
+    # Get the parameters from the JSON body
+    try:
+        add_to_dart, plate_specs = get_required_params_from_json_body(
+            request, (ARG_ADD_TO_DART, ARG_PLATE_SPECS), (bool, str)
+        )
+    except EndpointParamsException as e:
+        logger.exception(e)
+        return bad_request(str(e), timestamp=timestamp)
+
+    logger.debug(add_to_dart)
+
+    # Mock out two responses as a stub
+    # TODO: Implement the correct behaviour here
+    if add_to_dart:
+        return ok(run_id="0123456789ab0123456789ab", timestamp=timestamp)
+    else:
+        return internal_server_error("There must be between 1 and 200 plates in a request.", timestamp=timestamp)
