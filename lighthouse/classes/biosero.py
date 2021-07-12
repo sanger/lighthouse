@@ -15,6 +15,7 @@ from lighthouse.classes.events.biosero import (
 
 logger = logging.getLogger(__name__)
 
+
 class Biosero(AutomationSystem):
     ###
     # Events: https://ssg-confluence.internal.sanger.ac.uk/display/PSDPUB/%5BBiosero%5D+Cherrypicking+Events
