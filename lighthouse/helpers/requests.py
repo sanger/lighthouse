@@ -69,7 +69,11 @@ def get_required_params_from_json_body(
 
     def extract_and_test(param: str) -> Any:
         # check that the value exists in the dictionary, is not None and is not an empty string
-        if (param_value := request_json.get(param)) is None or (type(param_value) is str and not param_value):
+        if (
+            request_json is None
+            or (param_value := request_json.get(param)) is None
+            or (type(param_value) is str and not param_value)
+        ):
             return None
 
         return param_value

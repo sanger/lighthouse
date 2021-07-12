@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, time, timezone
+from datetime import datetime, timezone
 
 from flask import Blueprint, request
 from flask_cors import CORS
