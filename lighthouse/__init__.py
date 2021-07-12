@@ -23,7 +23,14 @@ def create_app() -> Eve:
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])
 
-    from lighthouse.blueprints import beckman, cherrypicked_plates, plate_events, plates, reports
+    from lighthouse.blueprints import (
+        beckman,
+        cherrypicked_plates,
+        cherrypicker_test_data,
+        plate_events,
+        plates,
+        reports,
+    )
 
     app.register_blueprint(plates.bp)
     app.register_blueprint(reports.bp)
@@ -32,6 +39,9 @@ def create_app() -> Eve:
         app.register_blueprint(beckman.bp)
         app.register_blueprint(cherrypicked_plates.bp)
         app.register_blueprint(plate_events.bp)
+
+    if app.config.get("CHERRYPICKER_ENABLED", False):
+        app.register_blueprint(cherrypicker_test_data.bp)
 
     if app.config.get("SCHEDULER_RUN", False):
         scheduler.init_app(app)
