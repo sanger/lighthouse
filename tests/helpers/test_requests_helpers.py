@@ -27,7 +27,7 @@ def test_json_body_params_ignores_extra_values():
 @pytest.mark.parametrize("json_obj", [None, ["an_array"]])
 def test_json_body_params_raises_exception_when_json_not_a_dict(json_obj):
     with (pytest.raises(EndpointParamsException)) as e_info:
-        get_required_params_from_json_body(json_obj, ("an_array"), (str))
+        get_required_params_from_json_body(json_obj, ("bool", "string"), (bool, str))
 
     assert "JSON dictionary" in str(e_info.value)
 
