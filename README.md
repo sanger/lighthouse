@@ -141,7 +141,7 @@ there:
 
 Verify the credentials for the required databases in the test settings file `lighthouse/config/test.py`.
 
- ### Running Tests
+### Running Tests
 
 Run the tests using pytest (flags are for verbose and exit early):
 
