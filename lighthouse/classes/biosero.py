@@ -15,7 +15,6 @@ from lighthouse.classes.events.biosero import (
 
 logger = logging.getLogger(__name__)
 
-
 class Biosero(AutomationSystem):
     ###
     # Events: https://ssg-confluence.internal.sanger.ac.uk/display/PSDPUB/%5BBiosero%5D+Cherrypicking+Events
@@ -38,7 +37,6 @@ class Biosero(AutomationSystem):
     EVENT_SOURCE_UNRECOGNISED = "lh_biosero_cp_source_plate_unrecognised"
     # Partial Destination plate created by user from lighthouse UI
     EVENT_DESTINATION_PARTIAL_COMPLETED = "lh_biosero_cp_destination_plate_partial_completed"
-
 
     # needs to be an immutable object: https://docs.python.org/3/tutorial/classes.html#class-and-instance-variables
     PLATE_EVENT_NAMES = (

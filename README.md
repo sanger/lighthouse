@@ -171,8 +171,10 @@ And the unified warehouse with:
         docker exec -ti <container_id for lighthouse> python ./setup_test_db.py
 
 You can then run the tests inside the container:
-        docker exec -ti <container_id> bash
+
+        docker exec -ti <container_id for lighthouse> bash
         pipenv shell
+        pipenv install
         python -m pytest
 
 ## Deployment

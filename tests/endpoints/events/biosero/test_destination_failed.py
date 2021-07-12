@@ -25,7 +25,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
             "/events",
             data={
                 "user_id": "user1",
-                "event_type": "lh_biosero_cp_destination_failed",
+                "event_type": "lh_biosero_cp_destination_plate_failed",
             },
             headers=biosero_auth_headers,
         )
@@ -80,7 +80,7 @@ def test_post_event_partially_completed(
                         "/events",
                         data={
                             "barcode": "HT-1234",
-                            "event_type": "lh_biosero_cp_destination_failed",
+                            "event_type": "lh_biosero_cp_destination_plate_failed",
                             "failure_type": "my_error_1",
                             "user_id": "user1",
                         },
@@ -94,7 +94,7 @@ def test_post_event_partially_completed(
                         '{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (
-                            '", "event_type": "lh_biosero_cp_destination_failed", '
+                            '", "event_type": "lh_biosero_cp_destination_plate_failed", '
                             '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                             '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
                             '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
@@ -120,7 +120,7 @@ def test_post_event_partially_completed(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key="test.event.lh_biosero_cp_destination_failed",
+                        routing_key="test.event.lh_biosero_cp_destination_plate_failed",
                         body=event_message,
                     )
 
