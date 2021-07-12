@@ -17,10 +17,7 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-# Event source partially completed
-
-
-def test_post_destination_completed_missing_barcode(app, client, biosero_auth_headers, clear_events):
+def test_post_destination_completed_missing_barcode(app, client, lighthouse_ui_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",
@@ -28,7 +25,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
                 "user_id": "user1",
                 "event_type": Biosero.EVENT_DESTINATION_FAILED,
             },
-            headers=biosero_auth_headers,
+            headers=lighthouse_ui_auth_headers,
         )
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -48,7 +45,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
 def test_post_event_partially_completed(
     app,
     client,
-    biosero_auth_headers,
+    lighthouse_ui_auth_headers,
     clear_events,
     mocked_rabbit_channel,
     source_plates,
@@ -85,7 +82,7 @@ def test_post_event_partially_completed(
                             "failure_type": "my_error_1",
                             "user_id": "user1",
                         },
-                        headers=biosero_auth_headers,
+                        headers=lighthouse_ui_auth_headers,
                     )
 
                     # Test creates the event

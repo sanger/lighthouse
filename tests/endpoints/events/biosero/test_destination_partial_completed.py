@@ -19,12 +19,12 @@ def int_to_uuid(value: int) -> str:
 # Event source partially completed
 
 
-def test_post_destination_partial_completed_missing_barcode(app, client, biosero_auth_headers, clear_events):
+def test_post_destination_partial_completed_missing_barcode(app, client, lighthouse_ui_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",
             data={"user_id": "user1", "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED},
-            headers=biosero_auth_headers,
+            headers=lighthouse_ui_auth_headers,
         )
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -37,7 +37,7 @@ def test_post_destination_partial_completed_missing_barcode(app, client, biosero
 def test_post_destination_partial_completed_cherrytrack_fails(
     app,
     client,
-    biosero_auth_headers,
+    lighthouse_ui_auth_headers,
     clear_events,
     mocked_rabbit_channel,
     source_plates,
@@ -59,7 +59,7 @@ def test_post_destination_partial_completed_cherrytrack_fails(
                 "barcode": "HT-1234",
                 "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
             },
-            headers=biosero_auth_headers,
+            headers=lighthouse_ui_auth_headers,
         )
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
@@ -79,7 +79,7 @@ def test_post_destination_partial_completed_cherrytrack_fails(
 def test_post_destination_partial_completed_baracoda_fails(
     app,
     client,
-    biosero_auth_headers,
+    lighthouse_ui_auth_headers,
     clear_events,
     mocked_rabbit_channel,
     source_plates,
@@ -103,7 +103,7 @@ def test_post_destination_partial_completed_baracoda_fails(
                 "barcode": "HT-1234",
                 "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
             },
-            headers=biosero_auth_headers,
+            headers=lighthouse_ui_auth_headers,
         )
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
@@ -122,7 +122,7 @@ def test_post_destination_partial_completed_baracoda_fails(
 def test_post_event_partially_completed(
     app,
     client,
-    biosero_auth_headers,
+    lighthouse_ui_auth_headers,
     clear_events,
     mocked_rabbit_channel,
     source_plates,
@@ -165,7 +165,7 @@ def test_post_event_partially_completed(
                                 "barcode": "HT-1234",
                                 "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
                             },
-                            headers=biosero_auth_headers,
+                            headers=lighthouse_ui_auth_headers,
                         )
 
                         # Test creates the event
