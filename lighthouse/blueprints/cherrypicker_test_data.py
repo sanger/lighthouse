@@ -64,7 +64,7 @@ def generate_test_data() -> FlaskResponse:
     # Get the parameters from the JSON body
     try:
         add_to_dart, plate_specs = get_required_params_from_json_body(
-            request, (ARG_ADD_TO_DART, ARG_PLATE_SPECS), (bool, str)
+            request.get_json(), (ARG_ADD_TO_DART, ARG_PLATE_SPECS), (bool, str)
         )
     except EndpointParamsException as e:
         logger.exception(e)

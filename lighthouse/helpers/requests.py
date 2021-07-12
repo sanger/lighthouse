@@ -47,7 +47,7 @@ def get_required_params(request: Request, required_params: Tuple[str, ...]) -> T
 
 
 def get_required_params_from_json_body(
-    request: Request, required_params: Tuple[str, ...], expected_types: Tuple[Type, ...]
+    request_json: Any, required_params: Tuple[str, ...], expected_types: Tuple[Type, ...]
 ) -> Tuple[Any, ...]:
     """Get the required parameters parsed from the JSON body of the request; in the order they were provided.
 
@@ -64,7 +64,7 @@ def get_required_params_from_json_body(
     """
     logger.info(f"Extracting the following parameters from the request body's JSON: {required_params}")
 
-    if (request_json := request.get_json()) is None or not isinstance(request_json, dict):
+    if request_json is None or not isinstance(request_json, dict):
         raise EndpointParamsException("The request body must contain a JSON dictionary.")
 
     def extract_and_test(param: str) -> Any:
