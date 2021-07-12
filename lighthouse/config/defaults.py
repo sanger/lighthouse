@@ -1,7 +1,7 @@
 # flake8: noqa
 import os
 
-from lighthouse.authorization import BioseroAPITokenAuth, PriorityAPITokenAuth
+from lighthouse.authorization import EventsAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
 from lighthouse.config.schemas import EVENTS_SCHEMA, PRIORITY_SAMPLES_SCHEMA
 
@@ -41,7 +41,7 @@ DOMAIN = {
         "internal_resource": True,
     },
     "events": {
-        "authentication": BioseroAPITokenAuth,
+        "authentication": EventsAPITokenAuth,
         "resource_methods": ["GET", "POST"],
         "schema": EVENTS_SCHEMA,
     },
