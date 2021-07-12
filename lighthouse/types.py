@@ -1,17 +1,37 @@
-from typing import Any, Dict, List, Protocol, Tuple, Union
+from typing import Any, Dict, List, Optional, Protocol, Tuple, Union
 
 SampleDoc = Dict[str, Any]
 SampleDocs = List[SampleDoc]
 SourcePlateDoc = Dict[str, Any]
 FlaskResponse = Tuple[Dict[str, Any], int]
 
+EventDoc = Dict[str, Any]
+
 Subject = Dict[str, str]
 Event = Dict[str, Union[str, List[Subject], Dict]]
 EventMessage = Dict[str, Union[str, Event]]
 
 
+class EventPropertyProtocol(Protocol):
+    def get_param_value(self, param_name: str) -> Optional[Any]:
+        ...
+
+    def process_validation(self, condition: bool, message: str) -> None:
+        ...
+
+    def validation_scope(self):
+        ...
+
+    def is_integer(self, n: Optional[str]) -> bool:
+        ...
+
+
 class PlateEvent(Protocol):
     """This class is used to assist the mixin while type checking."""
+
+    @property
+    def properties(self) -> Dict[str, Any]:
+        ...
 
     @property
     def plate_barcode(self) -> str:

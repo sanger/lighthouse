@@ -55,5 +55,5 @@ CMD ["run"]
 
 
 # https://docs.docker.com/engine/reference/builder/#healthcheck
-HEALTHCHECK --interval=1m --timeout=3s \
+HEALTHCHECK --interval=30s --timeout=5s \
     CMD curl -f http://localhost:8000/health || exit 1
