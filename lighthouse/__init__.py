@@ -5,6 +5,10 @@ from http import HTTPStatus
 from eve import Eve
 from flask_apscheduler import APScheduler
 
+from lighthouse.hooks.cherrypicker_test_data import (
+    insert_cherrypicker_test_data_hook,
+    inserted_cherrypicker_test_data_hook,
+)
 from lighthouse.hooks.events import insert_events_hook, inserted_events_hook
 from lighthouse.validator import LighthouseValidator
 
@@ -14,11 +18,13 @@ scheduler = APScheduler()
 def create_app() -> Eve:
     app = Eve(__name__, validator=LighthouseValidator)
 
-    # Fired before inserting the event
+    # Fired before inserting entities
     app.on_insert_events += insert_events_hook
+    app.on_insert_cherrypicker_test_data += insert_cherrypicker_test_data_hook
 
-    # Fired after the event is inserted
+    # Fired after entities are inserted
     app.on_inserted_events += inserted_events_hook
+    app.on_inserted_cherrypicker_test_data += inserted_cherrypicker_test_data_hook
 
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])
