@@ -2,6 +2,7 @@ import logging
 
 from eve.io.mongo import Validator
 
+from lighthouse.classes.beckman import Beckman
 from lighthouse.classes.biosero import Biosero
 from lighthouse.constants.fields import FIELD_EVENT_RUN_ID
 
@@ -28,15 +29,10 @@ class LighthouseValidator(Validator):
             self._error(field, "Document cannot contain both 'must_sequence' and 'preferentially_sequence' as true")
 
     def _check_with_plate_events_dependent_parameters(self, field, _):
-        """
-        - if the event type is PE_BIOSERO_SOURCE_NOT_RECOGNISED and a barcode is present, there must be an error
-            in the client - we are not expecting a barcode with that event
-        - if the event type is not PE_BIOSERO_SOURCE_NOT_RECOGNISED, a barcode is required
-        """
         logger.debug("Running validation on input")
         if (event_type := self.document.get("event_type")) is not None:
             if event_type not in Biosero.PLATE_EVENT_NAMES:
-                self._error(field, f"unallowed event type '{event_type}'")
+                self._error(field, f"Unknown event type '{event_type}'")
                 return
 
             events_that_create_a_plate = [
@@ -48,7 +44,22 @@ class LighthouseValidator(Validator):
                 if self.document.get(FIELD_EVENT_RUN_ID) is None:
                     self._error(
                         field,
-                        f"Document cannot contain an event without run id with the '{event_type}' event",
+                        f"'{event_type}' requires a corresponding 'run_id' parameter",
+                    )
+                    return
+
+            if event_type == Biosero.EVENT_DESTINATION_FAILED:
+                failure_type = self.document.get("failure_type")
+                if failure_type is None:
+                    self._error(
+                        field,
+                        f"'failure_type' required with '{Biosero.EVENT_DESTINATION_FAILED}' event",
+                    )
+                    return
+                if failure_type not in [failure_type.get("type") for failure_type in Beckman.get_failure_types()]:
+                    self._error(
+                        field,
+                        f"Unknown failure type '{failure_type}'",
                     )
                     return
 
