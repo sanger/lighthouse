@@ -1,3 +1,28 @@
+CHERRYPICKER_TEST_DATA_SCHEMA = {
+    "add_to_dart": {
+        "type": "boolean",
+        "required": True,
+    },
+    "barcodes": {
+        "type": "list",
+        "readonly": True,
+        "nullable": True,
+    },
+    "failure_reason": {
+        "type": "string",
+        "readonly": True,
+        "nullable": True,
+    },
+    "plate_specs": {
+        "type": "list",
+        "required": True,
+    },
+    "status": {
+        "type": "string",
+        "readonly": True,
+    },
+}
+
 EVENTS_SCHEMA = {
     "automation_system_run_id": {
         "type": "integer",

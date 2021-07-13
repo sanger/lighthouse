@@ -26,7 +26,6 @@ def create_app() -> Eve:
     from lighthouse.blueprints import (
         beckman,
         cherrypicked_plates,
-        cherrypicker_test_data,
         plate_events,
         plates,
         reports,
@@ -39,9 +38,6 @@ def create_app() -> Eve:
         app.register_blueprint(beckman.bp)
         app.register_blueprint(cherrypicked_plates.bp)
         app.register_blueprint(plate_events.bp)
-
-    if app.config.get("CHERRYPICKER_ENABLED", False):
-        app.register_blueprint(cherrypicker_test_data.bp)
 
     if app.config.get("SCHEDULER_RUN", False):
         scheduler.init_app(app)

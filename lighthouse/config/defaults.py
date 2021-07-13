@@ -3,7 +3,11 @@ import os
 
 from lighthouse.authorization import BioseroAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
-from lighthouse.config.schemas import EVENTS_SCHEMA, PRIORITY_SAMPLES_SCHEMA
+from lighthouse.config.schemas import (
+    CHERRYPICKER_TEST_DATA_SCHEMA,
+    EVENTS_SCHEMA,
+    PRIORITY_SAMPLES_SCHEMA,
+)
 
 ###
 # General config
@@ -39,6 +43,12 @@ PUBLIC_ITEM_METHODS = ["GET"]
 DOMAIN = {
     "centres": {
         "internal_resource": True,
+    },
+    "cherrypicker_test_data": {
+        "datasource": {"source": "cherrypick_test_data"},
+        "resource_methods": [],  # Disabled unless explicitly overridden by the environment
+        "item_methods": [],  # Disabled unless explicitly overridden by the environment
+        "schema": CHERRYPICKER_TEST_DATA_SCHEMA,
     },
     "events": {
         "authentication": BioseroAPITokenAuth,
@@ -213,8 +223,3 @@ BIOSERO_ROBOTS = {
     "CPC": {"name": "Robot 7", "uuid": "41fe349d-0bcb-4839-a469-946611dd3ba9"},
     "CPD": {"name": "Robot 8", "uuid": "948c3a0c-7544-4a72-85cc-6b4e489c9725"},
 }
-
-###
-# Cherrypicker Test Data
-###
-CHERRYPICKER_ENABLED = False  # Safeguards it being on by accident in production

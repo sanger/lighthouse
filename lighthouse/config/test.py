@@ -12,6 +12,8 @@ API_TOKENS_PRIORITY = {
 API_TOKENS_BIOSERO = {
     "read_write": "biosero_read_write_test",
 }
+DOMAIN["cherrypicker_test_data"]["resource_methods"] = ["GET", "POST"]
+DOMAIN["cherrypicker_test_data"]["item_methods"] = ["GET"]
 
 ###
 # Flask config
@@ -82,11 +84,6 @@ RMQ_LIMS_ID = "LH_TEST"
 ###
 BECKMAN_ENABLE = True
 BECKMAN_FAILURE_TYPES = {key: BECKMAN_FAILURE_TYPES[key] for key in ("robot_crashed", "sample_contamination", "other")}
-
-###
-# Cherrypicker Test Data
-###
-CHERRYPICKER_ENABLED = True
 
 ###
 # SS plate creation config (UUID for the plate purpose and study of the plate created)

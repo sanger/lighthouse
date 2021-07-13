@@ -13,6 +13,8 @@ API_TOKENS_PRIORITY = {
 API_TOKENS_BIOSERO = {
     "read_write": "biosero_read_write_dev",
 }
+DOMAIN["cherrypicker_test_data"]["resource_methods"] = ["GET", "POST"]
+DOMAIN["cherrypicker_test_data"]["item_methods"] = ["GET"]
 
 ###
 # APScheduler config
@@ -49,8 +51,3 @@ MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 # Beckman config
 ###
 BECKMAN_ENABLE = True
-
-###
-# Cherrypicker Test Data
-###
-CHERRYPICKER_ENABLED = True
