@@ -4,9 +4,10 @@ from uuid import uuid4
 
 import pytest
 
+from lighthouse.classes.beckman import Beckman
+from lighthouse.classes.biosero import Biosero
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 from lighthouse.helpers.mongo import get_event_with_uuid
-from lighthouse.classes.biosero import Biosero
 
 CACHE = {}
 
@@ -74,12 +75,13 @@ def test_post_event_partially_completed(
                     "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",
                 ):
+                    failure_type = Beckman.getFailureTypes()[0].get("type")
                     response = client.post(
                         "/events",
                         data={
                             "barcode": "HT-1234",
                             "event_type": Biosero.EVENT_DESTINATION_FAILED,
-                            "failure_type": "my_error_1",
+                            "failure_type": failure_type,
                             "user_id": "user1",
                         },
                         headers=lighthouse_ui_auth_headers,
@@ -112,7 +114,7 @@ def test_post_event_partially_completed(
                             '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
                             '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
                             '"uuid": "' + int_to_uuid(5) + '"}'
-                            '], "metadata": {"failure_type": "my_error_1"}}, "lims": "LH_TEST"}'
+                            '], "metadata": {"failure_type": ' + failure_type + '}}, "lims": "LH_TEST"}'
                         )
                     )
 
