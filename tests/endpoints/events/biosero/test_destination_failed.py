@@ -75,7 +75,7 @@ def test_post_event_partially_completed(
                     "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",
                 ):
-                    failure_type = Beckman.getFailureTypes()[0].get("type")
+                    failure_type = Beckman.get_failure_types()[0].get("type")
                     response = client.post(
                         "/events",
                         data={
