@@ -116,7 +116,7 @@ def test_post_event_partially_completed(
                             '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
                             '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
                             '"uuid": "' + int_to_uuid(5) + '"}'
-                            '], "metadata": {"failure_type": ' + failure_type + '}}, "lims": "LH_TEST"}'
+                            '], "metadata": {"failure_type": "' + failure_type + '"}}, "lims": "LH_TEST"}'
                         )
                     )
 
