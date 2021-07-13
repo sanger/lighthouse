@@ -76,6 +76,8 @@ def test_post_event_partially_completed(
                     "mytime",
                 ):
                     failure_type = Beckman.get_failure_types()[0].get("type")
+                    assert failure_type is not None
+
                     response = client.post(
                         "/events",
                         data={
