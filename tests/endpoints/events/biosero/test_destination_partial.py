@@ -4,9 +4,9 @@ from uuid import uuid4
 
 import pytest
 
+from lighthouse.classes.biosero import Biosero
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 from lighthouse.helpers.mongo import get_event_with_uuid
-from lighthouse.classes.biosero import Biosero
 
 CACHE = {}
 
@@ -51,10 +51,7 @@ def test_post_destination_partial_missing_run_id(app, client, biosero_auth_heade
         assert response.json == {
             "_status": "ERR",
             "_issues": {
-                "event_type": (
-                    "Document cannot contain an event without run id with the "
-                    f"'{ Biosero.EVENT_DESTINATION_PARTIAL }' event"
-                )
+                "event_type": f"'{ Biosero.EVENT_DESTINATION_PARTIAL }' requires a corresponding 'run_id' parameter"
             },
             "_error": {"code": 422, "message": "Insertion failure: 1 document(s) contain(s) error(s)"},
         }
