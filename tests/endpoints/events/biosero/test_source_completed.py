@@ -6,6 +6,7 @@ import pytest
 
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 from lighthouse.helpers.mongo import get_event_with_uuid
+from lighthouse.classes.biosero import Biosero
 
 CACHE = {}
 
@@ -25,7 +26,7 @@ def test_post_event_partially_completed_missing_barcode(app, client, biosero_aut
             "/events",
             data={
                 "automation_system_run_id": 123,
-                "event_type": "lh_biosero_cp_source_completed",
+                "event_type": Biosero.EVENT_SOURCE_COMPLETED,
             },
             headers=biosero_auth_headers,
         )
@@ -68,7 +69,7 @@ def test_post_event_partially_completed(
                             data={
                                 "automation_system_run_id": run_id,
                                 "barcode": source_barcode,
-                                "event_type": "lh_biosero_cp_source_completed",
+                                "event_type": Biosero.EVENT_SOURCE_COMPLETED,
                             },
                             headers=biosero_auth_headers,
                         )
@@ -78,11 +79,11 @@ def test_post_event_partially_completed(
 
                         mocked_rabbit_channel.basic_publish.assert_called_with(
                             exchange="lighthouse.test.examples",
-                            routing_key="test.event.lh_biosero_cp_source_completed",
+                            routing_key=f"test.event.{ Biosero.EVENT_SOURCE_COMPLETED }",
                             body='{"event": {"uuid": "'
                             + int_to_uuid(1)
                             + (
-                                '", "event_type": "lh_biosero_cp_source_completed", '
+                                '", "event_type": "' + Biosero.EVENT_SOURCE_COMPLETED + '", '
                                 '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                                 '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
                                 '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
@@ -144,7 +145,7 @@ def test_post_event_partially_completed_with_error_accessing_cherrytrack_for_sam
                     data={
                         "automation_system_run_id": run_id,
                         "barcode": source_barcode,
-                        "event_type": "lh_biosero_cp_source_completed",
+                        "event_type": Biosero.EVENT_SOURCE_COMPLETED,
                     },
                     headers=biosero_auth_headers,
                 )
@@ -182,7 +183,7 @@ def test_post_event_partially_completed_with_validation_error_after_storing_in_m
                     data={
                         "automation_system_run_id": 3,
                         "barcode": "a Barcode",
-                        "event_type": "lh_biosero_cp_source_completed",
+                        "event_type": Biosero.EVENT_SOURCE_COMPLETED,
                     },
                     headers=biosero_auth_headers,
                 )
