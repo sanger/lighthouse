@@ -5,7 +5,7 @@ from http import HTTPStatus
 from eve import Eve
 from flask_apscheduler import APScheduler
 
-from lighthouse.hooks.cherrypicker_test_data import (
+from lighthouse.hooks.cherrypick_test_data import (
     insert_cherrypick_test_data_hook,
     inserted_cherrypick_test_data_hook,
 )

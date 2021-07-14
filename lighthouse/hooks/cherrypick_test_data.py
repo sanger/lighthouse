@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 from flask import abort, jsonify, make_response
 
-from lighthouse.constants.cherrypicker_test_data import CPTD_STATUS_PENDING
+from lighthouse.constants.cherrypick_test_data import CPTD_STATUS_PENDING
 from lighthouse.constants.fields import FIELD_CPTD_STATUS
 
 logger = logging.getLogger(__name__)
