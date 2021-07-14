@@ -11,12 +11,12 @@ from lighthouse.constants.fields import FIELD_CPTD_STATUS
 logger = logging.getLogger(__name__)
 
 
-def insert_cherrypicker_test_data_hook(runs: List[Dict[str, Any]]) -> None:
+def insert_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
     for run in runs:
         run[FIELD_CPTD_STATUS] = CPTD_STATUS_PENDING
 
 
-def inserted_cherrypicker_test_data_hook(runs: List[Dict[str, Any]]) -> None:
+def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
     # TODO: Assume we only receive one run
     for run in runs:
         try:
