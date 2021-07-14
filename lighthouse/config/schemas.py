@@ -1,9 +1,41 @@
+EVENTS_SCHEMA = {
+    "automation_system_run_id": {
+        "type": "integer",
+    },
+    "barcode": {
+        "type": "string",
+    },
+    "event_type": {
+        "required": True,
+        "type": "string",
+        "check_with": "plate_events_dependent_parameters",
+    },
+    "event_wh_uuid": {
+        "type": "string",
+        "unique": True,
+        "readonly": True,
+    },
+    "errors": {
+        "type": "dict",
+        "default": None,
+        "nullable": True,
+        "allow_unknown": True,  # TODO: Are we should we want to allow unknown here?
+    },
+    "failure_type": {
+        "type": "string",
+    },
+    "user_id": {
+        "type": "string",
+    },
+}
+
+
 PRIORITY_SAMPLES_SCHEMA = {
     "sample_id": {
         "type": "objectid",
         "required": True,
         "unique": True,
-        "check_with": "required_bools",  # validator defined in lighthouse.validators.priority_samples.py
+        "check_with": "priority_samples_required_bools",
     },
     "must_sequence": {
         "type": "boolean",

@@ -7,7 +7,13 @@ from lighthouse.config.defaults import *
 # Eve config
 ###
 DEBUG = True
-API_TOKEN = "develop"
+API_TOKENS_PRIORITY = {
+    "read_write": "priority_read_write_dev",
+}
+API_TOKENS_EVENTS = {
+    "biosero_read_write": "biosero_read_write_dev",
+    "lighthouse_ui_read_write": "lighthouse_ui_read_write_dev",
+}
 
 ###
 # APScheduler config
@@ -42,6 +48,6 @@ MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 
 
 ###
-# Backman config
+# Beckman config
 ###
 BECKMAN_ENABLE = True

@@ -8,7 +8,8 @@ from eve import Eve
 from flask import current_app as app
 from sqlalchemy.sql.expression import and_, bindparam
 
-from lighthouse.constants.events import PLATE_EVENT_DESTINATION_CREATED, PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.classes.beckman import Beckman
+from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_COG_BARCODE,
@@ -40,7 +41,8 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
-    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED,
     FIELD_PLATE_LOOKUP_RNA_ID,
     FIELD_PLATE_LOOKUP_LAB_ID,
     FIELD_PLATE_LOOKUP_SAMPLE_ID,
@@ -60,12 +62,12 @@ from lighthouse.helpers.events import (
     construct_robot_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
-    get_robot_uuid,
 )
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
+from lighthouse.helpers.reports import unpad_coordinate
 
 logger = logging.getLogger(__name__)
 
@@ -470,7 +472,7 @@ def create_cherrypicked_post_body(
         {
             "event": {
                 "user_identifier": user_id,
-                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                "event_type": PE_BECKMAN_DESTINATION_CREATED,
                 "subjects": subjects,
                 "metadata": {},
                 "lims": app.config["RMQ_LIMS_ID"],
@@ -581,7 +583,7 @@ def construct_cherrypicking_plate_failed_message(
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
-                "event_type": PLATE_EVENT_DESTINATION_FAILED,
+                "event_type": PE_BECKMAN_DESTINATION_FAILED,
                 "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
                 "subjects": subjects,
@@ -652,7 +654,7 @@ def __mongo_source_plate_subjects(source_plates):
 
 
 def __robot_subject(robot_serial_number):
-    robot_uuid = get_robot_uuid(robot_serial_number)
+    robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
     if not robot_uuid:
         raise KeyError(f"Unable to find events information for robot: {robot_serial_number}")
 
@@ -779,7 +781,8 @@ def pickable_sample_attributes(sample: SampleDoc) -> SampleDoc:
         sample with the valid list of fields defined for a pickable sample
     """
     return {
-        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE: sample[FIELD_COORDINATE],
+        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED: sample[FIELD_COORDINATE],
+        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED: unpad_coordinate(sample[FIELD_COORDINATE]),
         FIELD_PLATE_LOOKUP_RNA_ID: sample[FIELD_RNA_ID],
         FIELD_PLATE_LOOKUP_LAB_ID: sample[FIELD_LAB_ID],
         FIELD_PLATE_LOOKUP_SAMPLE_ID: sample[FIELD_LH_SAMPLE_UUID],

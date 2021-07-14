@@ -6,7 +6,13 @@ from lighthouse.config.defaults import *
 ###
 # Eve config
 ###
-API_TOKEN = "testing"
+API_TOKENS_PRIORITY = {
+    "read_write": "priority_read_write_test",
+}
+API_TOKENS_EVENTS = {
+    "biosero_read_write": "biosero_read_write_test",
+    "lighthouse_ui_read_write": "lighthouse_ui_read_write_test",
+}
 
 ###
 # Flask config
@@ -77,3 +83,10 @@ RMQ_LIMS_ID = "LH_TEST"
 ###
 BECKMAN_ENABLE = True
 BECKMAN_FAILURE_TYPES = {key: BECKMAN_FAILURE_TYPES[key] for key in ("robot_crashed", "sample_contamination", "other")}
+
+
+###
+# SS plate creation config (UUID for the plate purpose and study of the plate created)
+###
+SS_UUID_PLATE_PURPOSE_CHERRYPICKED = "ss_uuid_plate_purpose"
+SS_UUID_STUDY_CHERRYPICKED = "ss_uuid_study"
