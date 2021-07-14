@@ -27,7 +27,7 @@ pika = "~=1.1"
 pymysql = "~=1.0"
 pyodbc = "~=4.0"
 python-dotenv = "~=0.17"
-requests = "~=2.23"
+requests = "~=2.26"
 slackclient = "~=2.5"
 sqlalchemy = "~=1.3"
 
