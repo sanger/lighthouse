@@ -1,9 +1,7 @@
 # arguments to extract from a request
-ARG_ADD_TO_DART = "add_to_dart"
 ARG_BARCODE = "barcode"
 ARG_EXCLUDE = "_exclude"
 ARG_FAILURE_TYPE = "failure_type"
-ARG_PLATE_SPECS = "plate_specs"
 ARG_ROBOT_SERIAL = "robot"
 ARG_USER_ID = "user_id"
 
