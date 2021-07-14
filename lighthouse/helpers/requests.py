@@ -1,9 +1,7 @@
 import logging
-from typing import Any, Iterable, Optional, Tuple, Type, cast
+from typing import Iterable, Optional, Tuple, cast
 
 from flask.wrappers import Request
-
-from lighthouse.types import EndpointParamsException
 
 logger = logging.getLogger(__name__)
 

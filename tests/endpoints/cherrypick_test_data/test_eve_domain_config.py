@@ -57,7 +57,7 @@ def test_plate_specs_validator_generates_issues_for_null_values(client, add_to_d
 def test_plate_specs_validator_generates_issues_for_missing_values(
     client, include_add_to_dart, include_plate_specs, error_fields
 ):
-    json_obj = {}
+    json_obj: dict = {}
     if include_add_to_dart:
         json_obj["add_to_dart"] = True
     if include_plate_specs:

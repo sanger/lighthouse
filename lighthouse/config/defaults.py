@@ -40,7 +40,7 @@ PAGINATION_LIMIT = 10000
 #   Authorization is enabled.
 PUBLIC_METHODS = ["GET"]
 PUBLIC_ITEM_METHODS = ["GET"]
-DOMAIN = {
+DOMAIN: dict = {
     "centres": {
         "internal_resource": True,
     },
