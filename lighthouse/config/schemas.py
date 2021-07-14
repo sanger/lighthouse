@@ -1,4 +1,4 @@
-CHERRYPICKER_TEST_DATA_SCHEMA = {
+CHERRYPICK_TEST_DATA_SCHEMA = {
     "add_to_dart": {
         "type": "boolean",
         "required": True,
@@ -16,6 +16,7 @@ CHERRYPICKER_TEST_DATA_SCHEMA = {
     "plate_specs": {
         "type": "list",
         "required": True,
+        "check_with": "validate_cptd_plate_specs",
     },
     "status": {
         "type": "string",

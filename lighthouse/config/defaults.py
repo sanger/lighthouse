@@ -4,7 +4,7 @@ import os
 from lighthouse.authorization import BioseroAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
 from lighthouse.config.schemas import (
-    CHERRYPICKER_TEST_DATA_SCHEMA,
+    CHERRYPICK_TEST_DATA_SCHEMA,
     EVENTS_SCHEMA,
     PRIORITY_SAMPLES_SCHEMA,
 )
@@ -44,11 +44,10 @@ DOMAIN = {
     "centres": {
         "internal_resource": True,
     },
-    "cherrypicker_test_data": {
-        "datasource": {"source": "cherrypick_test_data"},
+    "cherrypick_test_data": {
         "resource_methods": [],  # Disabled unless explicitly overridden by the environment
         "item_methods": [],  # Disabled unless explicitly overridden by the environment
-        "schema": CHERRYPICKER_TEST_DATA_SCHEMA,
+        "schema": CHERRYPICK_TEST_DATA_SCHEMA,
     },
     "events": {
         "authentication": BioseroAPITokenAuth,

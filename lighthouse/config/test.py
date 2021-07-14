@@ -12,8 +12,8 @@ API_TOKENS_PRIORITY = {
 API_TOKENS_BIOSERO = {
     "read_write": "biosero_read_write_test",
 }
-DOMAIN["cherrypicker_test_data"]["resource_methods"] = ["GET", "POST"]
-DOMAIN["cherrypicker_test_data"]["item_methods"] = ["GET"]
+DOMAIN["cherrypick_test_data"]["resource_methods"] = ["GET", "POST"]
+DOMAIN["cherrypick_test_data"]["item_methods"] = ["GET"]
 
 ###
 # Flask config

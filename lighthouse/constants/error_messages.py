@@ -16,9 +16,9 @@ ERROR_CHERRYPICKED_FAILURE_RECORD: Final[str] = "Failed recording cherrypicking 
 ERROR_CHERRYPICKED_CREATE: Final[str] = "Failed to create a cherrypicked plate in Sequencescape:"
 
 
-ERROR_UNEXPECTED_CHERRYPICKING_CREATE = (
-    f"{ERROR_UNEXPECTED} attempting to create a cherrypicked plate in Sequencescape:"
-)
+ERROR_UNEXPECTED_CHERRYPICKING_CREATE: Final[
+    str
+] = f"{ERROR_UNEXPECTED} attempting to create a cherrypicked plate in Sequencescape:"
 ERROR_UNEXPECTED_CHERRYPICKING_FAILURE: Final[
     str
 ] = f"{ERROR_UNEXPECTED} attempting to record cherrypicking plate failure"
@@ -29,10 +29,14 @@ ERROR_SAMPLES_MISSING_UUIDS: Final[str] = "No source plate UUIDs for samples of 
 
 
 # /plate-events endpoints
-ERROR_PLATE_EVENT_PUBLISH = "Failed publishing plate event message:"
+ERROR_PLATE_EVENT_PUBLISH: Final[str] = "Failed publishing plate event message:"
 ERROR_UNEXPECTED_PLATE_EVENT_PUBLISH: Final[str] = f"{ERROR_UNEXPECTED} attempting to publish a plate event message"
 
-#  /plates endpoints
-ERROR_PLATES_CREATE = "Failed to create a plate in Sequencescape:"
-ERROR_ADD_COG_BARCODES = "Failed to add COG barcodes to plate:"
+# /plates endpoints
+ERROR_PLATES_CREATE: Final[str] = "Failed to create a plate in Sequencescape:"
+ERROR_ADD_COG_BARCODES: Final[str] = "Failed to add COG barcodes to plate:"
 ERROR_UNEXPECTED_PLATES_CREATE: Final[str] = f"{ERROR_UNEXPECTED} attempting to create a plate in Sequencescape:"
+
+# /cherrypick_test_data endpoints
+ERROR_PLATE_SPECS_EMPTY_LIST: Final[str] = "Should not be an empty list."
+ERROR_PLATE_SPECS_INVALID_FORMAT: Final[str] = "Should only contain lists of 2 integers each."
