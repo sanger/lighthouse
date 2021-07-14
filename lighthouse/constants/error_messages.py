@@ -38,5 +38,5 @@ ERROR_ADD_COG_BARCODES: Final[str] = "Failed to add COG barcodes to plate:"
 ERROR_UNEXPECTED_PLATES_CREATE: Final[str] = f"{ERROR_UNEXPECTED} attempting to create a plate in Sequencescape:"
 
 # /cherrypick_test_data endpoints
-ERROR_PLATE_SPECS_EMPTY_LIST: Final[str] = "Should not be an empty list."
-ERROR_PLATE_SPECS_INVALID_FORMAT: Final[str] = "Should only contain lists of 2 integers each."
+ERROR_PLATE_SPECS_EMPTY_LIST: Final[str] = "should not be an empty list."
+ERROR_PLATE_SPECS_INVALID_FORMAT: Final[str] = "should only contain lists of 2 integers each."

@@ -78,6 +78,11 @@ class LighthouseValidator(Validator):
         plate_specs = self.document.get(field)
         logger.debug(f"Value of field is {plate_specs}")
 
+        # This validation gets called before Eve identifies the None value as invalid.
+        # There's no need to add any errors because Eve will do it for us.
+        if plate_specs is None:
+            return
+
         # We can assume we have a list already because of the Eve imposed type checking
         if len(plate_specs) == 0:
             self._error(field, ERROR_PLATE_SPECS_EMPTY_LIST)
