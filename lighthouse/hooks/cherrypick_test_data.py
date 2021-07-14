@@ -3,10 +3,19 @@ import logging
 from http import HTTPStatus
 from typing import Any, Dict, List
 
-from flask import abort, jsonify, make_response
+import requests
+from flask import abort
+from flask import current_app as app
+from flask import jsonify, make_response
 
-from lighthouse.constants.cherrypick_test_data import CPTD_STATUS_PENDING
-from lighthouse.constants.fields import FIELD_CPTD_STATUS
+from lighthouse.constants.cherrypick_test_data import (
+    CPTD_STATUS_PENDING,
+    FIELD_CRAWLER_RUN_ID,
+)
+from lighthouse.constants.error_messages import (
+    ERROR_CRAWLER_INTERNAL_SERVER_ERROR,
+)
+from lighthouse.constants.fields import FIELD_CPTD_STATUS, FIELD_MONGO_ID
 
 logger = logging.getLogger(__name__)
 
@@ -17,24 +26,25 @@ def insert_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
 
 
 def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
-    # TODO: Assume we only receive one run
-    for run in runs:
-        try:
-            # TODO: pass the run through to Crawler for processing
-            pass
-        except Exception as e:
-            abort(
-                make_response(
-                    jsonify(
-                        {
-                            "_status": "ERR",
-                            "_issues": [],  # TODO: return errors from Crawler
-                            "_error": {
-                                "code": HTTPStatus.INTERNAL_SERVER_ERROR,
-                                "message": "The run creation has failed.",
-                            },
-                        }
-                    ),
-                    HTTPStatus.INTERNAL_SERVER_ERROR,
-                )
+    run_id = runs[0][FIELD_MONGO_ID]  # bulk inserting is disabled so there will only be one
+
+    try:
+        crawler_url = f"{app.config['CRAWLER_BASE_URL']}/cherrypick-test-data"
+        logger.debug(crawler_url)
+        requests.post(crawler_url, json={FIELD_CRAWLER_RUN_ID: str(run_id)})
+    except Exception as e:
+        abort(
+            make_response(
+                jsonify(
+                    {
+                        "_status": "ERR",
+                        "_issues": [str(e)],
+                        "_error": {
+                            "code": HTTPStatus.INTERNAL_SERVER_ERROR,
+                            "message": ERROR_CRAWLER_INTERNAL_SERVER_ERROR,
+                        },
+                    }
+                ),
+                HTTPStatus.INTERNAL_SERVER_ERROR,
             )
+        )

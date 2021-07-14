@@ -76,7 +76,6 @@ class LighthouseValidator(Validator):
         logger.debug(f"Running validation on '{field}' field")
 
         plate_specs = self.document.get(field)
-        logger.debug(f"Value of field is {plate_specs}")
 
         # This validation gets called before Eve identifies the None value as invalid.
         # There's no need to add any errors because Eve will do it for us.

@@ -8,6 +8,7 @@ FIELD_COG_BARCODE: Final[str] = "cog_barcode"
 ###
 # samples collection
 # general fields
+FIELD_MONGO_ID: Final[str] = "_id"
 FIELD_ROOT_SAMPLE_ID: Final[str] = "Root Sample ID"
 FIELD_RNA_ID: Final[str] = "RNA ID"
 FIELD_RESULT: Final[str] = "Result"

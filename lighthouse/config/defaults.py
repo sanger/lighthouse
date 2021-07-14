@@ -26,6 +26,8 @@ HATEOAS = True
 # CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which domains are allowed to perform
 #  CORS requests. Allowed values are: None, a list of domains, or '*' for a wide-open API.
 X_DOMAINS = "*"
+X_HEADERS = ["Authorization", "Content-type"]
+
 # We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
 # eg "2013-04-04T10:29:13"
@@ -102,6 +104,11 @@ MONGO_DBNAME = ""
 ###
 BARACODA_URL = f"{LOCALHOST}:5000"
 BARACODA_RETRY_ATTEMPTS = 3
+
+###
+# Crawler config
+###
+CRAWLER_BASE_URL = f"http://{LOCALHOST}:8000"
 
 ##
 # Cherrytrack url
