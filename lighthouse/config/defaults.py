@@ -109,7 +109,7 @@ BARACODA_RETRY_ATTEMPTS = 3
 ###
 # Crawler config
 ###
-CRAWLER_BASE_URL = f"http://{LOCALHOST}:8000"
+CRAWLER_BASE_URL = f"http://{LOCALHOST}:8100"
 
 ##
 # Cherrytrack url
