@@ -101,11 +101,25 @@ there:
 
         docker build --tag lighthouse:develop .
 
-1. Start the services specified in the `docker-compose.yml`:
+1. Start the database dependencies used by Lighthouse and also by Crawler by
+   calling:
 
+        cd ./dependencies
         docker-compose up -d
 
-    Or, you can start each individually using the instructions in the compose file.
+    The `-d` is optional and runs the containers in the background. If you want
+    to observe the logs in real time or just prefer to keep the process going in
+    another terminal, exclude the option. If you've already used the option and
+    want to shut the databases back down, you can do so with:
+
+        docker-compose down
+
+    from within the `dependencies` directory.
+
+1. Start the Lighthouse service specified in the `docker-compose.yml` from the
+   root of the repository:
+
+        docker-compose up
 
 1. Create a `.env` file which contains the line:
 
