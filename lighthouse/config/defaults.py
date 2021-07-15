@@ -48,11 +48,12 @@ DOMAIN: dict = {
         "internal_resource": True,
     },
     "cherrypick_test_data": {
+        "internal_resource": True,  # Disabled unless explicitly overridden by the environment
         "url": "cherrypick-test-data",  # Dashes to match non-Eve endpoints
-        "resource_methods": [],  # Disabled unless explicitly overridden by the environment
-        "item_methods": [],  # Disabled unless explicitly overridden by the environment
-        "schema": CHERRYPICK_TEST_DATA_SCHEMA,
+        "resource_methods": ["GET", "POST"],
+        "item_methods": ["GET"],
         "bulk_enabled": False,
+        "schema": CHERRYPICK_TEST_DATA_SCHEMA,
     },
     "events": {
         "authentication": EventsAPITokenAuth,
