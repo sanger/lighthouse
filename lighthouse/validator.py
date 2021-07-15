@@ -78,7 +78,7 @@ class LighthouseValidator(Validator):
                 self._error(field, f"'barcode' cannot be empty with the '{event_type}' event")
                 return
 
-    def _check_with_validate_cptd_plate_specs(self, field, _):
+    def _check_with_validate_cptd_plate_specs(self, field, value):
         """Check that the plate specs appear to be of the correct format.
 
         i.e. a List[List[int]] where each inner list contains exactly two values.
@@ -86,18 +86,16 @@ class LighthouseValidator(Validator):
         """
         logger.debug(f"Running validation on '{field}' field")
 
-        plate_specs = self.document.get(field)
-
         # This validation gets called before Eve identifies the None value as invalid.
         # There's no need to add any errors because Eve will do it for us.
-        if plate_specs is None:
+        if value is None:
             return
 
         # We can assume we have a list already because of the Eve imposed type checking
-        if len(plate_specs) == 0:
+        if len(value) == 0:
             self._error(field, ERROR_PLATE_SPECS_EMPTY_LIST)
 
-        if not all([type(ps) == list and len(ps) == 2 for ps in plate_specs]) or not all(
-            [type(s) == int for ps in plate_specs for s in ps]
+        if not all([type(ps) == list and len(ps) == 2 for ps in value]) or not all(
+            [type(s) == int for ps in value for s in ps]
         ):
             self._error(field, ERROR_PLATE_SPECS_INVALID_FORMAT)

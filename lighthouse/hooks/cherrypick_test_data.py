@@ -7,6 +7,7 @@ import requests
 from flask import abort
 from flask import current_app as app
 from flask import jsonify, make_response
+from requests.models import HTTPError
 
 from lighthouse.constants.cherrypick_test_data import (
     CPTD_STATUS_PENDING,
@@ -33,13 +34,19 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
         logger.debug(crawler_url)
         response = requests.post(crawler_url, json={FIELD_CRAWLER_RUN_ID: str(run_id)})
         response.raise_for_status()  # Raise an exception if the status wasn't in the 200 range
-    except Exception as e:
+    except HTTPError as error:
+        if "errors" in error.response.json:
+            errors = error.response.json["errors"]
+            issues = errors if isinstance(errors, list) else [errors]
+        else:
+            issues = [str(error)]
+
         abort(
             make_response(
                 jsonify(
                     {
                         "_status": "ERR",
-                        "_issues": [str(e)],
+                        "_issues": issues,
                         "_error": {
                             "code": HTTPStatus.INTERNAL_SERVER_ERROR,
                             "message": ERROR_CRAWLER_INTERNAL_SERVER_ERROR,
