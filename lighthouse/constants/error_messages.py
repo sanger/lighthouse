@@ -40,6 +40,4 @@ ERROR_UNEXPECTED_PLATES_CREATE: Final[str] = f"{ERROR_UNEXPECTED} attempting to 
 # /cherrypick_test_data endpoints
 ERROR_PLATE_SPECS_EMPTY_LIST: Final[str] = "should not be an empty list."
 ERROR_PLATE_SPECS_INVALID_FORMAT: Final[str] = "should only contain lists of 2 integers each."
-ERROR_CRAWLER_INTERNAL_SERVER_ERROR: Final[
-    str
-] = "There was an unexpected error while processing the run through Crawler."
+ERROR_CRAWLER_HTTP_ERROR: Final[str] = "There was an unexpected error while processing the run through Crawler."

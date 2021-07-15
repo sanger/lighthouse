@@ -6,16 +6,14 @@ from typing import Any, Dict, List
 import requests
 from flask import abort
 from flask import current_app as app
-from flask import jsonify, make_response
+from flask import json, jsonify, make_response
 from requests.models import HTTPError
 
 from lighthouse.constants.cherrypick_test_data import (
     CPTD_STATUS_PENDING,
     FIELD_CRAWLER_RUN_ID,
 )
-from lighthouse.constants.error_messages import (
-    ERROR_CRAWLER_INTERNAL_SERVER_ERROR,
-)
+from lighthouse.constants.error_messages import ERROR_CRAWLER_HTTP_ERROR
 from lighthouse.constants.fields import FIELD_CPTD_STATUS, FIELD_MONGO_ID
 
 logger = logging.getLogger(__name__)
@@ -38,19 +36,33 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
         response_json = error.response.json()
         if "errors" in response_json:
             errors = response_json["errors"]
-            issues = errors if isinstance(errors, list) else [errors]
+            errors_string = json.dumps(errors)
         else:
-            issues = [str(error)]
+            errors_string = str(error)
 
         abort(
             make_response(
                 jsonify(
                     {
                         "_status": "ERR",
-                        "_issues": issues,
+                        "_error": {
+                            "code": error.response.status_code,
+                            "message": f"{ERROR_CRAWLER_HTTP_ERROR}: {errors_string}",
+                        },
+                    }
+                ),
+                error.response.status_code,
+            )
+        )
+    except Exception as error:
+        abort(
+            make_response(
+                jsonify(
+                    {
+                        "_status": "ERR",
                         "_error": {
                             "code": HTTPStatus.INTERNAL_SERVER_ERROR,
-                            "message": ERROR_CRAWLER_INTERNAL_SERVER_ERROR,
+                            "message": str(error),
                         },
                     }
                 ),
