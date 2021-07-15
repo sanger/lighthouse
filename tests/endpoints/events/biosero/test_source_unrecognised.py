@@ -6,6 +6,7 @@ import pytest
 
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 from lighthouse.helpers.mongo import get_event_with_uuid
+from lighthouse.classes.biosero import Biosero
 
 CACHE = {}
 
@@ -38,7 +39,7 @@ def test_post_event_source_unrecognised(
                         "/events",
                         data={
                             "automation_system_run_id": 3,
-                            "event_type": "lh_biosero_cp_source_plate_unrecognised",
+                            "event_type": Biosero.EVENT_SOURCE_UNRECOGNISED,
                         },
                         headers=biosero_auth_headers,
                     )
@@ -48,11 +49,11 @@ def test_post_event_source_unrecognised(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key="test.event.lh_biosero_cp_source_plate_unrecognised",
+                        routing_key=f"test.event.{ Biosero.EVENT_SOURCE_UNRECOGNISED }",
                         body='{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (
-                            '", "event_type": "lh_biosero_cp_source_plate_unrecognised", '
+                            '", "event_type": "' + Biosero.EVENT_SOURCE_UNRECOGNISED + '", '
                             '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                             '[{"role_type": "robot", "subject_type": "robot", "friendly_name": "CPA", '
                             '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '

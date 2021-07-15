@@ -73,7 +73,7 @@ class Beckman(AutomationSystem):
         return robots
 
     @staticmethod
-    def get_failure_types() -> Optional[List[Dict[str, str]]]:
+    def get_failure_types() -> List[Dict[str, str]]:
         logger.debug("Getting Beckman failure types information from config...")
 
         failure_types_config = app.config.get("BECKMAN_FAILURE_TYPES")

@@ -4,7 +4,7 @@ from http import HTTPStatus
 from typing import Any, Dict, List
 from uuid import uuid4
 
-from flask import abort, make_response, jsonify
+from flask import abort, jsonify, make_response
 
 from lighthouse.classes.automation_system import AutomationSystem
 from lighthouse.classes.biosero import Biosero
@@ -30,7 +30,9 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             if event_type is None or not isinstance(event_type, str) or not event_type:
                 raise Exception("Cannot determine event type in hook")
 
-            logger.info(f"Attempting to publish a '{event_type}' plate event message from {automation_system.name}")
+            logger.info(
+                f"Attempting to process a '{event_type}' plate event message received from {automation_system.name}"
+            )
 
             plate_event = biosero.get_plate_event(event_type)
 

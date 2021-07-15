@@ -23,7 +23,7 @@ class Biosero(AutomationSystem):
     # Destination plate has been created successfully
     EVENT_DESTINATION_COMPLETED = "lh_biosero_cp_destination_plate_completed"
     # Destination plate failed to be created successfully
-    EVENT_DESTINATION_FAILED = "lh_biosero_cp_destination_failed"
+    EVENT_DESTINATION_FAILED = "lh_biosero_cp_destination_plate_failed"
     # Destination plate has been partially filled
     EVENT_DESTINATION_PARTIAL = "lh_biosero_cp_destination_plate_partial"
     # Source plate has had all pickable wells cherrypicked into destination plate(s)

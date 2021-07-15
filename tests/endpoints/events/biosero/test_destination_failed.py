@@ -4,6 +4,8 @@ from uuid import uuid4
 
 import pytest
 
+from lighthouse.classes.beckman import Beckman
+from lighthouse.classes.biosero import Biosero
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 from lighthouse.helpers.mongo import get_event_with_uuid
 
@@ -16,18 +18,15 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-# Event source partially completed
-
-
-def test_post_destination_completed_missing_barcode(app, client, biosero_auth_headers, clear_events):
+def test_post_destination_completed_missing_barcode(app, client, lighthouse_ui_auth_headers, clear_events):
     with app.app_context():
         response = client.post(
             "/events",
             data={
                 "user_id": "user1",
-                "event_type": "lh_biosero_cp_destination_failed",
+                "event_type": Biosero.EVENT_DESTINATION_FAILED,
             },
-            headers=biosero_auth_headers,
+            headers=lighthouse_ui_auth_headers,
         )
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -47,7 +46,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
 def test_post_event_partially_completed(
     app,
     client,
-    biosero_auth_headers,
+    lighthouse_ui_auth_headers,
     clear_events,
     mocked_rabbit_channel,
     source_plates,
@@ -76,15 +75,18 @@ def test_post_event_partially_completed(
                     "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",
                 ):
+                    failure_type = Beckman.get_failure_types()[0].get("type")
+                    assert failure_type is not None
+
                     response = client.post(
                         "/events",
                         data={
                             "barcode": "HT-1234",
-                            "event_type": "lh_biosero_cp_destination_failed",
-                            "failure_type": "my_error_1",
+                            "event_type": Biosero.EVENT_DESTINATION_FAILED,
+                            "failure_type": failure_type,
                             "user_id": "user1",
                         },
-                        headers=biosero_auth_headers,
+                        headers=lighthouse_ui_auth_headers,
                     )
 
                     # Test creates the event
@@ -94,7 +96,7 @@ def test_post_event_partially_completed(
                         '{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (
-                            '", "event_type": "lh_biosero_cp_destination_failed", '
+                            '", "event_type": "' + Biosero.EVENT_DESTINATION_FAILED + '", '
                             '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                             '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
                             '"aRootSampleId1__plate_123_A01__centre_1__Positive", "uuid": "aLighthouseUUID1"}, '
@@ -114,13 +116,13 @@ def test_post_event_partially_completed(
                             '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
                             '{"role_type": "run", "subject_type": "run", "friendly_name": 3, '
                             '"uuid": "' + int_to_uuid(5) + '"}'
-                            '], "metadata": {"failure_type": "my_error_1"}}, "lims": "LH_TEST"}'
+                            '], "metadata": {"failure_type": "' + failure_type + '"}}, "lims": "LH_TEST"}'
                         )
                     )
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key="test.event.lh_biosero_cp_destination_failed",
+                        routing_key=f"test.event.{ Biosero.EVENT_DESTINATION_FAILED }",
                         body=event_message,
                     )
 

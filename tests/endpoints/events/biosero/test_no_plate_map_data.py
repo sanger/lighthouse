@@ -6,6 +6,7 @@ import pytest
 
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 from lighthouse.helpers.mongo import get_event_with_uuid
+from lighthouse.classes.biosero import Biosero
 
 CACHE = {}
 
@@ -25,7 +26,7 @@ def test_post_event_no_plate_map_data_missing_barcode(app, client, biosero_auth_
             "/events",
             data={
                 "automation_system_run_id": 123,
-                "event_type": "lh_biosero_cp_source_no_plate_map_data",
+                "event_type": Biosero.EVENT_SOURCE_NO_PLATE_MAP_DATA,
             },
             headers=biosero_auth_headers,
         )
@@ -56,7 +57,7 @@ def test_post_event_no_plate_map_data(
                         data={
                             "automation_system_run_id": 3,
                             "barcode": "plate_123",
-                            "event_type": "lh_biosero_cp_source_no_plate_map_data",
+                            "event_type": Biosero.EVENT_SOURCE_NO_PLATE_MAP_DATA,
                         },
                         headers=biosero_auth_headers,
                     )
@@ -66,11 +67,11 @@ def test_post_event_no_plate_map_data(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key="test.event.lh_biosero_cp_source_no_plate_map_data",
+                        routing_key=f"test.event.{ Biosero.EVENT_SOURCE_NO_PLATE_MAP_DATA }",
                         body='{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (
-                            '", "event_type": "lh_biosero_cp_source_no_plate_map_data", '
+                            '", "event_type": "' + Biosero.EVENT_SOURCE_NO_PLATE_MAP_DATA + '", '
                             '"occured_at": "mytime", "user_identifier": "user1", "subjects": '
                             '[{"role_type": "robot", "subject_type": "robot", "friendly_name": "CPA", '
                             '"uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"}, '
@@ -105,7 +106,7 @@ def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mon
                     data={
                         "automation_system_run_id": 3,
                         "barcode": "a Barcode",
-                        "event_type": "lh_biosero_cp_source_no_plate_map_data",
+                        "event_type": Biosero.EVENT_SOURCE_NO_PLATE_MAP_DATA,
                     },
                     headers=biosero_auth_headers,
                 )

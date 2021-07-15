@@ -1,7 +1,7 @@
 # flake8: noqa
 import os
 
-from lighthouse.authorization import BioseroAPITokenAuth, PriorityAPITokenAuth
+from lighthouse.authorization import EventsAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
 from lighthouse.config.schemas import (
     CHERRYPICK_TEST_DATA_SCHEMA,
@@ -26,8 +26,9 @@ HATEOAS = True
 # CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which domains are allowed to perform
 #  CORS requests. Allowed values are: None, a list of domains, or '*' for a wide-open API.
 X_DOMAINS = "*"
-X_HEADERS = ["Authorization", "Content-type"]
-
+# CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which headers are allowed to be sent
+#   with CORS requests. Allowed values are: None or a list of headers names. Defaults to None.
+X_HEADERS = ["Content-type", "Authorization"]
 # We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
 # eg "2013-04-04T10:29:13"
@@ -54,7 +55,7 @@ DOMAIN: dict = {
         "bulk_enabled": False,
     },
     "events": {
-        "authentication": BioseroAPITokenAuth,
+        "authentication": EventsAPITokenAuth,
         "resource_methods": ["GET", "POST"],
         "schema": EVENTS_SCHEMA,
     },
@@ -215,6 +216,7 @@ BECKMAN_ROBOTS = {
     "BKRB0003": {"name": "Robot 3", "uuid": "90d8bc7a-2f6e-4a5f-8bea-1e8d27a1ac89"},
     "BKRB0004": {"name": "Robot 4", "uuid": "675002fe-f364-47e4-b71f-4fe1bb7b5091"},
 }
+# TODO: make these the generic failure types
 BECKMAN_FAILURE_TYPES = {
     "robot_crashed": "The robot crashed",
     "sample_contamination": "Sample contamination occurred",
@@ -225,6 +227,9 @@ BECKMAN_FAILURE_TYPES = {
     "other": "Any other failure",
 }
 
+###
+# Biosero config
+###
 BIOSERO_ROBOTS = {
     "CPA": {"name": "Robot 5", "uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"},
     "CPB": {"name": "Robot 6", "uuid": "13325f3b-5f10-4c72-a590-8aa7203f108b"},
