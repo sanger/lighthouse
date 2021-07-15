@@ -35,8 +35,9 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
         response = requests.post(crawler_url, json={FIELD_CRAWLER_RUN_ID: str(run_id)})
         response.raise_for_status()  # Raise an exception if the status wasn't in the 200 range
     except HTTPError as error:
-        if "errors" in error.response.json:
-            errors = error.response.json["errors"]
+        response_json = error.response.json()
+        if "errors" in response_json:
+            errors = response_json["errors"]
             issues = errors if isinstance(errors, list) else [errors]
         else:
             issues = [str(error)]
