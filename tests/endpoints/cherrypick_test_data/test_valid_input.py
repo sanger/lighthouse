@@ -23,7 +23,7 @@ def mock_post():
         yield mock_post
 
 
-def valid_json_object(add_to_dart: bool = True, plate_specs: List[List[int]] = [[1, 96]]) -> dict:
+def valid_json_object(add_to_dart: bool = True, plate_specs: List[List[int]] = ((1, 96))) -> dict:
     return {"add_to_dart": add_to_dart, "plate_specs": plate_specs}
 
 
