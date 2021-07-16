@@ -2,10 +2,10 @@ import json
 import re
 from http import HTTPStatus
 from typing import List
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
-from requests.models import HTTPError, Response
+import responses
 
 from lighthouse.constants.cherrypick_test_data import (
     CPTD_STATUS_PENDING,
@@ -13,24 +13,8 @@ from lighthouse.constants.cherrypick_test_data import (
 )
 from lighthouse.constants.error_messages import ERROR_CRAWLER_HTTP_ERROR
 
+CRAWLER_URL = "http://127.0.0.1:8100/cherrypick-test-data"
 ENDPOINT_PATH = "/cherrypick-test-data"
-
-
-@pytest.fixture
-def mock_post():
-    with patch("requests.post") as mock_post:
-        yield mock_post
-
-
-def mock_response(status_code, json_object, http_error_msg=""):
-    mock_response = Mock()
-    mock_response.status_code = status_code
-    mock_response.json.return_value = json_object
-    mock_response.raise_for_status.side_effect = (
-        HTTPError(http_error_msg, response=mock_response) if http_error_msg else None
-    )
-
-    return mock_response
 
 
 def valid_json_object(add_to_dart: bool = True, plate_specs: List[List[int]] = None) -> dict:
@@ -41,8 +25,9 @@ def valid_json_object(add_to_dart: bool = True, plate_specs: List[List[int]] = N
 
 
 @pytest.mark.parametrize("add_to_dart, plate_specs", [[True, [[1, 0], [2, 96]]], [False, [[100, 48], [100, 96]]]])
-def test_create_run_successful(client, mock_post, add_to_dart, plate_specs):
-    post_response = client.post(ENDPOINT_PATH, json=valid_json_object(add_to_dart, plate_specs))
+def test_create_run_successful(client, add_to_dart, plate_specs):
+    with patch("requests.post"):
+        post_response = client.post(ENDPOINT_PATH, json=valid_json_object(add_to_dart, plate_specs))
 
     assert post_response.status_code == HTTPStatus.CREATED
 
@@ -55,43 +40,33 @@ def test_create_run_successful(client, mock_post, add_to_dart, plate_specs):
     assert get_response.json["plate_specs"] == plate_specs
 
 
-def test_plate_spec_validator_called(client, mock_post):
+def test_plate_spec_validator_called(client):
     json_object = valid_json_object()
 
-    with patch("lighthouse.validator.LighthouseValidator._check_with_validate_cptd_plate_specs") as validate_method:
-        client.post(ENDPOINT_PATH, json=json_object)
+    with patch("requests.post"):
+        with patch("lighthouse.validator.LighthouseValidator._check_with_validate_cptd_plate_specs") as validate_method:
+            client.post(ENDPOINT_PATH, json=json_object)
 
     validate_method.assert_called_with("plate_specs", json_object["plate_specs"])
 
 
-def test_request_made_to_crawler(client, mock_post):
-    posted_url = ""
-    posted_json = {}
-
-    def post_method(url, json):
-        nonlocal posted_url, posted_json
-        posted_url = url
-        posted_json = json
-
-        response = Response()
-        response.status_code = HTTPStatus.OK
-        return response
-
-    mock_post.side_effect = post_method
+def test_request_made_to_crawler(client, mocked_responses):
+    mocked_responses.add(responses.POST, CRAWLER_URL, status=200)
 
     client.post(ENDPOINT_PATH, json=valid_json_object())
 
-    mock_post.assert_called_once()
-    assert posted_url.endswith("/cherrypick-test-data")
-    assert FIELD_CRAWLER_RUN_ID in posted_json
-    assert re.match(r"[0-9a-f]{24}", posted_json[FIELD_CRAWLER_RUN_ID])
+    assert len(mocked_responses.calls) == 1
+    request = mocked_responses.calls[0].request
+    assert request.url == CRAWLER_URL
+    assert request.headers["Content-Type"] == "application/json"
+    body_json = json.loads(request.body.decode("utf-8"))
+    assert list(body_json.keys()) == [FIELD_CRAWLER_RUN_ID]
+    assert re.match(r"[0-9a-f]{24}", body_json[FIELD_CRAWLER_RUN_ID])
 
 
 @pytest.mark.parametrize("status_code", [HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.ACCEPTED])
-def test_success_codes_from_crawler_give_created_response(client, mock_post, status_code):
-    mock_response = Response()
-    mock_response.status_code = status_code
-    mock_post.return_value = mock_response
+def test_success_codes_from_crawler_give_created_response(client, mocked_responses, status_code):
+    mocked_responses.add(responses.POST, CRAWLER_URL, status=status_code)
 
     response = client.post(ENDPOINT_PATH, json=valid_json_object())
 
@@ -101,8 +76,8 @@ def test_success_codes_from_crawler_give_created_response(client, mock_post, sta
 @pytest.mark.parametrize(
     "status_code", [HTTPStatus.BAD_REQUEST, HTTPStatus.INTERNAL_SERVER_ERROR, HTTPStatus.UNAUTHORIZED]
 )
-def test_failure_codes_from_crawler_give_correct_response(client, mock_post, status_code):
-    mock_post.return_value = mock_response(status_code, {"errors": ["test-a", "test-b"]}, f"{status_code} HTTP Error")
+def test_failure_codes_from_crawler_give_correct_response(client, mocked_responses, status_code):
+    mocked_responses.add(responses.POST, CRAWLER_URL, json={"errors": ["test-a", "test-b"]}, status=status_code)
 
     response = client.post(ENDPOINT_PATH, json=valid_json_object())
 
@@ -112,8 +87,8 @@ def test_failure_codes_from_crawler_give_correct_response(client, mock_post, sta
     assert json.dumps(["test-a", "test-b"]) in response.json["_error"]["message"]
 
 
-def test_crawler_errors_added_to_response_when_not_a_list(client, mock_post):
-    mock_post.return_value = mock_response(500, {"errors": "error message"}, "500 HTTP Error")
+def test_crawler_errors_added_to_response_when_not_a_list(client, mocked_responses):
+    mocked_responses.add(responses.POST, CRAWLER_URL, json={"errors": "error message"}, status=500)
 
     response = client.post(ENDPOINT_PATH, json=valid_json_object())
 
@@ -121,8 +96,8 @@ def test_crawler_errors_added_to_response_when_not_a_list(client, mock_post):
     assert "error message" in response.json["_error"]["message"]
 
 
-def test_exception_message_added_to_response_when_no_errors_from_crawler(client, mock_post):
-    mock_post.return_value = mock_response(500, {"no_errors": "none here"}, "500 Server Error")
+def test_exception_message_added_to_response_when_no_errors_from_crawler(client, mocked_responses):
+    mocked_responses.add(responses.POST, CRAWLER_URL, json={"no_errors": "none here"}, status=500)
 
     response = client.post(ENDPOINT_PATH, json=valid_json_object())
 
@@ -130,8 +105,8 @@ def test_exception_message_added_to_response_when_no_errors_from_crawler(client,
     assert "500 Server Error" in response.json["_error"]["message"]
 
 
-def test_internal_server_error_response_generated_when_not_httperror(client, mock_post):
-    mock_post.side_effect = ConnectionError("A connection error occurred")
+def test_internal_server_error_response_generated_when_not_httperror(client, mocked_responses):
+    mocked_responses.add(responses.POST, CRAWLER_URL, body=ConnectionError("A connection error occurred"), status=500)
 
     response = client.post(ENDPOINT_PATH, json=valid_json_object())
 
