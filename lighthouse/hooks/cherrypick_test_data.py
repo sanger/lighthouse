@@ -9,12 +9,9 @@ from flask import current_app as app
 from flask import json, jsonify, make_response
 from requests.models import HTTPError
 
-from lighthouse.constants.cherrypick_test_data import (
-    CPTD_STATUS_PENDING,
-    FIELD_CRAWLER_RUN_ID,
-)
+from lighthouse.constants.cherrypick_test_data import FIELD_CRAWLER_RUN_ID
 from lighthouse.constants.error_messages import ERROR_CRAWLER_HTTP_ERROR
-from lighthouse.constants.fields import FIELD_CPTD_STATUS, FIELD_MONGO_ID
+from lighthouse.constants.fields import FIELD_MONGO_ID
 
 logger = logging.getLogger(__name__)
 

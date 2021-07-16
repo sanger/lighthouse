@@ -40,9 +40,6 @@ FIELD_EVENT_USER_ID: Final[str] = "user_id"
 FIELD_EVENT_UUID: Final[str] = "event_wh_uuid"
 FIELD_FAILURE_TYPE: Final[str] = "failure_type"
 
-# cherrypick-test-data collection
-FIELD_CPTD_STATUS: Final[str] = "status"
-
 ###
 # DART specific column names:
 ###
