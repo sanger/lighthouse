@@ -19,11 +19,6 @@ from lighthouse.constants.fields import FIELD_CPTD_STATUS, FIELD_MONGO_ID
 logger = logging.getLogger(__name__)
 
 
-def insert_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
-    for run in runs:
-        run[FIELD_CPTD_STATUS] = CPTD_STATUS_PENDING
-
-
 def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
     run_id = runs[0][FIELD_MONGO_ID]  # bulk inserting is disabled so there will only be one
 

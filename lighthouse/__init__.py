@@ -6,7 +6,6 @@ from eve import Eve
 from flask_apscheduler import APScheduler
 
 from lighthouse.hooks.cherrypick_test_data import (
-    insert_cherrypick_test_data_hook,
     inserted_cherrypick_test_data_hook,
 )
 from lighthouse.hooks.events import insert_events_hook, inserted_events_hook
@@ -20,7 +19,6 @@ def create_app() -> Eve:
 
     # Fired before inserting entities
     app.on_insert_events += insert_events_hook
-    app.on_insert_cherrypick_test_data += insert_cherrypick_test_data_hook
 
     # Fired after entities are inserted
     app.on_inserted_events += inserted_events_hook

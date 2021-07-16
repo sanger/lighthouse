@@ -1,3 +1,5 @@
+from lighthouse.constants.cherrypick_test_data import CPTD_STATUS_PENDING
+
 CHERRYPICK_TEST_DATA_SCHEMA = {
     "add_to_dart": {
         "type": "boolean",
@@ -21,6 +23,7 @@ CHERRYPICK_TEST_DATA_SCHEMA = {
     "status": {
         "type": "string",
         "readonly": True,
+        "default": CPTD_STATUS_PENDING,
     },
 }
 
