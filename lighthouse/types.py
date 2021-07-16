@@ -12,11 +12,6 @@ Event = Dict[str, Union[str, List[Subject], Dict]]
 EventMessage = Dict[str, Union[str, Event]]
 
 
-class EndpointParamsException(Exception):
-    def __init__(self, message):
-        self.message = message
-
-
 class EventPropertyProtocol(Protocol):
     def get_param_value(self, param_name: str) -> Optional[Any]:
         ...
