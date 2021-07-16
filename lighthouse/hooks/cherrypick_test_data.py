@@ -20,12 +20,14 @@ logger = logging.getLogger(__name__)
 
 
 def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
-    run_id = runs[0][FIELD_MONGO_ID]  # bulk inserting is disabled in the Eve domain settings, so there will only be one
+    run_id = str(
+        runs[0][FIELD_MONGO_ID]  # bulk inserting is disabled in the Eve domain settings, so there will only be one run
+    )
 
     try:
         crawler_url = f"{app.config['CRAWLER_BASE_URL']}/cherrypick-test-data"
-        logger.debug(crawler_url)
-        response = requests.post(crawler_url, json={FIELD_CRAWLER_RUN_ID: str(run_id)})
+        logger.info(f"Calling Crawler's generate data endpoint with run ID '{run_id}'")
+        response = requests.post(crawler_url, json={FIELD_CRAWLER_RUN_ID: run_id})
         response.raise_for_status()  # Raise an exception if the status wasn't in the 200 range
     except HTTPError as error:
         response_json = error.response.json()
@@ -35,6 +37,7 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
         else:
             errors_string = str(error)
 
+        logger.error(f"Crawler gave error(s): {errors_string}")
         abort(
             make_response(
                 jsonify(
@@ -50,6 +53,7 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
             )
         )
     except Exception as error:
+        logger.exception(error)
         abort(
             make_response(
                 jsonify(
