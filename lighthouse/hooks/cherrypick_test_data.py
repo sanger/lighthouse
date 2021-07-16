@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
-    run_id = runs[0][FIELD_MONGO_ID]  # bulk inserting is disabled so there will only be one
+    run_id = runs[0][FIELD_MONGO_ID]  # bulk inserting is disabled in the Eve domain settings, so there will only be one
 
     try:
         crawler_url = f"{app.config['CRAWLER_BASE_URL']}/cherrypick-test-data"
