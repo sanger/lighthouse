@@ -13,6 +13,7 @@ API_TOKENS_EVENTS = {
     "biosero_read_write": "biosero_read_write_test",
     "lighthouse_ui_read_write": "lighthouse_ui_read_write_test",
 }
+DOMAIN["cherrypick_test_data"]["internal_resource"] = False
 
 ###
 # Flask config
@@ -83,7 +84,6 @@ RMQ_LIMS_ID = "LH_TEST"
 ###
 BECKMAN_ENABLE = True
 BECKMAN_FAILURE_TYPES = {key: BECKMAN_FAILURE_TYPES[key] for key in ("robot_crashed", "sample_contamination", "other")}
-
 
 ###
 # SS plate creation config (UUID for the plate purpose and study of the plate created)
