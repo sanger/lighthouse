@@ -3,6 +3,9 @@ ARG_BARCODE = "barcode"
 ARG_EXCLUDE = "_exclude"
 ARG_FAILURE_TYPE = "failure_type"
 ARG_ROBOT_SERIAL = "robot"
+ARG_TYPE = "_type"
+ARG_TYPE_DESTINATION = "destination"
+ARG_TYPE_SOURCE = "source"
 ARG_USER_ID = "user_id"
 
 # Columns that should appear in the fit to pick samples report and the order in which they will appear

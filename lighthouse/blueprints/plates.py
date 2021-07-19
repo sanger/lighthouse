@@ -10,8 +10,8 @@ from lighthouse.constants.error_messages import (
     ERROR_UNEXPECTED_PLATES_CREATE,
     ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
-from lighthouse.constants.general import ARG_EXCLUDE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
+from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
@@ -128,6 +128,21 @@ def find_plate_from_barcode() -> FlaskResponse:
         ]
     }`
 
+    `GET /plates?barcodes=destination_123,destination_456&_type=destination`
+
+    `{"plates":
+        [
+            {
+                "plate_barcode": "destination_123",
+                "plate_exists": true,
+            },
+            {
+                "plate_barcode": "destination_456",
+                "plate_exists": false,
+            },
+        ]
+    }`
+
     Returns:
         FlaskResponse: the response body and HTTP status code
     """
@@ -136,18 +151,28 @@ def find_plate_from_barcode() -> FlaskResponse:
         barcodes_arg = request.args.get("barcodes")
         barcodes_list = barcodes_arg.split(",") if barcodes_arg else []
 
-        if len(barcodes_list) == 0:
-            return bad_request("Please include a barcode list")
+        assert len(barcodes_list) > 0, "Include a list of barcodes separated by commas (,) in the request"
+
+        plate_type = request.args.get(ARG_TYPE)
+        assert plate_type in (
+            ARG_TYPE_SOURCE,
+            ARG_TYPE_DESTINATION,
+        ), f"Plate type needs to be either '{ARG_TYPE_SOURCE}' or '{ARG_TYPE_DESTINATION}'"
 
         exclude_props_arg = request.args.get(ARG_EXCLUDE)
         exclude_props = exclude_props_arg.split(",") if exclude_props_arg else []
 
-        logger.debug(f"Barcodes to look for: {barcodes_arg}")
-        plates = [format_plate(barcode, exclude_props=exclude_props) for barcode in barcodes_list]
+        logger.debug(f"{plate_type} plate(s) barcodes to look for: {barcodes_arg}")
+
+        plates = [
+            format_plate(barcode, exclude_props=exclude_props, plate_type=plate_type) for barcode in barcodes_list
+        ]
 
         pretty(logger, plates)
 
         return ok(plates=plates)
+    except AssertionError as e:
+        return bad_request(str(e))
     except Exception as e:
         logger.exception(e)
         # We don't use str(e) here to fetch the exception summary, because the exceptions we're most likely to see here

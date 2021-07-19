@@ -55,6 +55,7 @@ class SequencescapeMessage(Message):
             data=message.payload(),
         )
 
+    # TODO: this is a static method
     def _send_to_ss(self, ss_url: str, headers: Dict[str, str], data: str) -> requests.Response:
         """Send JSON body to the Sequencescape /heron/plates endpoint. This should create the plate in Sequencescape.
 
