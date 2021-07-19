@@ -807,6 +807,7 @@ def format_plate(
     exclude_props = exclude_props if exclude_props else []
 
     # Obtain an dict with lambda expressions to generate required fields
+    renderable: Dict[str, Any] = {}
     if plate_type == ARG_TYPE_DESTINATION:
         renderable = destination_plate_field_generators(barcode)
     else:
@@ -814,9 +815,10 @@ def format_plate(
 
     formated_response: Dict[str, Any] = {}
     for field in renderable:
-        # Not generate the field if is in the exclusion list
-        if not (field in exclude_props):
-            formated_response[field] = renderable[field]()
+        if field in exclude_props:
+            continue
+
+        formated_response[field] = renderable[field]()
 
     return formated_response
 
