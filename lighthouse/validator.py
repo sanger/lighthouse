@@ -4,6 +4,10 @@ from eve.io.mongo import Validator
 
 from lighthouse.classes.beckman import Beckman
 from lighthouse.classes.biosero import Biosero
+from lighthouse.constants.error_messages import (
+    ERROR_PLATE_SPECS_EMPTY_LIST,
+    ERROR_PLATE_SPECS_INVALID_FORMAT,
+)
 from lighthouse.constants.fields import FIELD_EVENT_RUN_ID
 
 logger = logging.getLogger(__name__)
@@ -73,3 +77,25 @@ class LighthouseValidator(Validator):
             if event_type != Biosero.EVENT_SOURCE_UNRECOGNISED and self.document.get("barcode") is None:
                 self._error(field, f"'barcode' cannot be empty with the '{event_type}' event")
                 return
+
+    def _check_with_validate_cptd_plate_specs(self, field, value):
+        """Check that the plate specs appear to be of the correct format.
+
+        i.e. a List[List[int]] where each inner list contains exactly two values.
+        e.g. [[2, 0], [4, 48], [1, 0], [5, 96]] would be valid
+        """
+        logger.debug(f"Running validation on '{field}' field")
+
+        # This validation gets called before Eve identifies the None value as invalid.
+        # There's no need to add any errors because Eve will do it for us.
+        if value is None:
+            return
+
+        # We can assume we have a list already because of the Eve imposed type checking
+        if len(value) == 0:
+            self._error(field, ERROR_PLATE_SPECS_EMPTY_LIST)
+
+        if not all([type(ps) == list and len(ps) == 2 for ps in value]) or not all(
+            [type(s) == int for ps in value for s in ps]
+        ):
+            self._error(field, ERROR_PLATE_SPECS_INVALID_FORMAT)

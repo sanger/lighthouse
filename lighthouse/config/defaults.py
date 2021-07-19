@@ -3,7 +3,11 @@ import os
 
 from lighthouse.authorization import EventsAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
-from lighthouse.config.schemas import EVENTS_SCHEMA, PRIORITY_SAMPLES_SCHEMA
+from lighthouse.config.schemas import (
+    CHERRYPICK_TEST_DATA_SCHEMA,
+    EVENTS_SCHEMA,
+    PRIORITY_SAMPLES_SCHEMA,
+)
 
 ###
 # General config
@@ -39,9 +43,17 @@ PAGINATION_LIMIT = 10000
 #   Authorization is enabled.
 PUBLIC_METHODS = ["GET"]
 PUBLIC_ITEM_METHODS = ["GET"]
-DOMAIN = {
+DOMAIN: dict = {
     "centres": {
         "internal_resource": True,
+    },
+    "cherrypick_test_data": {
+        "internal_resource": True,  # Disabled unless explicitly overridden by the environment
+        "url": "cherrypick-test-data",  # Dashes to match non-Eve endpoints
+        "resource_methods": ["GET", "POST"],
+        "item_methods": ["GET"],
+        "bulk_enabled": False,
+        "schema": CHERRYPICK_TEST_DATA_SCHEMA,
     },
     "events": {
         "authentication": EventsAPITokenAuth,
@@ -94,6 +106,11 @@ MONGO_DBNAME = ""
 ###
 BARACODA_URL = f"{LOCALHOST}:5000"
 BARACODA_RETRY_ATTEMPTS = 3
+
+###
+# Crawler config
+###
+CRAWLER_BASE_URL = f"http://{LOCALHOST}:8100"
 
 ##
 # Cherrytrack url

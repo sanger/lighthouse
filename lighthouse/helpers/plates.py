@@ -107,7 +107,7 @@ def add_cog_barcodes(samples):
 
     logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
 
-    baracoda_url = f"http://{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
+    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/{centre_prefix}/new?count={num_samples}"
 
     retries = app.config["BARACODA_RETRY_ATTEMPTS"]
     success_operation = False
