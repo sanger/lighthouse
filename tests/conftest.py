@@ -159,7 +159,8 @@ def plate_events(app):
 
 @pytest.fixture
 def mocked_responses():
-    """Easily mock responses from HTTP calls."""
+    """Easily mock responses from HTTP calls.
+    https://github.com/getsentry/responses#responses-as-a-pytest-fixture"""
     with responses.RequestsMock() as rsps:
         yield rsps
 

@@ -102,12 +102,18 @@ def find_plate_from_barcode() -> FlaskResponse:
     in the 'barcodes' parameters. Default fields can be excluded from the response using the url
     param '_exclude'.
 
-    For example:
-    To fetch data for the plates with barcodes '123' and '456' and exclude field 'picked_samples':
+    ### Source plate example
+    To fetch data for the source plates with barcodes '123' and '456' and exclude field 'picked_samples' from the
+    output:
 
-    `GET /plates?barcodes=123,456,789&_exclude=picked_samples`
+    #### Query:
+    ```
+    GET /plates?barcodes=123,456&_exclude=picked_samples
+    ```
 
-    `{"plates":
+    #### Response:
+    ```json
+    {"plates":
         [
             {
                 "plate_barcode": "123",
@@ -126,11 +132,20 @@ def find_plate_from_barcode() -> FlaskResponse:
                 "count_fit_to_pick_samples": 4,
             },
         ]
-    }`
+    }
+    ```
 
-    `GET /plates?barcodes=destination_123,destination_456&_type=destination`
+    ### Destination plate example
+    To fetch data for the destination plates with barcodes 'destination_123' and 'destination_456':
 
-    `{"plates":
+    #### Query:
+    ```
+    GET /plates?barcodes=destination_123,destination_456&_type=destination
+    ```
+
+    #### Response:
+    ```json
+    {"plates":
         [
             {
                 "plate_barcode": "destination_123",
@@ -141,7 +156,8 @@ def find_plate_from_barcode() -> FlaskResponse:
                 "plate_exists": false,
             },
         ]
-    }`
+    }
+    ```
 
     Returns:
         FlaskResponse: the response body and HTTP status code
@@ -153,7 +169,7 @@ def find_plate_from_barcode() -> FlaskResponse:
 
         assert len(barcodes_list) > 0, "Include a list of barcodes separated by commas (,) in the request"
 
-        plate_type = request.args.get(ARG_TYPE)
+        plate_type = request.args.get(ARG_TYPE, ARG_TYPE_SOURCE)
         assert plate_type in (
             ARG_TYPE_SOURCE,
             ARG_TYPE_DESTINATION,

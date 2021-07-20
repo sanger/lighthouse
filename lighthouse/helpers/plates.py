@@ -804,7 +804,7 @@ def format_plate(
 
     # To solve default mutable arguments issue:
     # <https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/>
-    exclude_props = exclude_props if exclude_props else []
+    exclude_props = exclude_props if exclude_props is not None else []
 
     # Obtain an dict with lambda expressions to generate required fields
     renderable: Dict[str, Any] = {}
@@ -815,10 +815,8 @@ def format_plate(
 
     formated_response: Dict[str, Any] = {}
     for field in renderable:
-        if field in exclude_props:
-            continue
-
-        formated_response[field] = renderable[field]()
+        if field not in exclude_props:
+            formated_response[field] = renderable[field]()
 
     return formated_response
 

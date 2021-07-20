@@ -1,13 +1,15 @@
+import urllib.parse
 from http import HTTPStatus
 from unittest.mock import patch
 
 import responses
-from lighthouse.constants.general import ARG_EXCLUDE
+
 from lighthouse.constants.error_messages import (
     ERROR_ADD_COG_BARCODES,
     ERROR_PLATES_CREATE,
     ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
+from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 
 
 def test_post_plates_endpoint_successful(app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples):
@@ -101,6 +103,22 @@ def test_get_plates_endpoint_successful(
         ]
     }
 
+    response = client.get(f"/plates?barcodes=456&{ ARG_EXCLUDE }=pickable_samples&{ARG_TYPE}={ARG_TYPE_SOURCE}")
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == {
+        "plates": [
+            {
+                "plate_barcode": "456",
+                "has_plate_map": False,
+                "count_fit_to_pick_samples": 0,
+                "count_filtered_positive": 0,
+                "count_must_sequence": 0,
+                "count_preferentially_sequence": 0,
+            },
+        ]
+    }
+
 
 def test_get_plates_endpoint_no_barcode_in_request(client):
     response = client.get("/plates")
@@ -157,3 +175,51 @@ def test_get_plates_endpoint_exclude_props(
             },
         ]
     }
+
+
+def test_get_plates_with_type(app, client, mocked_responses):
+    ss_url = f"{app.config['SS_URL']}/api/v2/labware"
+    first_plate_barcode = "plate_123"
+    second_plate_barcode = "plate_456"
+
+    mocked_responses.add(
+        responses.GET,
+        f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={first_plate_barcode}",
+        json={"data": ["barcode exists!"]},
+        status=HTTPStatus.OK,
+    )
+    mocked_responses.add(
+        responses.GET,
+        f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={second_plate_barcode}",
+        json={"data": []},
+        status=HTTPStatus.OK,
+    )
+
+    response = client.get(
+        f"/plates?barcodes={first_plate_barcode},{second_plate_barcode}&{ ARG_TYPE }={ARG_TYPE_DESTINATION}",
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    assert response.json == {
+        "plates": [
+            {
+                "plate_barcode": first_plate_barcode,
+                "plate_exists": True,
+            },
+            {
+                "plate_barcode": second_plate_barcode,
+                "plate_exists": False,
+            },
+        ]
+    }
+
+
+def test_get_plates_with_invalid_type(app, client):
+    first_plate_barcode = "plate_123"
+    second_plate_barcode = "plate_456"
+    response = client.get(
+        f"/plates?barcodes={first_plate_barcode},{second_plate_barcode}&{ ARG_TYPE }=invalid_type",
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
