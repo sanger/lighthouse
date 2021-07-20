@@ -1,6 +1,6 @@
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple, Union, cast, Iterable, Callable
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
 import requests
@@ -26,6 +26,11 @@ from lighthouse.constants.fields import (
     FIELD_LH_SAMPLE_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_PLATE_BARCODE,
+    FIELD_PLATE_LOOKUP_LAB_ID,
+    FIELD_PLATE_LOOKUP_RNA_ID,
+    FIELD_PLATE_LOOKUP_SAMPLE_ID,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED,
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
@@ -41,13 +46,8 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
-    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED,
-    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED,
-    FIELD_PLATE_LOOKUP_RNA_ID,
-    FIELD_PLATE_LOOKUP_LAB_ID,
-    FIELD_PLATE_LOOKUP_SAMPLE_ID,
 )
-
+from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -65,9 +65,9 @@ from lighthouse.helpers.events import (
 )
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
+from lighthouse.helpers.reports import unpad_coordinate
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
-from lighthouse.helpers.reports import unpad_coordinate
 
 logger = logging.getLogger(__name__)
 
@@ -700,20 +700,19 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def field_generators_for_plate_lookup(
+def source_plate_field_generators(
     barcode: str,
 ) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
-    """It creates an ungenerated response for a plate lookup by creating lambda functions
-    that can be called when the associated field is needed.
+    """Creates an ungenerated response for a source plate lookup by creating lambda functions that can be called when
+    the associated field is needed.
 
     Arguments:
-        barcode (str): barcode of plate to get sample information for.
+        barcode (str): barcode of plate to get information for.
 
     Returns:
         Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]: dict with lambda expresions to
         calculate the associated field when needed.
     """
-
     (
         fit_to_pick_samples,
         count_fit_to_pick_samples,
@@ -739,8 +738,56 @@ def field_generators_for_plate_lookup(
     }
 
 
+def destination_plate_field_generators(
+    barcode: str,
+) -> Dict[str, Callable[[], Union[str, bool]]]:
+    """Creates an ungenerated response for a destination plate lookup by creating lambda functions that can be called
+    when the associated field is needed.
+
+    Arguments:
+        barcode (str): barcode of plate to get information for.
+
+    Returns:
+        Dict[str, Callable[[], Union[str, bool]]]: dict with lambda expresions to calculate the associated field when
+        needed.
+    """
+    return {
+        "plate_barcode": lambda: barcode,
+        "plate_exists": lambda: plate_exists_in_ss(barcode),
+    }
+
+
+def plate_exists_in_ss(barcode: str) -> bool:
+    """Check if a plate with given barcode exists in Sequencescape.
+
+    Arguments:
+        barcode (str): barcode of plate to get information for.
+
+    Returns:
+        bool: True if the plate exists, False otherwise.
+    """
+    logger.debug("plate_exists_in_ss()")
+    try:
+        ss_url: str = app.config["SS_URL"]
+        params = {
+            "filter[barcode]": barcode,
+        }
+        response = requests.get(f"{ss_url}/api/v2/labware", params=params)
+
+        logger.debug(f"Response status code: {response.status_code}")
+
+        assert "data" in response.json(), f"Expected 'data' in response: {response.json()}"
+
+        if response.json()["data"]:
+            return True
+
+        return False
+    except requests.ConnectionError:
+        raise requests.ConnectionError("Unable to access Sequencescape")
+
+
 def format_plate(
-    barcode: str, exclude_props: Optional[List[str]] = None
+    barcode: str, exclude_props: Optional[List[str]] = None, plate_type: Optional[str] = ARG_TYPE_SOURCE
 ) -> Dict[str, Union[str, bool, SampleDocs, Optional[int]]]:
     """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
     so, how many samples meet the fit to pick rules.
@@ -753,19 +800,24 @@ def format_plate(
     Returns:
         Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
     """
-    # To solve default mutable arguments issue:
-    # <https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/>
-    exclude_props = exclude_props if exclude_props else []
-
     logger.info(f"Getting information for plate with barcode: {barcode}")
 
+    # To solve default mutable arguments issue:
+    # <https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/>
+    exclude_props = exclude_props if exclude_props is not None else []
+
     # Obtain an dict with lambda expressions to generate required fields
-    renderable = field_generators_for_plate_lookup(barcode)
-    formated_response = {}
+    renderable: Dict[str, Any] = {}
+    if plate_type == ARG_TYPE_DESTINATION:
+        renderable = destination_plate_field_generators(barcode)
+    else:
+        renderable = source_plate_field_generators(barcode)
+
+    formated_response: Dict[str, Any] = {}
     for field in renderable:
-        # Not generate the field if is in the exclusion list
-        if not (field in exclude_props):
+        if field not in exclude_props:
             formated_response[field] = renderable[field]()
+
     return formated_response
 
 

@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 from datetime import datetime
 from functools import partial
 from http import HTTPStatus
@@ -46,6 +47,7 @@ from lighthouse.constants.fields import (
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
+from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.exceptions import UnmatchedSampleError
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
@@ -56,24 +58,26 @@ from lighthouse.helpers.plates import (
     construct_cherrypicking_plate_failed_message,
     create_cherrypicked_post_body,
     create_post_body,
+    destination_plate_field_generators,
     equal_row_and_sample,
     find_sample_matching_row,
     find_samples,
     find_source_plates,
+    format_plate,
     get_centre_prefix,
     get_source_plates_for_samples,
     get_unique_plate_barcodes,
     join_rows_with_samples,
     map_to_ss_columns,
+    plate_exists_in_ss,
     query_for_cherrypicked_samples,
     query_for_source_plate_uuids,
     row_is_normal_sample,
     row_to_dict,
     rows_with_controls,
     rows_without_controls,
+    source_plate_field_generators,
     update_mlwh_with_cog_uk_ids,
-    format_plate,
-    field_generators_for_plate_lookup,
 )
 
 # ---------- test helpers ----------
@@ -1184,19 +1188,73 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
             assert f"No source plate data found in Mongo for DART samples in plate '{barcode}'" in errors
 
 
-def test_format_plate(app, plates_lookup_without_samples, plates_lookup_with_samples):
+def test_format_plate_source(app, plates_lookup_without_samples, plates_lookup_with_samples):
     with app.app_context():
         assert (
             format_plate("plate_123", exclude_props=["pickable_samples"]) == plates_lookup_without_samples["plate_123"]
         )
         assert format_plate("plate_123") == plates_lookup_with_samples["plate_123"]
+        assert format_plate(barcode="plate_123", plate_type=ARG_TYPE_SOURCE) == plates_lookup_with_samples["plate_123"]
 
 
-def test_field_generators_for_plate_lookup(app, plates_lookup_with_samples):
+def test_format_plate_destination(app, mocked_responses):
+    plate_barcode = "dest_123"
+
     with app.app_context():
-        assert field_generators_for_plate_lookup("plate_123")["plate_barcode"] is not None
+        ss_url = f"{app.config['SS_URL']}/api/v2/labware"
+        mocked_responses.add(
+            responses.GET,
+            f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={plate_barcode}",
+            json={"data": ["barcode exists!"]},
+            status=HTTPStatus.OK,
+        )
+        response = {
+            "plate_barcode": "dest_123",
+            "plate_exists": True,
+        }
+        assert format_plate(barcode=plate_barcode, plate_type=ARG_TYPE_DESTINATION) == response
+
+
+def test_source_plate_field_generators(app, plates_lookup_with_samples):
+    with app.app_context():
+        assert source_plate_field_generators("plate_123")["plate_barcode"] is not None
         plate = plates_lookup_with_samples["plate_123"]
-        assert field_generators_for_plate_lookup("plate_123")["plate_barcode"]() == plate["plate_barcode"]
+        assert source_plate_field_generators("plate_123")["plate_barcode"]() == plate["plate_barcode"]
+
+
+def test_destination_plate_field_generators(app):
+    plate_barcode = "dest_123"
+    with app.app_context():
+        assert ("plate_barcode", "plate_exists") == tuple(
+            destination_plate_field_generators(barcode=plate_barcode).keys()
+        )
+        assert destination_plate_field_generators(barcode=plate_barcode)["plate_barcode"]() == plate_barcode
+        with patch("lighthouse.helpers.plates.plate_exists_in_ss", side_effect=(True, False)):
+            assert destination_plate_field_generators(barcode=plate_barcode)["plate_exists"]() is True
+            assert destination_plate_field_generators(barcode=plate_barcode)["plate_exists"]() is False
+
+
+def test_plate_exists_in_ss(app, mocked_responses):
+    with app.app_context():
+        ss_url = f"{app.config['SS_URL']}/api/v2/labware"
+        first_plate_barcode = "plate_123"
+        second_plate_barcode = "plate_456"
+
+        mocked_responses.add(
+            responses.GET,
+            f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={first_plate_barcode}",
+            json={"data": ["barcode exists!"]},
+            status=HTTPStatus.OK,
+        )
+        mocked_responses.add(
+            responses.GET,
+            f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={second_plate_barcode}",
+            json={"data": []},
+            status=HTTPStatus.OK,
+        )
+
+        assert plate_exists_in_ss(barcode=first_plate_barcode) is True
+        assert plate_exists_in_ss(barcode=second_plate_barcode) is False
 
 
 # def test_construct_cherrypicking_plate_failed_message_success(
