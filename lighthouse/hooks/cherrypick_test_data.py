@@ -22,7 +22,7 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
     )
 
     try:
-        crawler_url = f"{app.config['CRAWLER_BASE_URL']}/cherrypick-test-data"
+        crawler_url = f"{app.config['CRAWLER_BASE_URL']}/v1/cherrypick-test-data"
         logger.info(f"Calling Crawler's generate data endpoint with run ID '{run_id}'")
         response = requests.post(crawler_url, json={FIELD_CRAWLER_RUN_ID: run_id})
         response.raise_for_status()  # Raise an exception if the status wasn't in the 200 range
