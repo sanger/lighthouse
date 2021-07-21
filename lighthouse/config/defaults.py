@@ -3,11 +3,7 @@ import os
 
 from lighthouse.authorization import EventsAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
-from lighthouse.config.schemas import (
-    CHERRYPICK_TEST_DATA_SCHEMA,
-    EVENTS_SCHEMA,
-    PRIORITY_SAMPLES_SCHEMA,
-)
+from lighthouse.config.schemas import CHERRYPICK_TEST_DATA_SCHEMA, EVENTS_SCHEMA, PRIORITY_SAMPLES_SCHEMA
 
 ###
 # General config
@@ -22,6 +18,10 @@ DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
 ###
 # Eve config
 ###
+# API version. Will be used in conjunction with URL_PREFIX to build API endpoints (e.g., v1 will be rendered to
+#   /v1/<endpoint>). Defaults to ''.
+API_VERSION = "v1"
+# When False, this option disables HATEOAS. Defaults to True.
 HATEOAS = True
 # CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which domains are allowed to perform
 #  CORS requests. Allowed values are: None, a list of domains, or '*' for a wide-open API.
