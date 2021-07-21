@@ -5,9 +5,7 @@ from http import HTTPStatus
 from eve import Eve
 from flask_apscheduler import APScheduler
 
-from lighthouse.hooks.cherrypick_test_data import (
-    inserted_cherrypick_test_data_hook,
-)
+from lighthouse.hooks.cherrypick_test_data import inserted_cherrypick_test_data_hook
 from lighthouse.hooks.events import insert_events_hook, inserted_events_hook
 from lighthouse.validator import LighthouseValidator
 
@@ -27,28 +25,27 @@ def create_app() -> Eve:
     # setup logging
     logging.config.dictConfig(app.config["LOGGING"])
 
-    from lighthouse.blueprints import (
-        beckman,
-        cherrypicked_plates,
-        plate_events,
-        plates,
-        reports,
-    )
-
-    app.register_blueprint(plates.bp)
-    app.register_blueprint(reports.bp)
-
-    if app.config.get("BECKMAN_ENABLE", False):
-        app.register_blueprint(beckman.bp)
-        app.register_blueprint(cherrypicked_plates.bp)
-        app.register_blueprint(plate_events.bp)
-
     if app.config.get("SCHEDULER_RUN", False):
         scheduler.init_app(app)
         scheduler.start()
 
+    setup_routes(app)
+
     @app.get("/health")
-    def health_check():
+    def _():
+        """Confirms the health of Lighthouse by confirming it is responding to requests."""
         return "Factory working", HTTPStatus.OK
 
     return app
+
+
+def setup_routes(app):
+    from lighthouse.blueprints import beckman, cherrypicked_plates, plate_events, plates, reports
+
+    app.register_blueprint(plates.bp, url_prefix="/v1")
+    app.register_blueprint(reports.bp, url_prefix="/v1")
+
+    if app.config.get("BECKMAN_ENABLE", False):
+        app.register_blueprint(beckman.bp, url_prefix="/v1")
+        app.register_blueprint(cherrypicked_plates.bp, url_prefix="/v1")
+        app.register_blueprint(plate_events.bp, url_prefix="/v1")
