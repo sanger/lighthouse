@@ -27,13 +27,7 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
         response = requests.post(crawler_url, json={FIELD_CRAWLER_RUN_ID: run_id})
         response.raise_for_status()  # Raise an exception if the status wasn't in the 200 range
     except HTTPError as error:
-        response_json = error.response.json()
-        if "errors" in response_json:
-            errors = response_json["errors"]
-            errors_string = json.dumps(errors)
-        else:
-            errors_string = str(error)
-
+        errors_string = get_httperror_message(error)
         logger.error(f"Crawler gave error(s): {errors_string}")
         abort(
             make_response(
@@ -65,3 +59,15 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         )
+
+
+def get_httperror_message(error):
+    try:
+        response_json = error.response.json()
+    except:
+        return str(error)
+
+    if isinstance(response_json, dict) and "errors" in response_json:
+        return json.dumps(response_json["errors"])
+    else:
+        return str(error)
