@@ -18,10 +18,10 @@ def redirect_endpoint(base_url):
 
 
 @bp.route("/cherrypick-test-data", methods=["GET", "POST"])
-def cptd_redirect():
+def cptd_resource_redirect():
     return redirect_endpoint("/cherrypick-test-data")
 
 
-@bp.get("/cherrypick-test-data/<test_id>")
-def single_cptd_redirect(test_id):
-    return redirect_endpoint(f"/cherrypick-test-data/{test_id}")
+@bp.get("/cherrypick-test-data/<item>")
+def cptd_item_redirect(item):
+    return redirect_endpoint(f"/cherrypick-test-data/{item}")
