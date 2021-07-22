@@ -1,7 +1,6 @@
 import logging
 
-from flask import Blueprint, request
-from flask_cors import CORS
+from flask import request
 
 from lighthouse.constants.error_messages import ERROR_UNEXPECTED
 from lighthouse.helpers.reports import delete_reports, get_reports_details
@@ -11,12 +10,8 @@ from lighthouse.types import FlaskResponse
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint("reports", __name__)
-CORS(bp)
 
-
-@bp.get("/reports")
-def get_reports() -> FlaskResponse:
+def get_reports_v1() -> FlaskResponse:
     """Gets a list of all the available reports.
 
     Returns:
@@ -35,8 +30,7 @@ def get_reports() -> FlaskResponse:
         return internal_server_error(msg)
 
 
-@bp.post("/reports/new")
-def create_report_endpoint() -> FlaskResponse:
+def create_report_v1() -> FlaskResponse:
     """Creates a new report.
 
     Returns:
@@ -57,8 +51,7 @@ def create_report_endpoint() -> FlaskResponse:
         return internal_server_error(msg)
 
 
-@bp.post("/delete_reports")
-def delete_reports_endpoint() -> FlaskResponse:
+def delete_reports_v1() -> FlaskResponse:
     """A route which accepts a list of report filenames and then deletes them from the reports path.
     This endpoint should be JSON and the body should be in the format:
 
