@@ -40,9 +40,23 @@ def create_app() -> Eve:
 
 
 def setup_routes(app):
-    from lighthouse.blueprints import beckman, cherrypicked_plates, eve_routes, plate_events, plates, reports
+    # Register the v1 endpoints for the Eve API.  Note that Eve automatically registers endpoints at the root.
+    from lighthouse.routes import eve_routes
 
     app.register_blueprint(eve_routes.bp, url_prefix="/v1")
+
+    from lighthouse.blueprints import beckman, cherrypicked_plates, plate_events, plates, reports
+
+    # Register the root endpoints for the Flask API.
+    app.register_blueprint(plates.bp)
+    app.register_blueprint(reports.bp)
+
+    if app.config.get("BECKMAN_ENABLE", False):
+        app.register_blueprint(beckman.bp)
+        app.register_blueprint(cherrypicked_plates.bp)
+        app.register_blueprint(plate_events.bp)
+
+    # Register the v1 endpoints for the Flask API.
     app.register_blueprint(plates.bp, url_prefix="/v1")
     app.register_blueprint(reports.bp, url_prefix="/v1")
 

@@ -19,5 +19,23 @@ def redirect_endpoint(base_url):
 
 @bp.route("/cherrypick-test-data", defaults={"path": ""}, methods=["GET", "POST"])
 @bp.route("/cherrypick-test-data/<path:path>")
-def cptd_redirects(path):
+def cherrypick_test_data_redirects(path):
     return redirect_endpoint("/cherrypick-test-data")
+
+
+@bp.route("/events", defaults={"path": ""}, methods=["GET", "POST"])
+@bp.route("/events/<path:path>")
+def events_redirects(path):
+    return redirect_endpoint("/events")
+
+
+@bp.route("/imports", defaults={"path": ""})
+@bp.route("/imports/<path:path>")
+def imports_redirects(path):
+    return redirect_endpoint("/imports")
+
+
+@bp.route("/priority_samples", defaults={"path": ""}, methods=["GET", "POST"])
+@bp.route("/priority_samples/<path:path>", methods=["GET", "PATCH", "PUT"])
+def priority_samples_redirects(path):
+    return redirect_endpoint("/priority_samples")
