@@ -64,7 +64,7 @@ def inserted_cherrypick_test_data_hook(runs: List[Dict[str, Any]]) -> None:
 def get_httperror_message(error):
     try:
         response_json = error.response.json()
-    except:
+    except Exception:
         return str(error)
 
     if isinstance(response_json, dict) and "errors" in response_json:
