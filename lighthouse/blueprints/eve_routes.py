@@ -8,20 +8,16 @@ CORS(bp)
 
 
 def redirect_endpoint(base_url):
-    # We need to include any query parameters that might have been on the original request
+    # We need to include the rest of the URL from the request after the base
     redirect_url = base_url
-    query_split = request.url.split("?")
-    if len(query_split) > 1:
-        redirect_url += f"?{query_split[1]}"
+    url_split = request.url.split(base_url)
+    if len(url_split) > 1:
+        redirect_url += url_split[1]
 
     return redirect(redirect_url, code=HTTPStatus.PERMANENT_REDIRECT)
 
 
-@bp.route("/cherrypick-test-data", methods=["GET", "POST"])
-def cptd_resource_redirect():
+@bp.route("/cherrypick-test-data", defaults={"path": ""}, methods=["GET", "POST"])
+@bp.route("/cherrypick-test-data/<path:path>")
+def cptd_redirects(path):
     return redirect_endpoint("/cherrypick-test-data")
-
-
-@bp.get("/cherrypick-test-data/<item>")
-def cptd_item_redirect(item):
-    return redirect_endpoint(f"/cherrypick-test-data/{item}")
