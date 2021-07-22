@@ -53,11 +53,7 @@ def setup_routes(app):
     app.register_blueprint(v1_routes.bp, url_prefix="/v1")
 
     if app.config.get("BECKMAN_ENABLE", False):
-        app.register_blueprint(beckman.bp)
-        app.register_blueprint(cherrypicked_plates.bp)
-        app.register_blueprint(plate_events.bp)
+        from lighthouse.routes.v1 import beckman_routes as v1_beckman_routes
 
-    if app.config.get("BECKMAN_ENABLE", False):
-        app.register_blueprint(beckman.bp, url_prefix="/v1")
-        app.register_blueprint(cherrypicked_plates.bp, url_prefix="/v1")
-        app.register_blueprint(plate_events.bp, url_prefix="/v1")
+        app.register_blueprint(v1_beckman_routes.bp)
+        app.register_blueprint(v1_beckman_routes.bp, url_prefix="/v1")
