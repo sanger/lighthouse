@@ -7,10 +7,11 @@ from unittest.mock import patch
 import pytest
 import responses
 
+from lighthouse.config.test import CRAWLER_BASE_URL
 from lighthouse.constants.cherrypick_test_data import CPTD_STATUS_PENDING, FIELD_CRAWLER_RUN_ID
 from lighthouse.constants.error_messages import ERROR_CRAWLER_HTTP_ERROR
 
-CRAWLER_URL = "http://127.0.0.1:8100/v1/cherrypick-test-data"
+CRAWLER_URL = f"{CRAWLER_BASE_URL}/v1/cherrypick-test-data"
 ENDPOINT_PATH = "/cherrypick-test-data"
 
 
