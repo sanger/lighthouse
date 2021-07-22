@@ -1,12 +1,19 @@
 from http import HTTPStatus
 
+import pytest
+
+ROBOTS_ENDPOINT = "/beckman/robots"
+FAILURE_TYPES_ENDPOINT = "/beckman/failure-types"
+ENDPOINT_PREFIXES = ["", "/v1"]
+
 
 # ---------- get_robots tests ----------
 
 
-def test_get_robots_returns_expected_robots(app, client):
+@pytest.mark.parametrize("prefix", ENDPOINT_PREFIXES)
+def test_get_robots_returns_expected_robots(app, client, prefix):
     with app.app_context():
-        response = client.get("/beckman/robots")
+        response = client.get(prefix + ROBOTS_ENDPOINT)
 
         assert response.status_code == HTTPStatus.OK
         assert len(response.json["errors"]) == 0
@@ -18,20 +25,22 @@ def test_get_robots_returns_expected_robots(app, client):
         ]
 
 
-def test_get_robots_internal_server_error_no_robots_config_exists(app, client):
+@pytest.mark.parametrize("prefix", ENDPOINT_PREFIXES)
+def test_get_robots_internal_server_error_no_robots_config_exists(app, client, prefix):
     with app.app_context():
         del app.config["BECKMAN_ROBOTS"]
-        response = client.get("/beckman/robots")
+        response = client.get(prefix + ROBOTS_ENDPOINT)
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert len(response.json["errors"]) == 1
         assert len(response.json["robots"]) == 0
 
 
-def test_get_robots_internal_server_error_incorrect_format_config(app, client):
+@pytest.mark.parametrize("prefix", ENDPOINT_PREFIXES)
+def test_get_robots_internal_server_error_incorrect_format_config(app, client, prefix):
     with app.app_context():
         app.config["BECKMAN_ROBOTS"] = {"BKRB0001": {"no name key": "not a name"}}
-        response = client.get("/beckman/robots")
+        response = client.get(prefix + ROBOTS_ENDPOINT)
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert len(response.json["errors"]) == 1
@@ -41,9 +50,10 @@ def test_get_robots_internal_server_error_incorrect_format_config(app, client):
 # ---------- get_failure_types tests ----------
 
 
-def test_get_failure_types_returns_expected_failure_types(app, client):
+@pytest.mark.parametrize("prefix", ENDPOINT_PREFIXES)
+def test_get_failure_types_returns_expected_failure_types(app, client, prefix):
     with app.app_context():
-        response = client.get("/beckman/failure-types")
+        response = client.get(prefix + FAILURE_TYPES_ENDPOINT)
 
         assert response.status_code == HTTPStatus.OK
         assert len(response.json["errors"]) == 0
@@ -54,20 +64,22 @@ def test_get_failure_types_returns_expected_failure_types(app, client):
         ]
 
 
-def test_get_failure_types_internal_server_error_no_failure_types_config_exists(app, client):
+@pytest.mark.parametrize("prefix", ENDPOINT_PREFIXES)
+def test_get_failure_types_internal_server_error_no_failure_types_config_exists(app, client, prefix):
     with app.app_context():
         del app.config["BECKMAN_FAILURE_TYPES"]
-        response = client.get("/beckman/failure-types")
+        response = client.get(prefix + FAILURE_TYPES_ENDPOINT)
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert len(response.json["errors"]) == 1
         assert len(response.json["failure_types"]) == 0
 
 
-def test_get_failure_types_internal_server_error_incorrect_format_config(app, client):
+@pytest.mark.parametrize("prefix", ENDPOINT_PREFIXES)
+def test_get_failure_types_internal_server_error_incorrect_format_config(app, client, prefix):
     with app.app_context():
         app.config["BECKMAN_FAILURE_TYPES"] = ["not the expected dictionary"]
-        response = client.get("/beckman/failure-types")
+        response = client.get(prefix + FAILURE_TYPES_ENDPOINT)
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert len(response.json["errors"]) == 1
