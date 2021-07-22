@@ -3,7 +3,10 @@ from http import HTTPStatus
 
 import pytest
 
+ENDPOINT_PREFIXES = ["", "/v1"]
 
+
+@pytest.mark.parametrize("endpoint_prefix", ENDPOINT_PREFIXES)
 @pytest.mark.parametrize(
     "add_to_dart, plate_specs, error_fields",
     [
@@ -14,10 +17,11 @@ import pytest
         ["not_bool", "not_list", ["add_to_dart", "plate_specs"]],
     ],
 )
-def test_endpoint_generates_issues_for_wrong_types(client, add_to_dart, plate_specs, error_fields):
+def test_endpoint_generates_issues_for_wrong_types(client, endpoint_prefix, add_to_dart, plate_specs, error_fields):
     response = client.post(
-        "/cherrypick-test-data",
+        f"{endpoint_prefix}/cherrypick-test-data",
         json={"add_to_dart": add_to_dart, "plate_specs": plate_specs},
+        follow_redirects=True,
     )
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -26,6 +30,7 @@ def test_endpoint_generates_issues_for_wrong_types(client, add_to_dart, plate_sp
         assert re.match("must be of \\w+ type", response.json["_issues"][field])
 
 
+@pytest.mark.parametrize("endpoint_prefix", ENDPOINT_PREFIXES)
 @pytest.mark.parametrize(
     "add_to_dart, plate_specs, error_fields",
     [
@@ -34,10 +39,11 @@ def test_endpoint_generates_issues_for_wrong_types(client, add_to_dart, plate_sp
         [None, None, ["add_to_dart", "plate_specs"]],
     ],
 )
-def test_endpoint_generates_issues_for_null_values(client, add_to_dart, plate_specs, error_fields):
+def test_endpoint_generates_issues_for_null_values(client, endpoint_prefix, add_to_dart, plate_specs, error_fields):
     response = client.post(
-        "/cherrypick-test-data",
+        f"{endpoint_prefix}/cherrypick-test-data",
         json={"add_to_dart": add_to_dart, "plate_specs": plate_specs},
+        follow_redirects=True,
     )
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -46,6 +52,7 @@ def test_endpoint_generates_issues_for_null_values(client, add_to_dart, plate_sp
         assert re.match("null value not allowed", response.json["_issues"][field])
 
 
+@pytest.mark.parametrize("endpoint_prefix", ENDPOINT_PREFIXES)
 @pytest.mark.parametrize(
     "include_add_to_dart, include_plate_specs, error_fields",
     [
@@ -54,7 +61,9 @@ def test_endpoint_generates_issues_for_null_values(client, add_to_dart, plate_sp
         [False, False, ["add_to_dart", "plate_specs"]],
     ],
 )
-def test_endpoint_generates_issues_for_missing_values(client, include_add_to_dart, include_plate_specs, error_fields):
+def test_endpoint_generates_issues_for_missing_values(
+    client, endpoint_prefix, include_add_to_dart, include_plate_specs, error_fields
+):
     json_obj: dict = {}
     if include_add_to_dart:
         json_obj["add_to_dart"] = True
@@ -62,8 +71,9 @@ def test_endpoint_generates_issues_for_missing_values(client, include_add_to_dar
         json_obj["plate_specs"] = [[1, 96]]
 
     response = client.post(
-        "/cherrypick-test-data",
+        f"{endpoint_prefix}/cherrypick-test-data",
         json=json_obj,
+        follow_redirects=True,
     )
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -72,10 +82,12 @@ def test_endpoint_generates_issues_for_missing_values(client, include_add_to_dar
         assert response.json["_issues"][field] == "required field"
 
 
-def test_endpoint_generates_issues_for_extra_values(client):
+@pytest.mark.parametrize("endpoint_prefix", ENDPOINT_PREFIXES)
+def test_endpoint_generates_issues_for_extra_values(client, endpoint_prefix):
     response = client.post(
-        "/cherrypick-test-data",
+        f"{endpoint_prefix}/cherrypick-test-data",
         json={"add_to_dart": True, "plate_specs": [[1, 96]], "extra_value": "extra"},
+        follow_redirects=True,
     )
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -83,10 +95,12 @@ def test_endpoint_generates_issues_for_extra_values(client):
     assert response.json["_issues"]["extra_value"] == "unknown field"
 
 
-def test_endpoint_generates_issues_for_bulk_insert(client):
+@pytest.mark.parametrize("endpoint_prefix", ENDPOINT_PREFIXES)
+def test_endpoint_generates_issues_for_bulk_insert(client, endpoint_prefix):
     response = client.post(
-        "/cherrypick-test-data",
+        f"{endpoint_prefix}/cherrypick-test-data",
         json=[{"add_to_dart": True, "plate_specs": [[1, 96]]}, {"add_to_dart": False, "plate_specs": [[1, 96]]}],
+        follow_redirects=True,
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
