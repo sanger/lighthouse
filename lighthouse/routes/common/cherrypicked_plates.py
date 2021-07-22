@@ -40,7 +40,8 @@ from lighthouse.types import FlaskResponse
 logger = logging.getLogger(__name__)
 
 
-def create_plate_from_barcode_v1() -> FlaskResponse:
+# TODO: Reduce the complexity of this method (C901) by splitting it up.
+def create_plate_from_barcode_v1() -> FlaskResponse:  # noqa: C901
     """This endpoint attempts to create a plate in Sequencescape. The arguments provided extract data from the DART
     and mongo databases, add COG UK barcodes and then call Sequencescape to attempt to create a plate and samples.
 

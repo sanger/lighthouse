@@ -20,7 +20,7 @@ def get_failure_types() -> FlaskResponse:
 
 
 @bp.get("/cherrypicked-plates/create")
-def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
+def create_plate_from_barcode() -> FlaskResponse:
     return create_plate_from_barcode_v1()
 
 
