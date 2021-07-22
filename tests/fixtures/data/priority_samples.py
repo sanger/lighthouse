@@ -18,6 +18,11 @@ PRIORITY_SAMPLES = [
     },
     {
         FIELD_MUST_SEQUENCE: False,
+        FIELD_PREFERENTIALLY_SEQUENCE: True,
+        FIELD_PROCESSED: True,
+    },
+    {
+        FIELD_MUST_SEQUENCE: False,
         FIELD_PREFERENTIALLY_SEQUENCE: False,
         FIELD_PROCESSED: True,
     },

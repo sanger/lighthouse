@@ -14,6 +14,7 @@ def test_get_fit_to_pick_samples_count_valid_barcode(app, samples, priority_samp
             assert len(fit_to_pick_samples) == 4
             assert count_fit_to_pick_samples == 4
             assert count_must_sequence == 1
+            # one not two as only one preferentially_sequence sample is also a filtered positive and should be picked
             assert count_preferentially_sequence == 1
             assert count_filtered_positive == 3
         else:
@@ -42,3 +43,4 @@ def test_is_integer():
     assert not is_integer("- 123")
     assert not is_integer("1,23")
     assert not is_integer("123 123")
+
