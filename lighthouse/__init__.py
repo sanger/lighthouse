@@ -40,8 +40,9 @@ def create_app() -> Eve:
 
 
 def setup_routes(app):
-    from lighthouse.blueprints import beckman, cherrypicked_plates, plate_events, plates, reports
+    from lighthouse.blueprints import beckman, cherrypicked_plates, eve_routes, plate_events, plates, reports
 
+    app.register_blueprint(eve_routes.bp, url_prefix="/v1")
     app.register_blueprint(plates.bp, url_prefix="/v1")
     app.register_blueprint(reports.bp, url_prefix="/v1")
 

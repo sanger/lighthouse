@@ -18,9 +18,6 @@ DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
 ###
 # Eve config
 ###
-# API version. Will be used in conjunction with URL_PREFIX to build API endpoints (e.g., v1 will be rendered to
-#   /v1/<endpoint>). Defaults to ''.
-API_VERSION = "v1"
 # When False, this option disables HATEOAS. Defaults to True.
 HATEOAS = True
 # CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which domains are allowed to perform
