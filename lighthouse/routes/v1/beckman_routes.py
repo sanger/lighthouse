@@ -3,6 +3,7 @@ from flask_cors import CORS
 
 from lighthouse.routes.common.beckman import get_failure_types_v1, get_robots_v1
 from lighthouse.routes.common.cherrypicked_plates import create_plate_from_barcode_v1, fail_plate_from_barcode_v1
+from lighthouse.routes.common.plate_events import create_plate_event_v1
 from lighthouse.types import FlaskResponse
 
 bp = Blueprint("v1_beckman_routes", __name__)
@@ -27,3 +28,8 @@ def create_plate_from_barcode() -> FlaskResponse:
 @bp.get("/cherrypicked-plates/fail")
 def fail_plate_from_barcode() -> FlaskResponse:
     return fail_plate_from_barcode_v1()
+
+
+@bp.get("/plate-events/create")
+def create_plate_event() -> FlaskResponse:
+    return create_plate_event_v1()
