@@ -45,20 +45,17 @@ def setup_routes(app):
 
     app.register_blueprint(eve_routes.bp, url_prefix="/v1")
 
-    from lighthouse.blueprints import beckman, cherrypicked_plates, plate_events, plates, reports
+    # When registering blueprints, do so both in the root and in /v1.
+    # Future versions will just be appended to the bottom of these registrations.
+    from lighthouse.routes.v1 import routes as v1_routes
 
-    # Register the root endpoints for the Flask API.
-    app.register_blueprint(plates.bp)
-    app.register_blueprint(reports.bp)
+    app.register_blueprint(v1_routes.bp)
+    app.register_blueprint(v1_routes.bp, url_prefix="/v1")
 
     if app.config.get("BECKMAN_ENABLE", False):
         app.register_blueprint(beckman.bp)
         app.register_blueprint(cherrypicked_plates.bp)
         app.register_blueprint(plate_events.bp)
-
-    # Register the v1 endpoints for the Flask API.
-    app.register_blueprint(plates.bp, url_prefix="/v1")
-    app.register_blueprint(reports.bp, url_prefix="/v1")
 
     if app.config.get("BECKMAN_ENABLE", False):
         app.register_blueprint(beckman.bp, url_prefix="/v1")
