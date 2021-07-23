@@ -43,4 +43,3 @@ def test_is_integer():
     assert not is_integer("- 123")
     assert not is_integer("1,23")
     assert not is_integer("123 123")
-
