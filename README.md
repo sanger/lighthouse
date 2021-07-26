@@ -171,7 +171,11 @@ If you are unable to run tests locally (because of `pyodbc` or other issues) the
 
         docker compose up
 
-Then in another terminal to get the container id:
+Then in another terminal, start up the other databases:
+
+        ./dependencies/up.sh
+
+And get the lighthouse container id:
         docker ps
 
 You will then need to setup the MSSQL with:
