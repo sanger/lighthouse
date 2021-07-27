@@ -49,11 +49,11 @@ def setup_routes(app):
     # Future versions will just be appended to the bottom of these registrations.
     from lighthouse.routes.v1 import routes as v1_routes
 
-    app.register_blueprint(v1_routes.bp)
+    app.register_blueprint(v1_routes.bp, name="root_routes")
     app.register_blueprint(v1_routes.bp, url_prefix="/v1")
 
     if app.config.get("BECKMAN_ENABLE", False):
         from lighthouse.routes.v1 import beckman_routes as v1_beckman_routes
 
-        app.register_blueprint(v1_beckman_routes.bp)
+        app.register_blueprint(v1_beckman_routes.bp, name="root_beckman_routes")
         app.register_blueprint(v1_beckman_routes.bp, url_prefix="/v1")
