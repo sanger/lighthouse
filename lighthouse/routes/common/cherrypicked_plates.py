@@ -41,9 +41,11 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: Reduce the complexity of this method (C901) by splitting it up.
-def create_plate_from_barcode_v1() -> FlaskResponse:  # noqa: C901
+def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
     """This endpoint attempts to create a plate in Sequencescape. The arguments provided extract data from the DART
     and mongo databases, add COG UK barcodes and then call Sequencescape to attempt to create a plate and samples.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     Returns:
         FlaskResponse: If the call to Sequencescape was made, this response acts as a proxy as it returns the response
@@ -131,9 +133,11 @@ def create_plate_from_barcode_v1() -> FlaskResponse:  # noqa: C901
         return internal_server_error(msg)
 
 
-def fail_plate_from_barcode_v1() -> FlaskResponse:
+def fail_plate_from_barcode() -> FlaskResponse:
     """This endpoints attempts to publish an event to the event warehouse when a failure occurs when a destination plate
     is not created successfully.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     Returns:
         FlaskResponse: If the message is published successfully return with an OK otherwise return the error messages

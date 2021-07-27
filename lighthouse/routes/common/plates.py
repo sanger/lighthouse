@@ -26,8 +26,10 @@ from lighthouse.utils import pretty
 logger = logging.getLogger(__name__)
 
 
-def create_plate_from_barcode_v1() -> FlaskResponse:
+def create_plate_from_barcode() -> FlaskResponse:
     """This endpoint attempts to create a plate in Sequencescape.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     Returns:
         FlaskResponse: the endpoints acts as proxy and returns the response and status code received from Sequencescape.
@@ -91,10 +93,12 @@ def create_plate_from_barcode_v1() -> FlaskResponse:
         return internal_server_error(msg)
 
 
-def find_plate_from_barcode_v1() -> FlaskResponse:
+def find_plate_from_barcode() -> FlaskResponse:
     """A route which returns information about a list of comma separated plates as specified
     in the 'barcodes' parameters. Default fields can be excluded from the response using the url
     param '_exclude'.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     ### Source plate example
     To fetch data for the source plates with barcodes '123' and '456' and exclude field 'picked_samples' from the

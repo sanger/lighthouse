@@ -8,8 +8,10 @@ from lighthouse.types import FlaskResponse
 logger = logging.getLogger(__name__)
 
 
-def get_robots_v1() -> FlaskResponse:
+def get_robots() -> FlaskResponse:
     """Find information about the Beckman robots. Currently, this information lives in config.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     Returns:
         FlaskResponse: the config for the robots configures with the corresponding HTTP status code.
@@ -25,8 +27,10 @@ def get_robots_v1() -> FlaskResponse:
         return internal_server_error(f"{ERROR_UNEXPECTED} while fetching Beckman robot information", robots=[])
 
 
-def get_failure_types_v1() -> FlaskResponse:
+def get_failure_types() -> FlaskResponse:
     """Get a list of the Beckman failure types.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     Returns:
         FlaskResponse: a list of failure types if found or a list of errors with the corresponding HTTP status code.

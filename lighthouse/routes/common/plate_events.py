@@ -18,8 +18,10 @@ from lighthouse.types import FlaskResponse
 logger = logging.getLogger(__name__)
 
 
-def create_plate_event_v1() -> FlaskResponse:
+def create_plate_event() -> FlaskResponse:
     """This endpoint attempts to publish a plate event message to the RabbitMQ broker.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     Returns:
         FlaskResponse: if successful, return an empty list of errors and an OK status; otherwise, a list of errors and
