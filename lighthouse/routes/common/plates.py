@@ -1,8 +1,7 @@
 import logging
 from http import HTTPStatus
 
-from flask import Blueprint, request
-from flask_cors import CORS
+from flask import request
 
 from lighthouse.constants.error_messages import (
     ERROR_ADD_COG_BARCODES,
@@ -26,13 +25,11 @@ from lighthouse.utils import pretty
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint("plates", __name__)
-CORS(bp)
 
-
-@bp.post("/plates/new")
 def create_plate_from_barcode() -> FlaskResponse:
     """This endpoint attempts to create a plate in Sequencescape.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     Returns:
         FlaskResponse: the endpoints acts as proxy and returns the response and status code received from Sequencescape.
@@ -96,11 +93,12 @@ def create_plate_from_barcode() -> FlaskResponse:
         return internal_server_error(msg)
 
 
-@bp.get("/plates")
 def find_plate_from_barcode() -> FlaskResponse:
     """A route which returns information about a list of comma separated plates as specified
     in the 'barcodes' parameters. Default fields can be excluded from the response using the url
     param '_exclude'.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     ### Source plate example
     To fetch data for the source plates with barcodes '123' and '456' and exclude field 'picked_samples' from the

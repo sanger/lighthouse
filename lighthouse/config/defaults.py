@@ -3,11 +3,7 @@ import os
 
 from lighthouse.authorization import EventsAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
-from lighthouse.config.schemas import (
-    CHERRYPICK_TEST_DATA_SCHEMA,
-    EVENTS_SCHEMA,
-    PRIORITY_SAMPLES_SCHEMA,
-)
+from lighthouse.config.schemas import CHERRYPICK_TEST_DATA_SCHEMA, EVENTS_SCHEMA, PRIORITY_SAMPLES_SCHEMA
 
 ###
 # General config
@@ -22,6 +18,7 @@ DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
 ###
 # Eve config
 ###
+# When False, this option disables HATEOAS. Defaults to True.
 HATEOAS = True
 # CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which domains are allowed to perform
 #  CORS requests. Allowed values are: None, a list of domains, or '*' for a wide-open API.
@@ -43,6 +40,8 @@ PAGINATION_LIMIT = 10000
 #   Authorization is enabled.
 PUBLIC_METHODS = ["GET"]
 PUBLIC_ITEM_METHODS = ["GET"]
+# Note that changes to the DOMAIN for public resources will also require updates to be made to
+# lighthouse/routes/eve_routes.py
 DOMAIN: dict = {
     "centres": {
         "internal_resource": True,
@@ -51,7 +50,6 @@ DOMAIN: dict = {
         "internal_resource": True,  # Disabled unless explicitly overridden by the environment
         "url": "cherrypick-test-data",  # Dashes to match non-Eve endpoints
         "resource_methods": ["GET", "POST"],
-        "item_methods": ["GET"],
         "bulk_enabled": False,
         "schema": CHERRYPICK_TEST_DATA_SCHEMA,
     },
