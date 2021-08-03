@@ -1,7 +1,6 @@
 import logging
 
-from flask import Blueprint, request
-from flask_cors import CORS
+from flask import request
 
 from lighthouse.constants.error_messages import (
     ERROR_MISSING_PARAMETERS,
@@ -18,13 +17,11 @@ from lighthouse.types import FlaskResponse
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint("plate-events", __name__)
-CORS(bp)
 
-
-@bp.get("/plate-events/create")
 def create_plate_event() -> FlaskResponse:
     """This endpoint attempts to publish a plate event message to the RabbitMQ broker.
+
+    Note: This is the existing implementation, currently used for the v1 endpoint.
 
     Returns:
         FlaskResponse: if successful, return an empty list of errors and an OK status; otherwise, a list of errors and

@@ -101,11 +101,23 @@ there:
 
         docker build --tag lighthouse:develop .
 
-1. Start the services specified in the `docker-compose.yml`:
+1. To start the database dependencies used by Lighthouse and also by Crawler
+   there is a separate configuration for Docker Compose. This is shared with
+   Crawler so if you start these dependencies here, there's no need to also
+   attempt to do so in the Crawler repository. They are the same resources in
+   both and the second one to be started will show exceptions about ports
+   already being allocated:
 
-        docker-compose up -d
+        ./dependencies/up.sh
 
-    Or, you can start each individually using the instructions in the compose file.
+   When you want to shut the databases back down, you can do so with:
+
+       ./dependencies/down.sh
+
+1. Start the Lighthouse service specified in the `docker-compose.yml` from the
+   root of the repository:
+
+        docker-compose up
 
 1. Create a `.env` file which contains the line:
 
@@ -159,7 +171,11 @@ If you are unable to run tests locally (because of `pyodbc` or other issues) the
 
         docker compose up
 
-Then in another terminal to get the container id:
+Then in another terminal, start up the other databases:
+
+        ./dependencies/up.sh
+
+And get the lighthouse container id:
         docker ps
 
 You will then need to setup the MSSQL with:

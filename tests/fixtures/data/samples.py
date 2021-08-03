@@ -69,6 +69,21 @@ SAMPLES = [
         FIELD_LAB_ID: "lab_1",
     },
     {
+        # a negative result and filtered_positive = False
+        # joined to a priority samples with processed = True
+        FIELD_COORDINATE: "B02",
+        FIELD_SOURCE: "centre_1",
+        FIELD_RESULT: "Negative",
+        FIELD_PLATE_BARCODE: "plate_123",
+        FIELD_ROOT_SAMPLE_ID: "sample_b2",
+        FIELD_RNA_ID: "rna_a",
+        FIELD_LH_SAMPLE_UUID: "56236434-2a1a-4c5e-a64f-2598cd2c7778",
+        FIELD_LH_SOURCE_PLATE_UUID: SOURCE_PLATES[0][FIELD_LH_SOURCE_PLATE_UUID],
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
+        FIELD_FILTERED_POSITIVE: False,
+        FIELD_LAB_ID: "lab_1",
+    },
+    {
         # a void result
         # joined to a (non) priority samples with processed = True
         FIELD_COORDINATE: "C01",
