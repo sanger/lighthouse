@@ -57,7 +57,7 @@ class SamplesWithCogUkId(EventPropertyAbstract):
                     FIELD_SS_NAME: sample[FIELD_RNA_ID],
                     FIELD_SS_SAMPLE_DESCRIPTION: sample[FIELD_ROOT_SAMPLE_ID],
                     FIELD_SS_SUPPLIER_NAME: sample[FIELD_COG_BARCODE],
-                    FIELD_SS_PHENOTYPE: sample[FIELD_RESULT],
+                    FIELD_SS_PHENOTYPE: sample[FIELD_RESULT].lower(),
                     FIELD_SS_UUID: sample[FIELD_LH_SAMPLE_UUID],
                 },
             )
