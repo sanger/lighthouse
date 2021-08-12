@@ -6,6 +6,8 @@ from lighthouse.classes.events.biosero import (
     DestinationFailed,
     DestinationPartial,
     DestinationPartialCompleted,
+    ErrorRecoveredDestinationCompleted,
+    ErrorRecoveredDestinationPartialCompleted,
     SourceCompleted,
     SourceNoPickableSamples,
     SourceNoPlateMapData,
@@ -38,6 +40,12 @@ class Biosero(AutomationSystem):
     EVENT_SOURCE_UNRECOGNISED = "lh_biosero_cp_source_plate_unrecognised"
     # Partial Destination plate created by user from lighthouse UI
     EVENT_DESTINATION_PARTIAL_COMPLETED = "lh_biosero_cp_destination_plate_partial_completed"
+    # Destination plate has been created successfully created by error recovery Biosero GBG
+    EVENT_ERROR_RECOVERED_DESTINATION_COMPLETED = "lh_biosero_cp_error_recovered_destination_plate_completed"
+    # Partial Destination plate created by error recovery Biosero GBG
+    EVENT_ERROR_RECOVERED_DESTINATION_PARTIAL_COMPLETED = (
+        "lh_biosero_cp_error_recovered_destination_plate_partial_completed"
+    )
 
     # needs to be an immutable object: https://docs.python.org/3/tutorial/classes.html#class-and-instance-variables
     PLATE_EVENT_NAMES = (
@@ -50,6 +58,8 @@ class Biosero(AutomationSystem):
         EVENT_SOURCE_PARTIAL,
         EVENT_SOURCE_UNRECOGNISED,
         EVENT_DESTINATION_PARTIAL_COMPLETED,
+        EVENT_ERROR_RECOVERED_DESTINATION_COMPLETED,
+        EVENT_ERROR_RECOVERED_DESTINATION_PARTIAL_COMPLETED,
     )
 
     def __init__(self) -> None:
@@ -68,6 +78,12 @@ class Biosero(AutomationSystem):
         self._event_destination_partial_completed = DestinationPartialCompleted(
             event_type=self.EVENT_DESTINATION_PARTIAL_COMPLETED
         )
+        self._event_error_recovered_destination_completed = ErrorRecoveredDestinationCompleted(
+            event_type=self.EVENT_ERROR_RECOVERED_DESTINATION_COMPLETED
+        )
+        self._event_error_recovered_destination_partial_completed = ErrorRecoveredDestinationPartialCompleted(
+            event_type=self.EVENT_ERROR_RECOVERED_DESTINATION_PARTIAL_COMPLETED
+        )
 
         self._plate_events = {
             self._event_destination_completed,
@@ -79,4 +95,6 @@ class Biosero(AutomationSystem):
             self._event_source_no_plate_map_data,
             self._event_source_partial,
             self._event_source_unrecognised,
+            self._event_error_recovered_destination_completed,
+            self._event_error_recovered_destination_partial_completed,
         }

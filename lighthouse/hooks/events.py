@@ -43,7 +43,12 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             plate_event.process_errors()
         except Exception as e:
             plate_event.process_exception(e)
-            if event_type in [Biosero.EVENT_DESTINATION_COMPLETED, Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED]:
+            if event_type in [
+                Biosero.EVENT_DESTINATION_COMPLETED,
+                Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
+                Biosero.EVENT_ERROR_RECOVERED_DESTINATION_COMPLETED,
+                Biosero.EVENT_ERROR_RECOVERED_DESTINATION_PARTIAL_COMPLETED,
+            ]:
                 abort(
                     make_response(
                         jsonify(
