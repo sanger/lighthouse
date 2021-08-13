@@ -44,7 +44,7 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             plate_event.process_errors()
             if len(plate_event.errors) > 0:
                 write_exception_error = False
-                raise Exception("The process of the event failed.")
+                raise Exception("The processing of the event failed.")
 
         except Exception as e:
             if write_exception_error:
@@ -58,7 +58,7 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
             ]:
                 message = "The plate creation has failed."
             else:
-                message = "The process of the event failed."
+                message = "The processing of the event failed."
 
             abort(
                 make_response(
