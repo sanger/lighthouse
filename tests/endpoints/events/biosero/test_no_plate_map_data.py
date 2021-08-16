@@ -112,7 +112,7 @@ def test_post_event_no_plate_map_data_with_validation_error_after_storing_in_mon
                 )
 
                 # Test creates the event
-                assert response.status_code == HTTPStatus.CREATED
+                assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
                 # However the message is not published
                 mocked_rabbit_channel.basic_publish.assert_not_called()

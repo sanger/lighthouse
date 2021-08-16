@@ -23,6 +23,7 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
 
     # TODO: Assume we only receive one event
     for event in events:
+        write_exception_error = True
         try:
             biosero = Biosero()
             event_type = event.get(FIELD_EVENT_TYPE)
@@ -41,26 +42,36 @@ def inserted_events_hook(events: List[Dict[str, Any]]) -> None:
                 plate_event.process_event()
 
             plate_event.process_errors()
+            if len(plate_event.errors) > 0:
+                write_exception_error = False
+                raise Exception("The processing of the event failed.")
+
         except Exception as e:
-            plate_event.process_exception(e)
+            if write_exception_error:
+                plate_event.process_exception(e)
+
             if event_type in [
                 Biosero.EVENT_DESTINATION_COMPLETED,
                 Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
                 Biosero.EVENT_ERROR_RECOVERED_DESTINATION_COMPLETED,
                 Biosero.EVENT_ERROR_RECOVERED_DESTINATION_PARTIAL_COMPLETED,
             ]:
-                abort(
-                    make_response(
-                        jsonify(
-                            {
-                                "_status": "ERR",
-                                "_issues": plate_event.errors,
-                                "_error": {
-                                    "code": HTTPStatus.INTERNAL_SERVER_ERROR,
-                                    "message": "The plate creation has failed.",
-                                },
-                            }
-                        ),
-                        HTTPStatus.INTERNAL_SERVER_ERROR,
-                    )
+                message = "The plate creation has failed."
+            else:
+                message = "The processing of the event failed."
+
+            abort(
+                make_response(
+                    jsonify(
+                        {
+                            "_status": "ERR",
+                            "_issues": plate_event.errors,
+                            "_error": {
+                                "code": HTTPStatus.INTERNAL_SERVER_ERROR,
+                                "message": message,
+                            },
+                        }
+                    ),
+                    HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
+            )

@@ -146,7 +146,7 @@ def test_post_event_source_no_pickable_samples_with_error_accessing_cherrytrack_
                 )
 
                 # Test creates the event
-                assert response.status_code == HTTPStatus.CREATED
+                assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
                 # However the message is not published
                 mocked_rabbit_channel.basic_publish.assert_not_called()
@@ -184,7 +184,7 @@ def test_post_event_source_no_pickable_samples_with_validation_error_after_stori
                 )
 
                 # Test creates the event
-                assert response.status_code == HTTPStatus.CREATED
+                assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
                 # However the message is not published
                 mocked_rabbit_channel.basic_publish.assert_not_called()

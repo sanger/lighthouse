@@ -691,7 +691,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
             "H08": {
                 "content": {
                     "name": "DS000050001_A01",
-                    "phenotype": "Positive",
+                    "phenotype": "positive",
                     "sample_description": "aRootSampleId1",
                     "supplier_name": "COGUK1",
                     "uuid": "aLighthouseUUID1",
@@ -700,7 +700,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
             "H12": {
                 "content": {
                     "name": "DS000050001_A03",
-                    "phenotype": "Positive",
+                    "phenotype": "positive",
                     "sample_description": "aRootSampleId3",
                     "supplier_name": "COGUK2",
                     "uuid": "aLighthouseUUID3",
