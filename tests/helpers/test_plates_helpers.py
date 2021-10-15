@@ -711,10 +711,10 @@ def test_create_cherrypicked_post_body(app):
         mapped_samples = [
             {
                 FIELD_SS_CONTROL: True,
-                FIELD_SS_CONTROL_TYPE: "Positive",
+                FIELD_SS_CONTROL_TYPE: "positive",
                 FIELD_SS_BARCODE: "123",
                 FIELD_SS_COORDINATE: "B01",
-                FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
+                FIELD_SS_SUPPLIER_NAME: "positive control: 123_B01",
                 FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
             },
             {
@@ -754,7 +754,7 @@ def test_create_cherrypicked_post_body(app):
                             "content": {
                                 FIELD_SS_CONTROL: True,
                                 FIELD_SS_CONTROL_TYPE: "positive",
-                                FIELD_SS_SUPPLIER_NAME: "Positive control: 123_B01",
+                                FIELD_SS_SUPPLIER_NAME: "positive control: 123_B01",
                                 FIELD_SS_UUID: "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                             }
                         },
@@ -795,13 +795,13 @@ def test_create_cherrypicked_post_body(app):
                                     {
                                         "role_type": "control",
                                         "subject_type": "sample",
-                                        "friendly_name": "Positive control: 123_B01",
+                                        "friendly_name": "positive control: 123_B01",
                                         "uuid": "71c71e3b-5c85-4d5c-831e-bee7bdd06c53",
                                     },
                                     {
                                         "role_type": "sample",
                                         "subject_type": "sample",
-                                        "friendly_name": "MCM002__rna_2__AP__Positive",
+                                        "friendly_name": "MCM002__rna_2__AP__positive",
                                         "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                                     },
                                 ],
