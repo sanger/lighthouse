@@ -1,17 +1,27 @@
 import copy
 import os
 from http import HTTPStatus
+from unittest.mock import MagicMock, patch
 
 import pytest
 import responses
 
 from lighthouse import create_app
-from lighthouse.constants.events import PLATE_EVENT_SOURCE_ALL_NEGATIVES, PLATE_EVENT_SOURCE_COMPLETED
-from lighthouse.constants.fields import FIELD_SAMPLE_ID
+from lighthouse.constants.events import PE_BECKMAN_SOURCE_ALL_NEGATIVES, PE_BECKMAN_SOURCE_COMPLETED
+from lighthouse.constants.fields import (
+    FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
+    FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
+    FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
+    FIELD_CHERRYTRACK_USER_ID,
+    FIELD_SAMPLE_ID,
+)
 from lighthouse.db.dart import load_sql_server_script
 from lighthouse.helpers.dart import create_dart_connection
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.messages.message import Message
+from lighthouse.types import EventMessage
+from tests.fixtures.data.biosero.destination_plate_wells import build_cherrytrack_destination_plate_response
+from tests.fixtures.data.biosero.source_plate_wells import build_cherrytrack_source_plates_response
 from tests.fixtures.data.centres import CENTRES
 from tests.fixtures.data.dart import DART_MONGO_MERGED_SAMPLES
 from tests.fixtures.data.event_wh import EVENT_WH_DATA
@@ -22,9 +32,12 @@ from tests.fixtures.data.mlwh import (
     MLWH_SAMPLE_LIGHTHOUSE_SAMPLE,
     MLWH_SAMPLE_STOCK_RESOURCE,
     SAMPLES_FOR_MLWH_UPDATE,
+    cherrytrack_mlwh_example,
 )
+from tests.fixtures.data.plate_events import PLATE_EVENTS
+from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
-from tests.fixtures.data.samples import SAMPLES
+from tests.fixtures.data.samples import SAMPLES, rows_for_samples_in_cherrytrack
 from tests.fixtures.data.source_plates import SOURCE_PLATES
 
 
@@ -41,6 +54,18 @@ def app():
 @pytest.fixture
 def client(app):
     return app.test_client()
+
+
+@pytest.fixture
+def biosero_auth_headers(app):
+    with app.app_context():
+        return {"Authorization": app.config.get("API_TOKENS_EVENTS").get("biosero_read_write")}
+
+
+@pytest.fixture
+def lighthouse_ui_auth_headers(app):
+    with app.app_context():
+        return {"Authorization": app.config.get("API_TOKENS_EVENTS").get("lighthouse_ui_read_write")}
 
 
 @pytest.fixture
@@ -69,6 +94,16 @@ def samples(app):
     # clear up after the fixture is used
     with app.app_context():
         samples_collection.delete_many({})
+
+
+@pytest.fixture
+def clear_events(app):
+    try:
+        yield
+    finally:
+        with app.app_context():
+            events_collection = app.data.driver.db.events
+            events_collection.delete_many({})
 
 
 @pytest.fixture
@@ -109,8 +144,23 @@ def source_plates(app):
 
 
 @pytest.fixture
+def plate_events(app):
+    with app.app_context():
+        events_collection = app.data.driver.db.events
+        inserted_events = events_collection.insert_many(PLATE_EVENTS)
+
+    #  yield a copy of so that the test change it however it wants
+    yield copy.deepcopy(PLATE_EVENTS), inserted_events
+
+    # clear up after the fixture is used
+    with app.app_context():
+        events_collection.delete_many({})
+
+
+@pytest.fixture
 def mocked_responses():
-    """Easily mock responses from HTTP calls."""
+    """Easily mock responses from HTTP calls.
+    https://github.com/getsentry/responses#responses-as-a-pytest-fixture"""
     with responses.RequestsMock() as rsps:
         yield rsps
 
@@ -342,7 +392,7 @@ def event_wh_sql_engine(app):
 
 @pytest.fixture
 def message_unknown():
-    message_content = {
+    message_content: EventMessage = {
         "event": {
             "uuid": "1770dbcd-0abf-4293-ac62-dd26964f80b0",
             "event_type": "no_callbacks",
@@ -358,10 +408,10 @@ def message_unknown():
 
 @pytest.fixture
 def message_source_complete():
-    message_content = {
+    message_content: EventMessage = {
         "event": {
             "uuid": "1770dbcd-0abf-4293-ac62-dd26964f80b0",
-            "event_type": PLATE_EVENT_SOURCE_COMPLETED,
+            "event_type": PE_BECKMAN_SOURCE_COMPLETED,
             "occured_at": "2020-11-26T15:58:20",
             "user_identifier": "test1",
             "subjects": [
@@ -393,10 +443,10 @@ def message_source_complete():
 
 @pytest.fixture
 def message_source_all_negative():
-    message_content = {
+    message_content: EventMessage = {
         "event": {
             "uuid": "1770dbcd-0abf-4293-ac62-dd26964f80b0",
-            "event_type": PLATE_EVENT_SOURCE_ALL_NEGATIVES,
+            "event_type": PE_BECKMAN_SOURCE_ALL_NEGATIVES,
             "occured_at": "2020-11-26T15:58:20",
             "user_identifier": "test1",
             "subjects": [
@@ -418,3 +468,188 @@ def message_source_all_negative():
         "lims": "LH_TEST",
     }
     return Message(message_content)
+
+
+@pytest.fixture
+def plates_lookup_with_samples(samples, priority_samples):
+    return PLATES_LOOKUP_WITH_SAMPLES
+
+
+@pytest.fixture
+def plates_lookup_without_samples(samples, priority_samples):
+    return PLATES_LOOKUP_WITHOUT_SAMPLES
+
+
+@pytest.fixture
+def mocked_rabbit_channel(app):
+    with app.app_context():
+        mocked_broker = MagicMock()
+        with patch("lighthouse.classes.services.warehouse.Broker", return_value=mocked_broker):
+            mocked_channel = MagicMock()
+            mocked_broker.__enter__.return_value = mocked_channel
+
+            yield mocked_channel
+
+
+@pytest.fixture
+def cherrytrack_mock_run_info(
+    app, mocked_responses, run_id, cherrytrack_run_info_response, cherrytrack_mock_run_info_status
+):
+    run_url = f"{app.config['CHERRYTRACK_URL']}/automation-system-runs/{run_id}"
+
+    mocked_responses.add(
+        responses.GET,
+        run_url,
+        json=cherrytrack_run_info_response,
+        status=cherrytrack_mock_run_info_status,
+    )
+    yield
+
+
+@pytest.fixture
+def baracoda_mock_barcodes_group(app, mocked_responses, baracoda_mock_responses, baracoda_mock_status):
+    for centre_prefix in baracoda_mock_responses.keys():
+        if baracoda_mock_responses[centre_prefix] is not None:
+            num_samples = len(baracoda_mock_responses[centre_prefix]["barcodes_group"]["barcodes"])
+            baracoda_url = (
+                f"http://{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
+            )
+            mocked_responses.add(
+                responses.POST,
+                baracoda_url,
+                json=baracoda_mock_responses[centre_prefix],
+                status=baracoda_mock_status,
+            )
+    yield
+
+
+@pytest.fixture
+def cherrytrack_mock_source_plates_status():
+    return HTTPStatus.OK
+
+
+@pytest.fixture
+def cherrytrack_mock_run_info_status():
+    return HTTPStatus.OK
+
+
+@pytest.fixture
+def cherrytrack_mock_destination_plate_status():
+    return HTTPStatus.OK
+
+
+@pytest.fixture
+def baracoda_mock_status():
+    return HTTPStatus.CREATED
+
+
+@pytest.fixture
+def cherrytrack_mock_source_plates(
+    app,
+    mocked_responses,
+    source_barcode,
+    destination_barcode,
+    cherrytrack_source_plates_response,
+    cherrytrack_mock_source_plates_status,
+):
+    source_plates_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{source_barcode}"
+    mocked_responses.add(
+        responses.GET,
+        source_plates_url,
+        json=cherrytrack_source_plates_response,
+        status=cherrytrack_mock_source_plates_status,
+    )
+    yield
+
+
+@pytest.fixture
+def cherrytrack_mock_destination_plate(
+    app,
+    mocked_responses,
+    destination_barcode,
+    cherrytrack_destination_plate_response,
+    cherrytrack_mock_destination_plate_status,
+):
+    destination_plate_url = f"{app.config['CHERRYTRACK_URL']}/destination-plates/{destination_barcode}"
+    mocked_responses.add(
+        responses.GET,
+        destination_plate_url,
+        json=cherrytrack_destination_plate_response,
+        status=cherrytrack_mock_destination_plate_status,
+    )
+    yield
+
+
+@pytest.fixture
+def cherrytrack_run_info_response(run_id):
+    return {
+        "data": {
+            "id": run_id,
+            FIELD_CHERRYTRACK_USER_ID: "user1",
+            FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER: "aLiquidHandlerSerialNumber",
+            FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER: "biosero",
+            FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME: "CPA",
+        }
+    }
+
+
+@pytest.fixture
+def cherrytrack_destination_plate_response(destination_barcode, source_barcode, run_id):
+    return build_cherrytrack_destination_plate_response(destination_barcode, source_barcode, run_id)
+
+
+def cherrytrack_destination_plate_response_duplicated_wells(cherrytrack_destination_plate_response):
+    cherrytrack_destination_plate_response["wells"][0]["destination_coordinate"] = "H12"
+    return cherrytrack_destination_plate_response
+
+
+@pytest.fixture
+def cherrytrack_source_plates_response(run_id, source_barcode, destination_barcode):
+    return build_cherrytrack_source_plates_response(run_id, source_barcode, destination_barcode)
+
+
+@pytest.fixture
+def samples_from_cherrytrack_into_mongo(app, source_barcode):
+    try:
+        samples = rows_for_samples_in_cherrytrack(source_barcode)
+
+        with app.app_context():
+            samples_collection = app.data.driver.db.samples
+            inserted_samples = samples_collection.insert_many(samples)
+
+        #  yield a copy of so that the test change it however it wants
+        yield copy.deepcopy(samples), inserted_samples
+
+    # clear up after the fixture is used
+    finally:
+        samples_collection.delete_many({})
+
+
+@pytest.fixture
+def mlwh_samples_in_cherrytrack(app, source_barcode, mlwh_sql_engine):
+    def delete_data():
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_SAMPLE_TABLE"])
+        delete_from_mlwh(app, mlwh_sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
+
+    try:
+        delete_data()
+
+        example = cherrytrack_mlwh_example(source_barcode)
+
+        # inserts
+        insert_into_mlwh(
+            app,
+            example["lighthouse_sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"],
+        )
+        insert_into_mlwh(
+            app,
+            example["sample"],
+            mlwh_sql_engine,
+            app.config["MLWH_SAMPLE_TABLE"],
+        )
+
+        yield
+    finally:
+        delete_data()

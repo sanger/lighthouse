@@ -1,6 +1,6 @@
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
 import requests
@@ -8,7 +8,8 @@ from eve import Eve
 from flask import current_app as app
 from sqlalchemy.sql.expression import and_, bindparam
 
-from lighthouse.constants.events import PLATE_EVENT_DESTINATION_CREATED, PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.classes.beckman import Beckman
+from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_COG_BARCODE,
@@ -25,6 +26,11 @@ from lighthouse.constants.fields import (
     FIELD_LH_SAMPLE_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_PLATE_BARCODE,
+    FIELD_PLATE_LOOKUP_LAB_ID,
+    FIELD_PLATE_LOOKUP_RNA_ID,
+    FIELD_PLATE_LOOKUP_SAMPLE_ID,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED,
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED,
     FIELD_RESULT,
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
@@ -40,6 +46,7 @@ from lighthouse.constants.fields import (
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
 )
+from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.exceptions import (
     DataError,
     MissingCentreError,
@@ -54,12 +61,12 @@ from lighthouse.helpers.events import (
     construct_robot_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
-    get_robot_uuid,
 )
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
+from lighthouse.helpers.reports import unpad_coordinate
 from lighthouse.messages.message import Message
-from lighthouse.types import SampleDoc
+from lighthouse.types import SampleDoc, SampleDocs
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +106,7 @@ def add_cog_barcodes(samples):
 
     logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
 
-    baracoda_url = f"http://{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
+    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/{centre_prefix}/new?count={num_samples}"
 
     retries = app.config["BARACODA_RETRY_ATTEMPTS"]
     success_operation = False
@@ -463,7 +470,7 @@ def create_cherrypicked_post_body(
         {
             "event": {
                 "user_identifier": user_id,
-                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                "event_type": PE_BECKMAN_DESTINATION_CREATED,
                 "subjects": subjects,
                 "metadata": {},
                 "lims": app.config["RMQ_LIMS_ID"],
@@ -574,7 +581,7 @@ def construct_cherrypicking_plate_failed_message(
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
-                "event_type": PLATE_EVENT_DESTINATION_FAILED,
+                "event_type": PE_BECKMAN_DESTINATION_FAILED,
                 "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
                 "subjects": subjects,
@@ -645,7 +652,7 @@ def __mongo_source_plate_subjects(source_plates):
 
 
 def __robot_subject(robot_serial_number):
-    robot_uuid = get_robot_uuid(robot_serial_number)
+    robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
     if not robot_uuid:
         raise KeyError(f"Unable to find events information for robot: {robot_serial_number}")
 
@@ -691,18 +698,19 @@ def __sample_subject_for_dart_control_row(dart_control_row: Dict[str, str]) -> D
     }
 
 
-def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
-    """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
-    so, how many samples meet the fit to pick rules.
+def source_plate_field_generators(
+    barcode: str,
+) -> Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]:
+    """Creates an ungenerated response for a source plate lookup by creating lambda functions that can be called when
+    the associated field is needed.
 
     Arguments:
-        barcode (str): barcode of plate to get sample information for.
+        barcode (str): barcode of plate to get information for.
 
     Returns:
-        Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
+        Dict[str, Callable[[], Union[str, bool, SampleDocs, Optional[int]]]]: dict with lambda expresions to
+        calculate the associated field when needed.
     """
-    logger.info(f"Getting information for plate with barcode: {barcode}")
-
     (
         fit_to_pick_samples,
         count_fit_to_pick_samples,
@@ -712,12 +720,120 @@ def format_plate(barcode: str) -> Dict[str, Union[str, bool, Optional[int]]]:
     ) = get_fit_to_pick_samples_and_counts(barcode)
 
     return {
-        "plate_barcode": barcode,
-        "has_plate_map": has_plate_map_data(barcode),
-        "count_fit_to_pick_samples": count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0,
-        "count_must_sequence": count_must_sequence if count_must_sequence is not None else 0,
-        "count_preferentially_sequence": count_preferentially_sequence
-        if count_preferentially_sequence is not None
-        else 0,
-        "count_filtered_positive": count_filtered_positive if count_filtered_positive is not None else 0,
+        "plate_barcode": lambda: barcode,
+        "has_plate_map": lambda: has_plate_map_data(barcode),
+        "count_fit_to_pick_samples": lambda: (
+            count_fit_to_pick_samples if count_fit_to_pick_samples is not None else 0
+        ),
+        "count_must_sequence": lambda: (count_must_sequence if count_must_sequence is not None else 0),
+        "count_preferentially_sequence": lambda: (
+            count_preferentially_sequence if count_preferentially_sequence is not None else 0
+        ),
+        "count_filtered_positive": lambda: (count_filtered_positive if count_filtered_positive is not None else 0),
+        "pickable_samples": lambda: list(
+            map(pickable_sample_attributes, cast(Iterable[SampleDoc], fit_to_pick_samples))
+        ),
+    }
+
+
+def destination_plate_field_generators(
+    barcode: str,
+) -> Dict[str, Callable[[], Union[str, bool]]]:
+    """Creates an ungenerated response for a destination plate lookup by creating lambda functions that can be called
+    when the associated field is needed.
+
+    Arguments:
+        barcode (str): barcode of plate to get information for.
+
+    Returns:
+        Dict[str, Callable[[], Union[str, bool]]]: dict with lambda expresions to calculate the associated field when
+        needed.
+    """
+    return {
+        "plate_barcode": lambda: barcode,
+        "plate_exists": lambda: plate_exists_in_ss(barcode),
+    }
+
+
+def plate_exists_in_ss(barcode: str) -> bool:
+    """Check if a plate with given barcode exists in Sequencescape.
+
+    Arguments:
+        barcode (str): barcode of plate to get information for.
+
+    Returns:
+        bool: True if the plate exists, False otherwise.
+    """
+    logger.debug("plate_exists_in_ss()")
+    try:
+        ss_url: str = app.config["SS_URL"]
+        params = {
+            "filter[barcode]": barcode,
+        }
+        response = requests.get(f"{ss_url}/api/v2/labware", params=params)
+
+        logger.debug(f"Response status code: {response.status_code}")
+
+        assert "data" in response.json(), f"Expected 'data' in response: {response.json()}"
+
+        if response.json()["data"]:
+            return True
+
+        return False
+    except requests.ConnectionError:
+        raise requests.ConnectionError("Unable to access Sequencescape")
+
+
+def format_plate(
+    barcode: str, exclude_props: Optional[List[str]] = None, plate_type: Optional[str] = ARG_TYPE_SOURCE
+) -> Dict[str, Union[str, bool, SampleDocs, Optional[int]]]:
+    """Used by flask route /plates to format each plate. Determines whether there is sample data for the barcode and if
+    so, how many samples meet the fit to pick rules.
+    It accepts a exclude_props argument to exclude certain fields from the response if they are not needed.
+
+    Arguments:
+        barcode (str): barcode of plate to get sample information for.
+        exclude_props Optional[List[str]]: list of fields to exclude from the resulting object
+
+    Returns:
+        Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
+    """
+    logger.info(f"Getting information for plate with barcode: {barcode}")
+
+    # To solve default mutable arguments issue:
+    # <https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/>
+    exclude_props = exclude_props if exclude_props is not None else []
+
+    # Obtain an dict with lambda expressions to generate required fields
+    renderable: Dict[str, Any] = {}
+    if plate_type == ARG_TYPE_DESTINATION:
+        renderable = destination_plate_field_generators(barcode)
+    else:
+        renderable = source_plate_field_generators(barcode)
+
+    formated_response: Dict[str, Any] = {}
+    for field in renderable:
+        if field not in exclude_props:
+            formated_response[field] = renderable[field]()
+
+    return formated_response
+
+
+def pickable_sample_attributes(sample: SampleDoc) -> SampleDoc:
+    """Renders into a Dict() the sample information from MongoDB to be sent inside a
+    plate lookup call. This is currently in use for the Biosero robots to get the
+    information of pickable samples in a source plate.
+
+    Arguments:
+        sample SampleDoc: A sample retrieved from MongoDB samples collection
+
+    Returns:
+        sample with the valid list of fields defined for a pickable sample
+    """
+    return {
+        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED: sample[FIELD_COORDINATE],
+        FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED: unpad_coordinate(sample[FIELD_COORDINATE]),
+        FIELD_PLATE_LOOKUP_RNA_ID: sample[FIELD_RNA_ID],
+        FIELD_PLATE_LOOKUP_LAB_ID: sample[FIELD_LAB_ID],
+        FIELD_PLATE_LOOKUP_SAMPLE_ID: sample[FIELD_LH_SAMPLE_UUID],
     }

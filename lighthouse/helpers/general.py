@@ -81,3 +81,25 @@ def has_plate_map_data(plate_barcode: str) -> bool:
         return True
 
     return False
+
+
+def is_integer(param: Optional[str]) -> bool:
+    """
+    Function that returns if the string provided can represent an integer.
+    This string can contain the sign of integer (+ for positive, - for negative)
+    and could include whitespaces.
+
+    Arguments
+        param: str - value to check if it represents an integer string.
+
+    Returns
+        bool - True/False indicating if this condition is met
+    """
+    if param is None:
+        return False
+    try:
+        float(param)
+    except ValueError:
+        return False
+    else:
+        return float(param).is_integer()

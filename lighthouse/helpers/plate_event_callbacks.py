@@ -17,7 +17,7 @@ from typing import List, Tuple
 
 from flask import current_app as app
 
-from lighthouse.constants.events import PLATE_EVENT_SOURCE_ALL_NEGATIVES, PLATE_EVENT_SOURCE_COMPLETED
+from lighthouse.constants.events import PE_BECKMAN_SOURCE_ALL_NEGATIVES, PE_BECKMAN_SOURCE_COMPLETED
 from lighthouse.helpers.labwhere import set_locations_in_labwhere
 from lighthouse.messages.message import Message
 
@@ -95,9 +95,9 @@ def _labware_barcodes(event: Message) -> List[str]:
         List[str]: cherrypicking_source_labware barcodes
     """
     return [
-        subject["friendly_name"]
-        for subject in event.message["event"]["subjects"]
-        if subject["role_type"] == "cherrypicking_source_labware"
+        subject["friendly_name"]  # type: ignore
+        for subject in event.message["event"]["subjects"]  # type: ignore
+        if subject["role_type"] == "cherrypicking_source_labware"  # type: ignore
     ]
 
 
@@ -112,15 +112,15 @@ def _robot_barcode(event: Message) -> str:
     """
     return str(
         next(
-            subject["friendly_name"]
-            for subject in event.message["event"]["subjects"]
-            if subject["role_type"] == "robot"
+            subject["friendly_name"]  # type: ignore
+            for subject in event.message["event"]["subjects"]  # type: ignore
+            if subject["role_type"] == "robot"  # type: ignore
         )
     )
 
 
 # Maps each event_type to a callback function
 EVENT_TYPE_CALLBACKS = {
-    PLATE_EVENT_SOURCE_ALL_NEGATIVES: _labwhere_transfer_to_bin,
-    PLATE_EVENT_SOURCE_COMPLETED: _labwhere_transfer_to_bin,
+    PE_BECKMAN_SOURCE_ALL_NEGATIVES: _labwhere_transfer_to_bin,
+    PE_BECKMAN_SOURCE_COMPLETED: _labwhere_transfer_to_bin,
 }

@@ -1,9 +1,9 @@
 # flake8: noqa
 import os
 
-from lighthouse.authorization import APITokenAuth
+from lighthouse.authorization import EventsAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
-from lighthouse.config.schemas import PRIORITY_SAMPLES_SCHEMA
+from lighthouse.config.schemas import CHERRYPICK_TEST_DATA_SCHEMA, EVENTS_SCHEMA, PRIORITY_SAMPLES_SCHEMA
 
 ###
 # General config
@@ -18,10 +18,14 @@ DOWNLOAD_REPORTS_URL = f"http://{LOCALHOST}:5000/reports"
 ###
 # Eve config
 ###
+# When False, this option disables HATEOAS. Defaults to True.
 HATEOAS = True
 # CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which domains are allowed to perform
 #  CORS requests. Allowed values are: None, a list of domains, or '*' for a wide-open API.
 X_DOMAINS = "*"
+# CORS (Cross-Origin Resource Sharing) support. Allows API maintainers to specify which headers are allowed to be sent
+#   with CORS requests. Allowed values are: None or a list of headers names. Defaults to None.
+X_HEADERS = ["Content-type", "Authorization"]
 # We are overwriting the date format.
 # By default eve DATE_FORMAT is set to RFC1123 standard which is %a, %d %b %Y %H:%M:%S GMT
 # eg "2013-04-04T10:29:13"
@@ -36,16 +40,31 @@ PAGINATION_LIMIT = 10000
 #   Authorization is enabled.
 PUBLIC_METHODS = ["GET"]
 PUBLIC_ITEM_METHODS = ["GET"]
-DOMAIN = {
-    "samples": {"internal_resource": True},
+# Note that changes to the DOMAIN for public resources will also require updates to be made to
+# lighthouse/routes/eve_routes.py
+DOMAIN: dict = {
+    "centres": {
+        "internal_resource": True,
+    },
+    "cherrypick_test_data": {
+        "internal_resource": True,  # Disabled unless explicitly overridden by the environment
+        "url": "cherrypick-test-data",  # Dashes to match non-Eve endpoints
+        "resource_methods": ["GET", "POST"],
+        "bulk_enabled": False,
+        "schema": CHERRYPICK_TEST_DATA_SCHEMA,
+    },
+    "events": {
+        "authentication": EventsAPITokenAuth,
+        "resource_methods": ["GET", "POST"],
+        "schema": EVENTS_SCHEMA,
+    },
     "imports": {
         # When True, this option will allow insertion of arbitrary, unknown fields to any API endpoint. Since most
         #   endpoints are read-only, this will allow all the fields to be shown.
         "allow_unknown": True
     },
-    "centres": {"internal_resource": True},
     "priority_samples": {
-        "authentication": APITokenAuth,
+        "authentication": PriorityAPITokenAuth,
         "item_title": "priority_sample",
         "resource_methods": ["GET", "POST"],
         "item_methods": ["GET", "PATCH", "PUT"],
@@ -57,7 +76,9 @@ DOMAIN = {
         "bulk_enabled": True,
         "schema": PRIORITY_SAMPLES_SCHEMA,
     },
-    "schema": {},
+    "samples": {
+        "internal_resource": True,
+    },
 }
 # Improve pagination performance. When optimization is active no count operation, which can be slow on large
 #   collections, is performed on the database. This does have a few consequences. Firstly, no document count is returned.
@@ -85,6 +106,16 @@ BARACODA_URL = f"{LOCALHOST}:5000"
 BARACODA_RETRY_ATTEMPTS = 3
 
 ###
+# Crawler config
+###
+CRAWLER_BASE_URL = f"http://{LOCALHOST}:8100"
+
+##
+# Cherrytrack url
+##
+CHERRYTRACK_URL = f"http://{LOCALHOST}:3020"
+
+###
 # Labwhere config
 ###
 LABWHERE_URL = f"https://{LOCALHOST}:3010"
@@ -95,11 +126,12 @@ LABWHERE_DESTROYED_BARCODE = os.environ.get("LABWHERE_DESTROYED_BARCODE", "lw-he
 ###
 SS_API_KEY = "develop"
 SS_HOST = f"{LOCALHOST}:3000"
-SS_URL = f"{LOCALHOST}:3000"
+SS_URL = f"http://{LOCALHOST}:3000"
 SS_UUID_PLATE_PURPOSE = ""
 SS_UUID_PLATE_PURPOSE_CHERRYPICKED = ""
 SS_UUID_STUDY = ""
 SS_UUID_STUDY_CHERRYPICKED = ""
+SS_PLATE_CREATION_ENDPOINT = f"{ SS_URL }/api/v2/heron/plates"
 
 ###
 # MLWH config
@@ -174,7 +206,7 @@ RMQ_ROUTING_KEY = "staging.event.#"
 RMQ_LIMS_ID = "LH_LOCAL"
 
 ###
-# Backman config
+# Beckman config
 ###
 BECKMAN_ENABLE = False
 BECKMAN_ROBOTS = {
@@ -183,6 +215,7 @@ BECKMAN_ROBOTS = {
     "BKRB0003": {"name": "Robot 3", "uuid": "90d8bc7a-2f6e-4a5f-8bea-1e8d27a1ac89"},
     "BKRB0004": {"name": "Robot 4", "uuid": "675002fe-f364-47e4-b71f-4fe1bb7b5091"},
 }
+# TODO: make these the generic failure types
 BECKMAN_FAILURE_TYPES = {
     "robot_crashed": "The robot crashed",
     "sample_contamination": "Sample contamination occurred",
@@ -191,4 +224,14 @@ BECKMAN_FAILURE_TYPES = {
     "SILAS_error": "Internal communication error in Beckman system",
     "instrument_loaded_incorrectly": "Labware has been incorrectly loaded onto instrument",
     "other": "Any other failure",
+}
+
+###
+# Biosero config
+###
+BIOSERO_ROBOTS = {
+    "CPA": {"name": "Robot 5", "uuid": "e465f4c6-aa4e-461b-95d6-c2eaab15e63f"},
+    "CPB": {"name": "Robot 6", "uuid": "13325f3b-5f10-4c72-a590-8aa7203f108b"},
+    "CPC": {"name": "Robot 7", "uuid": "41fe349d-0bcb-4839-a469-946611dd3ba9"},
+    "CPD": {"name": "Robot 8", "uuid": "948c3a0c-7544-4a72-85cc-6b4e489c9725"},
 }

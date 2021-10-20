@@ -4,18 +4,18 @@ from uuid import uuid4
 
 from flask import current_app as app
 
+from lighthouse.classes.beckman import Beckman
 from lighthouse.constants.events import (
-    PLATE_EVENT_SOURCE_ALL_NEGATIVES,
-    PLATE_EVENT_SOURCE_COMPLETED,
-    PLATE_EVENT_SOURCE_NO_MAP_DATA,
-    PLATE_EVENT_SOURCE_NOT_RECOGNISED,
+    PE_BECKMAN_SOURCE_ALL_NEGATIVES,
+    PE_BECKMAN_SOURCE_COMPLETED,
+    PE_BECKMAN_SOURCE_NO_MAP_DATA,
+    PE_BECKMAN_SOURCE_NOT_RECOGNISED,
 )
 from lighthouse.helpers.events import (
     construct_mongo_sample_message_subject,
     construct_robot_message_subject,
     construct_source_plate_message_subject,
     get_message_timestamp,
-    get_robot_uuid,
 )
 from lighthouse.helpers.mongo import get_positive_samples_in_source_plate, get_source_plate_uuid
 from lighthouse.messages.message import Message
@@ -36,13 +36,13 @@ def construct_event_message(event_type: str, params: Dict[str, str]) -> Tuple[Li
     """
     logger.info(f"Constructing {event_type} message")
 
-    if event_type == PLATE_EVENT_SOURCE_COMPLETED:
+    if event_type == PE_BECKMAN_SOURCE_COMPLETED:
         return construct_source_plate_completed_message(params)
-    elif event_type == PLATE_EVENT_SOURCE_NOT_RECOGNISED:
+    elif event_type == PE_BECKMAN_SOURCE_NOT_RECOGNISED:
         return construct_source_plate_not_recognised_message(params)
-    elif event_type == PLATE_EVENT_SOURCE_NO_MAP_DATA:
+    elif event_type == PE_BECKMAN_SOURCE_NO_MAP_DATA:
         return construct_source_plate_no_map_data_message(params)
-    elif event_type == PLATE_EVENT_SOURCE_ALL_NEGATIVES:
+    elif event_type == PE_BECKMAN_SOURCE_ALL_NEGATIVES:
         return construct_source_plate_all_negatives_message(params)
     else:
         return [f"Unrecognised event type '{event_type}'"], None
@@ -58,7 +58,7 @@ def construct_source_plate_completed_message(params: Dict[str, str]) -> Tuple[Li
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return __construct_source_plate_with_samples_on_robot_message(PLATE_EVENT_SOURCE_COMPLETED, params)
+    return __construct_source_plate_with_samples_on_robot_message(PE_BECKMAN_SOURCE_COMPLETED, params)
 
 
 def construct_source_plate_not_recognised_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
@@ -76,18 +76,19 @@ def construct_source_plate_not_recognised_message(params: Dict[str, str]) -> Tup
         user_id = params.get("user_id")
         robot_serial_number = params.get("robot")
         if not user_id or not robot_serial_number:
-            return [
-                "'user_id' and 'robot' are required to construct a {PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
-            ], None
+            return (
+                ["'user_id' and 'robot' are required to construct a {PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"],
+                None,
+            )
 
-        robot_uuid = get_robot_uuid(robot_serial_number)
+        robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
-                "event_type": PLATE_EVENT_SOURCE_NOT_RECOGNISED,
+                "event_type": PE_BECKMAN_SOURCE_NOT_RECOGNISED,
                 "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
                 "subjects": [construct_robot_message_subject(robot_serial_number, robot_uuid)],
@@ -97,12 +98,13 @@ def construct_source_plate_not_recognised_message(params: Dict[str, str]) -> Tup
         }
         return [], Message(message_content)
     except Exception as e:
-        logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_NOT_RECOGNISED} message")
+        logger.error(f"Failed to construct a {PE_BECKMAN_SOURCE_NOT_RECOGNISED} message")
         logger.exception(e)
 
-        return [
-            f"An unexpected error occurred attempting to construct {PLATE_EVENT_SOURCE_NOT_RECOGNISED} event message"
-        ], None
+        return (
+            [f"An unexpected error occurred attempting to construct {PE_BECKMAN_SOURCE_NOT_RECOGNISED} event message"],
+            None,
+        )
 
 
 def construct_source_plate_no_map_data_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
@@ -121,19 +123,22 @@ def construct_source_plate_no_map_data_message(params: Dict[str, str]) -> Tuple[
         user_id = params.get("user_id")
         robot_serial_number = params.get("robot")
         if not barcode or not user_id or not robot_serial_number:
-            return [
-                "'barcode', 'user_id' and 'robot' are required to construct a "
-                f"{PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
-            ], None
+            return (
+                [
+                    "'barcode', 'user_id' and 'robot' are required to construct a "
+                    f"{PE_BECKMAN_SOURCE_NO_MAP_DATA} event message"
+                ],
+                None,
+            )
 
-        robot_uuid = get_robot_uuid(robot_serial_number)
+        robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 
         message_content = {
             "event": {
                 "uuid": str(uuid4()),
-                "event_type": PLATE_EVENT_SOURCE_NO_MAP_DATA,
+                "event_type": PE_BECKMAN_SOURCE_NO_MAP_DATA,
                 "occured_at": get_message_timestamp(),
                 "user_identifier": user_id,
                 "subjects": [construct_robot_message_subject(robot_serial_number, robot_uuid)],
@@ -143,12 +148,13 @@ def construct_source_plate_no_map_data_message(params: Dict[str, str]) -> Tuple[
         }
         return [], Message(message_content)
     except Exception as e:
-        logger.error(f"Failed to construct a {PLATE_EVENT_SOURCE_NO_MAP_DATA} message")
+        logger.error(f"Failed to construct a {PE_BECKMAN_SOURCE_NO_MAP_DATA} message")
         logger.exception(e)
 
-        return [
-            "An unexpected error occurred attempting to construct the {PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"
-        ], None
+        return (
+            ["An unexpected error occurred attempting to construct the {PLATE_EVENT_SOURCE_NO_MAP_DATA} event message"],
+            None,
+        )
 
 
 def construct_source_plate_all_negatives_message(params: Dict[str, str]) -> Tuple[List[str], Optional[Message]]:
@@ -161,7 +167,7 @@ def construct_source_plate_all_negatives_message(params: Dict[str, str]) -> Tupl
         {[str]} -- Any errors attempting to construct the message, otherwise an empty array.
         {Message} -- The constructed message; otherwise None if there are any errors.
     """
-    return __construct_source_plate_with_samples_on_robot_message(PLATE_EVENT_SOURCE_ALL_NEGATIVES, params)
+    return __construct_source_plate_with_samples_on_robot_message(PE_BECKMAN_SOURCE_ALL_NEGATIVES, params)
 
 
 # Private methods
@@ -189,7 +195,7 @@ def __construct_source_plate_with_samples_on_robot_message(
         if not barcode or not user_id or not robot_serial_number:
             return ["'barcode', 'user_id' and 'robot' are required to construct a " f"{event_type} event message"], None
 
-        robot_uuid = get_robot_uuid(robot_serial_number)
+        robot_uuid = Beckman.get_robot_uuid(robot_serial_number)
         if robot_uuid is None:
             return [f"Unable to determine a uuid for robot '{robot_serial_number}'"], None
 

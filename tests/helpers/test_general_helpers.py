@@ -1,4 +1,4 @@
-from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
+from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data, is_integer
 
 
 def test_get_fit_to_pick_samples_count_valid_barcode(app, samples, priority_samples):
@@ -14,6 +14,7 @@ def test_get_fit_to_pick_samples_count_valid_barcode(app, samples, priority_samp
             assert len(fit_to_pick_samples) == 4
             assert count_fit_to_pick_samples == 4
             assert count_must_sequence == 1
+            # one not two as only one preferentially_sequence sample is also a filtered positive and should be picked
             assert count_preferentially_sequence == 1
             assert count_filtered_positive == 3
         else:
@@ -29,3 +30,16 @@ def test_has_plate_map_data(app, samples):
     with app.app_context():
         assert has_plate_map_data("no_plate_barcode") is False
         assert has_plate_map_data("plate_123") is True
+
+
+def test_is_integer():
+    assert is_integer("123")
+    assert not is_integer("1.23")
+    assert is_integer("123 ")
+    assert is_integer("   123 ")
+    assert is_integer("   123")
+    assert is_integer("-123")
+    assert is_integer("+123")
+    assert not is_integer("- 123")
+    assert not is_integer("1,23")
+    assert not is_integer("123 123")

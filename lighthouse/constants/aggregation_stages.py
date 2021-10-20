@@ -21,7 +21,9 @@ from lighthouse.constants.general import (
 Stage for mongo aggregation pipeline to select all the samples which are "fit to pick":
 - we first need to merge the fields from the priority_samples collection
 - we are then interested in samples which are:
-    filtered_positive == True OR must_sequence == True OR preferentially_sequence == True
+    filtered_positive == True OR must_sequence == True
+    (samples that are preferentially_sequence == True must also be filtered_positive == True
+    in order to be pickable so no need to select these independantly)
 """
 STAGES_FIT_TO_PICK_SAMPLES: Final[List[Dict[str, Any]]] = [
     # first perform a lookup from samples to priority_samples using the '_id' field from samples on 'sample_id' on
@@ -74,10 +76,7 @@ STAGES_FIT_TO_PICK_SAMPLES: Final[List[Dict[str, Any]]] = [
                 {FIELD_FILTERED_POSITIVE: True},
                 {
                     FIELD_PROCESSED: True,
-                    "$or": [
-                        {FIELD_MUST_SEQUENCE: True},
-                        {FIELD_PREFERENTIALLY_SEQUENCE: True},
-                    ],
+                    FIELD_MUST_SEQUENCE: True,
                 },
             ],
         }

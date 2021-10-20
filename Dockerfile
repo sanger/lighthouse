@@ -1,5 +1,5 @@
 # Use slim for a smaller image size and install only the required packages
-FROM python:3.8-slim
+FROM python:3.8-slim-buster
 
 # > Setting PYTHONUNBUFFERED to a non empty value ensures that the python output is sent straight to
 # > terminal (e.g. your container log) without being first buffered and that you can see the output
@@ -55,5 +55,5 @@ CMD ["run"]
 
 
 # https://docs.docker.com/engine/reference/builder/#healthcheck
-HEALTHCHECK --interval=1m --timeout=3s \
+HEALTHCHECK --interval=30s --timeout=5s \
     CMD curl -f http://localhost:8000/health || exit 1

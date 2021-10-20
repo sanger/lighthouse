@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 from datetime import datetime
 from functools import partial
 from http import HTTPStatus
@@ -12,7 +13,7 @@ from flask import current_app
 from requests import ConnectionError
 from sqlalchemy.exc import OperationalError
 
-from lighthouse.constants.events import PLATE_EVENT_DESTINATION_CREATED, PLATE_EVENT_DESTINATION_FAILED
+from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_COG_BARCODE,
@@ -45,6 +46,7 @@ from lighthouse.constants.fields import (
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
 )
+from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.exceptions import UnmatchedSampleError
 from lighthouse.helpers.plates import (
     add_cog_barcodes,
@@ -55,21 +57,25 @@ from lighthouse.helpers.plates import (
     construct_cherrypicking_plate_failed_message,
     create_cherrypicked_post_body,
     create_post_body,
+    destination_plate_field_generators,
     equal_row_and_sample,
     find_sample_matching_row,
     find_samples,
     find_source_plates,
+    format_plate,
     get_centre_prefix,
     get_source_plates_for_samples,
     get_unique_plate_barcodes,
     join_rows_with_samples,
     map_to_ss_columns,
+    plate_exists_in_ss,
     query_for_cherrypicked_samples,
     query_for_source_plate_uuids,
     row_is_normal_sample,
     row_to_dict,
     rows_with_controls,
     rows_without_controls,
+    source_plate_field_generators,
     update_mlwh_with_cog_uk_ids,
 )
 
@@ -79,7 +85,7 @@ from lighthouse.helpers.plates import (
 @pytest.fixture
 def mock_event_helpers():
     root = "lighthouse.helpers.plates"
-    with patch(f"{root}.get_robot_uuid") as mock_get_uuid:
+    with patch(f"{root}.Beckman.get_robot_uuid") as mock_get_uuid:
         with patch(f"{root}.construct_robot_message_subject") as mock_construct_robot:
             with patch(f"{root}.construct_destination_plate_message_subject") as mock_construct_dest:
                 with patch(f"{root}.construct_mongo_sample_message_subject") as mock_construct_sample:
@@ -105,30 +111,30 @@ def any_failure_type(app):
 def test_classify_samples_by_centre(app, samples, mocked_responses):
     samples, _ = samples
     assert list(classify_samples_by_centre(samples).keys()) == ["centre_1", "centre_2"]
-    assert len(classify_samples_by_centre(samples)["centre_1"]) == 9
+    assert len(classify_samples_by_centre(samples)["centre_1"]) == 10
     assert len(classify_samples_by_centre(samples)["centre_2"]) == 1
 
 
 def test_add_cog_barcodes_from_different_centres(app, centres, samples, mocked_responses):
     with app.app_context():
         samples, _ = samples
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC1/new?count=9"
+        baracoda_url = f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC1/new?count=10"
 
         baracoda_url2 = f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC2/new?count=1"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "789", "456", "abc", "def", "hij", "klm", "nop", "qrs", "tuv")
+        # update this tuple when adding more samples to the fixture data
+        cog_barcodes = ("123", "789", "456", "987", "abc", "def", "hij", "klm", "nop", "qrs", "tuv")
 
-        # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
 
         mocked_responses.add(
             responses.POST,
             baracoda_url,
             body=json.dumps(
-                {"barcodes_group": {"barcodes": ["123", "789", "456", "abc", "def", "hij", "klm", "nop", "qrs"]}}
+                {"barcodes_group": {"barcodes": ["123", "789", "456", "987", "abc", "def", "hij", "klm", "nop", "qrs"]}}
             ),
             status=HTTPStatus.CREATED,
         )
@@ -160,7 +166,7 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
         # update this tuple when adding more samples to the fixture data
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "abc")
+        cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
 
         assert len(cog_barcodes) == len(samples)
 
@@ -190,9 +196,9 @@ def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_respo
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "abc")
+        # update this tuple when adding more samples to the fixture data
+        cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
 
-        # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
 
         mocked_responses.add(
@@ -220,9 +226,9 @@ def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "abc")
+        # update this tuple when adding more samples to the fixture data
+        cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
 
-        # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
 
         mocked_responses.add(
@@ -250,9 +256,9 @@ def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centr
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
 
-        cog_barcodes = ("123", "456", "789", "101", "131", "161", "192", "222", "abc")
+        # update this tuple when adding more samples to the fixture data
+        cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
 
-        # update the 'cog_barcode' tuple when adding more samples to the fixture data
         assert len(cog_barcodes) == len(samples)
 
         def request_callback(request, data):
@@ -609,7 +615,7 @@ def test_join_rows_with_samples_filters_out_controls(app, samples):
     ]
 
     assert join_rows_with_samples(rows, samples) == [
-        {"row": row_to_dict(rows[1]), "sample": samples[6]},
+        {"row": row_to_dict(rows[1]), "sample": samples[7]},
     ]
 
 
@@ -662,6 +668,7 @@ def test_check_matching_sample_numbers_returns_true_match(app, samples):
         DartRow("DN1111", "A08", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN1111", "A09", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN1111", "A10", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow("DN1111", "A11", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
         DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
     ]
@@ -772,7 +779,7 @@ def test_create_cherrypicked_post_body(app):
                         {
                             "event": {
                                 "user_identifier": "my_user",
-                                "event_type": PLATE_EVENT_DESTINATION_CREATED,
+                                "event_type": PE_BECKMAN_DESTINATION_CREATED,
                                 "subjects": [
                                     {
                                         "role_type": "robot",
@@ -832,8 +839,8 @@ def test_get_unique_plate_barcodes(app, samples):
     samples = [
         samples[0],
         samples[0],
-        samples[6],
-        samples[6],
+        samples[7],
+        samples[7],
     ]
 
     result = get_unique_plate_barcodes(samples)
@@ -871,8 +878,8 @@ def test_get_source_plates_for_samples(app, samples, source_plates):
         samples = [
             samples[0],
             samples[0],
-            samples[6],
-            samples[6],
+            samples[7],
+            samples[7],
         ]
 
         results = get_source_plates_for_samples(samples)
@@ -952,7 +959,7 @@ def test_construct_cherrypicking_plate_failed_message_dart_fetch_failure(app, mo
 
                     event = message_content["event"]
                     assert event["uuid"] == str(test_uuid)
-                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["event_type"] == PE_BECKMAN_DESTINATION_FAILED
                     assert event["occured_at"] == test_timestamp
                     assert event["user_identifier"] == test_user
 
@@ -1014,7 +1021,7 @@ def test_construct_cherrypicking_plate_failed_message_none_dart_samples(app, moc
 
                     event = message_content["event"]
                     assert event["uuid"] == str(test_uuid)
-                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["event_type"] == PE_BECKMAN_DESTINATION_FAILED
                     assert event["occured_at"] == test_timestamp
                     assert event["user_identifier"] == test_user
 
@@ -1076,7 +1083,7 @@ def test_construct_cherrypicking_plate_failed_message_empty_dart_samples(app, mo
 
                     event = message_content["event"]
                     assert event["uuid"] == str(test_uuid)
-                    assert event["event_type"] == PLATE_EVENT_DESTINATION_FAILED
+                    assert event["event_type"] == PE_BECKMAN_DESTINATION_FAILED
                     assert event["occured_at"] == test_timestamp
                     assert event["user_identifier"] == test_user
 
@@ -1177,6 +1184,75 @@ def test_construct_cherrypicking_plate_failed_message_source_plates_not_in_mongo
             assert message is None
             assert len(errors) == 1
             assert f"No source plate data found in Mongo for DART samples in plate '{barcode}'" in errors
+
+
+def test_format_plate_source(app, plates_lookup_without_samples, plates_lookup_with_samples):
+    with app.app_context():
+        assert (
+            format_plate("plate_123", exclude_props=["pickable_samples"]) == plates_lookup_without_samples["plate_123"]
+        )
+        assert format_plate("plate_123") == plates_lookup_with_samples["plate_123"]
+        assert format_plate(barcode="plate_123", plate_type=ARG_TYPE_SOURCE) == plates_lookup_with_samples["plate_123"]
+
+
+def test_format_plate_destination(app, mocked_responses):
+    plate_barcode = "dest_123"
+
+    with app.app_context():
+        ss_url = f"{app.config['SS_URL']}/api/v2/labware"
+        mocked_responses.add(
+            responses.GET,
+            f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={plate_barcode}",
+            json={"data": ["barcode exists!"]},
+            status=HTTPStatus.OK,
+        )
+        response = {
+            "plate_barcode": "dest_123",
+            "plate_exists": True,
+        }
+        assert format_plate(barcode=plate_barcode, plate_type=ARG_TYPE_DESTINATION) == response
+
+
+def test_source_plate_field_generators(app, plates_lookup_with_samples):
+    with app.app_context():
+        assert source_plate_field_generators("plate_123")["plate_barcode"] is not None
+        plate = plates_lookup_with_samples["plate_123"]
+        assert source_plate_field_generators("plate_123")["plate_barcode"]() == plate["plate_barcode"]
+
+
+def test_destination_plate_field_generators(app):
+    plate_barcode = "dest_123"
+    with app.app_context():
+        assert ("plate_barcode", "plate_exists") == tuple(
+            destination_plate_field_generators(barcode=plate_barcode).keys()
+        )
+        assert destination_plate_field_generators(barcode=plate_barcode)["plate_barcode"]() == plate_barcode
+        with patch("lighthouse.helpers.plates.plate_exists_in_ss", side_effect=(True, False)):
+            assert destination_plate_field_generators(barcode=plate_barcode)["plate_exists"]() is True
+            assert destination_plate_field_generators(barcode=plate_barcode)["plate_exists"]() is False
+
+
+def test_plate_exists_in_ss(app, mocked_responses):
+    with app.app_context():
+        ss_url = f"{app.config['SS_URL']}/api/v2/labware"
+        first_plate_barcode = "plate_123"
+        second_plate_barcode = "plate_456"
+
+        mocked_responses.add(
+            responses.GET,
+            f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={first_plate_barcode}",
+            json={"data": ["barcode exists!"]},
+            status=HTTPStatus.OK,
+        )
+        mocked_responses.add(
+            responses.GET,
+            f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={second_plate_barcode}",
+            json={"data": []},
+            status=HTTPStatus.OK,
+        )
+
+        assert plate_exists_in_ss(barcode=first_plate_barcode) is True
+        assert plate_exists_in_ss(barcode=second_plate_barcode) is False
 
 
 # def test_construct_cherrypicking_plate_failed_message_success(

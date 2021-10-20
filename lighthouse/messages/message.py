@@ -1,11 +1,17 @@
 import json
 
+from lighthouse.types import EventMessage
+
 
 class Message:
     """Creates a message with the correct payload structure to send to the warehouse."""
 
-    def __init__(self, message=None):
-        self.message = message
+    def __init__(self, message: EventMessage):
+        self._message = message
+
+    @property
+    def message(self) -> EventMessage:
+        return self._message
 
     def payload(self) -> str:
         """Generates the JSON payload of the message.
@@ -15,7 +21,7 @@ class Message:
         """
         return json.dumps(self.message)
 
-    def event_type(self):
+    def event_type(self) -> str:
         """Return the event type.
 
         Returns a string representing the event type. Throws a KeyError if
@@ -23,5 +29,4 @@ class Message:
         event type key is missing. This will usually indicate that we are
         attempting to process a non event message.
         """
-
-        return self.message["event"]["event_type"]
+        return self._message.get("event", {}).get("event_type")  # type: ignore

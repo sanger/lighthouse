@@ -10,7 +10,7 @@ def test_broker_connect_connects(app, mock_pika):
         test_credentials, test_parameters, mock_channel, mock_connection, pika = mock_pika
 
         broker = Broker()
-        broker.connect()
+        broker._connect()
 
         pika.PlainCredentials.assert_called_with(app.config["RMQ_USERNAME"], app.config["RMQ_PASSWORD"])
         pika.ConnectionParameters.assert_called_with(
@@ -26,8 +26,8 @@ def test_broker_connect_connects(app, mock_pika):
                 app.config["RMQ_EXCHANGE"], exchange_type=app.config["RMQ_EXCHANGE_TYPE"]
             )
 
-        assert broker.connection == mock_connection
-        assert broker.channel == mock_channel
+        assert broker._connection == mock_connection
+        assert broker._channel == mock_channel
 
 
 def test_broker_publish(app, mock_pika, mock_message):
@@ -37,7 +37,7 @@ def test_broker_publish(app, mock_pika, mock_message):
         test_routing_key = "routing key"
 
         broker = Broker()
-        broker.connect()
+        broker._connect()
         broker.publish(test_message, test_routing_key)
 
         mock_channel.basic_publish.assert_called_with(
@@ -53,7 +53,7 @@ def test_broker_publish_no_message(app, mock_pika):
         test_routing_key = "routing key"
 
         broker = Broker()
-        broker.connect()
+        broker._connect()
         broker.publish(None, test_routing_key)  # type: ignore
 
         mock_channel.basic_publish.assert_not_called()
@@ -65,7 +65,7 @@ def test_broker_publish_no_routing_key(app, mock_pika, mock_message):
         _, test_message = mock_message
 
         broker = Broker()
-        broker.connect()
+        broker._connect()
         broker.publish(test_message, None)  # type: ignore
 
         mock_channel.basic_publish.assert_not_called()
@@ -86,8 +86,8 @@ def test_broker_close_connection(app, mock_pika):
         _, _, _, mock_connection, _ = mock_pika
 
         broker = Broker()
-        broker.connect()
-        broker.close_connection()
+        broker._connect()
+        broker._close_connection()
 
         mock_connection.close.assert_called()
 
@@ -96,7 +96,7 @@ def test_broker_close_connection_no_connection():
     broker = Broker()
 
     with pytest.raises(AttributeError):
-        broker.close_connection()
+        broker._close_connection()
 
 
 # class-specific test helpers
