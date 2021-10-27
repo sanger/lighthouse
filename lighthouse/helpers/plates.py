@@ -42,7 +42,6 @@ from lighthouse.constants.fields import (
     FIELD_SS_LAB_ID,
     FIELD_SS_NAME,
     FIELD_SS_PHENOTYPE,
-    FIELD_SS_RESULT,
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
@@ -418,8 +417,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample[FIELD_SS_NAME] = mongo_row[FIELD_RNA_ID]
                 mapped_sample[FIELD_SS_SAMPLE_DESCRIPTION] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample[FIELD_SS_SUPPLIER_NAME] = mongo_row[FIELD_COG_BARCODE]
-                mapped_sample[FIELD_SS_PHENOTYPE] = "positive"
-                mapped_sample[FIELD_SS_RESULT] = mongo_row[FIELD_RESULT]
+                mapped_sample[FIELD_SS_PHENOTYPE] = mongo_row[FIELD_RESULT].strip().lower()
                 mapped_sample[FIELD_SS_UUID] = mongo_row[FIELD_LH_SAMPLE_UUID]
                 mapped_sample[FIELD_SS_LAB_ID] = mongo_row[FIELD_LAB_ID]
 
@@ -634,7 +632,7 @@ def __ss_sample_friendly_name(sample):
             sample[FIELD_SS_SAMPLE_DESCRIPTION],
             sample[FIELD_SS_NAME],
             sample[FIELD_SS_LAB_ID],
-            sample[FIELD_SS_RESULT],
+            sample[FIELD_SS_PHENOTYPE],
         ]
     )
 

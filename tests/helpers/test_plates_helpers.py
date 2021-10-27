@@ -40,7 +40,6 @@ from lighthouse.constants.fields import (
     FIELD_SS_LAB_ID,
     FIELD_SS_NAME,
     FIELD_SS_PHENOTYPE,
-    FIELD_SS_RESULT,
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
@@ -698,7 +697,6 @@ def test_map_to_ss_columns(app, dart_mongo_merged_samples):
                 FIELD_SS_COORDINATE: "B02",
                 FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 FIELD_SS_LAB_ID: "AP",
-                FIELD_SS_RESULT: "Positive",
             },
         ]
         result = map_to_ss_columns(dart_mongo_merged_samples)
@@ -735,7 +733,6 @@ def test_create_cherrypicked_post_body(app):
                 FIELD_SS_COORDINATE: "B02",
                 FIELD_SS_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
                 FIELD_SS_LAB_ID: "AP",
-                FIELD_SS_RESULT: "Positive",
             },
         ]
 
@@ -811,7 +808,7 @@ def test_create_cherrypicked_post_body(app):
                                     {
                                         "role_type": "sample",
                                         "subject_type": "sample",
-                                        "friendly_name": "MCM002__rna_2__AP__Positive",
+                                        "friendly_name": "MCM002__rna_2__AP__positive",
                                         "uuid": "8000a18d-43c6-44ff-9adb-257cb812ac77",
                                     },
                                 ],
