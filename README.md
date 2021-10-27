@@ -205,7 +205,7 @@ If the deployment fails you can use the following command to check why
 
     ssh dsm-01-uat.psd.sanger.ac.uk journalctl
     
-You can filter by arbitrary time limits using the --since command e.g. with "1 hour ago"
+You can filter by arbitrary time limits using the --since command e.g. with "1 hour ago"  
 You can also grep to limit by the release version you are looking for e.g. grep 2.21.1
 
 ## Routes
