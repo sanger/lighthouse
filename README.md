@@ -199,6 +199,15 @@ This project uses a Docker image as the unit of deployment. Update `.release-ver
 major/minor/patch. On merging a pull request into *develop* or *master*, a release will be created
 along with the Docker image associated to that release.
 
+NB: 
+When deploying a release you do not need to proceed it with a v as in Rails apps.
+If the deployment fails you can use the following command to check why
+
+    ssh dsm-01-uat.psd.sanger.ac.uk journalctl
+    
+You can filter by arbitrary time limits using the --since command e.g. with "1 hour ago"
+You can also grep to limit by the release version you are looking for e.g. grep 2.21.1
+
 ## Routes
 
 The service has the following routes:
