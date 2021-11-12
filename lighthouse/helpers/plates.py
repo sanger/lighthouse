@@ -2,6 +2,7 @@ import logging
 from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
+from datetime import datetime
 
 import requests
 from eve import Eve
@@ -369,7 +370,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                     table.c.result == bindparam("b_result"),
                 )
             )
-            .values(cog_uk_id=bindparam("b_cog_uk_id"))
+            .values(cog_uk_id=bindparam("b_cog_uk_id"), updated_at=datetime.now())
         )
         db_connection = sql_engine.connect()
 

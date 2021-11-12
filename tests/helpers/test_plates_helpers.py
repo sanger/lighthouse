@@ -45,6 +45,7 @@ from lighthouse.constants.fields import (
     FIELD_SS_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
+    MLWH_LH_SAMPLE_UPDATED_AT
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.exceptions import UnmatchedSampleError
@@ -361,6 +362,7 @@ def test_update_mlwh_with_cog_uk_ids(
 
         assert before_count == 5
 
+        test_timestamp = datetime.now().replace(second=0, microsecond=0)
         # run the function we're testing
         update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
 
@@ -368,12 +370,15 @@ def test_update_mlwh_with_cog_uk_ids(
         after = retrieve_samples_cursor(app.config, mlwh_sql_engine)
         after_count = 0
         after_cog_uk_ids = set()
+        after_update_timestamps = list()
         for row in after:
             after_count += 1
             after_cog_uk_ids.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
+            after_update_timestamps.append(row[MLWH_LH_SAMPLE_UPDATED_AT].replace(second=0, microsecond=0))
 
         assert after_count == before_count
         assert after_cog_uk_ids == set(cog_uk_ids)
+        assert all([test_timestamp == updated_timestamp for updated_timestamp in after_update_timestamps])
 
 
 def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples_multiple, samples_for_mlwh_update):
@@ -443,7 +448,7 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(
 def retrieve_samples_cursor(config, mlwh_sql_engine):
     with mlwh_sql_engine.connect() as connection:
         results = connection.execute(
-            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID} " "FROM lighthouse_sample"
+            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID}, {MLWH_LH_SAMPLE_UPDATED_AT} " "FROM lighthouse_sample"
         )
 
     return results
