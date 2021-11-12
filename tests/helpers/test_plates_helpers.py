@@ -45,7 +45,7 @@ from lighthouse.constants.fields import (
     FIELD_SS_UUID,
     MLWH_LH_SAMPLE_COG_UK_ID,
     MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_UPDATED_AT
+    MLWH_LH_SAMPLE_UPDATED_AT,
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.exceptions import UnmatchedSampleError
@@ -448,7 +448,8 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(
 def retrieve_samples_cursor(config, mlwh_sql_engine):
     with mlwh_sql_engine.connect() as connection:
         results = connection.execute(
-            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID}, {MLWH_LH_SAMPLE_UPDATED_AT} " "FROM lighthouse_sample"
+            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID}, {MLWH_LH_SAMPLE_UPDATED_AT} "
+            "FROM lighthouse_sample"
         )
 
     return results

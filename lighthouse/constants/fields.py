@@ -1,6 +1,5 @@
 # Fields for baracoda
 from typing import Final
-from datetime import datetime
 
 FIELD_COG_BARCODE: Final[str] = "cog_barcode"
 
@@ -71,7 +70,7 @@ MLWH_LH_SAMPLE_COG_UK_ID: Final[str] = "cog_uk_id"
 MLWH_LH_SAMPLE_RESULT: Final[str] = "result"
 MLWH_LH_SAMPLE_RNA_ID: Final[str] = "rna_id"
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: Final[str] = "root_sample_id"
-MLWH_LH_SAMPLE_UPDATED_AT: Final[datetime] = "updated_at"
+MLWH_LH_SAMPLE_UPDATED_AT: Final[str] = "updated_at"
 
 ###
 # Sequencescape sample field names
