@@ -190,7 +190,7 @@ You can then run the tests inside the container:
 
         docker exec -ti <container_id for lighthouse> bash
         pipenv shell
-        pipenv install
+        pipenv install --dev
         python -m pytest
 
 ## Deployment
