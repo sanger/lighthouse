@@ -221,7 +221,7 @@ def find_cherrytrack_plate_from_barcode() -> FlaskResponse:
         if response_json.get("errors") is not None:
             return internal_server_error(response_json.get("errors"))
 
-        return ok(plate=response)
+        return ok(plate=response_json)
     except AssertionError as e:
         return bad_request(str(e))
     except Exception as e:
