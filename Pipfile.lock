@@ -1064,11 +1064,11 @@
         },
         "black": {
             "hashes": [
-                "sha256:6eb7448da9143ee65b856a5f3676b7dda98ad9abe0f87fce8c59291f15e82a5b",
-                "sha256:a9952229092e325fe5f3dae56d81f639b23f7131eb840781947e4b2886030f33"
+                "sha256:0b1f66cbfadcd332ceeaeecf6373d9991d451868d2e2219ad0ac1213fb701117",
+                "sha256:83f3852301c8dcb229e9c444dd79f573c8d31c7c2dad9bbaaa94c808630e32aa"
             ],
             "index": "pypi",
-            "version": "==21.10b0"
+            "version": "==21.11b0"
         },
         "certifi": {
             "hashes": [
