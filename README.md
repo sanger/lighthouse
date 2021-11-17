@@ -93,6 +93,9 @@ Various environment variables are set in the docker-compose file.
 
         docker exec -ti lighthouse_lighthouse_1 bash
 
+   Warning! The names that Docker generates for containers might not be consistent over time. If this doesn't work for you,
+   check the name of the container using `docker ps`.
+
    After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all
    source code of the project from your hosting machine. The container will map your port 8000 with the port 8000 of
    Docker (configured in docker-compose.yml).
