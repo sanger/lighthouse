@@ -355,30 +355,33 @@ def test_update_mlwh_with_cog_uk_ids(
     with app.app_context():
         # check that the samples already exist in the MLWH db but do not have cog uk ids
         before = retrieve_samples_cursor(app.config, mlwh_sql_engine)
-        before_count = 0
+        timestamps_before_update = list()
         for row in before:
-            before_count += 1
             assert row[MLWH_LH_SAMPLE_COG_UK_ID] is None
+            timestamps_before_update.append(row[MLWH_LH_SAMPLE_UPDATED_AT])
 
-        assert before_count == 5
+        assert before.rowcount == 5
 
-        test_timestamp = datetime.now().replace(second=0, microsecond=0)
         # run the function we're testing
         update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
 
         # check that the same samples in the MLWH now have the correct cog uk ids
         after = retrieve_samples_cursor(app.config, mlwh_sql_engine)
-        after_count = 0
         after_cog_uk_ids = set()
         after_update_timestamps = list()
         for row in after:
-            after_count += 1
             after_cog_uk_ids.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
-            after_update_timestamps.append(row[MLWH_LH_SAMPLE_UPDATED_AT].replace(second=0, microsecond=0))
+            after_update_timestamps.append(row[MLWH_LH_SAMPLE_UPDATED_AT])
 
-        assert after_count == before_count
+        assert after.rowcount == before.rowcount
         assert after_cog_uk_ids == set(cog_uk_ids)
-        assert all([test_timestamp == updated_timestamp for updated_timestamp in after_update_timestamps])
+        for before, after in zip(timestamps_before_update, after_update_timestamps):
+            # If before is set, check that the after timestamp is updated
+            if before is not None:
+                assert after > before
+            # If before was not set, check after is not None and has a timestamp value
+            else:
+                assert (after is not None) and isinstance(after, datetime)
 
 
 def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples_multiple, samples_for_mlwh_update):
