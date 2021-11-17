@@ -101,7 +101,7 @@ Various environment variables are set in the docker-compose file.
    source code of the project from your hosting machine. The container will map your port 8000 with the port 8000 of
    Docker (configured in docker-compose.yml).
 
-1. Now that you are inside the virtual environment, initialize the MySQL and SQLServer development databases:
+1. Now that you are inside the running container, initialize the MySQL and SQLServer development databases:
 
         python ./setup_sqlserver_test_db.py
         python ./setup_test_db.py
