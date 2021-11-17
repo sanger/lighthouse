@@ -2,6 +2,7 @@ import logging
 from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
+from datetime import datetime
 
 import requests
 from eve import Eve
@@ -45,6 +46,8 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
+    MLWH_LH_SAMPLE_COG_UK_ID,
+    MLWH_LH_SAMPLE_UPDATED_AT,
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.exceptions import (
@@ -369,7 +372,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                     table.c.result == bindparam("b_result"),
                 )
             )
-            .values(cog_uk_id=bindparam("b_cog_uk_id"))
+            .values({MLWH_LH_SAMPLE_COG_UK_ID: bindparam("b_cog_uk_id"), MLWH_LH_SAMPLE_UPDATED_AT: datetime.now()})
         )
         db_connection = sql_engine.connect()
 
