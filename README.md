@@ -89,13 +89,9 @@ Various environment variables are set in the docker-compose file.
 
         docker-compose up
 
-1. Find the lighthouse container id with:
-
-        docker ps
-
 1. Start a bash session in the container with:
 
-        docker exec -ti <container_id for lighthouse> bash
+        docker exec -ti lighthouse_lighthouse_1 bash
 
    After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all
    source code of the project from your hosting machine. The container will map your port 8000 with the port 8000 of
