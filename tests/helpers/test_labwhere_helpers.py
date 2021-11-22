@@ -32,7 +32,7 @@ def test_set_locations_in_labwhere(app, mocked_responses):
         mocked_responses.add(
             responses.POST,
             labwhere_url,
-            match=[responses.json_params_matcher(payload)],
+            match=[responses.matchers.json_params_matcher(payload)],
             json=body,
             status=HTTPStatus.OK,
         )

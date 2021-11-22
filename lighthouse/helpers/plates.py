@@ -2,6 +2,7 @@ import logging
 from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
+from datetime import datetime
 
 import requests
 from eve import Eve
@@ -42,10 +43,11 @@ from lighthouse.constants.fields import (
     FIELD_SS_LAB_ID,
     FIELD_SS_NAME,
     FIELD_SS_PHENOTYPE,
-    FIELD_SS_RESULT,
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
+    MLWH_LH_SAMPLE_COG_UK_ID,
+    MLWH_LH_SAMPLE_UPDATED_AT,
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.exceptions import (
@@ -370,7 +372,7 @@ def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
                     table.c.result == bindparam("b_result"),
                 )
             )
-            .values(cog_uk_id=bindparam("b_cog_uk_id"))
+            .values({MLWH_LH_SAMPLE_COG_UK_ID: bindparam("b_cog_uk_id"), MLWH_LH_SAMPLE_UPDATED_AT: datetime.now()})
         )
         db_connection = sql_engine.connect()
 
@@ -418,8 +420,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 mapped_sample[FIELD_SS_NAME] = mongo_row[FIELD_RNA_ID]
                 mapped_sample[FIELD_SS_SAMPLE_DESCRIPTION] = mongo_row[FIELD_ROOT_SAMPLE_ID]
                 mapped_sample[FIELD_SS_SUPPLIER_NAME] = mongo_row[FIELD_COG_BARCODE]
-                mapped_sample[FIELD_SS_PHENOTYPE] = "positive"
-                mapped_sample[FIELD_SS_RESULT] = mongo_row[FIELD_RESULT]
+                mapped_sample[FIELD_SS_PHENOTYPE] = mongo_row[FIELD_RESULT].strip().lower()
                 mapped_sample[FIELD_SS_UUID] = mongo_row[FIELD_LH_SAMPLE_UUID]
                 mapped_sample[FIELD_SS_LAB_ID] = mongo_row[FIELD_LAB_ID]
 
@@ -634,7 +635,7 @@ def __ss_sample_friendly_name(sample):
             sample[FIELD_SS_SAMPLE_DESCRIPTION],
             sample[FIELD_SS_NAME],
             sample[FIELD_SS_LAB_ID],
-            sample[FIELD_SS_RESULT],
+            sample[FIELD_SS_PHENOTYPE],
         ]
     )
 

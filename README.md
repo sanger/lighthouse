@@ -11,17 +11,23 @@ mongodb by the [crawler](https://github.com/sanger/crawler).
 
 <!-- toc -->
 
-- [Requirements for Development](#requirements-for-development)
-- [Getting Started](#getting-started)
-  * [Configuring the Environment](#configuring-the-environment)
-  * [Setup Steps](#setup-steps)
-- [Running](#running)
-  * [Locally Using pipenv](#locally-using-pipenv)
-  * [Using Docker](#using-docker)
-- [Testing](#testing)
-  * [Testing Requirements](#testing-requirements)
-  * [Running Tests](#running-tests)
-  * [Running tests with docker](#running-tests-with-docker)
+- [A note on Docker](#a-note-on-docker)
+- [Option A - using Docker](#option-a---using-docker)
+  * [Requirements for Development](#requirements-for-development)
+  * [Getting Started](#getting-started)
+    + [Configuring the Environment](#configuring-the-environment)
+    + [Setup Steps](#setup-steps)
+  * [Running](#running)
+  * [Testing](#testing)
+- [Option B - without Docker](#option-b---without-docker)
+  * [Requirements for Development](#requirements-for-development-1)
+  * [Getting Started](#getting-started-1)
+    + [Configuring the Environment](#configuring-the-environment-1)
+    + [Setup Steps](#setup-steps-1)
+  * [Running](#running-1)
+  * [Testing](#testing-1)
+    + [Testing Requirements](#testing-requirements)
+    + [Running Tests](#running-tests)
 - [Deployment](#deployment)
 - [Routes](#routes)
 - [Scheduled Jobs](#scheduled-jobs)
@@ -33,73 +39,35 @@ mongodb by the [crawler](https://github.com/sanger/crawler).
 
 <!-- tocstop -->
 
-## Requirements for Development
+## A note on Docker
 
-The following tools are required for development:
+Most of the notes in this readme are split into 'Option A - using Docker' and 'Option B - without Docker' sections.
 
-- python (use pyenv or something similar to install the python version specified in the `Pipfile`)
-- mongodb
-- MySQL
-- Microsoft SQL Server
+Most of us have found we have to use Docker to develop locally due to an issue with 'pyodbc', which was ultimately caused by our HomeBrew installation not being in the root directory. These errors appeared once the SQL Server dependency was introduced to the project.
 
-A `docker-compose.yml` file is available with separate `run` commands for each service if you prefer to run these
-independently.
+Details of the pyodbc error:
 
-## Getting Started
+    ImportError: dlopen(/Users/.../.local/share/virtualenvs/lighthouse-e4xstWfp/lib/python3.8/site-packages/pyodbc.cpython-38-darwin.so, 2): Library not loaded: /usr/local/opt/unixodbc/lib/libodbc.2.dylib
 
-### Configuring the Environment
+This may be solved by recompiling pyodbc linked against your homebrew version of unixodbc.
 
-Non-sensitive environmental variables can be stored in the `.flaskenv` file. These will be read
-by the `python-dotenv` library when the app is run. Currently, these config variables are defined
-there:
+https://github.com/mkleehammer/pyodbc/issues/681
 
-    FLASK_APP=lighthouse
-    FLASK_RUN_HOST=0.0.0.0
-    FLASK_RUN_PORT=8000
-    FLASK_ENV=development
-    EVE_SETTINGS=development.py
+If you still experience issues loading the MSSQL drivers themselves, you might need to use the docker container approach.
 
-### Setup Steps
+## Option A - using Docker
 
-- Use pyenv or something similar to install the version of python
-  defined in the `Pipfile`:
+### Requirements for Development
 
-        brew install pyenv
-        pyenv install <python_version>
-- Use pipenv to install the required python packages for the application and development:
+A Docker installation is required.
 
-        pipenv install --dev
-- Sqlserver dependencies (assumes MacOS and homebrew)
-  [Official instructions](https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/install-microsoft-odbc-driver-sql-server-macos?view=sql-server-ver15)
-  You may experience difficulties if you have brew installed in your home directory. If this is the case option B may work better.
+### Getting Started
 
-        brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
-        brew update
-        HOMEBREW_NO_ENV_FILTERING=1 ACCEPT_EULA=Y brew install msodbcsql17 mssql-tools unixodbc
-- (Optional) To start a Sqlserver container in local:
+#### Configuring the Environment
 
-        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=MyS3cr3tPassw0rd" -p 1433:1433 --name sqlserver \
-        -h sql1 -d mcr.microsoft.com/mssql/server:2019-latest
+Various environment variables are set in the docker-compose file.
 
-- [Installing MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
-
-## Running
-
-### Locally Using pipenv
-
-1. Enter the python virtual environment using:
-
-        pipenv shell
-
-1. Run the app using:
-
-        flask run
-
-### Using Docker
-
-1. Build the docker image using:
-
-        docker build --tag lighthouse:develop .
+#### Setup Steps
 
 1. To start the database dependencies used by Lighthouse and also by Crawler
    there is a separate configuration for Docker Compose. This is shared with
@@ -114,46 +82,99 @@ there:
 
        ./dependencies/down.sh
 
+### Running
+
 1. Start the Lighthouse service specified in the `docker-compose.yml` from the
    root of the repository:
 
         docker-compose up
 
-1. Create a `.env` file which contains the line:
+1. Start a bash session in the container with:
 
-        LOCALHOST=host.docker.internal
+        docker exec -ti lighthouse_lighthouse_1 bash
 
-1. Start the docker container and open a bash session in it with:
-
-        docker run --env-file .env -p 8000:8000 -v $(pwd):/code -it --entrypoint bash lighthouse:develop
+   Warning! The names that Docker generates for containers might not be consistent over time. If this doesn't work for you,
+   check the name of the container using `docker ps`.
 
    After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all
-   source code of the project from your hosting machine The container will map your port 8000 with the port 8000 of
-   Docker.
+   source code of the project from your hosting machine. The container will map your port 8000 with the port 8000 of
+   Docker (configured in docker-compose.yml).
 
-1. Once inside the docker container, run:
-
-        pipenv install
-        pipenv shell
-
-1. Now that you are inside the virtual environment, initialize the development database for SQLServer:
+1. Now that you are inside the running container, initialize the MySQL and SQLServer development databases:
 
         python ./setup_sqlserver_test_db.py
         python ./setup_test_db.py
 
-1. Finally, start the app:
+You should be able to access the app with a browser going to your local port 8000 (go to http://localhost:8000)
+
+### Testing
+
+Once you have got the lighthouse container running and started a bash session within it, you can run tests (flags are for verbose and exit early):
+
+        python -m pytest -vx
+
+## Option B - without Docker
+
+### Requirements for Development
+
+The following tools are required for development:
+
+- python (use pyenv or something similar to install the python version specified in the `Pipfile`)
+- mongodb
+- MySQL
+- Microsoft SQL Server
+
+### Getting Started
+
+#### Configuring the Environment
+
+Non-sensitive environment variables can be stored in the `.flaskenv` file. These will be read
+by the `python-dotenv` library when the app is run. Currently, these config variables are defined
+there:
+
+    FLASK_APP=lighthouse
+    FLASK_RUN_HOST=0.0.0.0
+    FLASK_RUN_PORT=8000
+    FLASK_ENV=development
+    EVE_SETTINGS=development.py
+
+#### Setup Steps
+
+- Use pyenv or something similar to install the version of python
+  defined in the `Pipfile`:
+
+        brew install pyenv
+        pyenv install <python_version>
+- Use pipenv to install the required python packages for the application and development:
+
+        pipenv install --dev
+- Sqlserver dependencies (assumes MacOS and homebrew)
+  [Official instructions](https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/install-microsoft-odbc-driver-sql-server-macos?view=sql-server-ver15)
+  You may experience difficulties if you have brew installed in your home directory. If this is the case, the Docker container approach may work better.
+
+        brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+        brew update
+        HOMEBREW_NO_ENV_FILTERING=1 ACCEPT_EULA=Y brew install msodbcsql17 mssql-tools unixodbc
+
+- [Installing MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
+
+### Running
+
+1. Enter the python virtual environment using:
+
+        pipenv shell
+
+1. Run the app using:
 
         flask run
 
-   After this step you should be able to access the app with a browser going to your local port 8000 (go to http://localhost:8000)
+### Testing
 
-## Testing
-
-### Testing Requirements
+#### Testing Requirements
 
 Verify the credentials for the required databases in the test settings file `lighthouse/config/test.py`.
 
-### Running Tests
+#### Running Tests
 
 Run the tests using pytest (flags are for verbose and exit early):
 
@@ -165,39 +186,20 @@ A wrapper is provided with pipenv (look in the Pipfile's `[scripts]` block for m
 
 **NB**: Make sure to be in the virtual environment (`pipenv shell`) before running the tests.
 
-### Running tests with docker
-
-If you are unable to run tests locally (because of `pyodbc` or other issues) then you can use the Docker Compose:
-
-        docker compose up
-
-Then in another terminal, start up the other databases:
-
-        ./dependencies/up.sh
-
-And get the lighthouse container id:
-        docker ps
-
-You will then need to setup the MSSQL with:
-
-        docker exec -ti <container_id for lighthouse> python ./setup_sqlserver_test_db.py
-
-And the unified warehouse with:
-
-        docker exec -ti <container_id for lighthouse> python ./setup_test_db.py
-
-You can then run the tests inside the container:
-
-        docker exec -ti <container_id for lighthouse> bash
-        pipenv shell
-        pipenv install
-        python -m pytest
-
 ## Deployment
 
 This project uses a Docker image as the unit of deployment. Update `.release-version` with
 major/minor/patch. On merging a pull request into *develop* or *master*, a release will be created
 along with the Docker image associated to that release.
+
+NB:
+When deploying a release you do not need to proceed it with a v as in Rails apps.
+If the deployment fails you can use the following command to check why
+
+    ssh dsm-01-uat.psd.sanger.ac.uk journalctl
+
+You can filter by arbitrary time limits using the --since command e.g. with "1 hour ago"
+You can also grep to limit by the release version you are looking for e.g. grep 2.21.1
 
 ## Routes
 

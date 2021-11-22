@@ -70,6 +70,7 @@ MLWH_LH_SAMPLE_COG_UK_ID: Final[str] = "cog_uk_id"
 MLWH_LH_SAMPLE_RESULT: Final[str] = "result"
 MLWH_LH_SAMPLE_RNA_ID: Final[str] = "rna_id"
 MLWH_LH_SAMPLE_ROOT_SAMPLE_ID: Final[str] = "root_sample_id"
+MLWH_LH_SAMPLE_UPDATED_AT: Final[str] = "updated_at"
 
 ###
 # Sequencescape sample field names
@@ -81,13 +82,13 @@ FIELD_SS_COORDINATE: Final[str] = "coordinate"
 FIELD_SS_LAB_ID: Final[str] = "lab_id"
 FIELD_SS_NAME: Final[str] = "name"
 FIELD_SS_PHENOTYPE: Final[str] = "phenotype"
-FIELD_SS_RESULT: Final[str] = "result"
 FIELD_SS_SAMPLE_DESCRIPTION: Final[str] = "sample_description"
 FIELD_SS_SUPPLIER_NAME: Final[str] = "supplier_name"
 FIELD_SS_UUID: Final[str] = "uuid"
 
 ###
 # Cherrytrack fields
+###
 FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER: Final[str] = "automation_system_manufacturer"
 FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME: Final[str] = "automation_system_name"
 FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_RUN_ID: Final[str] = "automation_system_run_id"
