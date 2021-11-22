@@ -199,7 +199,7 @@ def find_plate_from_barcode() -> FlaskResponse:
 
 
 def find_cherrytrack_plate_from_barcode() -> FlaskResponse:
-    logger.info("Finding cherry track source plate from barcode")
+    logger.info("Finding cherry track plate from barcode")
     try:
         barcode = request.args.get("barcode") or ""
 
