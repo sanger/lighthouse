@@ -20,6 +20,10 @@ from lighthouse.helpers.plates import (
     update_mlwh_with_cog_uk_ids,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
+from lighthouse.helpers.cherrytrack import (
+    get_samples_from_source_plate_barcode_from_cherrytrack,
+    get_wells_from_destination_barcode_from_cherrytrack,
+)
 from lighthouse.types import FlaskResponse
 from lighthouse.utils import pretty
 
@@ -192,3 +196,34 @@ def find_plate_from_barcode() -> FlaskResponse:
         # We don't use str(e) here to fetch the exception summary, because the exceptions we're most likely to see here
         #   aren't end-user-friendly
         return internal_server_error(f"Failed to lookup plates: {type(e).__name__}")
+
+
+def find_cherrytrack_plate_from_barcode() -> FlaskResponse:
+    logger.info("Finding cherry track plate from barcode")
+    try:
+        barcode = request.args.get("barcode") or ""
+
+        assert len(barcode) > 0, "Include a barcode in the request"
+
+        plate_type = request.args.get(ARG_TYPE) or ""
+
+        logger.debug(f"{plate_type} plate barcode to look for: {barcode}")
+
+        if plate_type == ARG_TYPE_SOURCE:
+            response = get_samples_from_source_plate_barcode_from_cherrytrack(barcode)
+        elif plate_type == ARG_TYPE_DESTINATION:
+            response = get_wells_from_destination_barcode_from_cherrytrack(barcode)
+        else:
+            raise AssertionError(f"Plate type needs to be either '{ARG_TYPE_SOURCE}' or '{ARG_TYPE_DESTINATION}'")
+
+        response_json = response.json()
+
+        if response_json.get("errors") is not None:
+            return internal_server_error(response_json.get("errors"))
+
+        return ok(plate=response_json)
+    except AssertionError as e:
+        return bad_request(str(e))
+    except Exception as e:
+        logger.exception(e)
+        return internal_server_error(f"Failed to lookup plate: {str(e)}")
