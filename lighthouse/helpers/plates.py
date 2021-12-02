@@ -23,6 +23,7 @@ from lighthouse.constants.fields import (
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
+    FIELD_DART_LH_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_LH_SAMPLE_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
@@ -212,10 +213,7 @@ def query_for_cherrypicked_samples(rows: Optional[List[SampleDoc]]) -> Optional[
     return {
         "$or": [
             {
-                FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
-                FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
-                FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
-
+                FIELD_LH_SAMPLE_UUID: getattr(row, FIELD_DART_LH_SAMPLE_UUID)
             }
             for row in rows_without_controls(rows)
         ]
@@ -224,9 +222,7 @@ def query_for_cherrypicked_samples(rows: Optional[List[SampleDoc]]) -> Optional[
 
 def equal_row_and_sample(row, sample):
     return (
-        (sample[FIELD_ROOT_SAMPLE_ID] == getattr(row, FIELD_DART_ROOT_SAMPLE_ID))
-        and (sample[FIELD_RNA_ID] == getattr(row, FIELD_DART_RNA_ID))
-        and (sample[FIELD_LAB_ID] == getattr(row, FIELD_DART_LAB_ID))
+        (sample[FIELD_LH_SAMPLE_UUID] == getattr(row, FIELD_DART_LH_SAMPLE_UUID))
     )
 
 
