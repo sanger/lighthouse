@@ -89,6 +89,14 @@ Various environment variables are set in the docker-compose file.
 
         docker-compose up
 
+   This will keep running continuously in your terminal window, so to execute further commands you'll need
+   to open a new terminal window or tab.
+
+   To stop the lighthouse service container, press Ctrl-C back in the original window.
+
+   If you would prefer it to run in background mode, add `-d` when starting, and stop the container
+   using `docker-compose down`.
+
 1. Start a bash session in the container with:
 
         docker exec -ti lighthouse_lighthouse_1 bash
