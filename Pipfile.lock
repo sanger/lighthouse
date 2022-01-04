@@ -808,6 +808,14 @@
             "index": "pypi",
             "version": "==2.27.0"
         },
+        "setuptools": {
+            "hashes": [
+                "sha256:032e5949c02878c405552fb800743aad96940097460bc6f115340402852dcdde",
+                "sha256:989ab2d3e632ba23358b8d43950bd46babde5bbb1516760dc5f5ccfe7accdd45"
+            ],
+            "markers": "python_version >= '3.7'",
+            "version": "==60.0.3"
+        },
         "simplejson": {
             "hashes": [
                 "sha256:04e31fa6ac8e326480703fb6ded1488bfa6f1d3f760d32e29dbf66d0838982ce",
@@ -1329,14 +1337,6 @@
             ],
             "index": "pypi",
             "version": "==2.27.0"
-        },
-        "setuptools": {
-            "hashes": [
-                "sha256:032e5949c02878c405552fb800743aad96940097460bc6f115340402852dcdde",
-                "sha256:989ab2d3e632ba23358b8d43950bd46babde5bbb1516760dc5f5ccfe7accdd45"
-            ],
-            "markers": "python_version >= '3.7'",
-            "version": "==60.0.3"
         },
         "responses": {
             "hashes": [
