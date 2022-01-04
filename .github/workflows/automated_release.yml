@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - master
+      - rollback_pymongo_version_to_master
 
 env:
   IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
