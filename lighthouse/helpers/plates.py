@@ -109,7 +109,7 @@ def add_cog_barcodes(samples):
 
     logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
 
-    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/{centre_prefix}/new?count={num_samples}"
+    baracoda_url = f"https://{app.config['BARACODA_URL']}/barcodes_group/{centre_prefix}/new?count={num_samples}"
 
     retries = app.config["BARACODA_RETRY_ATTEMPTS"]
     success_operation = False
@@ -317,7 +317,7 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
     Returns:
         requests.Response: the response from Sequencescape.
     """
-    ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+    ss_url = f"https://{app.config['SS_HOST']}/api/v2/heron/plates"
 
     logger.info(f"Sending request to: {ss_url}")
 
