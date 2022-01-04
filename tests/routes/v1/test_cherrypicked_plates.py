@@ -39,7 +39,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
         "lighthouse.routes.common.cherrypicked_plates.add_cog_barcodes_from_different_centres",
         return_value="TC1",
     ):
-        ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
         mocked_responses.add(
             responses.POST,
@@ -96,7 +96,7 @@ def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
     mocked_responses,
     base_url,
 ):
-    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=5"
+    baracoda_url = f"{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=5"
 
     mocked_responses.add(
         responses.POST,
@@ -126,7 +126,7 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
         "lighthouse.routes.common.cherrypicked_plates.add_cog_barcodes_from_different_centres",
         return_value="TC1",
     ):
-        ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
         barcode = "des_plate_1"
         body = {"errors": [f"The barcode '{barcode}' is not a recognised format."]}
@@ -163,7 +163,7 @@ def test_get_cherrypicked_plates_mlwh_update_failure(
             "lighthouse.routes.common.cherrypicked_plates.update_mlwh_with_cog_uk_ids",
             side_effect=Exception(),
         ):
-            ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+            ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
             body = {"barcode": "plate_1"}
 
             mocked_responses.add(
