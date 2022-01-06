@@ -30,6 +30,7 @@ python-dotenv = "~=0.19"
 requests = "~=2.23"
 slackclient = "~=2.5"
 sqlalchemy = "~=1.4"
+pymongo = "~=3.12.1"
 
 [requires]
 python_version = "3.8"
