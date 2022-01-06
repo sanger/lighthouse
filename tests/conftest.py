@@ -511,9 +511,7 @@ def baracoda_mock_barcodes_group(app, mocked_responses, baracoda_mock_responses,
     for centre_prefix in baracoda_mock_responses.keys():
         if baracoda_mock_responses[centre_prefix] is not None:
             num_samples = len(baracoda_mock_responses[centre_prefix]["barcodes_group"]["barcodes"])
-            baracoda_url = (
-                f"http://{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
-            )
+            baracoda_url = f"{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
             mocked_responses.add(
                 responses.POST,
                 baracoda_url,

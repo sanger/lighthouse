@@ -246,7 +246,7 @@ def test_post_event_partially_completed(
                         )
 
                         send_to_ss.assert_called_once_with(
-                            ss_url=f"http://{app.config['SS_HOST']}/api/v2/heron/plates",
+                            ss_url=f"{app.config['SS_URL']}/api/v2/heron/plates",
                             headers={
                                 "X-Sequencescape-Client-Id": app.config["SS_API_KEY"],
                                 "Content-type": "application/json",
