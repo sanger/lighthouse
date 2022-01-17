@@ -119,9 +119,9 @@ def test_classify_samples_by_centre(app, samples, mocked_responses):
 def test_add_cog_barcodes_from_different_centres(app, centres, samples, mocked_responses):
     with app.app_context():
         samples, _ = samples
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC1/new?count=10"
+        baracoda_url = f"{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC1/new?count=10"
 
-        baracoda_url2 = f"http://{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC2/new?count=1"
+        baracoda_url2 = f"{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC2/new?count=1"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -161,7 +161,7 @@ def test_add_cog_barcodes(app, centres, samples, mocked_responses):
         # we're testing samples from a single centre
         samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
 
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/barcodes_group/TC1/new?count={len(samples)}"
+        baracoda_url = f"{current_app.config['BARACODA_URL']}/barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -192,7 +192,7 @@ def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_respo
         # we're testing samples from a single centre
         samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
 
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
+        baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -222,7 +222,7 @@ def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_
         # we're testing samples from a single centre
         samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
 
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
+        baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
@@ -252,7 +252,7 @@ def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centr
         # we're testing samples from a single centre
         samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
 
-        baracoda_url = f"http://{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
+        baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
 
         # remove the cog_barcode key and value from the samples fixture before testing
         _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)

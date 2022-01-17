@@ -15,6 +15,7 @@ from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINA
 ENDPOINT_PREFIXES = ["", "/v1"]
 NEW_PLATE_ENDPOINT = "/plates/new"
 GET_PLATES_ENDPOINT = "/plates"
+CHERRYTRACK_PLATES_ENDPOINT = ["/plates/cherrytrack"]
 
 NEW_PLATE_ENDPOINTS = [prefix + NEW_PLATE_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 GET_PLATES_ENDPOINTS = [prefix + GET_PLATES_ENDPOINT for prefix in ENDPOINT_PREFIXES]
@@ -25,7 +26,7 @@ def test_post_plates_endpoint_successful(
     app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
     with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
         body = {"barcode": "plate_123"}
         mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
@@ -57,7 +58,7 @@ def test_post_plates_endpoint_no_fit_to_pick_samples(app, client, endpoint):
 def test_post_plates_endpoint_add_cog_barcodes_failed(
     app, client, samples, priority_samples, centres, mocked_responses, endpoint
 ):
-    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=4"
+    baracoda_url = f"{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=4"
 
     mocked_responses.add(responses.POST, baracoda_url, status=HTTPStatus.BAD_REQUEST)
 
@@ -70,7 +71,7 @@ def test_post_plates_endpoint_add_cog_barcodes_failed(
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses, endpoint):
     with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
         body = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
         mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.UNPROCESSABLE_ENTITY)
@@ -85,7 +86,7 @@ def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses,
 def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses, endpoint):
     with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
         with patch("lighthouse.routes.common.plates.update_mlwh_with_cog_uk_ids", side_effect=Exception()):
-            ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+            ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
             body = {"barcode": "plate_123"}
             mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
@@ -247,3 +248,114 @@ def test_get_plates_with_invalid_type(app, client, endpoint):
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+@pytest.mark.parametrize("endpoint", CHERRYTRACK_PLATES_ENDPOINT)
+def test_get_cherrytrack_plates_source_endpoint_successful(app, client, mocked_responses, endpoint):
+    plate_barcode = "cherrytrack_plate_123"
+    cherrytrack_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{plate_barcode}"
+    body = {
+        "data": {
+            "barcode": "cherrytrack_plate_123",
+            "samples": [
+                {
+                    "automation_system_run_id": "",
+                    "created_at": "Wed, 27 Oct 2021 09:04:49 GMT",
+                    "date_picked": "",
+                    "destination_barcode": "",
+                    "destination_coordinate": "",
+                    "lab_id": "MK",
+                    "lh_sample_uuid": "6d0da56a-2f4c-4f4a-bb21-47f568abfbaa",
+                    "picked": "false",
+                    "rna_id": "RNA-S-00001-00000007",
+                    "source_barcode": "DS000010001",
+                    "source_coordinate": "A11",
+                    "type": "sample",
+                }
+            ],
+        }
+    }
+    mocked_responses.add(responses.GET, cherrytrack_url, json=body, status=HTTPStatus.OK)
+
+    response = client.get(
+        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=source",
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == {"plate": body}
+
+
+@pytest.mark.parametrize("endpoint", CHERRYTRACK_PLATES_ENDPOINT)
+def test_get_cherrytrack_plates_destination_endpoint_successful(app, client, mocked_responses, endpoint):
+    plate_barcode = "cherrytrack_plate_123"
+    cherrytrack_url = f"{app.config['CHERRYTRACK_URL']}/destination-plates/{plate_barcode}"
+    body = {
+        "data": {
+            "barcode": "cherrytrack_plate_123",
+            "samples": [
+                {
+                    "automation_system_run_id": 1,
+                    "created_at": "Wed, 27 Oct 2021 09:04:49 GMT",
+                    "date_picked": "Wed, 27 Oct 2021 09:04:50 GMT",
+                    "destination_barcode": "DN00000001",
+                    "destination_coordinate": "B6",
+                    "lab_id": "MK",
+                    "lh_sample_uuid": "01d543f4-0922-4a5d-b026-856cc429d4c6",
+                    "picked": "true",
+                    "rna_id": "RNA-S-00001-00000018",
+                    "source_barcode": "DS000010001",
+                    "source_coordinate": "B3",
+                    "type": "sample",
+                }
+            ],
+        }
+    }
+    mocked_responses.add(responses.GET, cherrytrack_url, json=body, status=HTTPStatus.OK)
+
+    response = client.get(
+        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=destination",
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == {"plate": body}
+
+
+@pytest.mark.parametrize("endpoint", CHERRYTRACK_PLATES_ENDPOINT)
+def test_get_cherrytrack_plates_endpoint_empty_barcode(app, client, endpoint):
+    plate_barcode = ""
+
+    response = client.get(
+        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=destination",
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": ["Include a barcode in the request"]}
+
+
+@pytest.mark.parametrize("endpoint", CHERRYTRACK_PLATES_ENDPOINT)
+def test_get_cherrytrack_plates_endpoint_empty_type(app, client, endpoint):
+    plate_barcode = "cherrytrack_plate_123"
+
+    response = client.get(
+        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=",
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": ["Plate type needs to be either 'source' or 'destination'"]}
+
+
+@pytest.mark.parametrize("endpoint", CHERRYTRACK_PLATES_ENDPOINT)
+def test_get_cherrytrack_plates_endpoint_failure(app, client, mocked_responses, endpoint):
+    plate_barcode = "cherrytrack_plate_123"
+    cherrytrack_url = f"{app.config['CHERRYTRACK_URL']}/destination-plates/{plate_barcode}"
+    body = {"errors": ["Failed to get source plate info: Failed to find samples for source plate barcode DS0000100"]}
+    mocked_responses.add(responses.GET, cherrytrack_url, json=body, status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    response = client.get(
+        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=destination",
+    )
+
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.json == {
+        "errors": ["Failed to get source plate info: Failed to find samples for source plate barcode DS0000100"]
+    }

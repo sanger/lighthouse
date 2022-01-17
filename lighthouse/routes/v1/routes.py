@@ -1,7 +1,11 @@
 from flask import Blueprint
 from flask_cors import CORS
 
-from lighthouse.routes.common.plates import create_plate_from_barcode, find_plate_from_barcode
+from lighthouse.routes.common.plates import (
+    create_plate_from_barcode,
+    find_plate_from_barcode,
+    find_cherrytrack_plate_from_barcode,
+)
 from lighthouse.routes.common.reports import create_report, delete_reports, get_reports
 from lighthouse.types import FlaskResponse
 
@@ -17,6 +21,11 @@ def create_plate_from_barcode_endpoint() -> FlaskResponse:
 @bp.get("/plates")
 def find_plate_from_barcode_endpoint() -> FlaskResponse:
     return find_plate_from_barcode()
+
+
+@bp.get("/plates/cherrytrack")
+def find_cherrytrack_plate_from_barcode_endpoint() -> FlaskResponse:
+    return find_cherrytrack_plate_from_barcode()
 
 
 @bp.get("/reports")
