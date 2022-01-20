@@ -55,7 +55,7 @@ DART_MONGO_MERGED_SAMPLES = [
             FIELD_DART_ROOT_SAMPLE_ID: "MCM002",
             FIELD_DART_RNA_ID: "rna_2",
             FIELD_DART_LAB_ID: "AB",
-            FIELD_LH_SAMPLE_UUID: "plate_3",
+            FIELD_DART_LH_SAMPLE_UUID: "plate_3",
         },
     },
 ]

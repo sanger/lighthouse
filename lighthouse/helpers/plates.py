@@ -1,8 +1,8 @@
 import logging
+from datetime import datetime
 from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
-from datetime import datetime
 
 import requests
 from eve import Eve
@@ -19,11 +19,11 @@ from lighthouse.constants.fields import (
     FIELD_DART_DESTINATION_BARCODE,
     FIELD_DART_DESTINATION_COORDINATE,
     FIELD_DART_LAB_ID,
+    FIELD_DART_LH_SAMPLE_UUID,
     FIELD_DART_RNA_ID,
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
-    FIELD_DART_LH_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_LH_SAMPLE_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
