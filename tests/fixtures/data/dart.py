@@ -5,11 +5,11 @@ from lighthouse.constants.fields import (
     FIELD_DART_DESTINATION_BARCODE,
     FIELD_DART_DESTINATION_COORDINATE,
     FIELD_DART_LAB_ID,
+    FIELD_DART_LH_SAMPLE_UUID,
     FIELD_DART_RNA_ID,
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
-    FIELD_DART_LH_SAMPLE_UUID,
     FIELD_LAB_ID,
     FIELD_LH_SAMPLE_UUID,
     FIELD_PLATE_BARCODE,
@@ -17,7 +17,6 @@ from lighthouse.constants.fields import (
     FIELD_RNA_ID,
     FIELD_ROOT_SAMPLE_ID,
     FIELD_SOURCE,
-    FIELD_LH_SAMPLE_UUID,
 )
 
 DART_MONGO_MERGED_SAMPLES = [
@@ -37,7 +36,6 @@ DART_MONGO_MERGED_SAMPLES = [
     },
     {  # Non-control sample
         "sample": {
-            FIELD_LH_SAMPLE_UUID: "8000a18d-43c6-44ff-9adb-257cb812ac77",
             FIELD_COORDINATE: "A02",
             FIELD_SOURCE: "test2",
             FIELD_RESULT: "Positive",
