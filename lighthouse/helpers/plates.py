@@ -211,19 +211,12 @@ def query_for_cherrypicked_samples(rows: Optional[List[SampleDoc]]) -> Optional[
         return None
 
     return {
-        "$or": [
-            {
-                FIELD_LH_SAMPLE_UUID: getattr(row, FIELD_DART_LH_SAMPLE_UUID)
-            }
-            for row in rows_without_controls(rows)
-        ]
+        "$or": [{FIELD_LH_SAMPLE_UUID: getattr(row, FIELD_DART_LH_SAMPLE_UUID)} for row in rows_without_controls(rows)]
     }
 
 
 def equal_row_and_sample(row, sample):
-    return (
-        (sample[FIELD_LH_SAMPLE_UUID] == getattr(row, FIELD_DART_LH_SAMPLE_UUID))
-    )
+    return sample[FIELD_LH_SAMPLE_UUID] == getattr(row, FIELD_DART_LH_SAMPLE_UUID)
 
 
 def find_sample_matching_row(row, samples):
