@@ -26,7 +26,6 @@ from lighthouse.constants.fields import (
     FIELD_DART_SOURCE_BARCODE,
     FIELD_DART_SOURCE_COORDINATE,
     FIELD_FILTERED_POSITIVE,
-    FIELD_LAB_ID,
     FIELD_LH_SAMPLE_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_PLATE_BARCODE,
@@ -467,10 +466,10 @@ class DartRow:
         source_barcode,
         source_coordinate,
         control,
-        root_sample_id = None,
-        rna_id = None,
-        lab_id = None,
-        lh_sample_uuid = None,
+        root_sample_id=None,
+        rna_id=None,
+        lab_id=None,
+        lh_sample_uuid=None,
     ):
 
         setattr(self, FIELD_DART_DESTINATION_BARCODE, destination_barcode)
@@ -486,24 +485,18 @@ class DartRow:
 
 def test_query_for_cherrypicked_samples_generates_list():
     test = [
-        DartRow("DN1111", "A01", "DN2222", "C03", None, lh_sample_uuid = "UUID001"),
-        DartRow("DN3333", "A02", "DN2222", "C01", "positive", lh_sample_uuid = "UUID002"),
-        DartRow("DN1111", "A02", "DN2222", "C04", None, lh_sample_uuid =  "UUID003"),
-        DartRow("DN3333", "A03", "DN2222", "C05", "negative", lh_sample_uuid = "UUID004"),
-        DartRow("DN1111", "A03", "DN2222", "C06", None, lh_sample_uuid = "UUID005"),
+        DartRow("DN1111", "A01", "DN2222", "C03", None, lh_sample_uuid="UUID001"),
+        DartRow("DN3333", "A02", "DN2222", "C01", "positive", lh_sample_uuid="UUID002"),
+        DartRow("DN1111", "A02", "DN2222", "C04", None, lh_sample_uuid="UUID003"),
+        DartRow("DN3333", "A03", "DN2222", "C05", "negative", lh_sample_uuid="UUID004"),
+        DartRow("DN1111", "A03", "DN2222", "C06", None, lh_sample_uuid="UUID005"),
     ]
 
     assert query_for_cherrypicked_samples(test) == {  # type: ignore
         "$or": [
-            {
-                FIELD_LH_SAMPLE_UUID: 'UUID001'
-            },
-            {
-                FIELD_LH_SAMPLE_UUID: 'UUID003'
-            },
-            {
-                FIELD_LH_SAMPLE_UUID: 'UUID005'
-            },
+            {FIELD_LH_SAMPLE_UUID: "UUID001"},
+            {FIELD_LH_SAMPLE_UUID: "UUID003"},
+            {FIELD_LH_SAMPLE_UUID: "UUID005"},
         ]
     }
 
@@ -554,17 +547,24 @@ def test_rows_with_controls_returns_controls():
 def test_equal_row_and_sample_compares_row_and_sample(samples):
     samples, _ = samples
     # Different UUID
-    row = DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid = "not-the-uuid-you-are-looking-for")
+    row = DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="not-the-uuid-you-are-looking-for")
     assert not equal_row_and_sample(row, samples[0])
 
     # Matching UUID
-    row = DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid = "0a53e7b6-7ce8-4ebc-95c3-02dd64942531")
+    row = DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="0a53e7b6-7ce8-4ebc-95c3-02dd64942531")
     assert equal_row_and_sample(row, samples[0])
 
 
 def test_find_sample_matching_row(samples):
     samples, _ = samples
-    row = DartRow("DN1111", "A01", "plate_123", "A01", None, "sample_002", "rna_2", "lab_1", "1a53e7b6-7ce8-4ebc-95c3-02dd64942531")
+    row = DartRow(
+        "DN1111",
+        "A01",
+        "plate_123",
+        "A01",
+        None,
+        lh_sample_uuid="1a53e7b6-7ce8-4ebc-95c3-02dd64942531",
+    )
 
     assert find_sample_matching_row(row, samples) == samples[1]
 
@@ -579,8 +579,8 @@ def test_find_sample_matching_row_returns_none_if_not_found(app, samples):
 def test_join_rows_with_samples(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid = "0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
-        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid = "1a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
+        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
+        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="1a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
     ]
 
     assert join_rows_with_samples(rows, samples) == [
@@ -592,8 +592,8 @@ def test_join_rows_with_samples(samples):
 def test_join_rows_with_samples_joins_with_empty_sample_if_not_found(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid = "0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
-        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid = "NOT-FOUND-UUID"),
+        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
+        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="NOT-FOUND-UUID"),
     ]
 
     assert join_rows_with_samples(rows, samples) == [
@@ -605,8 +605,8 @@ def test_join_rows_with_samples_joins_with_empty_sample_if_not_found(samples):
 def test_join_rows_with_samples_filters_out_controls(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "plate_123", "A01", "positive", lh_sample_uuid = "0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
-        DartRow("DN1111", "A01", "plate_456", "A01", None, lh_sample_uuid = "243910d9-74bc-4da0-8f55-8606ed97b33a"),
+        DartRow("DN1111", "A01", "plate_123", "A01", "positive", lh_sample_uuid="0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
+        DartRow("DN1111", "A01", "plate_456", "A01", None, lh_sample_uuid="243910d9-74bc-4da0-8f55-8606ed97b33a"),
     ]
 
     assert join_rows_with_samples(rows, samples) == [
