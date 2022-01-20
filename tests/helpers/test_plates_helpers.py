@@ -466,10 +466,10 @@ class DartRow:
         source_barcode,
         source_coordinate,
         control,
-        root_sample_id=None,
-        rna_id=None,
-        lab_id=None,
-        lh_sample_uuid=None,
+        root_sample_id,
+        rna_id,
+        lab_id,
+        lh_sample_uuid,
     ):
 
         setattr(self, FIELD_DART_DESTINATION_BARCODE, destination_barcode)
@@ -482,17 +482,57 @@ class DartRow:
         setattr(self, FIELD_DART_LAB_ID, lab_id)
         setattr(self, FIELD_LH_SAMPLE_UUID, lh_sample_uuid)
 
+    @classmethod
+    def with_id_fields(
+        self,
+        destination_barcode,
+        destination_coordinate,
+        source_barcode,
+        source_coordinate,
+        control,
+        root_sample_id,
+        rna_id,
+        lab_id,
+    ):
+        return self(
+            destination_barcode,
+            destination_coordinate,
+            source_barcode,
+            source_coordinate,
+            control,
+            root_sample_id,
+            rna_id,
+            lab_id,
+            None,
+        )
+
+    @classmethod
+    def with_sample_uuid(
+        self, destination_barcode, destination_coordinate, source_barcode, source_coordinate, control, sample_uuid
+    ):
+        return self(
+            destination_barcode,
+            destination_coordinate,
+            source_barcode,
+            source_coordinate,
+            control,
+            None,
+            None,
+            None,
+            sample_uuid,
+        )
+
 
 def test_query_for_cherrypicked_samples_generates_list():
     test = [
-        DartRow("DN1111", "A01", "DN2222", "C03", None, lh_sample_uuid="UUID001"),
-        DartRow("DN3333", "A02", "DN2222", "C01", "positive", lh_sample_uuid="UUID002"),
-        DartRow("DN1111", "A02", "DN2222", "C04", None, lh_sample_uuid="UUID003"),
-        DartRow("DN3333", "A03", "DN2222", "C05", "negative", lh_sample_uuid="UUID004"),
-        DartRow("DN1111", "A03", "DN2222", "C06", None, lh_sample_uuid="UUID005"),
+        DartRow.with_sample_uuid("DN1111", "A01", "DN2222", "C03", None, "UUID001"),
+        DartRow.with_sample_uuid("DN3333", "A02", "DN2222", "C01", "positive", "UUID002"),
+        DartRow.with_sample_uuid("DN1111", "A02", "DN2222", "C04", None, "UUID003"),
+        DartRow.with_sample_uuid("DN3333", "A03", "DN2222", "C05", "negative", "UUID004"),
+        DartRow.with_sample_uuid("DN1111", "A03", "DN2222", "C06", None, "UUID005"),
     ]
 
-    assert query_for_cherrypicked_samples(test) == {  # type: ignore
+    assert query_for_cherrypicked_samples(test) == {
         "$or": [
             {FIELD_LH_SAMPLE_UUID: "UUID001"},
             {FIELD_LH_SAMPLE_UUID: "UUID003"},
@@ -508,25 +548,29 @@ def test_query_for_cherrypicked_samples_returns_empty_if_none():
 
 def test_row_is_normal_sample_detects_if_sample_is_control():
     assert not row_is_normal_sample(
-        DartRow("DN1111", "A01", "DN2222", "C03", "positive", "sample_1", "plate1:A01", "ABC")
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", "positive", "sample_1", "plate1:A01", "ABC")
     )
     assert not row_is_normal_sample(
-        DartRow("DN1111", "A01", "DN2222", "C03", "negative", "sample_1", "plate1:A01", "ABC")
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", "negative", "sample_1", "plate1:A01", "ABC")
     )
     assert not row_is_normal_sample(
-        DartRow("DN1111", "A01", "DN2222", "C03", "control", "sample_1", "plate1:A01", "ABC")
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", "control", "sample_1", "plate1:A01", "ABC")
     )
-    assert row_is_normal_sample(DartRow("DN1111", "A01", "DN2222", "C03", "", "sample_1", "plate1:A01", "ABC"))
-    assert row_is_normal_sample(DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"))
+    assert row_is_normal_sample(
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", "", "sample_1", "plate1:A01", "ABC")
+    )
+    assert row_is_normal_sample(
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC")
+    )
 
 
 def test_rows_without_controls_filters_out_controls():
     test = [
-        DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-        DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
-        DartRow("DN3333", "A02", "DN2222", "C01", "positive", None, None, None),
-        DartRow("DN3333", "A03", "DN2222", "C05", "negative", None, None, None),
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow.with_id_fields("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow.with_id_fields("DN3333", "A02", "DN2222", "C01", "positive", None, None, None),
+        DartRow.with_id_fields("DN3333", "A03", "DN2222", "C05", "negative", None, None, None),
     ]
 
     assert rows_without_controls(test) == [test[0], test[1], test[2]]
@@ -534,11 +578,11 @@ def test_rows_without_controls_filters_out_controls():
 
 def test_rows_with_controls_returns_controls():
     test = [
-        DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-        DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
-        DartRow("DN3333", "A02", "DN2222", "C01", "positive", None, None, None),
-        DartRow("DN3333", "A03", "DN2222", "C05", "negative", None, None, None),
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow.with_id_fields("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow.with_id_fields("DN3333", "A02", "DN2222", "C01", "positive", None, None, None),
+        DartRow.with_id_fields("DN3333", "A03", "DN2222", "C05", "negative", None, None, None),
     ]
 
     assert rows_with_controls(test) == [test[3], test[4]]
@@ -547,23 +591,23 @@ def test_rows_with_controls_returns_controls():
 def test_equal_row_and_sample_compares_row_and_sample(samples):
     samples, _ = samples
     # Different UUID
-    row = DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="not-the-uuid-you-are-looking-for")
+    row = DartRow.with_sample_uuid("DN1111", "A01", "plate_123", "A01", None, "not-the-uuid-you-are-looking-for")
     assert not equal_row_and_sample(row, samples[0])
 
     # Matching UUID
-    row = DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="0a53e7b6-7ce8-4ebc-95c3-02dd64942531")
+    row = DartRow.with_sample_uuid("DN1111", "A01", "plate_123", "A01", None, "0a53e7b6-7ce8-4ebc-95c3-02dd64942531")
     assert equal_row_and_sample(row, samples[0])
 
 
 def test_find_sample_matching_row(samples):
     samples, _ = samples
-    row = DartRow(
+    row = DartRow.with_sample_uuid(
         "DN1111",
         "A01",
         "plate_123",
         "A01",
         None,
-        lh_sample_uuid="1a53e7b6-7ce8-4ebc-95c3-02dd64942531",
+        "1a53e7b6-7ce8-4ebc-95c3-02dd64942531",
     )
 
     assert find_sample_matching_row(row, samples) == samples[1]
@@ -571,7 +615,7 @@ def test_find_sample_matching_row(samples):
 
 def test_find_sample_matching_row_returns_none_if_not_found(app, samples):
     samples, _ = samples
-    row = DartRow("DN1111", "A01", "plate_123", "A01", None, "MCM002", "rna_2", "Lab 3")
+    row = DartRow.with_id_fields("DN1111", "A01", "plate_123", "A01", None, "MCM002", "rna_2", "Lab 3")
 
     assert find_sample_matching_row(row, samples) is None
 
@@ -579,8 +623,8 @@ def test_find_sample_matching_row_returns_none_if_not_found(app, samples):
 def test_join_rows_with_samples(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
-        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="1a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
+        DartRow.with_sample_uuid("DN1111", "A01", "plate_123", "A01", None, "0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
+        DartRow.with_sample_uuid("DN1111", "A01", "plate_123", "A01", None, "1a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
     ]
 
     assert join_rows_with_samples(rows, samples) == [
@@ -592,8 +636,8 @@ def test_join_rows_with_samples(samples):
 def test_join_rows_with_samples_joins_with_empty_sample_if_not_found(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
-        DartRow("DN1111", "A01", "plate_123", "A01", None, lh_sample_uuid="NOT-FOUND-UUID"),
+        DartRow.with_sample_uuid("DN1111", "A01", "plate_123", "A01", None, "0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
+        DartRow.with_sample_uuid("DN1111", "A01", "plate_123", "A01", None, "NOT-FOUND-UUID"),
     ]
 
     assert join_rows_with_samples(rows, samples) == [
@@ -605,8 +649,10 @@ def test_join_rows_with_samples_joins_with_empty_sample_if_not_found(samples):
 def test_join_rows_with_samples_filters_out_controls(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "plate_123", "A01", "positive", lh_sample_uuid="0a53e7b6-7ce8-4ebc-95c3-02dd64942531"),
-        DartRow("DN1111", "A01", "plate_456", "A01", None, lh_sample_uuid="243910d9-74bc-4da0-8f55-8606ed97b33a"),
+        DartRow.with_sample_uuid(
+            "DN1111", "A01", "plate_123", "A01", "positive", "0a53e7b6-7ce8-4ebc-95c3-02dd64942531"
+        ),
+        DartRow.with_sample_uuid("DN1111", "A01", "plate_456", "A01", None, "243910d9-74bc-4da0-8f55-8606ed97b33a"),
     ]
 
     assert join_rows_with_samples(rows, samples) == [
@@ -617,8 +663,8 @@ def test_join_rows_with_samples_filters_out_controls(samples):
 def test_add_controls_to_samples(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "plate_123", "A01", "positive", "MCM001", "rna_1", "lab_1"),
-        DartRow("DN1111", "A01", "plate_123", "A01", "negative", "MCM002", "rna_2", "Lab 2"),
+        DartRow.with_id_fields("DN1111", "A01", "plate_123", "A01", "positive", "MCM001", "rna_1", "lab_1"),
+        DartRow.with_id_fields("DN1111", "A01", "plate_123", "A01", "negative", "MCM002", "rna_2", "Lab 2"),
     ]
 
     samples_without_controls = [
@@ -637,13 +683,13 @@ def test_add_controls_to_samples(samples):
 def test_check_matching_sample_numbers_returns_false_mismatch(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-        DartRow("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
-        DartRow("DN1111", "A04", "DN2222", "C07", None, "sample_2", "plate1:A03", "ABC"),
-        DartRow("DN1111", "A05", "DN2222", "C08", None, "sample_2", "plate1:A03", "ABC"),
-        DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
-        DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow.with_id_fields("DN1111", "A02", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A03", "DN2222", "C06", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow.with_id_fields("DN1111", "A04", "DN2222", "C07", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow.with_id_fields("DN1111", "A05", "DN2222", "C08", None, "sample_2", "plate1:A03", "ABC"),
+        DartRow.with_id_fields("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
+        DartRow.with_id_fields("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
     ]
 
     result = check_matching_sample_numbers(rows, samples)
@@ -653,19 +699,19 @@ def test_check_matching_sample_numbers_returns_false_mismatch(samples):
 def test_check_matching_sample_numbers_returns_true_match(samples):
     samples, _ = samples
     rows = [
-        DartRow("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-        DartRow("DN1111", "A02", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-        DartRow("DN1111", "A03", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-        DartRow("DN1111", "A04", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-        DartRow("DN1111", "A05", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
-        DartRow("DN1111", "A06", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN1111", "A07", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN1111", "A08", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN1111", "A09", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN1111", "A10", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN1111", "A11", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
-        DartRow("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
-        DartRow("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
+        DartRow.with_id_fields("DN1111", "A01", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow.with_id_fields("DN1111", "A02", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow.with_id_fields("DN1111", "A03", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow.with_id_fields("DN1111", "A04", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow.with_id_fields("DN1111", "A05", "DN2222", "C03", None, "sample_1", "plate1:A01", "ABC"),
+        DartRow.with_id_fields("DN1111", "A06", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A07", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A08", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A09", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A10", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A11", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
+        DartRow.with_id_fields("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
     ]
 
     #  here we just need the same number of samples as there are rows without controls
