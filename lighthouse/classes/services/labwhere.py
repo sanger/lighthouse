@@ -19,8 +19,10 @@ class LabwhereServiceMixin:
         # currently assuming only one event so only one plate_barcode
         labware_barcodes = [self.properties["plate_barcode"].value]
         location_barcode = LabwhereServiceMixin._destroyed_barcode()
-        robot_barcode = self.properties["automation_system_name"].value
-
+        if hasattr(self.properties, "automation_system_name"):
+            robot_barcode = self.properties["automation_system_name"].value
+        else:
+            robot_barcode = self.properties["robot_serial_number"].value
         response = set_locations_in_labwhere(
             labware_barcodes=labware_barcodes,
             location_barcode=location_barcode,

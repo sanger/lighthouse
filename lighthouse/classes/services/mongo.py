@@ -1,8 +1,9 @@
 import logging
-from typing import cast
+from typing import cast, Optional, List 
 
 from eve import Eve
 from flask import current_app as app
+from lighthouse.types import SampleDoc
 
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -71,3 +72,28 @@ class MongoServiceMixin:
                 )
 
             return source_plates
+
+    def get_positive_samples_in_source_plate(self, source_plate_uuid: str) -> Optional[List[SampleDoc]]:
+        """Attempt to get a source plate's Result=Positive samples.
+
+        Arguments:
+            source_plate_uuid {str} -- The source plate UUID for which to get positive samples.
+
+        Returns:
+            {List[SampleDoc]} -- A list of all positive samples on the source plate; otherwise None if they cannot be
+            determined.
+        """
+        with app.app_context():
+            samples_collection: Collection = cast(Eve, app).data.driver.db.samples
+            query = {
+            FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid,
+            FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
+            }
+
+            samples = samples_collection.find(query)
+
+            if samples is None:
+                logger.error(f"An error occurred attempting to fetch samples on source plate '{source_plate_uuid}'")
+                return None
+
+            return list(samples)
