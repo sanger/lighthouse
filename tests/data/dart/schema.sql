@@ -11,5 +11,6 @@ where Name='CherrypickingInfo') CREATE TABLE CherrypickingInfo
   root_sample_id NVARCHAR(50),
   rna_id NVARCHAR(50),
   lab_id NVARCHAR(50),
+  lh_sample_uuid NVARCHAR(50)
 );
 

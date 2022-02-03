@@ -52,6 +52,7 @@ FIELD_DART_ROOT_SAMPLE_ID: Final[str] = "root_sample_id"
 FIELD_DART_RUN_ID: Final[str] = "dart_run_id"
 FIELD_DART_SOURCE_BARCODE: Final[str] = "source_barcode"
 FIELD_DART_SOURCE_COORDINATE: Final[str] = "source_coordinate"
+FIELD_DART_LH_SAMPLE_UUID: Final[str] = "lh_sample_uuid"
 
 ###
 # PLATE LOOKUP specific column names:

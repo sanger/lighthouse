@@ -372,6 +372,9 @@ def dart_connection(app):
 def dart_schema_create(app):
     with app.app_context():
         load_sql_server_script("tests/data/dart/schema.sql")
+    yield True
+    with app.app_context():
+        load_sql_server_script("tests/data/dart/drop_schema.sql")
 
 
 @pytest.fixture
