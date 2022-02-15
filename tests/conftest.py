@@ -189,6 +189,14 @@ def samples_for_mlwh_update():
 
 
 @pytest.fixture
+def positive_samples_in_source_plate():
+    return [
+                {"test key": "test sample 1"},
+                {"test key": "test sample 2"},
+            ]
+                
+
+@pytest.fixture
 def cog_uk_ids():
     return COG_UK_IDS
 

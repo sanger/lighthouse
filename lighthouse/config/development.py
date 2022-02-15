@@ -51,5 +51,5 @@ MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 ###
 # Beckman config
 ###
-BECKMAN_ENABLE = True
+BECKMAN_ENABLE = False
 BECKMAN_ENABLE_V3 = True

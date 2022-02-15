@@ -17,7 +17,7 @@ from lighthouse.hooks.events import insert_events_hook, inserted_events_hook
 from lighthouse.validator import LighthouseValidator
 
 scheduler = APScheduler()
-
+logger = logging.getLogger(__name__)
 
 def create_app() -> Eve:
     app = Eve(__name__, validator=LighthouseValidator)
@@ -58,14 +58,16 @@ def setup_routes(app):
 
     app.register_blueprint(v1_routes.bp, name="root_routes")
     app.register_blueprint(v1_routes.bp, url_prefix="/v1")
-
+    
     if app.config.get("BECKMAN_ENABLE", False):
+        logger.debug("BECKMAN_ENABLE")
         from lighthouse.routes.v1 import beckman_routes as v1_beckman_routes
 
         #app.register_blueprint(v1_beckman_routes.bp, name="root_beckman_routes")
         app.register_blueprint(v1_beckman_routes.bp, url_prefix="/v1")
 
     if app.config.get("BECKMAN_ENABLE_V3", False):
+        logger.debug("BECKMAN_ENABLE_V3")
         from lighthouse.routes.v3 import beckman_v3_routes
 
-        app.register_blueprint(beckman_v3_routes.bp, url_prefix="/v3")
+        app.register_blueprint(beckman_v3_routes.bp, url_prefix="/v1")
