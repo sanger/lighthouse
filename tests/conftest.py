@@ -38,6 +38,7 @@ from tests.fixtures.data.plate_events import PLATE_EVENTS
 from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
 from tests.fixtures.data.samples import SAMPLES, rows_for_samples_in_cherrytrack
+from tests.fixtures.data.positive_samples_in_source_plate import POSITIVE_SAMPLES
 from tests.fixtures.data.source_plates import SOURCE_PLATES
 
 
@@ -146,6 +147,12 @@ def source_plates(app):
     # clear up after the fixture is used
     with app.app_context():
         source_plates_collection.delete_many({})
+
+
+@pytest.fixture
+def positive_samples_in_source_plate(app):
+    with app.app_context():
+        yield POSITIVE_SAMPLES
 
 
 @pytest.fixture

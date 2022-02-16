@@ -21,7 +21,7 @@ def test_event_source_unrecognised_missing_user_id(app, client, beckman_auth_hea
     with app.app_context():
         with pytest.raises(Exception) as excinfo:
             response = client.get(
-                        "/v3/plate-events/create?event_type=lh_beckman_cp_source_plate_unrecognised&robot=BKRB0001&user_id=",
+                        "/v1/plate-events/create?event_type=lh_beckman_cp_source_plate_unrecognised&robot=BKRB0001&user_id=",
                         headers=beckman_auth_headers,
                     )
         
@@ -43,7 +43,7 @@ def test_get_event_source_unrecognised(
                     "mytime",
                 ):  
                     response = client.get(
-                        "/v3/plate-events/create?event_type=lh_beckman_cp_source_plate_unrecognised&robot=BKRB0001&user_id=user_id",
+                        "/v1/plate-events/create?event_type=lh_beckman_cp_source_plate_unrecognised&robot=BKRB0001&user_id=user_id",
                         headers=beckman_auth_headers,
                     )
 

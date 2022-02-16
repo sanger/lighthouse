@@ -7,13 +7,6 @@ from flask_apscheduler import APScheduler
 
 from lighthouse.hooks.cherrypick_test_data import inserted_cherrypick_test_data_hook
 from lighthouse.hooks.events import insert_events_hook, inserted_events_hook
-# from lighthouse.hooks.beckman_events import (
-#     #insert_events_hook as beckman_insert_events_hook,
-#     #inserted_events_hook as beckman_inserted_events_hook,
-#     beckman_pre_get_callback,
-#     beckman_post_get_callback,
-# )
-
 from lighthouse.validator import LighthouseValidator
 
 scheduler = APScheduler()
@@ -68,4 +61,4 @@ def setup_routes(app):
     if app.config.get("BECKMAN_ENABLE_V3", False):
         from lighthouse.routes.v3 import beckman_v3_routes
 
-        app.register_blueprint(beckman_v3_routes.bp, url_prefix="/v3")
+        app.register_blueprint(beckman_v3_routes.bp, url_prefix="/v1")
