@@ -1,7 +1,7 @@
 #  https://docs.python-eve.org/en/stable/features.html#database-event-hooks
 import logging
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple, cast, Iterable, NamedTuple
+from typing import Any, Dict, Optional, Tuple, cast, Iterable, List
 from uuid import uuid4
 from collections import namedtuple
 
@@ -10,12 +10,12 @@ from flask.wrappers import Request
 from flask import abort, jsonify, make_response
 
 from lighthouse.classes.automation_system import AutomationSystem
-from lighthouse.helpers.responses import bad_request, internal_server_error, ok
+from lighthouse.helpers.responses import ok
 from lighthouse.classes.beckman_v3 import Beckman
 from lighthouse.constants.fields import (
-    FIELD_EVENT_TYPE, 
-    FIELD_EVENT_UUID, 
-    FIELD_EVENT_ROBOT, 
+    FIELD_EVENT_TYPE,
+    FIELD_EVENT_UUID,
+    FIELD_EVENT_ROBOT,
     FIELD_EVENT_USER_ID,
     FIELD_EVENT_BARCODE,
 )
@@ -30,19 +30,20 @@ def create_event_dict(request: Request, required_params: Tuple[str, ...]) -> Dic
     """Construct event dict with the required params
 
     Args:
-        request (Request): the request 
-    
+        request (Request): the request
+
     Returns:
         Dict[str, ...]: the event dict with the required parameters
     """
-    required_params = (FIELD_EVENT_TYPE, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID)
-    
+    params: List[str] = [FIELD_EVENT_TYPE, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID]
+
     event_type, robot_serial_number, user_id = get_required_params(request, required_params)
-    
-    Event = namedtuple("Event", required_params)
-    event = Event(event_type, robot_serial_number, user_id)
-    event = event._asdict()
-    event['_created'] = datetime.now()
+
+    Event = namedtuple("Event", params)  # type: ignore
+    event = Event(event_type, robot_serial_number, user_id)._asdict()  # type: ignore
+
+    # event = event._asdict()
+    event["_created"] = datetime.now()
     barcode = request.args.get("barcode", default=None, type=str)
     if barcode is not None:
         event[FIELD_EVENT_BARCODE] = barcode
@@ -50,7 +51,8 @@ def create_event_dict(request: Request, required_params: Tuple[str, ...]) -> Dic
 
     return event
 
-def get_required_params(request: Request, required_params: Tuple[str, ...]) -> Dict[str, Any]:
+
+def get_required_params(request: Request, required_params: Tuple[str, ...]) -> Tuple[str, ...]:
     """Get the required parameters parsed from the URL of the request; in the order they were provided.
 
     Args:
@@ -64,8 +66,6 @@ def get_required_params(request: Request, required_params: Tuple[str, ...]) -> D
         Tuple[str, ...]: the parameters extracted from the request, in the order provided.
     """
     logger.info(f"Extracting the following parameters from the request: {required_params}")
-
-    event = {}
 
     def extract_and_test(param: str) -> Optional[str]:
         # extract the parameter from the request
@@ -88,23 +88,22 @@ def get_required_params(request: Request, required_params: Tuple[str, ...]) -> D
         raise Exception(f"GET request needs {formatted_missing_params} in URL")
 
     return tuple(cast(Iterable[str], required_params_dict.values()))
-    
 
 
 def create_plate_event() -> FlaskResponse:
-    
+
     """/v3/plate-events/create beckman endpoint to publish a plate event message to the RabbitMQ broker.
 
     Returns:
         FlaskResponse: if successful, return an empty list of errors and an OK status; otherwise, a list of errors and
         the corresponding HTTP status code.
     """
-    required_params = ("event_type", "robot", "user_id")
-    
+    required_params = (FIELD_EVENT_TYPE, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID)
+
     event = create_event_dict(request, required_params)
     automation_system = AutomationSystem.AutomationSystemEnum.BECKMAN
-    #Assume we only receive one event
-    
+    # Assume we only receive one event
+
     write_exception_error = True
     try:
         beckman = Beckman()
@@ -126,7 +125,7 @@ def create_plate_event() -> FlaskResponse:
         if len(plate_event.errors) > 0:
             write_exception_error = False
             raise Exception("The processing of the event failed.")
-        
+
         return ok(errors=[])
 
     except Exception as e:

@@ -2,9 +2,9 @@ import logging
 from typing import Any, Dict
 
 from lighthouse.classes.event_properties.definitions import (
-    PlateBarcode, 
-    SourcePlateUUID, 
-    UserID, 
+    PlateBarcode,
+    SourcePlateUUID,
+    UserID,
     RobotSerialNumber,
 )
 from lighthouse.classes.event_properties.definitions.beckman import RobotUUID, PositiveSamplesFromSource
@@ -27,10 +27,11 @@ class SourceAllNegatives(PlateEvent, LabwhereServiceMixin):
 
         for property_name in ["plate_barcode"]:
             self.properties[property_name].is_valid()
-        
+
         self.properties["source_plate_uuid"] = SourcePlateUUID(self.properties["plate_barcode"])
         self.properties["positive_samples_from_source"] = PositiveSamplesFromSource(
-            self.properties["source_plate_uuid"])
+            self.properties["source_plate_uuid"]
+        )
         self.properties["user_id"] = UserID(params)
         self.properties["robot_serial_number"] = RobotSerialNumber(params)
         self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
@@ -40,6 +41,8 @@ class SourceAllNegatives(PlateEvent, LabwhereServiceMixin):
 
         for property_name in ["positive_samples_from_source", "source_plate_uuid", "user_id", "robot_uuid"]:
             self.properties[property_name].add_to_warehouse_message(message)
+
+        message.add_metadata("source_plate_barcode", self.properties["plate_barcode"].value)
 
         return message.render()
 

@@ -62,6 +62,7 @@ def biosero_auth_headers(app):
     with app.app_context():
         return {"Authorization": app.config.get("API_TOKENS_EVENTS").get("biosero_read_write")}
 
+
 @pytest.fixture
 def beckman_auth_headers(app):
     with app.app_context():

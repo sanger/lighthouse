@@ -15,7 +15,7 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-def test_event_source_completed_missing_barcode(
+def test_event_source_no_pickable_wells_missing_barcode(
     app,
     client,
     beckman_auth_headers,
@@ -24,7 +24,9 @@ def test_event_source_completed_missing_barcode(
 
     with app.app_context():
         response = client.get(
-            "/v1/plate-events/create?barcode=&event_type=lh_beckman_cp_source_completed&robot=BKRB0001&user_id=RC34",
+            "/v1/plate-events/create?barcode=&event_type="
+            + Beckman.EVENT_SOURCE_ALL_NEGATIVES
+            + "&robot=BKRB0001&user_id=RC34",
             headers=beckman_auth_headers,
         )
 
@@ -35,7 +37,7 @@ def test_event_source_completed_missing_barcode(
 @pytest.mark.parametrize("source_barcode", ["GLS-GP-016240"])
 @pytest.mark.parametrize("robot", ["BKRB0001"])
 @pytest.mark.parametrize("user_id", ["LT1"])
-def test_get_event_source_completed(
+def test_get_event_source_no_pickable_wells(
     app,
     client,
     beckman_auth_headers,
@@ -69,7 +71,7 @@ def test_get_event_source_completed(
                                 "/v1/plate-events/create?barcode="
                                 + source_barcode
                                 + "&event_type="
-                                + Beckman.EVENT_SOURCE_COMPLETED
+                                + Beckman.EVENT_SOURCE_ALL_NEGATIVES
                                 + "&robot="
                                 + robot
                                 + "&user_id="
@@ -82,11 +84,11 @@ def test_get_event_source_completed(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key=f"test.event.{ Beckman.EVENT_SOURCE_COMPLETED }",
+                        routing_key=f"test.event.{ Beckman.EVENT_SOURCE_ALL_NEGATIVES }",
                         body='{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (
-                            '", "event_type": "' + Beckman.EVENT_SOURCE_COMPLETED + '", '
+                            '", "event_type": "' + Beckman.EVENT_SOURCE_ALL_NEGATIVES + '", '
                             '"occured_at": "mytime", "user_identifier": "' + user_id + '", "subjects": '
                             '[{"role_type": "sample", "subject_type": "sample", "friendly_name": '
                             '"sample_001__rna_1__lab_1__Positive", "uuid": "0a53e7b6-7ce8-4ebc-95c3-02dd64942531"}, '
@@ -94,7 +96,7 @@ def test_get_event_source_completed(
                             '"friendly_name": "' + source_barcode + '", "uuid": "' + int_to_uuid(2) + '"}, '
                             '{"role_type": "robot", "subject_type": "robot", "friendly_name": "' + robot + '", '
                             '"uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b"}], '
-                            '"metadata": {}}, "lims": "LH_TEST"}'
+                            '"metadata": {"source_plate_barcode": "' + source_barcode + '"}}, "lims": "LH_TEST"}'
                         ),
                     )
 

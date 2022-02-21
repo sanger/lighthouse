@@ -1,15 +1,17 @@
 import logging
-from typing import cast, Optional, List 
+from typing import cast, Optional, List
 
 from eve import Eve
 from flask import current_app as app
 from lighthouse.types import SampleDoc
+from pymongo.collection import Collection
 
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
     FIELD_LH_SAMPLE_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_PLATE_BARCODE,
+    FIELD_RESULT,
 )
 
 logger = logging.getLogger(__name__)
@@ -86,8 +88,8 @@ class MongoServiceMixin:
         with app.app_context():
             samples_collection: Collection = cast(Eve, app).data.driver.db.samples
             query = {
-            FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid,
-            FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
+                FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid,
+                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             }
 
             samples = samples_collection.find(query)

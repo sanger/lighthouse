@@ -1,6 +1,4 @@
-from http import HTTPStatus
-
-from flask import Blueprint, redirect, request
+from flask import Blueprint, request
 from flask_cors import CORS
 
 from lighthouse.types import FlaskResponse
@@ -30,7 +28,11 @@ def get_failure_types_endpoint() -> FlaskResponse:
 @bp.get("/plate-events/create")
 def create_plate_event_endpoint() -> FlaskResponse:
     event_type = request.args.get(FIELD_EVENT_TYPE, type=str)
-    if event_type in [Beckman.EVENT_SOURCE_UNRECOGNISED, Beckman.EVENT_SOURCE_COMPLETED]:
+    if event_type in [
+        Beckman.EVENT_SOURCE_UNRECOGNISED,
+        Beckman.EVENT_SOURCE_COMPLETED,
+        Beckman.EVENT_SOURCE_ALL_NEGATIVES,
+    ]:
         return create_plate_event()
     return v1_create_plate_event()
 

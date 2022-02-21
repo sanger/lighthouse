@@ -2,13 +2,13 @@ import logging
 from typing import Any, Dict
 
 from lighthouse.classes.event_properties.definitions import (
-    PlateBarcode, 
-    SourcePlateUUID, 
-    UserID, 
+    PlateBarcode,
+    SourcePlateUUID,
+    UserID,
     RobotSerialNumber,
 )
 from lighthouse.classes.event_properties.definitions.beckman import RobotUUID, PositiveSamplesFromSource
-    
+
 from lighthouse.classes.events import PlateEvent
 from lighthouse.classes.services.labwhere import LabwhereServiceMixin
 
@@ -32,7 +32,8 @@ class SourceCompleted(PlateEvent, LabwhereServiceMixin):
 
         self.properties["source_plate_uuid"] = SourcePlateUUID(self.properties["plate_barcode"])
         self.properties["positive_samples_from_source"] = PositiveSamplesFromSource(
-            self.properties["source_plate_uuid"])
+            self.properties["source_plate_uuid"]
+        )
         self.properties["user_id"] = UserID(params)
         self.properties["robot_serial_number"] = RobotSerialNumber(params)
         self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])

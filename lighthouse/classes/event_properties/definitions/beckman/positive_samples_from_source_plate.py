@@ -6,7 +6,7 @@ from lighthouse.classes.event_properties.interfaces import EventPropertyAbstract
 from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 from lighthouse.classes.services.mongo import MongoServiceMixin
 
-from lighthouse.classes.event_properties.definitions import PlateBarcode, SourcePlateUUID
+from lighthouse.classes.event_properties.definitions import SourcePlateUUID
 
 logger = logging.getLogger(__name__)
 

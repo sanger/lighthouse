@@ -50,5 +50,3 @@ class RobotUUID(EventPropertyAbstract):
             return val
         else:
             raise RetrievalError(f"Robot with barcode {self._robot_serial_number.value} not found")
-
-

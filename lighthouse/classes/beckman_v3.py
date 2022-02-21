@@ -1,5 +1,4 @@
 import logging
-from typing import Dict
 from lighthouse.classes.automation_system import AutomationSystem
 from lighthouse.classes.events.beckman import (
     # DestinationCompleted,
@@ -9,9 +8,6 @@ from lighthouse.classes.events.beckman import (
     SourceAllNegatives,
     SourceUnrecognised,
 )
-from lighthouse.constants.error_messages import ERROR_FAILURE_TYPE_CONFIG, ERROR_ROBOT_CONFIG
-# from .exceptions import EventNotInitializedError
-
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +36,6 @@ class Beckman(AutomationSystem):
         EVENT_SOURCE_UNRECOGNISED,
     )
 
-    
     def __init__(self) -> None:
         self._name = AutomationSystem.AutomationSystemEnum.BECKMAN.name
 

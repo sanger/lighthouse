@@ -4,8 +4,6 @@ from uuid import uuid4
 
 import pytest
 
-from lighthouse.constants.fields import FIELD_EVENT_ERRORS
-from lighthouse.helpers.mongo import get_event_with_uuid
 from lighthouse.classes.beckman_v3 import Beckman
 
 CACHE = {}
@@ -17,15 +15,18 @@ def int_to_uuid(value: int) -> str:
 
     return CACHE[value]
 
+
 def test_event_source_unrecognised_missing_user_id(app, client, beckman_auth_headers, clear_events):
     with app.app_context():
         with pytest.raises(Exception) as excinfo:
             response = client.get(
-                        "/v1/plate-events/create?event_type=lh_beckman_cp_source_plate_unrecognised&robot=BKRB0001&user_id=",
-                        headers=beckman_auth_headers,
-                    )
-        
+                "/v1/plate-events/create?event_type=lh_beckman_cp_source_plate_unrecognised&robot=BKRB0001&user_id=",
+                headers=beckman_auth_headers,
+            )
+
+            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR.value
         assert "GET request needs 'user_id' in URL" in str(excinfo.value)
+
 
 def test_get_event_source_unrecognised(
     app,
@@ -41,9 +42,11 @@ def test_get_event_source_unrecognised(
                 with patch(
                     "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",
-                ):  
+                ):
                     response = client.get(
-                        "/v1/plate-events/create?event_type=lh_beckman_cp_source_plate_unrecognised&robot=BKRB0001&user_id=user_id",
+                        "/v1/plate-events/create?event_type="
+                        + Beckman.EVENT_SOURCE_UNRECOGNISED
+                        + "&robot=BKRB0001&user_id=user_id",
                         headers=beckman_auth_headers,
                     )
 
@@ -62,5 +65,3 @@ def test_get_event_source_unrecognised(
                             '"metadata": {}}, "lims": "LH_TEST"}'
                         ),
                     )
-
-                    

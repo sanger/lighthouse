@@ -2,8 +2,8 @@ import logging
 from typing import Any, Dict
 
 from lighthouse.classes.event_properties.definitions import (
-    PlateBarcode, 
-    UserID, 
+    PlateBarcode,
+    UserID,
     RobotSerialNumber,
     BarcodeNoPlateMapData,
 )
