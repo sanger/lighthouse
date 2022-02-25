@@ -18,14 +18,12 @@ def int_to_uuid(value: int) -> str:
 def test_event_source_completed_missing_barcode(
     app,
     client,
-    beckman_auth_headers,
     clear_events,
 ):
 
     with app.app_context():
         response = client.get(
-            "/v1/plate-events/create?barcode=&event_type=lh_beckman_cp_source_completed&robot=BKRB0001&user_id=RC34",
-            headers=beckman_auth_headers,
+            "/v1/plate-events/create?barcode=&event_type=lh_beckman_cp_source_completed&robot=BKRB0001&user_id=RC34"
         )
 
         response_errors = response.json.get("_issues")
@@ -38,7 +36,6 @@ def test_event_source_completed_missing_barcode(
 def test_get_event_source_completed(
     app,
     client,
-    beckman_auth_headers,
     clear_events,
     mocked_rabbit_channel,
     positive_samples_in_source_plate,
@@ -74,7 +71,6 @@ def test_get_event_source_completed(
                                 + robot
                                 + "&user_id="
                                 + user_id,
-                                headers=beckman_auth_headers,
                             )
 
                     # Test the event is created

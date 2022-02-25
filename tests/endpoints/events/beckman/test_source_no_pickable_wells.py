@@ -18,7 +18,6 @@ def int_to_uuid(value: int) -> str:
 def test_event_source_no_pickable_wells_missing_barcode(
     app,
     client,
-    beckman_auth_headers,
     clear_events,
 ):
 
@@ -27,7 +26,6 @@ def test_event_source_no_pickable_wells_missing_barcode(
             "/v1/plate-events/create?barcode=&event_type="
             + Beckman.EVENT_SOURCE_ALL_NEGATIVES
             + "&robot=BKRB0001&user_id=RC34",
-            headers=beckman_auth_headers,
         )
 
         response_errors = response.json.get("_issues")
@@ -40,7 +38,6 @@ def test_event_source_no_pickable_wells_missing_barcode(
 def test_get_event_source_no_pickable_wells(
     app,
     client,
-    beckman_auth_headers,
     clear_events,
     mocked_rabbit_channel,
     positive_samples_in_source_plate,
@@ -76,7 +73,6 @@ def test_get_event_source_no_pickable_wells(
                                 + robot
                                 + "&user_id="
                                 + user_id,
-                                headers=beckman_auth_headers,
                             )
 
                     # Test the event is created

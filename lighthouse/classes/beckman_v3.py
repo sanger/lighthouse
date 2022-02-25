@@ -1,8 +1,6 @@
 import logging
 from lighthouse.classes.automation_system import AutomationSystem
 from lighthouse.classes.events.beckman import (
-    # DestinationCompleted,
-    # DestinationFailed,
     SourceCompleted,
     SourceNoPlateMapData,
     SourceAllNegatives,
@@ -39,16 +37,12 @@ class Beckman(AutomationSystem):
     def __init__(self) -> None:
         self._name = AutomationSystem.AutomationSystemEnum.BECKMAN.name
 
-        # self._event_destination_completed = DestinationCompleted(event_type=self.EVENT_DESTINATION_COMPLETED)
-        # self._event_destination_failed = DestinationFailed(event_type=self.EVENT_DESTINATION_FAILED)
         self._event_source_completed = SourceCompleted(event_type=self.EVENT_SOURCE_COMPLETED)
         self._event_source_no_plate_map_data = SourceNoPlateMapData(event_type=self.EVENT_SOURCE_NO_PLATE_MAP_DATA)
         self._event_source_unrecognised = SourceUnrecognised(event_type=self.EVENT_SOURCE_UNRECOGNISED)
         self._event_source_all_negatives = SourceAllNegatives(event_type=self.EVENT_SOURCE_ALL_NEGATIVES)
 
         self._plate_events = {
-            # self._event_destination_completed,
-            # self._event_destination_failed,
             self._event_source_completed,
             self._event_source_no_plate_map_data,
             self._event_source_unrecognised,

@@ -6,8 +6,6 @@ from .source_all_negatives import SourceAllNegatives
 from .source_unrecognised import SourceUnrecognised
 
 __all__ = [
-    # "DestinationCompleted",
-    # "DestinationFailed",
     "SourceCompleted",
     "SourceNoPlateMapData",
     "SourceAllNegatives",

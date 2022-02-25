@@ -24,13 +24,13 @@ class SourceNoPlateMapData(PlateEvent):
         self._event_type = params["event_type"]
 
         self.properties["plate_barcode"] = PlateBarcode(params)
-
-        for property_name in ["plate_barcode"]:
-            self.properties[property_name].is_valid()
-
         self.properties["user_id"] = UserID(params)
         self.properties["robot_serial_number"] = RobotSerialNumber(params)
         self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
+
+        for property_name in ["plate_barcode", "user_id", "robot_serial_number"]:
+            self.properties[property_name].is_valid()
+
         self.properties["barcode_no_plate_map_data"] = BarcodeNoPlateMapData(params)
 
     def _create_message(self) -> Any:

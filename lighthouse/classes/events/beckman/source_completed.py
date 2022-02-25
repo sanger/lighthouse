@@ -26,17 +26,17 @@ class SourceCompleted(PlateEvent, LabwhereServiceMixin):
         self._event_type = params["event_type"]
 
         self.properties["plate_barcode"] = PlateBarcode(params)
+        self.properties["user_id"] = UserID(params)
+        self.properties["robot_serial_number"] = RobotSerialNumber(params)
+        self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
 
-        for property_name in ["plate_barcode"]:
+        for property_name in ["plate_barcode", "user_id", "robot_serial_number"]:
             self.properties[property_name].is_valid()
 
         self.properties["source_plate_uuid"] = SourcePlateUUID(self.properties["plate_barcode"])
         self.properties["positive_samples_from_source"] = PositiveSamplesFromSource(
             self.properties["source_plate_uuid"]
         )
-        self.properties["user_id"] = UserID(params)
-        self.properties["robot_serial_number"] = RobotSerialNumber(params)
-        self.properties["robot_uuid"] = RobotUUID(self.properties["robot_serial_number"])
 
     def _create_message(self) -> Any:
         message = self.build_new_warehouse_message()

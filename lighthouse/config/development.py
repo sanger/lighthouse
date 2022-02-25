@@ -13,7 +13,6 @@ API_TOKENS_PRIORITY = {
 API_TOKENS_EVENTS = {
     "biosero_read_write": "biosero_read_write_dev",
     "lighthouse_ui_read_write": "lighthouse_ui_read_write_dev",
-    "beckman_read_write": "beckman_read_write_dev",
 }
 DOMAIN["cherrypick_test_data"]["internal_resource"] = False
 
