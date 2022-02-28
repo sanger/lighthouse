@@ -711,7 +711,7 @@
                 "sha256:f785375ca2b4e2192786f1e0d2a94c66900d12e780ebae1eccbbab85eb9a7054"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==4.0.1"
+            "version": "==3.12.1"
         },
         "pymysql": {
             "hashes": [
