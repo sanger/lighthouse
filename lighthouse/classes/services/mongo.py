@@ -85,17 +85,16 @@ class MongoServiceMixin:
             {List[SampleDoc]} -- A list of all positive samples on the source plate; otherwise None if they cannot be
             determined.
         """
-        with app.app_context():
+        try:
             samples_collection: Collection = cast(Eve, app).data.driver.db.samples
             query = {
                 FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid,
                 FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
             }
 
-            samples = samples_collection.find(query)
+            return list(samples_collection.find(query))
+        except Exception as e:
+            logger.error(f"An error occurred attempting to fetch samples on source plate '{source_plate_uuid}'")
+            logger.exception(e)
 
-            if samples is None:
-                logger.error(f"An error occurred attempting to fetch samples on source plate '{source_plate_uuid}'")
-                return None
-
-            return list(samples)
+            return None

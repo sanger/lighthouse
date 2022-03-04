@@ -32,6 +32,7 @@ def create_plate_event_endpoint() -> FlaskResponse:
         Beckman.EVENT_SOURCE_UNRECOGNISED,
         Beckman.EVENT_SOURCE_COMPLETED,
         Beckman.EVENT_SOURCE_ALL_NEGATIVES,
+        Beckman.EVENT_SOURCE_NO_PLATE_MAP_DATA,
     ]:
         return create_plate_event()
     return v1_create_plate_event()
