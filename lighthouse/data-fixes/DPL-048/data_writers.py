@@ -29,7 +29,7 @@ def write_to_mongo(data):
             update_query = { "Root Sample ID": original_root_sample_id }
             new_value = { "$set": { "Root Sample ID": root_sample_id } }
 
-            table.update_one(update_query, new_value)
+            table.update_many(update_query, new_value)
         print("Data loaded in successfully.")
     except Exception as e:
         print("Error while connecting to MongoDB")
