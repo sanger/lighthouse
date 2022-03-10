@@ -42,7 +42,6 @@ def create_event_dict(request: Request, required_params: Tuple[str, ...]) -> Dic
     Event = namedtuple("Event", params)  # type: ignore
     event = Event(event_type, robot_serial_number, user_id)._asdict()  # type: ignore
 
-    # event = event._asdict()
     event["_created"] = datetime.now()
     barcode = request.args.get("barcode", default=None, type=str)
     if barcode is not None:

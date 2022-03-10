@@ -80,7 +80,7 @@ RMQ_ROUTING_KEY = "test.event.#"
 RMQ_LIMS_ID = "LH_TEST"
 
 ###
-# Backman config
+# Beckman config
 ###
 BECKMAN_ENABLE = False
 BECKMAN_ENABLE_V3 = True

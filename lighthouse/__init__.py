@@ -59,7 +59,7 @@ def setup_routes(app):
         app.register_blueprint(v1_beckman_routes.bp, url_prefix="/v1")
 
     if app.config.get("BECKMAN_ENABLE_V3", False):
-        from lighthouse.routes.v3 import beckman_v3_routes
+        from lighthouse.routes.v3 import beckman_routes as v3_beckman_routes
 
-        app.register_blueprint(beckman_v3_routes.bp, name="root_beckman_routes")
-        app.register_blueprint(beckman_v3_routes.bp, url_prefix="/v1")
+        app.register_blueprint(v3_beckman_routes.bp, name="root_beckman_routes")
+        app.register_blueprint(v3_beckman_routes.bp, url_prefix="/v1")
