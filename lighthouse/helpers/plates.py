@@ -1,8 +1,8 @@
 import logging
+from datetime import datetime
 from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
-from datetime import datetime
 
 import requests
 from eve import Eve
@@ -19,6 +19,7 @@ from lighthouse.constants.fields import (
     FIELD_DART_DESTINATION_BARCODE,
     FIELD_DART_DESTINATION_COORDINATE,
     FIELD_DART_LAB_ID,
+    FIELD_DART_LH_SAMPLE_UUID,
     FIELD_DART_RNA_ID,
     FIELD_DART_ROOT_SAMPLE_ID,
     FIELD_DART_SOURCE_BARCODE,
@@ -109,7 +110,7 @@ def add_cog_barcodes(samples):
 
     logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
 
-    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/{centre_prefix}/new?count={num_samples}"
+    baracoda_url = f"{app.config['BARACODA_URL']}/barcodes_group/{centre_prefix}/new?count={num_samples}"
 
     retries = app.config["BARACODA_RETRY_ATTEMPTS"]
     success_operation = False
@@ -210,25 +211,12 @@ def query_for_cherrypicked_samples(rows: Optional[List[SampleDoc]]) -> Optional[
         return None
 
     return {
-        "$or": [
-            {
-                FIELD_ROOT_SAMPLE_ID: getattr(row, FIELD_DART_ROOT_SAMPLE_ID),
-                FIELD_RNA_ID: getattr(row, FIELD_DART_RNA_ID),
-                FIELD_LAB_ID: getattr(row, FIELD_DART_LAB_ID),
-                FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
-            }
-            for row in rows_without_controls(rows)
-        ]
+        "$or": [{FIELD_LH_SAMPLE_UUID: getattr(row, FIELD_DART_LH_SAMPLE_UUID)} for row in rows_without_controls(rows)]
     }
 
 
 def equal_row_and_sample(row, sample):
-    return (
-        (sample[FIELD_ROOT_SAMPLE_ID] == getattr(row, FIELD_DART_ROOT_SAMPLE_ID))
-        and (sample[FIELD_RNA_ID] == getattr(row, FIELD_DART_RNA_ID))
-        and (sample[FIELD_LAB_ID] == getattr(row, FIELD_DART_LAB_ID))
-        and sample[FIELD_RESULT].lower() == "positive"
-    )
+    return sample[FIELD_LH_SAMPLE_UUID] == getattr(row, FIELD_DART_LH_SAMPLE_UUID)
 
 
 def find_sample_matching_row(row, samples):
@@ -317,7 +305,7 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
     Returns:
         requests.Response: the response from Sequencescape.
     """
-    ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
     logger.info(f"Sending request to: {ss_url}")
 

@@ -26,7 +26,7 @@ def test_post_plates_endpoint_successful(
     app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
     with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
         body = {"barcode": "plate_123"}
         mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
@@ -58,7 +58,7 @@ def test_post_plates_endpoint_no_fit_to_pick_samples(app, client, endpoint):
 def test_post_plates_endpoint_add_cog_barcodes_failed(
     app, client, samples, priority_samples, centres, mocked_responses, endpoint
 ):
-    baracoda_url = f"http://{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=4"
+    baracoda_url = f"{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=4"
 
     mocked_responses.add(responses.POST, baracoda_url, status=HTTPStatus.BAD_REQUEST)
 
@@ -71,7 +71,7 @@ def test_post_plates_endpoint_add_cog_barcodes_failed(
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses, endpoint):
     with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
         body = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
         mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.UNPROCESSABLE_ENTITY)
@@ -86,7 +86,7 @@ def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses,
 def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses, endpoint):
     with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
         with patch("lighthouse.routes.common.plates.update_mlwh_with_cog_uk_ids", side_effect=Exception()):
-            ss_url = f"http://{app.config['SS_HOST']}/api/v2/heron/plates"
+            ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
             body = {"barcode": "plate_123"}
             mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
