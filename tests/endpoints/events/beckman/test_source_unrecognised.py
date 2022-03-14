@@ -2,8 +2,6 @@ from http import HTTPStatus
 from unittest.mock import patch
 from uuid import uuid4
 
-import pytest
-
 from lighthouse.classes.beckman_v3 import Beckman
 
 CACHE = {}

@@ -155,7 +155,7 @@ def endpoint_url(app, request):
     url = f"/v1/plate-events/create?event_type={request.param}"
     if request.param != "lh_beckman_cp_source_plate_unrecognised":
         url = url + "&barcode=GLS-GP-016240"
-    
+
     return url
 
 

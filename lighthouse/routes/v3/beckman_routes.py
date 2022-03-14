@@ -33,7 +33,7 @@ def get_failure_types_endpoint() -> FlaskResponse:
 @bp.get("/plate-events/create")
 def create_plate_event_endpoint() -> FlaskResponse:
     event_type = request.args.get(FIELD_EVENT_TYPE, type=str)
-    if (event_type is None or (event_type == '')):
+    if event_type is None or (event_type == ""):
         return bad_request([f"Unrecognised event type '{event_type}'"])
 
     if event_type in [
@@ -43,7 +43,7 @@ def create_plate_event_endpoint() -> FlaskResponse:
         Beckman.EVENT_SOURCE_NO_PLATE_MAP_DATA,
     ]:
         return create_plate_event()
-    
+
     return internal_server_error([f"Unrecognised event type '{event_type}'"])
 
 

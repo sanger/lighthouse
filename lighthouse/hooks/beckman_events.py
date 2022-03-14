@@ -106,7 +106,6 @@ def create_plate_event() -> FlaskResponse:
         automation_system = AutomationSystem.AutomationSystemEnum.BECKMAN
         # Assume we only receive one event
 
-
         beckman = Beckman()
         event_type = event.get(FIELD_EVENT_TYPE)
 
@@ -133,10 +132,13 @@ def create_plate_event() -> FlaskResponse:
 
     except Exception as e:
         if write_exception_error:
-            plate_event.process_exception(e)
+            if plate_event is not None:
+                plate_event.process_exception(e)
 
         message = str(e)
-        if hasattr(plate_event, 'errors'):
+        issues: Any = None
+
+        if plate_event is not None and hasattr(plate_event, "errors"):
             issues = plate_event.errors
         else:
             issues = [message]
