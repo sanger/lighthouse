@@ -1,29 +1,29 @@
-from http import HTTPStatus
-from unittest.mock import patch
+# from http import HTTPStatus
+# from unittest.mock import patch
 
-import pytest
+# import pytest
 
-from lighthouse.messages.message import Message
+# from lighthouse.messages.message import Message
 
-ENDPOINT_PREFIXES = ["", "/v1"]
-CREATE_PLATE_EVENTS_URL = "/plate-events/create"
-CREATE_PLATE_EVENTS_URLS = [prefix + CREATE_PLATE_EVENTS_URL for prefix in ENDPOINT_PREFIXES]
-
-
-@pytest.mark.parametrize("url", CREATE_PLATE_EVENTS_URLS)
-def test_get_create_plate_event_endpoint_bad_request_no_event_type(client, url):
-    response = client.get(f"{url}")
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert len(response.json["errors"]) == 1
+# ENDPOINT_PREFIXES = ["", "/v1"]
+# CREATE_PLATE_EVENTS_URL = "/plate-events/create"
+# CREATE_PLATE_EVENTS_URLS = [prefix + CREATE_PLATE_EVENTS_URL for prefix in ENDPOINT_PREFIXES]
 
 
-@pytest.mark.parametrize("url", CREATE_PLATE_EVENTS_URLS)
-def test_get_create_plate_event_endpoint_bad_request_empty_event_type(client, url):
-    response = client.get(f"{url}?event_type=")
+# @pytest.mark.parametrize("url", CREATE_PLATE_EVENTS_URLS)
+# def test_get_create_plate_event_endpoint_bad_request_no_event_type(client, url):
+#     response = client.get(f"{url}")
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert len(response.json["errors"]) == 1
+#     assert response.status_code == HTTPStatus.BAD_REQUEST
+#     assert len(response.json["errors"]) == 1
+
+
+# @pytest.mark.parametrize("url", CREATE_PLATE_EVENTS_URLS)
+# def test_get_create_plate_event_endpoint_bad_request_empty_event_type(client, url):
+#     response = client.get(f"{url}?event_type=")
+
+#     assert response.status_code == HTTPStatus.BAD_REQUEST
+#     assert len(response.json["errors"]) == 1
 
 
 # @pytest.mark.parametrize("url", CREATE_PLATE_EVENTS_URLS)

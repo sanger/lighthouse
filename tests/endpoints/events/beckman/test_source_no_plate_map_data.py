@@ -27,6 +27,7 @@ def test_event_no_plate_map_data_missing_barcode(
         )
 
         response_errors = response.json.get("_issues")
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR.value
         assert "'barcode' should not be an empty string" in response_errors.get("plate_barcode")
 
 

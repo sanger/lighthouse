@@ -99,12 +99,14 @@ def create_plate_event() -> FlaskResponse:
     """
     required_params = (FIELD_EVENT_TYPE, FIELD_EVENT_ROBOT, FIELD_EVENT_USER_ID)
 
-    event = create_event_dict(request, required_params)
-    automation_system = AutomationSystem.AutomationSystemEnum.BECKMAN
-    # Assume we only receive one event
-
-    write_exception_error = True
+    write_exception_error = False
+    plate_event = None
     try:
+        event = create_event_dict(request, required_params)
+        automation_system = AutomationSystem.AutomationSystemEnum.BECKMAN
+        # Assume we only receive one event
+
+
         beckman = Beckman()
         event_type = event.get(FIELD_EVENT_TYPE)
 
@@ -117,6 +119,8 @@ def create_plate_event() -> FlaskResponse:
 
         plate_event = beckman.get_plate_event(event_type)
         plate_event.initialize_event(event)
+        write_exception_error = True
+
         if plate_event.is_valid():
             plate_event.process_event()
 
@@ -131,14 +135,18 @@ def create_plate_event() -> FlaskResponse:
         if write_exception_error:
             plate_event.process_exception(e)
 
-        message = "The plate creation has failed."
+        message = str(e)
+        if hasattr(plate_event, 'errors'):
+            issues = plate_event.errors
+        else:
+            issues = [message]
 
         abort(
             make_response(
                 jsonify(
                     {
                         "_status": "ERR",
-                        "_issues": plate_event.errors,
+                        "_issues": issues,
                         "_error": {
                             "code": HTTPStatus.INTERNAL_SERVER_ERROR,
                             "message": message,

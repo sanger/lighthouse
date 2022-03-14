@@ -16,17 +16,6 @@ def int_to_uuid(value: int) -> str:
     return CACHE[value]
 
 
-def test_event_source_unrecognised_missing_user_id(app, client, clear_events):
-    with app.app_context():
-        with pytest.raises(Exception) as excinfo:
-            response = client.get(
-                "/v1/plate-events/create?event_type=lh_beckman_cp_source_plate_unrecognised&robot=BKRB0001&user_id=",
-            )
-
-            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR.value
-        assert "GET request needs 'user_id' in URL" in str(excinfo.value)
-
-
 def test_get_event_source_unrecognised(
     app,
     client,
