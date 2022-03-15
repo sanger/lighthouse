@@ -47,8 +47,3 @@ MLWH_DB = "unified_warehouse_test"
 WAREHOUSES_RW_CONN_STRING = f"root:root@{LOCALHOST}"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
 
-###
-# Beckman config
-###
-BECKMAN_ENABLE = False
-BECKMAN_ENABLE_V3 = True
