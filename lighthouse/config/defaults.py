@@ -207,6 +207,7 @@ RMQ_LIMS_ID = "LH_LOCAL"
 ###
 # Beckman config
 ###
+BECKMAN_ENABLE_V3 = False
 BECKMAN_ENABLE = False
 BECKMAN_ROBOTS = {
     "BKRB0001": {"name": "Robot 1", "uuid": "082effc3-f769-4e83-9073-dc7aacd5f71b"},
