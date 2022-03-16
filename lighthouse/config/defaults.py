@@ -217,11 +217,13 @@ BECKMAN_ROBOTS = {
 }
 # TODO: make these the generic failure types
 BECKMAN_FAILURE_TYPES = {
+    "plate_too_low_empty": "Plate too low/empty",
+    "general_software_error": "General software error",
     "robot_crashed": "The robot crashed",
     "sample_contamination": "Sample contamination occurred",
     "power_failure": "Power loss to instrument",
     "network_failure": "Cannot retrieve sample data",
-    "SILAS_error": "Internal communication error in Beckman system",
+    "SILAS_error": "Internal communication error in robot system",
     "instrument_loaded_incorrectly": "Labware has been incorrectly loaded onto instrument",
     "other": "Any other failure",
 }
