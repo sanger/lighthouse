@@ -53,6 +53,5 @@ def setup_routes(app):
     app.register_blueprint(v1_routes.bp, name="root_routes")
     app.register_blueprint(v1_routes.bp, url_prefix="/v1")
 
-
     app.register_blueprint(v3_beckman_routes.bp, name="root_beckman_routes")
     app.register_blueprint(v3_beckman_routes.bp, url_prefix="/v1")
