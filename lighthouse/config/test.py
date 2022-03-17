@@ -82,8 +82,6 @@ RMQ_LIMS_ID = "LH_TEST"
 ###
 # Beckman config
 ###
-BECKMAN_ENABLE = False
-BECKMAN_ENABLE_V3 = True
 BECKMAN_FAILURE_TYPES = {key: BECKMAN_FAILURE_TYPES[key] for key in ("robot_crashed", "sample_contamination", "other")}
 
 ###
