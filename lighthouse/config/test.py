@@ -80,9 +80,8 @@ RMQ_ROUTING_KEY = "test.event.#"
 RMQ_LIMS_ID = "LH_TEST"
 
 ###
-# Backman config
+# Beckman config
 ###
-BECKMAN_ENABLE = True
 BECKMAN_FAILURE_TYPES = {key: BECKMAN_FAILURE_TYPES[key] for key in ("robot_crashed", "sample_contamination", "other")}
 
 ###
