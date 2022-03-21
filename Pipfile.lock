@@ -720,10 +720,10 @@
         },
         "pytz": {
             "hashes": [
-                "sha256:3672058bc3453457b622aab7a1c3bfd5ab0bdae451512f6cf25f64ed37f5b87c",
-                "sha256:acad2d8b20a1af07d4e4c9d2e9285c5ed9104354062f275f3fcd88dcef4f1326"
+                "sha256:1e760e2fe6a8163bc0b3d9a19c4f84342afa0a2affebfaa84b01b978a02ecaa7",
+                "sha256:e68985985296d9a66a881eb3193b0906246245294a881e7c8afe623866ac6a5c"
             ],
-            "version": "==2021.3"
+            "version": "==2022.1"
         },
         "pytz-deprecation-shim": {
             "hashes": [
@@ -1105,19 +1105,19 @@
         },
         "flake8-bugbear": {
             "hashes": [
-                "sha256:4c2a4136bd4ecb8bf02d5159af302ffc067642784c9d0488b33ce4610da825ee",
-                "sha256:ce7ae44aaaf67ef192b8a6de94a5ac617144e1675ad0654fdea556f48dc18d9b"
+                "sha256:152e64a86f6bff6e295d630ccc993f62434c1fd2b20d2fae47547cb1c1b868e0",
+                "sha256:19fe179ee3286e16198603c438788e2949e79f31d653f0bdb56d53fb69217bd0"
             ],
             "index": "pypi",
-            "version": "==22.1.11"
+            "version": "==22.3.20"
         },
         "freezegun": {
             "hashes": [
-                "sha256:93e90676da387a241a7c2ae7ae68af7b95bfe80e952d0bbf3e088342de90a38d",
-                "sha256:e19563d0b05dcab6dc8ad21c05269004a96998ce2b6b1b8131f1297ae20dd038"
+                "sha256:15103a67dfa868ad809a8f508146e396be2995172d25f927e48ce51c0bf5cb09",
+                "sha256:b4c64efb275e6bc68dc6e771b17ffe0ff0f90b81a2a5189043550b6519926ba4"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.2.0"
+            "version": "==1.2.1"
         },
         "idna": {
             "hashes": [
