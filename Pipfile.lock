@@ -1306,11 +1306,11 @@
         },
         "types-requests": {
             "hashes": [
-                "sha256:506279bad570c7b4b19ac1f22e50146538befbe0c133b2cea66a9b04a533a859",
-                "sha256:6a7ed24b21780af4a5b5e24c310b2cd885fb612df5fd95584d03d87e5f2a195a"
+                "sha256:04579ee164f7c2659be46950e3c2f8d51a081ad252ef1b01d4b12faba5c3810b",
+                "sha256:c01838abfe3e8a83ba68346cd373afff97594c19c15c922ddee4a0e80ba7e329"
             ],
             "index": "pypi",
-            "version": "==2.27.11"
+            "version": "==2.27.14"
         },
         "types-urllib3": {
             "hashes": [
@@ -1324,7 +1324,7 @@
                 "sha256:1a9462dcc3347a79b1f1c0271fbe79e844580bb598bafa1ed208b94da3cdcd42",
                 "sha256:21c85e0fe4b9a155d0799430b0ad741cdce7e359660ccbd8b530613e8df88ce2"
             ],
-            "markers": "python_version >= '3.6'",
+            "markers": "python_version < '3.10'",
             "version": "==4.1.1"
         },
         "urllib3": {
