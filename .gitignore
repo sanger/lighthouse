@@ -132,3 +132,10 @@ dmypy.json
 .pyre/
 
 tests/data/reports/*
+
+# Data fixes
+*/data-fixes/*/data/
+*/data-fixes/*/test-data
+*/data-fixes/*/constants.py
+
+*.DS_Store
