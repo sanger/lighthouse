@@ -103,7 +103,7 @@ def mock_event_helpers():
 
 
 def any_failure_type(app):
-    return list(app.config["BECKMAN_FAILURE_TYPES"].keys())[0]
+    return list(app.config["ROBOT_FAILURE_TYPES"].keys())[0]
 
 
 # ---------- tests ----------
