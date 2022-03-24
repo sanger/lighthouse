@@ -76,7 +76,7 @@ class Beckman(AutomationSystem):
     def get_failure_types() -> List[Dict[str, str]]:
         logger.debug("Getting Beckman failure types information from config...")
 
-        failure_types_config = app.config.get("BECKMAN_FAILURE_TYPES")
+        failure_types_config = app.config.get("ROBOT_FAILURE_TYPES")
 
         if failure_types_config is None or not isinstance(failure_types_config, dict):
             message = "no config found or unreadable"

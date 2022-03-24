@@ -213,13 +213,15 @@ BECKMAN_ROBOTS = {
     "BKRB0003": {"name": "Robot 3", "uuid": "90d8bc7a-2f6e-4a5f-8bea-1e8d27a1ac89"},
     "BKRB0004": {"name": "Robot 4", "uuid": "675002fe-f364-47e4-b71f-4fe1bb7b5091"},
 }
-# TODO: make these the generic failure types
-BECKMAN_FAILURE_TYPES = {
+# failure types (shared by Beckman and Biosero fail screens in Lighthouse-UI)
+ROBOT_FAILURE_TYPES = {
+    "plate_too_low_empty": "Plate volumes are too low or empty",
+    "general_software_error": "General software error",
     "robot_crashed": "The robot crashed",
     "sample_contamination": "Sample contamination occurred",
     "power_failure": "Power loss to instrument",
     "network_failure": "Cannot retrieve sample data",
-    "SILAS_error": "Internal communication error in Beckman system",
+    "SILAS_error": "Internal communication error in robot system",
     "instrument_loaded_incorrectly": "Labware has been incorrectly loaded onto instrument",
     "other": "Any other failure",
 }
