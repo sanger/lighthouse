@@ -215,7 +215,7 @@ BECKMAN_ROBOTS = {
 }
 # failure types (shared by Beckman and Biosero fail screens in Lighthouse-UI)
 ROBOT_FAILURE_TYPES = {
-    "plate_too_low_empty": "Plate volumes too low or empty",
+    "plate_too_low_empty": "Plate volumes are too low or empty",
     "general_software_error": "General software error",
     "robot_crashed": "The robot crashed",
     "sample_contamination": "Sample contamination occurred",
