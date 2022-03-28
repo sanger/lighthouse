@@ -153,7 +153,7 @@ def fail_plate_from_barcode() -> FlaskResponse:
 
         return bad_request(str(e))
     try:
-        if failure_type not in app.config["BECKMAN_FAILURE_TYPES"]:
+        if failure_type not in app.config["ROBOT_FAILURE_TYPES"]:
             logger.error(f"{ERROR_CHERRYPICKED_FAILURE_RECORD} unknown failure type")
 
             return bad_request(f"'{failure_type}' is not a known cherrypicked plate failure type")

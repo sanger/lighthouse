@@ -70,7 +70,7 @@ def test_get_failure_types_returns_expected_failure_types(app, client, base_url)
 @pytest.mark.parametrize("base_url", FAILURE_TYPES_BASE_URLS)
 def test_get_failure_types_internal_server_error_no_failure_types_config_exists(app, client, base_url):
     with app.app_context():
-        del app.config["BECKMAN_FAILURE_TYPES"]
+        del app.config["ROBOT_FAILURE_TYPES"]
         response = client.get(base_url)
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -81,7 +81,7 @@ def test_get_failure_types_internal_server_error_no_failure_types_config_exists(
 @pytest.mark.parametrize("base_url", FAILURE_TYPES_BASE_URLS)
 def test_get_failure_types_internal_server_error_incorrect_format_config(app, client, base_url):
     with app.app_context():
-        app.config["BECKMAN_FAILURE_TYPES"] = ["not the expected dictionary"]
+        app.config["ROBOT_FAILURE_TYPES"] = ["not the expected dictionary"]
         response = client.get(base_url)
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
