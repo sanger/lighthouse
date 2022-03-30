@@ -1,20 +1,15 @@
 from flask import Blueprint, request
 from flask_cors import CORS
 
-from lighthouse.types import FlaskResponse
-
-from lighthouse.constants.fields import FIELD_EVENT_TYPE
 from lighthouse.classes.beckman_v3 import Beckman
-
+from lighthouse.constants.fields import FIELD_EVENT_TYPE
+from lighthouse.helpers.responses import bad_request, internal_server_error
 from lighthouse.hooks.beckman_events import create_plate_event
-from lighthouse.routes.v1.beckman_routes import (
-    fail_plate_from_barcode_endpoint as v1_fail_plate_from_barcode,
-    create_plate_from_barcode_endpoint as v1_create_plate_from_barcode,
-    get_failure_types_endpoint as v1_get_failure_types,
-    get_robots_endpoint as v1_get_robots,
-)
-
-from lighthouse.helpers.responses import internal_server_error, bad_request
+from lighthouse.routes.v1.beckman_routes import create_plate_from_barcode_endpoint as v1_create_plate_from_barcode
+from lighthouse.routes.v1.beckman_routes import fail_plate_from_barcode_endpoint as v1_fail_plate_from_barcode
+from lighthouse.routes.v1.beckman_routes import get_failure_types_endpoint as v1_get_failure_types
+from lighthouse.routes.v1.beckman_routes import get_robots_endpoint as v1_get_robots
+from lighthouse.types import FlaskResponse
 
 bp = Blueprint("v3_beckman_routes", __name__)
 CORS(bp)
@@ -22,12 +17,12 @@ CORS(bp)
 
 @bp.get("/beckman/robots")
 def get_robots_endpoint() -> FlaskResponse:
-    return v1_get_robots()  # type:ignore
+    return v1_get_robots()
 
 
 @bp.get("/beckman/failure-types")
 def get_failure_types_endpoint() -> FlaskResponse:
-    return v1_get_failure_types()  # type:ignore
+    return v1_get_failure_types()
 
 
 @bp.get("/plate-events/create")
@@ -49,9 +44,9 @@ def create_plate_event_endpoint() -> FlaskResponse:
 
 @bp.get("/cherrypicked-plates/create")
 def create_plate_from_barcode_endpoint() -> FlaskResponse:
-    return v1_create_plate_from_barcode()  # type:ignore
+    return v1_create_plate_from_barcode()
 
 
 @bp.get("/cherrypicked-plates/fail")
 def fail_plate_from_barcode_endpoint() -> FlaskResponse:
-    return v1_fail_plate_from_barcode()  # type:ignore
+    return v1_fail_plate_from_barcode()
