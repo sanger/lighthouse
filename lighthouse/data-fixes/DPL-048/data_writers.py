@@ -9,6 +9,7 @@ from constants import (
     ORIGINAL_COLUMN_NAME,
     MONGO_COLUMN_NAME,
     MYSQL_HOST,
+    MYSQL_PORT,
     MONGO_DB,
     MONGO_DB_HOST,
     MONGO_DB_AUTH_SOURCE,
@@ -59,7 +60,7 @@ def write_to_mysql(data):
                                                 database = MLWH_DB,
                                                 user = MYSQL_USER,
                                                 password = MYSQL_PWD,
-                                                port = '3436')
+                                                port = MYSQL_PORT)
         print("Loading in the data...")
         cursor = db_connection.cursor()
         for index, row in data.iterrows():
