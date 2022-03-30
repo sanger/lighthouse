@@ -66,10 +66,11 @@ def write_to_mysql(data):
         for index, row in data.iterrows():
             new_value = row[COLUMN_NAME]
             original_value = row[ORIGINAL_COLUMN_NAME]
+            barcode = row["plate_barcode"]
             update_query = (
                 f"UPDATE {MLWH_TABLE}"
                 f" SET {COLUMN_NAME} = '{new_value}'"
-                f" WHERE {COLUMN_NAME} = '{original_value}'"
+                f" WHERE {COLUMN_NAME} = '{original_value}' AND plate_barcode = {barcode}"
             )
             try:
                 cursor.execute(update_query)
