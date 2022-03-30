@@ -22,12 +22,12 @@ CORS(bp)
 
 @bp.get("/beckman/robots")
 def get_robots_endpoint() -> FlaskResponse:
-    return v1_get_robots()  # type:ignore
+    return v1_get_robots()
 
 
 @bp.get("/beckman/failure-types")
 def get_failure_types_endpoint() -> FlaskResponse:
-    return v1_get_failure_types()  # type:ignore
+    return v1_get_failure_types()
 
 
 @bp.get("/plate-events/create")
@@ -49,9 +49,9 @@ def create_plate_event_endpoint() -> FlaskResponse:
 
 @bp.get("/cherrypicked-plates/create")
 def create_plate_from_barcode_endpoint() -> FlaskResponse:
-    return v1_create_plate_from_barcode()  # type:ignore
+    return v1_create_plate_from_barcode()
 
 
 @bp.get("/cherrypicked-plates/fail")
 def fail_plate_from_barcode_endpoint() -> FlaskResponse:
-    return v1_fail_plate_from_barcode()  # type:ignore
+    return v1_fail_plate_from_barcode()
