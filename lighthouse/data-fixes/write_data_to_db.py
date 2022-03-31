@@ -2,11 +2,11 @@
 import pymongo
 import mysql.connector
 import pandas as pd
-import argparse
+from argparse import ArgumentParser
 
 from constants import (
-    COLUMN_NAME,
-    ORIGINAL_COLUMN_NAME,
+    FIXED_DATA_COL_NAME,
+    MLWH_COLUMN_NAME,
     MONGO_COLUMN_NAME,
     MYSQL_HOST,
     MYSQL_PORT,
@@ -35,17 +35,21 @@ def write_data_to_db(data: pd.DataFrame, database: str):
 def write_to_mongo(data):
     print("Attempting to connect to Mongo DB...")
     try:
-        client = pymongo.MongoClient(MONGO_DB_HOST, username=MONGO_DB_USER, password=MONGO_DB_PASSWORD, authSource=MONGO_DB_AUTH_SOURCE)
+        client = pymongo.MongoClient(MONGO_DB_HOST,
+                                     username=MONGO_DB_USER,
+                                     password=MONGO_DB_PASSWORD,
+                                     authSource=MONGO_DB_AUTH_SOURCE)
         db = client[MONGO_DB]
         table = db[MONGO_TABLE]
         print("Loading in the data...")
         for index, row in data.iterrows():
-            new_value = row[COLUMN_NAME]
-            original_value = row[ORIGINAL_COLUMN_NAME]
-
-            update_query = { MONGO_COLUMN_NAME: original_value }
+            new_value = row[FIXED_DATA_COL_NAME]
+            root_sample_id = row["root_sample_id"]
+            lab_id = row["lab_id"]
+            result = row["result"]
+            rna_id = row["rna_id"]
+            update_query = { "Lab ID": lab_id, "Result": result, "Root Sample ID": root_sample_id, "RNA ID": rna_id }
             new_value_query = { "$set": { MONGO_COLUMN_NAME: new_value } }
-
             table.update_many(update_query, new_value_query)
         print("Data loaded in successfully.")
     except Exception as e:
@@ -56,20 +60,23 @@ def write_to_mongo(data):
 def write_to_mysql(data):
     print("Attempting to connect to MLWH...")
     try:
-        db_connection = mysql.connector.connect(host = MYSQL_HOST,
-                                                database = MLWH_DB,
-                                                user = MYSQL_USER,
-                                                password = MYSQL_PWD,
-                                                port = MYSQL_PORT)
+        db_connection = mysql.connector.connect(host=MYSQL_HOST,
+                                                database=MLWH_DB,
+                                                user=MYSQL_USER,
+                                                password=MYSQL_PWD,
+                                                port=MYSQL_PORT)
         print("Loading in the data...")
         cursor = db_connection.cursor()
         for index, row in data.iterrows():
-            new_value = row[COLUMN_NAME]
-            original_value = row[ORIGINAL_COLUMN_NAME]
+            new_value = row[FIXED_DATA_COL_NAME]
+            root_sample_id = row["root_sample_id"]
+            lab_id = row["lab_id"]
+            result = row["result"]
+            rna_id = row["rna_id"]
             update_query = (
                 f"UPDATE {MLWH_TABLE}"
-                f" SET {COLUMN_NAME} = '{new_value}'"
-                f" WHERE {COLUMN_NAME} = '{original_value}'"
+                f" SET {MLWH_COLUMN_NAME} = '{new_value}'"
+                f" WHERE root_sample_id = '{root_sample_id} AND lab_id = '{lab_id}' AND result = '{result}' AND rna_id = '{rna_id}'"
             )
             try:
                 cursor.execute(update_query)
@@ -89,7 +96,7 @@ def write_to_mysql(data):
         return
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument("--db")
     args = parser.parse_args()
     db = vars(args)["db"]
