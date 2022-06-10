@@ -22,12 +22,6 @@ DOMAIN["cherrypick_test_data"]["internal_resource"] = False
 SCHEDULER_RUN = False
 
 ###
-# mongo config (consumed by Eve)
-###
-MONGO_HOST = f"{LOCALHOST}"
-MONGO_DBNAME = "lighthouseDevelopmentDB"
-
-###
 # Labwhere config
 ###
 LABWHERE_URL = "https://localhost:3000"
