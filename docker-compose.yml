@@ -9,5 +9,15 @@ services:
       - FLASK_APP=lighthouse
       - FLASK_ENV=development
       - EVE_SETTINGS=development.py
+
     volumes:
       - ".:/code"
+
+    networks:
+      - default
+      - heron_databases_external
+
+
+networks:
+  heron_databases_external:
+    external: true

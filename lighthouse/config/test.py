@@ -33,9 +33,9 @@ REPORTS_DIR = "tests/data/reports"
 ###
 # mongo config
 ###
-MONGO_HOST = f"{LOCALHOST}"
-MONGO_DBNAME = "lighthouseTestDB"
 MONGO_QUERY_BLACKLIST = ["$where"]  # not sure why this was required...
+MONGO_DB = "lighthouseTestDB"
+MONGO_URI = f"mongodb://{LOCALHOST}:27017/{MONGO_DB}?replicaSet=heron_rs"
 
 ###
 # Labwhere config
