@@ -1,27 +1,25 @@
 #  https://docs.python-eve.org/en/stable/features.html#database-event-hooks
 import logging
-from http import HTTPStatus
-from typing import Any, Dict, Optional, Tuple, cast, Iterable, List
-from uuid import uuid4
 from collections import namedtuple
+from datetime import datetime
+from http import HTTPStatus
+from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
+from uuid import uuid4
 
-from flask import request
+from flask import abort, jsonify, make_response, request
 from flask.wrappers import Request
-from flask import abort, jsonify, make_response
 
 from lighthouse.classes.automation_system import AutomationSystem
-from lighthouse.helpers.responses import ok
 from lighthouse.classes.beckman_v3 import Beckman
 from lighthouse.constants.fields import (
-    FIELD_EVENT_TYPE,
-    FIELD_EVENT_UUID,
-    FIELD_EVENT_ROBOT,
-    FIELD_EVENT_USER_ID,
     FIELD_EVENT_BARCODE,
+    FIELD_EVENT_ROBOT,
+    FIELD_EVENT_TYPE,
+    FIELD_EVENT_USER_ID,
+    FIELD_EVENT_UUID,
 )
+from lighthouse.helpers.responses import ok
 from lighthouse.types import FlaskResponse
-
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +89,7 @@ def get_required_params(request: Request, required_params: Tuple[str, ...]) -> T
 
 def create_plate_event() -> FlaskResponse:
 
-    """/v3/plate-events/create beckman endpoint to publish a plate event message to the RabbitMQ broker.
+    """/v1/plate-events/create beckman endpoint to publish a plate event message to the RabbitMQ broker.
 
     Returns:
         FlaskResponse: if successful, return an empty list of errors and an OK status; otherwise, a list of errors and
