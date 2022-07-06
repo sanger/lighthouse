@@ -1,3 +1,4 @@
+import copy
 from http import HTTPStatus
 from unittest.mock import patch
 
@@ -11,6 +12,7 @@ from lighthouse.constants.error_messages import (
     ERROR_UNEXPECTED_CHERRYPICKING_FAILURE,
     ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
+from lighthouse.constants.fields import FIELD_COG_BARCODE
 from lighthouse.messages.message import Message
 
 ENDPOINT_PREFIXES = ["", "/v1"]
@@ -21,6 +23,12 @@ CREATE_PLATE_BASE_URLS = [prefix + CREATE_PLATE_ENDPOINT for prefix in ENDPOINT_
 FAIL_PLATE_BASE_URLS = [prefix + FAIL_PLATE_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 
 
+@pytest.fixture
+def samples_with_cog_barcodes(samples):
+    samples, _ = samples
+    return [sample for sample in samples if FIELD_COG_BARCODE in sample]
+
+
 # ---------- cherrypicked-plates/create tests ----------
 
 
@@ -29,7 +37,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
     app,
     client,
     dart_samples,
-    samples,
+    samples_with_cog_barcodes,
     mocked_responses,
     mlwh_lh_samples,
     source_plates,
@@ -37,7 +45,7 @@ def test_get_cherrypicked_plates_endpoint_successful(
 ):
     with patch(
         "lighthouse.routes.common.cherrypicked_plates.add_cog_barcodes_from_different_centres",
-        return_value="TC1",
+        return_value=samples_with_cog_barcodes,
     ):
         ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
@@ -53,7 +61,9 @@ def test_get_cherrypicked_plates_endpoint_successful(
         )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.json == {"data": {"plate_barcode": "des_plate_1", "centre": "TC1", "number_of_fit_to_pick": 5}}
+        assert response.json == {
+            "data": {"plate_barcode": "des_plate_1", "centre": ["centre_1"], "number_of_fit_to_pick": 5}
+        }
 
 
 @pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)

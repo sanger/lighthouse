@@ -53,6 +53,7 @@ from lighthouse.helpers.plates import (
     add_cog_barcodes,
     add_cog_barcodes_from_different_centres,
     add_controls_to_samples,
+    centre_prefixes_for_samples,
     check_matching_sample_numbers,
     classify_samples_by_centre,
     construct_cherrypicking_plate_failed_message,
@@ -114,6 +115,13 @@ def test_classify_samples_by_centre(app, samples, mocked_responses):
     assert list(classify_samples_by_centre(samples).keys()) == ["centre_1", "centre_2"]
     assert len(classify_samples_by_centre(samples)["centre_1"]) == 10
     assert len(classify_samples_by_centre(samples)["centre_2"]) == 1
+
+
+def test_centre_prefixes_for_samples(samples):
+    samples, _ = samples
+    actual = centre_prefixes_for_samples(samples)
+
+    assert actual == ["centre_1", "centre_2"]
 
 
 def test_add_cog_barcodes_from_different_centres(app, centres, samples, mocked_responses):

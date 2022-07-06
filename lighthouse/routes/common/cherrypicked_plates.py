@@ -20,6 +20,7 @@ from lighthouse.helpers.events import get_routing_key
 from lighthouse.helpers.plates import (
     add_cog_barcodes_from_different_centres,
     add_controls_to_samples,
+    centre_prefixes_for_samples,
     check_matching_sample_numbers,
     construct_cherrypicking_plate_failed_message,
     create_cherrypicked_post_body,
@@ -84,7 +85,7 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
 
         # add COG barcodes to samples
         try:
-            centre_prefix = add_cog_barcodes_from_different_centres(mongo_samples)
+            updated_samples = add_cog_barcodes_from_different_centres(mongo_samples)
         except Exception as e:
             logger.exception(e)
 
@@ -109,13 +110,13 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
             response_json = {
                 "data": {
                     "plate_barcode": barcode,
-                    "centre": centre_prefix,
+                    "centre": centre_prefixes_for_samples(mongo_samples),
                     "number_of_fit_to_pick": len(samples),
                 }
             }
 
             try:
-                update_mlwh_with_cog_uk_ids(mongo_samples)
+                update_mlwh_with_cog_uk_ids(updated_samples)
             except Exception as e:
                 logger.exception(e)
 
