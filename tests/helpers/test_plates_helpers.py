@@ -132,7 +132,9 @@ def test_add_cog_barcodes_from_different_centres(app, centres, samples, mocked_r
         baracoda_url2 = f"{current_app.config['BARACODA_URL']}" f"/barcodes_group/TC2/new?count=1"
 
         # remove the cog_barcode key and value from the samples fixture before testing
-        _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
+        for sample in samples:
+            if FIELD_COG_BARCODE in sample:
+                del sample[FIELD_COG_BARCODE]
 
         # update this tuple when adding more samples to the fixture data
         cog_barcodes = ("123", "789", "456", "987", "abc", "def", "hij", "klm", "nop", "qrs", "tuv")
