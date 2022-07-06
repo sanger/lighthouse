@@ -33,20 +33,38 @@ def samples_with_cog_barcodes(samples):
 # ---------- cherrypicked-plates/create tests ----------
 
 
-def mock_baracoda(mocked_responses, base_url, barcode_count=1, bad_request=False):
+def mock_baracoda(mocked_responses, app, barcode_count=1, bad_request=False):
     """Create response from baracodes for TC1 barcodes group.
     Supports up to 8 barcodes at once.
     """
 
-    baracoda_url = f"{base_url}/barcodes_group/TC1/new?count={barcode_count}"
+    baracoda_url = f"{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count={barcode_count}"
 
     barcodes = [string.ascii_lowercase[i * 3 : i * 3 + 3] for i in range(barcode_count)]  # noqa: E203
+    status = HTTPStatus.BAD_REQUEST if bad_request else HTTPStatus.CREATED
 
     mocked_responses.add(
         responses.POST,
         baracoda_url,
         body=json.dumps({"barcodes_group": {"barcodes": barcodes}}),
-        status=HTTPStatus.BAD_REQUEST if bad_request else HTTPStatus.CREATED,
+        status=status,
+    )
+
+
+def mock_sequencescape(mocked_responses, app, bad_request_barcode=None):
+    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
+    json_body: dict = (
+        {"errors": [f"The barcode '{bad_request_barcode}' is not a recognised format."]}
+        if bad_request_barcode
+        else {"barcode": "des_plate_1"}
+    )
+    status = HTTPStatus.UNPROCESSABLE_ENTITY if bad_request_barcode else HTTPStatus.OK
+
+    mocked_responses.add(
+        responses.POST,
+        ss_url,
+        json=json_body,
+        status=status,
     )
 
 
@@ -62,16 +80,9 @@ def test_get_cherrypicked_plates_endpoint_successful(
     source_plates,
     base_url,
 ):
-    mock_baracoda(mocked_responses, app.config["BARACODA_URL"])
+    mock_baracoda(mocked_responses, app)
+    mock_sequencescape(mocked_responses, app)
 
-    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
-
-    mocked_responses.add(
-        responses.POST,
-        ss_url,
-        json={"barcode": "des_plate_1"},
-        status=HTTPStatus.OK,
-    )
     response = client.get(
         f"{base_url}?barcode=des_plate_1&robot=BKRB0001&user_id=test",
         content_type="application/json",
@@ -123,7 +134,7 @@ def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
     mocked_responses,
     base_url,
 ):
-    mock_baracoda(mocked_responses, app.config["BARACODA_URL"], bad_request=True)
+    mock_baracoda(mocked_responses, app, bad_request=True)
 
     barcode = "des_plate_1"
     response = client.get(
@@ -145,18 +156,10 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
     source_plates,
     base_url,
 ):
-    mock_baracoda(mocked_responses, app.config["BARACODA_URL"])
-
-    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
-
     barcode = "des_plate_1"
-    body = {"errors": [f"The barcode '{barcode}' is not a recognised format."]}
-    mocked_responses.add(
-        responses.POST,
-        ss_url,
-        json=body,
-        status=HTTPStatus.UNPROCESSABLE_ENTITY,
-    )
+
+    mock_baracoda(mocked_responses, app)
+    mock_sequencescape(mocked_responses, app, barcode)
 
     response = client.get(
         f"{base_url}?barcode={barcode}&robot=BKRB0001&user_id=test",
@@ -177,17 +180,8 @@ def test_get_cherrypicked_plates_mlwh_update_failure(
     source_plates,
     base_url,
 ):
-    mock_baracoda(mocked_responses, app.config["BARACODA_URL"])
-
-    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
-    body = {"barcode": "plate_1"}
-
-    mocked_responses.add(
-        responses.POST,
-        ss_url,
-        json=body,
-        status=HTTPStatus.OK,
-    )
+    mock_baracoda(mocked_responses, app)
+    mock_sequencescape(mocked_responses, app)
 
     with patch(
         "lighthouse.routes.common.cherrypicked_plates.update_mlwh_with_cog_uk_ids",
@@ -247,7 +241,7 @@ def test_post_cherrypicked_plates_endpoint_missing_dart_data(app, client, base_u
 def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
     app, client, dart_samples, samples, centres, mocked_responses, base_url
 ):
-    mock_baracoda(mocked_responses, app.config["BARACODA_URL"])
+    mock_baracoda(mocked_responses, app)
 
     barcode = "des_plate_1"
 
