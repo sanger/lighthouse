@@ -21,7 +21,6 @@ from lighthouse.helpers.plates import (
     centre_prefixes_for_samples,
     create_post_body,
     format_plate,
-    get_centre_prefix,
     send_to_ss_heron_plates,
     update_mlwh_with_cog_uk_ids,
 )

@@ -40,7 +40,7 @@ def mock_baracoda(mocked_responses, base_url, barcode_count=1, bad_request=False
 
     baracoda_url = f"{base_url}/barcodes_group/TC1/new?count={barcode_count}"
 
-    barcodes = [string.ascii_lowercase[i * 3 : i * 3 + 3] for i in range(barcode_count)]
+    barcodes = [string.ascii_lowercase[i * 3 : i * 3 + 3] for i in range(barcode_count)]  # noqa: E203
 
     mocked_responses.add(
         responses.POST,
