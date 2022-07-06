@@ -98,6 +98,8 @@ def centre_prefixes_for_samples(samples: List[Dict[str, str]]) -> List[str]:
 
 
 def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    # Filter samples to only those that do not already have a COG barcode
+
     # Divide samples in centres and call add_cog_barcodes for each group
     classified_samples = classify_samples_by_centre(samples)
 
@@ -142,9 +144,6 @@ def add_cog_barcodes(samples):
 
     if not success_operation and except_obj is not None:
         raise except_obj
-
-    # TODO: I didn't know how else to get centre prefix?
-    return centre_prefix
 
 
 def get_centre_prefix(centre_name):
