@@ -162,7 +162,6 @@ SAMPLES = [
         FIELD_PLATE_BARCODE: "plate_abc",
         FIELD_ROOT_SAMPLE_ID: "sample_005",
         FIELD_RNA_ID: "rna_5",
-        FIELD_COG_BARCODE: "mno",
         FIELD_LH_SAMPLE_UUID: "443910d9-74bc-4da0-8f55-8606ed97b33a",
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
         FIELD_FILTERED_POSITIVE: True,

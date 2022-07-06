@@ -99,14 +99,17 @@ def centre_prefixes_for_samples(samples: List[Dict[str, str]]) -> List[str]:
 
 def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
     # Filter samples to only those that do not already have a COG barcode
+    filtered_samples = [
+        sample for sample in samples if FIELD_COG_BARCODE not in sample or len(sample[FIELD_COG_BARCODE]) == 0
+    ]
 
     # Divide samples in centres and call add_cog_barcodes for each group
-    classified_samples = classify_samples_by_centre(samples)
+    classified_samples = classify_samples_by_centre(filtered_samples)
 
     for samples_for_one_centre in classified_samples.values():
         add_cog_barcodes(samples_for_one_centre)
 
-    return samples
+    return filtered_samples
 
 
 def add_cog_barcodes(samples):
