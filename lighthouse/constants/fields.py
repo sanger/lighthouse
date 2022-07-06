@@ -1,7 +1,7 @@
 # Fields for baracoda
 from typing import Final
 
-FIELD_COG_BARCODE: Final[str] = "cog_barcode"
+FIELD_COG_BARCODE: Final[str] = "COG UK ID"
 
 ###
 # MongoDB field names
