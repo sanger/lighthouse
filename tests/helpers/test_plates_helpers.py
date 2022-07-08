@@ -172,9 +172,8 @@ def test_add_cog_barcodes_from_different_centres_only_some_samples_to_add_to(app
     for i, s in enumerate(samples_with_codes):
         s[FIELD_COG_BARCODE] = existing_barcodes[i]
 
-    for s in samples_to_update:
-        if FIELD_COG_BARCODE in s:
-            del s[FIELD_COG_BARCODE]
+    del samples_to_update[0][FIELD_COG_BARCODE]
+    samples_to_update[1][FIELD_COG_BARCODE] = ""
 
     with app.app_context():
         mock_baracoda_response(mocked_responses, current_app.config["BARACODA_URL"], "TC1", barcodes_to_add)
