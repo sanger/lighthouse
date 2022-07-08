@@ -40,8 +40,8 @@ class SamplesWithCogUkId(EventPropertyAbstract):
     def value(self):
         with self.retrieval_scope():
             samples = list(self._samples_from_destination.value.values())
-            add_cog_barcodes_from_different_centres(samples)
-            update_mlwh_with_cog_uk_ids(samples)
+            updated_samples = add_cog_barcodes_from_different_centres(samples)
+            update_mlwh_with_cog_uk_ids(updated_samples)
             return self._samples_from_destination.value
 
     def add_to_warehouse_message(self, message: WarehouseMessage):

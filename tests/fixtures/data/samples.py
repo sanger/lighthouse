@@ -190,6 +190,7 @@ def rows_for_samples_in_cherrytrack(source_barcode):
             FIELD_COORDINATE: "A01",
             FIELD_SOURCE: "centre_1",
             FIELD_RESULT: "Positive",
+            FIELD_COG_BARCODE: "ExistingCOG",
             FIELD_PLATE_BARCODE: source_barcode,
             FIELD_ROOT_SAMPLE_ID: "aRootSampleId1",
             FIELD_RNA_ID: f"{source_barcode}_A01",
