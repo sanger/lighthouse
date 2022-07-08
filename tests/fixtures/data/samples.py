@@ -148,7 +148,7 @@ SAMPLES = [
         FIELD_PLATE_BARCODE: "plate_789",
         FIELD_ROOT_SAMPLE_ID: "sample_004",
         FIELD_RNA_ID: "rna_4",
-        FIELD_COG_BARCODE: "jkl",
+        FIELD_COG_BARCODE: "",
         FIELD_LH_SAMPLE_UUID: "343910d9-74bc-4da0-8f55-8606ed97b33a",
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
         FIELD_FILTERED_POSITIVE: True,
