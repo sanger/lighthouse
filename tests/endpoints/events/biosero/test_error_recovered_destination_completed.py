@@ -4,9 +4,9 @@ from uuid import uuid4
 
 import pytest
 
+from lighthouse.classes.biosero import Biosero
 from lighthouse.constants.fields import FIELD_EVENT_ERRORS
 from lighthouse.helpers.mongo import get_event_with_uuid
-from lighthouse.classes.biosero import Biosero
 
 CACHE = {}
 
@@ -83,7 +83,7 @@ def test_post_error_recovered_destination_completed_cherrytrack_fails(
     "baracoda_mock_responses",
     [
         {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
+            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
         }
     ],
 )
@@ -129,7 +129,7 @@ def test_post_error_recovered_destination_completed_baracoda_fails(
     "baracoda_mock_responses",
     [
         {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
+            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
         }
     ],
 )
@@ -227,9 +227,9 @@ def test_post_event_partially_completed(
                             '"purpose_uuid": "ss_uuid_plate_purpose", '
                             '"study_uuid": "ss_uuid_study", "wells": '
                             '{"H08": {"content": {"name": "plate_123_A01", "sample_description": "aRootSampleId1", '
-                            '"supplier_name": "COGUK1", "phenotype": "positive", "uuid": "aLighthouseUUID1"}}, '
+                            '"supplier_name": "ExistingCOG", "phenotype": "positive", "uuid": "aLighthouseUUID1"}}, '
                             '"H12": {"content": {"name": "plate_123_A03", "sample_description": "aRootSampleId3", '
-                            '"supplier_name": "COGUK2", '
+                            '"supplier_name": "NewCOG", '
                             '"phenotype": "positive", "uuid": "aLighthouseUUID3"}}, '
                             '"E10": {"content": {"supplier_name": "positive control: DN1234_A1", "control": true, '
                             '"control_type": "positive"}}, '

@@ -61,7 +61,7 @@ def test_post_destination_partial_missing_run_id(app, client, biosero_auth_heade
     "baracoda_mock_responses",
     [
         {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
+            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
         }
     ],
 )
