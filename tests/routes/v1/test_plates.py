@@ -25,7 +25,7 @@ GET_PLATES_ENDPOINTS = [prefix + GET_PLATES_ENDPOINT for prefix in ENDPOINT_PREF
 def test_post_plates_endpoint_successful(
     app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
-    with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
+    with patch("lighthouse.routes.common.plates.add_cog_barcodes"):
         ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
         body = {"barcode": "plate_123"}
@@ -34,7 +34,7 @@ def test_post_plates_endpoint_successful(
         response = client.post(endpoint, json=body)
         assert response.status_code == HTTPStatus.CREATED
         assert response.json == {
-            "data": {"plate_barcode": "plate_123", "centre": "TC1", "count_fit_to_pick_samples": 4}
+            "data": {"plate_barcode": "plate_123", "centre": "centre_1", "count_fit_to_pick_samples": 4}
         }
 
 

@@ -36,7 +36,7 @@ def test_post_destination_completed_missing_barcode(app, client, lighthouse_ui_a
     "baracoda_mock_responses",
     [
         {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
+            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
         }
     ],
 )
