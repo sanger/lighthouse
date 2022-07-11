@@ -39,9 +39,11 @@ class SamplesWithCogUkId(EventPropertyAbstract):
     @cached_property
     def value(self):
         with self.retrieval_scope():
+            # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
             samples = list(self._samples_from_destination.value.values())
             updated_samples = add_cog_barcodes_from_different_centres(samples)
             update_mlwh_with_cog_uk_ids(updated_samples)
+
             return self._samples_from_destination.value
 
     def add_to_warehouse_message(self, message: WarehouseMessage):
