@@ -188,53 +188,75 @@ def test_add_cog_barcodes_from_different_centres_only_some_samples_to_add_to(app
 
 
 def test_add_cog_barcodes(app, centres, samples, mocked_responses):
+    samples, _ = samples
+
+    # we're testing samples from a single centre
+    samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+
+    # remove the cog_barcode key and value from the samples fixture before testing
+    for sample in samples:
+        if FIELD_COG_BARCODE in sample:
+            del sample[FIELD_COG_BARCODE]
+
+    # update this tuple when adding more samples to the fixture data
+    cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
+
     with app.app_context():
-        samples, _ = samples
+        mock_baracoda_response(mocked_responses, current_app.config["BARACODA_URL"], "TC1", cog_barcodes)
 
-        # we're testing samples from a single centre
-        samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+        updated_samples = add_cog_barcodes(samples)
 
-        baracoda_url = f"{current_app.config['BARACODA_URL']}/barcodes_group/TC1/new?count={len(samples)}"
+    assert updated_samples == samples
 
-        # remove the cog_barcode key and value from the samples fixture before testing
-        _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
+    for idx, sample in enumerate(samples):
+        assert FIELD_COG_BARCODE in sample.keys()
+        assert sample[FIELD_COG_BARCODE] == cog_barcodes[idx]
 
-        # update this tuple when adding more samples to the fixture data
-        cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
 
-        assert len(cog_barcodes) == len(samples)
+def test_add_cog_barcodes_only_some_samples_to_add_to(app, centres, samples, mocked_responses):
+    samples, _ = samples
 
-        mocked_responses.add(
-            responses.POST,
-            baracoda_url,
-            json={"barcodes_group": {"barcodes": cog_barcodes}},
-            status=HTTPStatus.CREATED,
-        )
+    # keep last 5 samples from the full set -- this includes one from another centre
+    samples = samples[-5:]
+    samples_with_codes = samples[::2]
+    samples_to_update = samples[1::2]
 
-        add_cog_barcodes(samples)
+    expected_barcodes = ["Existing1", "New1", "Existing2", "New2", "Existing3"]
+    existing_barcodes = expected_barcodes[::2]
+    barcodes_to_add = expected_barcodes[1::2]
 
-        for idx, sample in enumerate(samples):
-            assert FIELD_COG_BARCODE in sample.keys()
-            assert sample[FIELD_COG_BARCODE] == cog_barcodes[idx]
+    # update COG UK IDs so we only have two to add in the same centre
+    for i, s in enumerate(samples_with_codes):
+        s[FIELD_COG_BARCODE] = existing_barcodes[i]
+
+    del samples_to_update[0][FIELD_COG_BARCODE]
+    samples_to_update[1][FIELD_COG_BARCODE] = ""
+
+    with app.app_context():
+        mock_baracoda_response(mocked_responses, current_app.config["BARACODA_URL"], "TC1", barcodes_to_add)
+
+        updated_samples = add_cog_barcodes(samples)
+
+    assert updated_samples == samples_to_update
+
+    for idx, sample in enumerate(samples):
+        assert FIELD_COG_BARCODE in sample.keys()
+        assert sample[FIELD_COG_BARCODE] == expected_barcodes[idx]
 
 
 def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_responses):
+    samples, _ = samples
+
+    # we're testing samples from a single centre
+    samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+
+    # remove the cog_barcode key and value from the samples fixture before testing
+    for sample in samples:
+        if FIELD_COG_BARCODE in sample:
+            del sample[FIELD_COG_BARCODE]
+
     with app.app_context():
-        samples, _ = samples
-
-        # we're testing samples from a single centre
-        samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
-
         baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
-
-        # remove the cog_barcode key and value from the samples fixture before testing
-        _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
-
-        # update this tuple when adding more samples to the fixture data
-        cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
-
-        assert len(cog_barcodes) == len(samples)
-
         mocked_responses.add(
             responses.POST,
             baracoda_url,
@@ -245,26 +267,22 @@ def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_respo
         with pytest.raises(Exception):
             add_cog_barcodes(samples)
 
-        assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
+    assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
 
 
 def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_responses):
+    samples, _ = samples
+
+    # we're testing samples from a single centre
+    samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+
+    # remove the cog_barcode key and value from the samples fixture before testing
+    for sample in samples:
+        if FIELD_COG_BARCODE in sample:
+            del sample[FIELD_COG_BARCODE]
+
     with app.app_context():
-        samples, _ = samples
-
-        # we're testing samples from a single centre
-        samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
-
         baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
-
-        # remove the cog_barcode key and value from the samples fixture before testing
-        _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
-
-        # update this tuple when adding more samples to the fixture data
-        cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
-
-        assert len(cog_barcodes) == len(samples)
-
         mocked_responses.add(
             responses.POST,
             baracoda_url,
@@ -275,41 +293,42 @@ def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_
         with pytest.raises(ConnectionError):
             add_cog_barcodes(samples)
 
-        assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
+    assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
 
 
 def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centres, samples, mocked_responses):
-    with app.app_context():
-        samples, _ = samples
+    samples, _ = samples
 
-        # we're testing samples from a single centre
-        samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
+    # we're testing samples from a single centre
+    samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
 
-        baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
+    # remove the cog_barcode key and value from the samples fixture before testing
+    for sample in samples:
+        if FIELD_COG_BARCODE in sample:
+            del sample[FIELD_COG_BARCODE]
 
-        # remove the cog_barcode key and value from the samples fixture before testing
-        _ = map(lambda sample: sample.pop(FIELD_COG_BARCODE), samples)
+    # update this tuple when adding more samples to the fixture data
+    cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
 
-        # update this tuple when adding more samples to the fixture data
-        cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
+    assert len(cog_barcodes) == len(samples)
 
-        assert len(cog_barcodes) == len(samples)
+    def request_callback(request, data):
+        data["calls"] = data["calls"] + 1
 
-        def request_callback(request, data):
-            data["calls"] = data["calls"] + 1
-
-            if data["calls"] == app.config["BARACODA_RETRY_ATTEMPTS"]:
-                return (
-                    HTTPStatus.CREATED,
-                    {},
-                    json.dumps({"barcodes_group": {"barcodes": cog_barcodes}}),
-                )
+        if data["calls"] == app.config["BARACODA_RETRY_ATTEMPTS"]:
             return (
-                HTTPStatus.INTERNAL_SERVER_ERROR,
+                HTTPStatus.CREATED,
                 {},
-                json.dumps({"errors": ["Some error from baracoda"]}),
+                json.dumps({"barcodes_group": {"barcodes": cog_barcodes}}),
             )
+        return (
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            {},
+            json.dumps({"errors": ["Some error from baracoda"]}),
+        )
 
+    with app.app_context():
+        baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
         mocked_responses.add_callback(
             responses.POST,
             baracoda_url,
@@ -320,7 +339,7 @@ def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centr
         # This should not raise any error
         add_cog_barcodes(samples)
 
-        assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
+    assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
 
 
 def test_centre_prefix(app, centres, mocked_responses):
