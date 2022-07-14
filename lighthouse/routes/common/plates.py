@@ -57,7 +57,7 @@ def create_plate_from_barcode() -> FlaskResponse:
 
         # add COG barcodes to samples
         try:
-            add_cog_barcodes(fit_to_pick_samples)
+            updated_samples = add_cog_barcodes(fit_to_pick_samples)
         except Exception as e:
             msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
             logger.error(msg)
@@ -79,7 +79,7 @@ def create_plate_from_barcode() -> FlaskResponse:
             }
 
             try:
-                update_mlwh_with_cog_uk_ids(fit_to_pick_samples)
+                update_mlwh_with_cog_uk_ids(updated_samples)
             except Exception as e:
                 logger.error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
                 logger.exception(e)
