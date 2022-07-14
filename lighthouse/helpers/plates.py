@@ -103,7 +103,7 @@ def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> Li
     classified_samples = classify_samples_by_centre(samples)
 
     # Accumulate and return only the updated samples from each centre's samples list.
-    return reduce(lambda acc, next: acc + add_cog_barcodes(next), classified_samples.values(), [])
+    return reduce(lambda acc, next: list(acc + add_cog_barcodes(next)), classified_samples.values(), [])
 
 
 def add_cog_barcodes(samples):
