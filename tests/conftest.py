@@ -36,9 +36,9 @@ from tests.fixtures.data.mlwh import (
 )
 from tests.fixtures.data.plate_events import PLATE_EVENTS
 from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
+from tests.fixtures.data.positive_samples_in_source_plate import POSITIVE_SAMPLES
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
 from tests.fixtures.data.samples import SAMPLES, rows_for_samples_in_cherrytrack
-from tests.fixtures.data.positive_samples_in_source_plate import POSITIVE_SAMPLES
 from tests.fixtures.data.source_plates import SOURCE_PLATES
 
 
@@ -83,14 +83,16 @@ def centres(app):
         centres_collection.delete_many({})
 
 
-@pytest.fixture
-def samples(app):
+@pytest.fixture(params=[SAMPLES])
+def samples(app, request):
+    samples_to_insert = request.param
+
     with app.app_context():
         samples_collection = app.data.driver.db.samples
-        inserted_samples = samples_collection.insert_many(SAMPLES)
+        inserted_samples = samples_collection.insert_many(samples_to_insert)
 
     #  yield a copy of so that the test change it however it wants
-    yield copy.deepcopy(SAMPLES), inserted_samples
+    yield copy.deepcopy(samples_to_insert), inserted_samples
 
     # clear up after the fixture is used
     with app.app_context():
