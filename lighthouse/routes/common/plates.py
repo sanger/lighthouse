@@ -56,8 +56,9 @@ def create_plate_from_barcode() -> FlaskResponse:
             return bad_request(f"No fit to pick samples for this barcode: {barcode}")
 
         # add COG barcodes to samples
+        # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
         try:
-            add_cog_barcodes(fit_to_pick_samples)
+            updated_samples = add_cog_barcodes(fit_to_pick_samples)
         except Exception as e:
             msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
             logger.error(msg)
@@ -78,13 +79,14 @@ def create_plate_from_barcode() -> FlaskResponse:
                 }
             }
 
+            # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
             try:
-                update_mlwh_with_cog_uk_ids(fit_to_pick_samples)
+                update_mlwh_with_cog_uk_ids(updated_samples)
             except Exception as e:
                 logger.error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
                 logger.exception(e)
-
                 return internal_server_error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
+
         else:
             response_json = response.json()
 
