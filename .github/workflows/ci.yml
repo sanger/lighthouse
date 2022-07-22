@@ -85,10 +85,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-      mongodb:
-        image: mongo:4.2.5
-        ports:
-          - 27017:27017
       mysql:
         image: mysql:5.7
         ports:
@@ -121,6 +117,11 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv sync --dev --system
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.7.0
+        with:
+          mongodb-version: 4.2
+          mongodb-replica-set: heron_rs
       - name: Create SQL Server testing database
         run: |
           python setup_sqlserver_test_db.py

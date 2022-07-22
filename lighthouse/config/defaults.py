@@ -92,12 +92,13 @@ OPLOG = True
 ###
 # mongo config (but consumed by Eve)
 ###
-MONGO_OPTIONS = {"connect": True, "tz_aware": False}  # we are not interested in storing "aware" datetimes at present
-MONGO_HOST = f"{LOCALHOST}"
-MONGO_PORT = 27017
-MONGO_USERNAME = ""
-MONGO_PASSWORD = ""
-MONGO_DBNAME = ""
+MONGO_DB = "lighthouseDevelopmentDB"
+MONGO_URI = f"mongodb://{LOCALHOST}:27017/{MONGO_DB}?replicaSet=heron_rs"
+MONGO_OPTIONS = {
+    "connect": True,
+    "tz_aware": False,  # we are not interested in storing "aware" datetimes at present
+    "uuidRepresentation": "standard",  # this is needed to avoid a KeyError in Eve 2.0
+}
 
 ###
 # Baracoda config

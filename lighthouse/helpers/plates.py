@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from functools import reduce
 from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
@@ -93,20 +94,30 @@ def classify_samples_by_centre(samples: List[Dict[str, str]]) -> Dict[str, List[
     return classified_samples
 
 
-def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[str]:
+def centre_prefixes_for_samples(samples: List[Dict[str, str]]) -> List[str]:
+    return list(classify_samples_by_centre(samples).keys())
+
+
+def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
     # Divide samples in centres and call add_cog_barcodes for each group
     classified_samples = classify_samples_by_centre(samples)
 
-    for centre_name in classified_samples:
-        add_cog_barcodes(classified_samples[centre_name])
-
-    return list(classified_samples.keys())
+    # Accumulate and return only the updated samples from each centre's samples list.
+    return reduce(lambda acc, next: list(acc + add_cog_barcodes(next)), classified_samples.values(), [])
 
 
 def add_cog_barcodes(samples):
-    centre_name = __confirm_centre(samples)
+    # Filter samples to only those that do not already have a COG barcode
+    filtered_samples = [
+        sample for sample in samples if FIELD_COG_BARCODE not in sample or len(sample[FIELD_COG_BARCODE]) == 0
+    ]
+
+    num_samples = len(filtered_samples)
+    if num_samples == 0:
+        return []
+
+    centre_name = __confirm_centre(filtered_samples)
     centre_prefix = get_centre_prefix(centre_name)
-    num_samples = len(samples)
 
     logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
 
@@ -124,7 +135,7 @@ def add_cog_barcodes(samples):
                 success_operation = True
                 retries = 0
                 barcodes = response.json()["barcodes_group"]["barcodes"]
-                for (sample, barcode) in zip(samples, barcodes):
+                for (sample, barcode) in zip(filtered_samples, barcodes):
                     sample[FIELD_COG_BARCODE] = barcode
             else:
                 retries = retries - 1
@@ -139,8 +150,7 @@ def add_cog_barcodes(samples):
     if not success_operation and except_obj is not None:
         raise except_obj
 
-    # TODO: I didn't know how else to get centre prefix?
-    return centre_prefix
+    return filtered_samples
 
 
 def get_centre_prefix(centre_name):

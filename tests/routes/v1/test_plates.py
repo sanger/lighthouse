@@ -1,3 +1,4 @@
+import copy
 import urllib.parse
 from http import HTTPStatus
 from unittest.mock import patch
@@ -10,7 +11,9 @@ from lighthouse.constants.error_messages import (
     ERROR_PLATES_CREATE,
     ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
+from lighthouse.constants.fields import FIELD_COG_BARCODE
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
+from tests.fixtures.data.samples import SAMPLES
 
 ENDPOINT_PREFIXES = ["", "/v1"]
 NEW_PLATE_ENDPOINT = "/plates/new"
@@ -21,21 +24,53 @@ NEW_PLATE_ENDPOINTS = [prefix + NEW_PLATE_ENDPOINT for prefix in ENDPOINT_PREFIX
 GET_PLATES_ENDPOINTS = [prefix + GET_PLATES_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 
 
+def samples_with_some_cog_barcodes(num_to_keep=0):
+    samples = copy.deepcopy(SAMPLES)
+    for sample in samples[num_to_keep:]:
+        if FIELD_COG_BARCODE in sample:
+            del sample[FIELD_COG_BARCODE]
+
+    return samples
+
+
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_endpoint_successful(
+def test_post_plates_endpoint_successful_all_cog_barcodes_already_in_samples(
     app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
-    with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
+    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
-        body = {"barcode": "plate_123"}
-        mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
+    body = {"barcode": "plate_123"}
+    mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
 
-        response = client.post(endpoint, json=body)
-        assert response.status_code == HTTPStatus.CREATED
-        assert response.json == {
-            "data": {"plate_barcode": "plate_123", "centre": "TC1", "count_fit_to_pick_samples": 4}
-        }
+    response = client.post(endpoint, json=body)
+    assert response.status_code == HTTPStatus.CREATED
+    assert response.json == {
+        "data": {"plate_barcode": "plate_123", "centre": "centre_1", "count_fit_to_pick_samples": 4}
+    }
+
+
+@pytest.mark.parametrize("samples", [samples_with_some_cog_barcodes(3)], indirect=True)
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+def test_post_plates_endpoint_successful_some_cog_barcodes_already_in_samples(
+    app, client, samples, priority_samples, centres, mocked_responses, mlwh_lh_samples, endpoint
+):
+    baracoda_url = (
+        f"{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=1"  # Only one sample needs a COG barcode now
+    )
+    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
+
+    ss_body = {"barcode": "plate_123"}
+    mocked_responses.add(responses.POST, ss_url, json=ss_body, status=HTTPStatus.CREATED)
+
+    bc_body = {"barcodes_group": {"barcodes": ["NewCOG"]}}
+    mocked_responses.add(responses.POST, baracoda_url, json=bc_body, status=HTTPStatus.CREATED)
+
+    response = client.post(endpoint, json=ss_body)
+
+    assert response.status_code == HTTPStatus.CREATED
+    assert response.json == {
+        "data": {"plate_barcode": "plate_123", "centre": "centre_1", "count_fit_to_pick_samples": 4}
+    }
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
@@ -54,6 +89,7 @@ def test_post_plates_endpoint_no_fit_to_pick_samples(app, client, endpoint):
     assert response.json == {"errors": ["No fit to pick samples for this barcode: qwerty"]}
 
 
+@pytest.mark.parametrize("samples", [samples_with_some_cog_barcodes()], indirect=True)
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_add_cog_barcodes_failed(
     app, client, samples, priority_samples, centres, mocked_responses, endpoint

@@ -205,7 +205,7 @@ def get_fit_to_pick_samples(samples_collection: Collection) -> DataFrame:
     }
 
     # The pipeline defines stages which execute in sequence
-    pipeline = [
+    pipeline: List[Dict] = [
         # 1. First run the positive match stage
         STAGE_MATCH_FILTERED_POSITIVE,
         # 2. We only want documents which have valid dates that we can compare against
