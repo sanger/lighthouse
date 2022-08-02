@@ -1283,11 +1283,11 @@
         },
         "types-requests": {
             "hashes": [
-                "sha256:cf3383bbd79394bf051a0a9202d6831fa962f186f923c178f7c059e3424bd00e",
-                "sha256:d8d7607419cd4b41a7b9497e15e8c0bad78d50df43c48ad25bc526a11518c3a9"
+                "sha256:36385618d4bd2ee3211d4d2e78b44f067ceb5984865c0f253f3c9ecb964526cf",
+                "sha256:38015d310d13cf7d4d712d2507178349e13fd5dab85259dab7d9a9884c2c9c2a"
             ],
             "index": "pypi",
-            "version": "==2.28.6"
+            "version": "==2.28.7"
         },
         "types-urllib3": {
             "hashes": [
