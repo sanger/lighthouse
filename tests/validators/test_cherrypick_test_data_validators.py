@@ -2,10 +2,7 @@ from http import HTTPStatus
 
 import pytest
 
-from lighthouse.constants.error_messages import (
-    ERROR_PLATE_SPECS_EMPTY_LIST,
-    ERROR_PLATE_SPECS_INVALID_FORMAT,
-)
+from lighthouse.constants.error_messages import ERROR_PLATE_SPECS_EMPTY_LIST, ERROR_PLATE_SPECS_INVALID_FORMAT
 
 
 @pytest.mark.parametrize(
@@ -25,7 +22,7 @@ from lighthouse.constants.error_messages import (
 def test_plate_specs_validator_generates_correct_errors(client, plate_specs, error_message):
     response = client.post(
         "/cherrypick-test-data",
-        json={"add_to_dart": True, "plate_specs": plate_specs},
+        json={"plate_specs": plate_specs},
     )
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
