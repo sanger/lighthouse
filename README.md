@@ -145,7 +145,7 @@ there:
     FLASK_APP=lighthouse
     FLASK_RUN_HOST=0.0.0.0
     FLASK_RUN_PORT=8000
-    FLASK_ENV=development
+    FLASK_DEBUG=true
     EVE_SETTINGS=development.py
 
 #### Setup Steps
