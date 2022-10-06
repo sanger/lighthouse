@@ -22,9 +22,6 @@ class EventPropertyProtocol(Protocol):
     def validation_scope(self):
         ...
 
-    def is_integer(self, n: Optional[str]) -> bool:
-        ...
-
 
 class PlateEvent(Protocol):
     """This class is used to assist the mixin while type checking."""
