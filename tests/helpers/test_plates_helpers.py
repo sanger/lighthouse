@@ -407,12 +407,14 @@ def test_update_mlwh_with_cog_uk_ids(
     with app.app_context():
         # check that the samples already exist in the MLWH db but do not have cog uk ids
         before = retrieve_samples_cursor(app.config, mlwh_sql_engine)
+        cog_uk_ids_before = set()
         timestamps_before_update = list()
         for row in before:
-            assert row[MLWH_LH_SAMPLE_COG_UK_ID] is None
+            cog_uk_ids_before.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
             timestamps_before_update.append(row[MLWH_LH_SAMPLE_UPDATED_AT])
 
         assert before.rowcount == 5
+        assert cog_uk_ids_before != set(cog_uk_ids)
 
         # run the function we're testing
         update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
@@ -477,12 +479,14 @@ def test_update_mlwh_with_cog_uk_ids_unmatched_sample(
 
         # check that the expected number of samples are in the MLWH db but do not have cog uk ids
         before = retrieve_samples_cursor(app.config, mlwh_sql_engine)
+        cog_uk_ids_before = set()
         before_count = 0
         for row in before:
             before_count += 1
-            assert row[MLWH_LH_SAMPLE_COG_UK_ID] is None
+            cog_uk_ids_before.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
 
         assert before_count == 5
+        assert cog_uk_ids_before != set(cog_uk_ids)
 
         # check the function raises an exception due to the unmatched sample
         with pytest.raises(UnmatchedSampleError):
