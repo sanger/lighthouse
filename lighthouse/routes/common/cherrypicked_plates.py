@@ -17,7 +17,6 @@ from lighthouse.constants.events import PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.general import ARG_BARCODE, ARG_FAILURE_TYPE, ARG_ROBOT_SERIAL, ARG_USER_ID
 from lighthouse.helpers.events import get_routing_key
 from lighthouse.helpers.plates import (
-    add_cog_barcodes_from_different_centres,
     add_controls_to_samples,
     centre_prefixes_for_samples,
     check_matching_sample_numbers,
@@ -80,15 +79,6 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
             logger.error(msg)
 
             return internal_server_error(msg)
-
-        # add COG barcodes to samples
-        # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
-        try:
-            add_cog_barcodes_from_different_centres(mongo_samples)
-        except Exception as e:
-            logger.exception(e)
-
-            return bad_request(f"Failed to add COG barcodes to plate: {barcode}")
 
         samples = join_rows_with_samples(dart_samples, mongo_samples)
 

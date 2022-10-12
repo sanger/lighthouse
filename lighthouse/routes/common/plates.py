@@ -3,11 +3,7 @@ from http import HTTPStatus
 
 from flask import request
 
-from lighthouse.constants.error_messages import (
-    ERROR_ADD_COG_BARCODES,
-    ERROR_PLATES_CREATE,
-    ERROR_UNEXPECTED_PLATES_CREATE,
-)
+from lighthouse.constants.error_messages import ERROR_UNEXPECTED_PLATES_CREATE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.helpers.cherrytrack import (
@@ -16,7 +12,6 @@ from lighthouse.helpers.cherrytrack import (
 )
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.plates import (
-    add_cog_barcodes,
     centre_prefixes_for_samples,
     create_post_body,
     format_plate,
@@ -52,17 +47,6 @@ def create_plate_from_barcode() -> FlaskResponse:
 
         if not fit_to_pick_samples:
             return bad_request(f"No fit to pick samples for this barcode: {barcode}")
-
-        # add COG barcodes to samples
-        # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
-        try:
-            add_cog_barcodes(fit_to_pick_samples)
-        except Exception as e:
-            msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
-            logger.error(msg)
-            logger.exception(e)
-
-            return bad_request(msg)
 
         body = create_post_body(barcode, fit_to_pick_samples)
 

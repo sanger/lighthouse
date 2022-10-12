@@ -1,13 +1,11 @@
-# Fields for baracoda
 from typing import Final
-
-FIELD_COG_BARCODE: Final[str] = "COG UK ID"
 
 ###
 # MongoDB field names
 ###
 # samples collection
 # general fields
+FIELD_COG_BARCODE: Final[str] = "COG UK ID"
 FIELD_COORDINATE: Final[str] = "coordinate"
 FIELD_DATE_TESTED: Final[str] = "Date Tested"
 FIELD_FILTERED_POSITIVE: Final[str] = "filtered_positive"

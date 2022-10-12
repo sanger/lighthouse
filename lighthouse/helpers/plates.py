@@ -1,6 +1,4 @@
 import logging
-from functools import reduce
-from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
@@ -85,61 +83,6 @@ def classify_samples_by_centre(samples: List[Dict[str, str]]) -> Dict[str, List[
 
 def centre_prefixes_for_samples(samples: List[Dict[str, str]]) -> List[str]:
     return list(classify_samples_by_centre(samples).keys())
-
-
-def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    # Divide samples in centres and call add_cog_barcodes for each group
-    classified_samples = classify_samples_by_centre(samples)
-
-    # Accumulate and return only the updated samples from each centre's samples list.
-    return reduce(lambda acc, next: list(acc + add_cog_barcodes(next)), classified_samples.values(), [])
-
-
-def add_cog_barcodes(samples):
-    # Filter samples to only those that do not already have a COG barcode
-    filtered_samples = [
-        sample for sample in samples if FIELD_COG_BARCODE not in sample or len(sample[FIELD_COG_BARCODE]) == 0
-    ]
-
-    num_samples = len(filtered_samples)
-    if num_samples == 0:
-        return []
-
-    centre_name = __confirm_centre(filtered_samples)
-    centre_prefix = get_centre_prefix(centre_name)
-
-    logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
-
-    baracoda_url = f"{app.config['BARACODA_URL']}/barcodes_group/{centre_prefix}/new?count={num_samples}"
-
-    retries = app.config["BARACODA_RETRY_ATTEMPTS"]
-    success_operation = False
-    except_obj = None
-
-    while retries > 0:
-        try:
-            logger.debug(f"Attempting POST to {baracoda_url}")
-            response = requests.post(baracoda_url)
-            if response.status_code == HTTPStatus.CREATED:
-                success_operation = True
-                retries = 0
-                barcodes = response.json()["barcodes_group"]["barcodes"]
-                for (sample, barcode) in zip(filtered_samples, barcodes):
-                    sample[FIELD_COG_BARCODE] = barcode
-            else:
-                retries = retries - 1
-                logger.error("Unable to create COG barcodes")
-                logger.error(response.json())
-                except_obj = Exception("Unable to create COG barcodes")
-        except requests.ConnectionError:
-            retries = retries - 1
-            logger.error("Unable to access baracoda")
-            except_obj = requests.ConnectionError("Unable to access baracoda")
-
-    if not success_operation and except_obj is not None:
-        raise except_obj
-
-    return filtered_samples
 
 
 def get_centre_prefix(centre_name):
