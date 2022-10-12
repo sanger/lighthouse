@@ -3,9 +3,6 @@ from typing import Final
 # general
 ERROR_UNEXPECTED: Final[str] = "An unexpected error occurred"
 ERROR_MISSING_PARAMETERS: Final[str] = "missing required parameters"
-ERROR_UPDATE_MLWH_WITH_COG_UK_IDS: Final[
-    str
-] = "Failed to update MLWH with COG UK ids. The samples should have been successfully inserted into Sequencescape."
 
 # /beckman endpoints
 ERROR_ROBOT_CONFIG: Final[str] = "Failed fetching Beckman robot information: "
