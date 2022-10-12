@@ -1,4 +1,3 @@
-import copy
 import urllib.parse
 from http import HTTPStatus
 from unittest.mock import patch
@@ -6,9 +5,7 @@ from unittest.mock import patch
 import pytest
 import responses
 
-from lighthouse.constants.fields import FIELD_COG_BARCODE
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
-from tests.fixtures.data.samples import SAMPLES
 
 ENDPOINT_PREFIXES = ["", "/v1"]
 NEW_PLATE_ENDPOINT = "/plates/new"
