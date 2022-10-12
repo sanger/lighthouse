@@ -612,14 +612,6 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
-        }
-    ],
-)
 def test_samples_with_cog_uk_ids_from_destination_add_to_warehouse(
     app,
     run_id,
@@ -630,8 +622,6 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_warehouse(
     mocked_responses,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
 ):
     with app.app_context():
         instance = SamplesWithCogUkId(
@@ -658,14 +648,6 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_warehouse(
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
-        }
-    ],
-)
 def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
     app,
     run_id,
@@ -676,8 +658,6 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
     mocked_responses,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
 ):
     with app.app_context():
         instance = SamplesWithCogUkId(
@@ -691,7 +671,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
                     "name": "DS000050001_A01",
                     "phenotype": "positive",
                     "sample_description": "aRootSampleId1",
-                    "supplier_name": "ExistingCOG",
+                    "supplier_name": "zyx",
                     "uuid": "aLighthouseUUID1",
                 }
             },
@@ -700,7 +680,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
                     "name": "DS000050001_A03",
                     "phenotype": "positive",
                     "sample_description": "aRootSampleId3",
-                    "supplier_name": "NewCOG",
+                    "supplier_name": "tsr",
                     "uuid": "aLighthouseUUID3",
                 }
             },

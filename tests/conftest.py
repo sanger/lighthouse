@@ -528,21 +528,6 @@ def cherrytrack_mock_run_info(
 
 
 @pytest.fixture
-def baracoda_mock_barcodes_group(app, mocked_responses, baracoda_mock_responses, baracoda_mock_status):
-    for centre_prefix in baracoda_mock_responses.keys():
-        if baracoda_mock_responses[centre_prefix] is not None:
-            num_samples = len(baracoda_mock_responses[centre_prefix]["barcodes_group"]["barcodes"])
-            baracoda_url = f"{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
-            mocked_responses.add(
-                responses.POST,
-                baracoda_url,
-                json=baracoda_mock_responses[centre_prefix],
-                status=baracoda_mock_status,
-            )
-    yield
-
-
-@pytest.fixture
 def cherrytrack_mock_source_plates_status():
     return HTTPStatus.OK
 
@@ -555,11 +540,6 @@ def cherrytrack_mock_run_info_status():
 @pytest.fixture
 def cherrytrack_mock_destination_plate_status():
     return HTTPStatus.OK
-
-
-@pytest.fixture
-def baracoda_mock_status():
-    return HTTPStatus.CREATED
 
 
 @pytest.fixture
