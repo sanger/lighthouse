@@ -81,7 +81,7 @@ def test_post_destination_completed_cherrytrack_fails(
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-def test_post_event_partially_completed(
+def test_post_event_destination_completed(
     app,
     client,
     biosero_auth_headers,
@@ -196,3 +196,50 @@ def test_post_event_partially_completed(
 
                         # And it does not have errors
                         assert event[FIELD_EVENT_ERRORS] is None
+
+
+@pytest.mark.parametrize("run_id", [3])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("drop_cog_uk_ids", [True])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+def test_post_event_without_cog_uk_ids(
+    app,
+    client,
+    biosero_auth_headers,
+    clear_events,
+    mocked_rabbit_channel,
+    source_plates,
+    run_id,
+    mocked_responses,
+    cherrytrack_mock_run_info,
+    samples_from_cherrytrack_into_mongo,
+    centres,
+    destination_barcode,
+    mlwh_samples_in_cherrytrack,
+    cherrytrack_mock_destination_plate,
+    cherrytrack_destination_plate_response,
+):
+    with app.app_context():
+        with patch(
+            "lighthouse.hooks.events.uuid4",
+            side_effect=[int_to_uuid(1)],
+        ):
+            with patch(
+                "lighthouse.classes.messages.warehouse_messages.uuid4",
+                side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4), int_to_uuid(5)],
+            ):
+                with patch(
+                    "lighthouse.classes.events.PlateEvent.message_timestamp",
+                    "mytime",
+                ):
+                    response = client.post(
+                        "/events",
+                        data={
+                            "automation_system_run_id": 3,
+                            "barcode": "HT-1234",
+                            "event_type": Biosero.EVENT_DESTINATION_COMPLETED,
+                        },
+                        headers=biosero_auth_headers,
+                    )
+
+                    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

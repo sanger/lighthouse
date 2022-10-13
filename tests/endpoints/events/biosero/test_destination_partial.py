@@ -60,7 +60,7 @@ def test_post_destination_partial_missing_run_id(app, client, biosero_auth_heade
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-def test_post_event_partially_completed(
+def test_post_event_partial(
     app,
     client,
     biosero_auth_headers,

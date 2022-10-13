@@ -13,6 +13,7 @@ from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
     FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
     FIELD_CHERRYTRACK_USER_ID,
+    FIELD_COG_BARCODE,
     FIELD_SAMPLE_ID,
 )
 from lighthouse.db.dart import load_sql_server_script
@@ -608,9 +609,18 @@ def cherrytrack_source_plates_response(run_id, source_barcode, destination_barco
 
 
 @pytest.fixture
-def samples_from_cherrytrack_into_mongo(app, source_barcode):
+def drop_cog_uk_ids():
+    return False
+
+
+@pytest.fixture
+def samples_from_cherrytrack_into_mongo(app, source_barcode, drop_cog_uk_ids):
     try:
         samples = rows_for_samples_in_cherrytrack(source_barcode)
+
+        if drop_cog_uk_ids:
+            for sample in samples:
+                del sample[FIELD_COG_BARCODE]
 
         with app.app_context():
             samples_collection = app.data.driver.db.samples

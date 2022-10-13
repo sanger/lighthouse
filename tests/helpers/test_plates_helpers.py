@@ -12,6 +12,7 @@ from flask import current_app
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
+    FIELD_COG_BARCODE,
     FIELD_DART_CONTROL,
     FIELD_DART_DESTINATION_BARCODE,
     FIELD_DART_DESTINATION_COORDINATE,
@@ -165,6 +166,26 @@ def test_create_post_body(app, samples):
         }
 
         assert create_post_body(barcode, filtered_positive_samples) == correct_body
+
+
+def test_create_post_body_raises_without_cog_uk_id(app, samples):
+    with app.app_context():
+        samples, _ = samples
+        barcode = "12345"
+
+        filtered_positive_samples = list(
+            filter(
+                lambda sample: sample.get(FIELD_FILTERED_POSITIVE, False)
+                and sample[FIELD_PLATE_BARCODE] == "plate_123",
+                samples,
+            )
+        )
+
+        # Remove a COG UK ID
+        del filtered_positive_samples[0][FIELD_COG_BARCODE]
+
+        with pytest.raises(KeyError):
+            create_post_body(barcode, filtered_positive_samples)
 
 
 class DartRow:
