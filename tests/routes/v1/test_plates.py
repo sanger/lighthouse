@@ -6,11 +6,7 @@ from unittest.mock import patch
 import pytest
 import responses
 
-from lighthouse.constants.error_messages import (
-    ERROR_ADD_COG_BARCODES,
-    ERROR_PLATES_CREATE,
-    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
-)
+from lighthouse.constants.error_messages import ERROR_ADD_COG_BARCODES, ERROR_PLATES_CREATE
 from lighthouse.constants.fields import FIELD_COG_BARCODE
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from tests.fixtures.data.samples import SAMPLES
@@ -116,21 +112,6 @@ def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses,
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
         assert response.json == {"errors": ["The barcode 'plate_123' is not a recognised format."]}
-
-
-@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses, endpoint):
-    with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        with patch("lighthouse.routes.common.plates.update_mlwh_with_cog_uk_ids", side_effect=Exception()):
-            ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
-
-            body = {"barcode": "plate_123"}
-            mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
-
-            response = client.post(endpoint, json={"barcode": "plate_123"})
-
-            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert response.json == {"errors": [ERROR_UPDATE_MLWH_WITH_COG_UK_IDS]}
 
 
 @pytest.mark.parametrize("endpoint", GET_PLATES_ENDPOINTS)

@@ -11,9 +11,8 @@ from lighthouse.constants.error_messages import (
     ERROR_SAMPLE_DATA_MISSING,
     ERROR_SAMPLES_MISSING_UUIDS,
     ERROR_UNEXPECTED_CHERRYPICKING_FAILURE,
-    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
-from lighthouse.constants.fields import FIELD_COG_BARCODE, FIELD_ROOT_SAMPLE_ID
+from lighthouse.constants.fields import FIELD_COG_BARCODE
 from lighthouse.messages.message import Message
 
 ENDPOINT_PREFIXES = ["", "/v1"]
@@ -85,45 +84,6 @@ def test_get_cherrypicked_plates_endpoint_successful(
     assert response.json == {
         "data": {"plate_barcode": "des_plate_1", "centre": ["centre_1"], "number_of_fit_to_pick": 5}
     }
-
-
-@pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)
-def test_get_cherrypicked_plates_endpoint_only_updated_correct_samples_in_mlwh(
-    app,
-    client,
-    dart_samples,
-    samples,
-    mocked_responses,
-    centres,
-    mlwh_lh_samples,
-    source_plates,
-    base_url,
-):
-    barcodes = unique_barcodes(2)
-    mock_baracoda(mocked_responses, app, barcodes)
-    mock_sequencescape(mocked_responses, app)
-
-    all_samples, _ = samples
-    sample004 = next(s for s in all_samples if s[FIELD_ROOT_SAMPLE_ID] == "sample_004")
-    sample005 = next(s for s in all_samples if s[FIELD_ROOT_SAMPLE_ID] == "sample_005")
-
-    # Check these samples have the COG UK IDs expected to be updatable
-    assert FIELD_COG_BARCODE in sample004 and sample004[FIELD_COG_BARCODE] == ""
-    assert FIELD_COG_BARCODE not in sample005
-
-    with patch("lighthouse.routes.common.cherrypicked_plates.update_mlwh_with_cog_uk_ids") as update_mlwh:
-        client.get(f"{base_url}?barcode=des_plate_1&robot=BKRB0001&user_id=test", content_type="application/json")
-
-    update_mlwh.assert_called_once()
-
-    updated_samples = update_mlwh.call_args.args[0]
-    updated_sample004 = next(s for s in updated_samples if s[FIELD_ROOT_SAMPLE_ID] == "sample_004")
-    updated_sample005 = next(s for s in updated_samples if s[FIELD_ROOT_SAMPLE_ID] == "sample_005")
-
-    assert len(updated_samples) == 2
-    assert updated_sample004[FIELD_COG_BARCODE] in barcodes
-    assert updated_sample005[FIELD_COG_BARCODE] in barcodes
-    assert updated_sample004[FIELD_COG_BARCODE] != updated_sample005[FIELD_COG_BARCODE]
 
 
 @pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)
@@ -199,42 +159,6 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
     )
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert response.json == {"errors": [f"The barcode '{barcode}' is not a recognised format."]}
-
-
-@pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)
-def test_get_cherrypicked_plates_mlwh_update_failure(
-    app,
-    client,
-    dart_samples,
-    centres,
-    samples,
-    mocked_responses,
-    source_plates,
-    base_url,
-):
-    mock_baracoda(mocked_responses, app, unique_barcodes(2))
-    mock_sequencescape(mocked_responses, app)
-
-    with patch(
-        "lighthouse.routes.common.cherrypicked_plates.update_mlwh_with_cog_uk_ids",
-        side_effect=Exception(),
-    ):
-        response = client.get(
-            f"{base_url}?barcode=des_plate_1&robot=BKRB0001&user_id=test",
-            content_type="application/json",
-        )
-
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert response.json == {
-        "errors": [
-            (
-                "Failed to update MLWH with COG UK ids. The samples should have been "
-                "successfully inserted into Sequencescape."
-            )
-        ]
-    }
-
-    assert response.json == {"errors": [ERROR_UPDATE_MLWH_WITH_COG_UK_IDS]}
 
 
 @pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)

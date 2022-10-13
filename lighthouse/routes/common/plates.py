@@ -7,7 +7,6 @@ from lighthouse.constants.error_messages import (
     ERROR_ADD_COG_BARCODES,
     ERROR_PLATES_CREATE,
     ERROR_UNEXPECTED_PLATES_CREATE,
-    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
@@ -22,7 +21,6 @@ from lighthouse.helpers.plates import (
     create_post_body,
     format_plate,
     send_to_ss_heron_plates,
-    update_mlwh_with_cog_uk_ids,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
 from lighthouse.types import FlaskResponse
@@ -58,7 +56,7 @@ def create_plate_from_barcode() -> FlaskResponse:
         # add COG barcodes to samples
         # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
         try:
-            updated_samples = add_cog_barcodes(fit_to_pick_samples)
+            add_cog_barcodes(fit_to_pick_samples)
         except Exception as e:
             msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
             logger.error(msg)
@@ -78,15 +76,6 @@ def create_plate_from_barcode() -> FlaskResponse:
                     "count_fit_to_pick_samples": count_fit_to_pick_samples,
                 }
             }
-
-            # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
-            try:
-                update_mlwh_with_cog_uk_ids(updated_samples)
-            except Exception as e:
-                logger.error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
-                logger.exception(e)
-                return internal_server_error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
-
         else:
             response_json = response.json()
 

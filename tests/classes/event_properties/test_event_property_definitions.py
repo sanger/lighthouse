@@ -30,7 +30,6 @@ from lighthouse.classes.messages import SequencescapeMessage, WarehouseMessage
 from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_MANUFACTURER,
     FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
-    FIELD_COG_BARCODE,
     FIELD_EVENT_BARCODE,
     FIELD_EVENT_ROBOT,
     FIELD_EVENT_RUN_ID,
@@ -608,55 +607,6 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
         assert instance.errors == [
             ("Exception during retrieval: We were expecting one positive and one negative control to be present.")
         ]
-
-
-@pytest.mark.parametrize("run_id", [5])
-@pytest.mark.parametrize("source_barcode", ["DS000050001"])
-@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("empty_cog_value", [None, ""])
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
-        }
-    ],
-)
-def test_samples_with_cog_uk_ids_adds_missing_cog_uk_ids(
-    app,
-    run_id,
-    destination_barcode,
-    empty_cog_value,
-    centres,
-    samples_from_cherrytrack_into_mongo,
-    mlwh_samples_in_cherrytrack,
-    mocked_responses,
-    cherrytrack_mock_destination_plate,
-    cherrytrack_destination_plate_response,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
-):
-    with app.app_context():
-        samples, _ = samples_from_cherrytrack_into_mongo
-
-        assert FIELD_COG_BARCODE not in samples[2]
-
-        if empty_cog_value is not None:
-            samples[2][FIELD_COG_BARCODE] = empty_cog_value
-
-        instance = SamplesWithCogUkId(
-            SamplesFromDestination(WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})))
-        )
-
-        with patch(
-            "lighthouse.classes.event_properties.definitions.samples_with_cog_uk_id.update_mlwh_with_cog_uk_ids"
-        ) as update_mlwh:
-            instance.value
-
-        update_mlwh.assert_called_once()
-        mlwh_samples = update_mlwh.call_args.args[0]
-        assert len(mlwh_samples) == 1
-        assert mlwh_samples[0][FIELD_COG_BARCODE] == "NewCOG"
 
 
 @pytest.mark.parametrize("run_id", [5])
