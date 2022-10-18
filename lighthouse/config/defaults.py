@@ -101,12 +101,6 @@ MONGO_OPTIONS = {
 }
 
 ###
-# Baracoda config
-###
-BARACODA_URL = f"http://{LOCALHOST}:5000"
-BARACODA_RETRY_ATTEMPTS = 3
-
-###
 # Crawler config
 ###
 CRAWLER_BASE_URL = f"http://{LOCALHOST}:8100"

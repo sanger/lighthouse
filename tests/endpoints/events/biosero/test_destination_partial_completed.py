@@ -68,59 +68,7 @@ def test_post_destination_partial_completed_cherrytrack_fails(
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize("baracoda_mock_status", [HTTPStatus.INTERNAL_SERVER_ERROR])
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
-        }
-    ],
-)
-def test_post_destination_partial_completed_baracoda_fails(
-    app,
-    client,
-    lighthouse_ui_auth_headers,
-    clear_events,
-    mocked_rabbit_channel,
-    source_plates,
-    run_id,
-    mocked_responses,
-    samples_from_cherrytrack_into_mongo,
-    centres,
-    destination_barcode,
-    mlwh_samples_in_cherrytrack,
-    cherrytrack_mock_destination_plate,
-    cherrytrack_destination_plate_response,
-    cherrytrack_mock_destination_plate_status,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
-):
-    with app.app_context():
-        response = client.post(
-            "/events",
-            data={
-                "user_id": "user1",
-                "barcode": "HT-1234",
-                "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
-            },
-            headers=lighthouse_ui_auth_headers,
-        )
-        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-
-
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
-        }
-    ],
-)
-@pytest.mark.parametrize("run_id", [3])
-@pytest.mark.parametrize("source_barcode", ["plate_123"])
-@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-def test_post_event_partially_completed(
+def test_post_event_destination_partially_completed(
     app,
     client,
     lighthouse_ui_auth_headers,
@@ -136,8 +84,6 @@ def test_post_event_partially_completed(
     mlwh_samples_in_cherrytrack,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
 ):
     with app.app_context():
         with patch(
@@ -211,9 +157,9 @@ def test_post_event_partially_completed(
                             '"purpose_uuid": "ss_uuid_plate_purpose", '
                             '"study_uuid": "ss_uuid_study", "wells": '
                             '{"H08": {"content": {"name": "plate_123_A01", "sample_description": "aRootSampleId1", '
-                            '"supplier_name": "ExistingCOG", "phenotype": "positive", "uuid": "aLighthouseUUID1"}}, '
+                            '"supplier_name": "zyx", "phenotype": "positive", "uuid": "aLighthouseUUID1"}}, '
                             '"H12": {"content": {"name": "plate_123_A03", "sample_description": "aRootSampleId3", '
-                            '"supplier_name": "NewCOG", '
+                            '"supplier_name": "tsr", '
                             '"phenotype": "positive", "uuid": "aLighthouseUUID3"}}, '
                             '"E10": {"content": {"supplier_name": "positive control: DN1234_A1", "control": true, '
                             '"control_type": "positive"}}, '
@@ -237,3 +183,50 @@ def test_post_event_partially_completed(
 
                         # And it does not have errors
                         assert event[FIELD_EVENT_ERRORS] is None
+
+
+@pytest.mark.parametrize("run_id", [3])
+@pytest.mark.parametrize("source_barcode", ["plate_123"])
+@pytest.mark.parametrize("drop_cog_uk_ids", [True])
+@pytest.mark.parametrize("destination_barcode", ["HT-1234"])
+def test_post_event_destination_partially_completed_without_cog_uk_ids(
+    app,
+    client,
+    lighthouse_ui_auth_headers,
+    clear_events,
+    mocked_rabbit_channel,
+    source_plates,
+    run_id,
+    mocked_responses,
+    cherrytrack_mock_run_info,
+    samples_from_cherrytrack_into_mongo,
+    centres,
+    destination_barcode,
+    mlwh_samples_in_cherrytrack,
+    cherrytrack_mock_destination_plate,
+    cherrytrack_destination_plate_response,
+):
+    with app.app_context():
+        with patch(
+            "lighthouse.hooks.events.uuid4",
+            side_effect=[int_to_uuid(1)],
+        ):
+            with patch(
+                "lighthouse.classes.messages.warehouse_messages.uuid4",
+                side_effect=[int_to_uuid(2), int_to_uuid(3), int_to_uuid(4), int_to_uuid(5)],
+            ):
+                with patch(
+                    "lighthouse.classes.events.PlateEvent.message_timestamp",
+                    "mytime",
+                ):
+                    response = client.post(
+                        "/events",
+                        data={
+                            "user_id": "user1",
+                            "barcode": "HT-1234",
+                            "event_type": Biosero.EVENT_DESTINATION_PARTIAL_COMPLETED,
+                        },
+                        headers=lighthouse_ui_auth_headers,
+                    )
+
+                    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

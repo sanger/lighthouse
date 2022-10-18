@@ -1,4 +1,3 @@
-import json
 import string
 from http import HTTPStatus
 from unittest.mock import patch
@@ -36,14 +35,6 @@ def unique_barcodes(count):
     return [string.ascii_lowercase[i : i + 3] for i in range(count)]  # noqa: E203
 
 
-def mock_baracoda(mocked_responses, app, barcodes, bad_request=False):
-    url = f"{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count={len(barcodes)}"
-    body = json.dumps({"barcodes_group": {"barcodes": barcodes}})
-    status = HTTPStatus.BAD_REQUEST if bad_request else HTTPStatus.CREATED
-
-    mocked_responses.add(responses.POST, url, body=body, status=status)
-
-
 def mock_sequencescape(mocked_responses, app, bad_request_barcode=None):
     ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
     json_body: dict = (
@@ -73,7 +64,6 @@ def test_get_cherrypicked_plates_endpoint_successful(
     source_plates,
     base_url,
 ):
-    mock_baracoda(mocked_responses, app, unique_barcodes(2))
     mock_sequencescape(mocked_responses, app)
 
     response = client.get(
@@ -117,27 +107,6 @@ def test_get_cherrypicked_plates_endpoint_no_user_id_in_request(app, client, sam
 
 
 @pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)
-def test_get_cherrypicked_plates_endpoint_add_cog_barcodes_failed(
-    app,
-    client,
-    dart_samples,
-    samples,
-    centres,
-    mocked_responses,
-    base_url,
-):
-    mock_baracoda(mocked_responses, app, unique_barcodes(2), bad_request=True)
-
-    barcode = "des_plate_1"
-    response = client.get(
-        f"{base_url}?barcode={barcode}&robot=BKRB0001&user_id=test",
-        content_type="application/json",
-    )
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": [f"Failed to add COG barcodes to plate: {barcode}"]}
-
-
-@pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)
 def test_get_cherrypicked_plates_endpoint_ss_failure(
     app,
     client,
@@ -150,7 +119,6 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
 ):
     barcode = "des_plate_1"
 
-    mock_baracoda(mocked_responses, app, unique_barcodes(2))
     mock_sequencescape(mocked_responses, app, barcode)
 
     response = client.get(
@@ -164,21 +132,17 @@ def test_get_cherrypicked_plates_endpoint_ss_failure(
 @pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)
 def test_post_plates_endpoint_mismatched_sample_numbers(app, client, dart_samples, samples, base_url):
     with patch(
-        "lighthouse.routes.common.cherrypicked_plates.add_cog_barcodes_from_different_centres",
-        return_value="TC1",
+        "lighthouse.routes.common.cherrypicked_plates.check_matching_sample_numbers",
+        return_value=False,
     ):
-        with patch(
-            "lighthouse.routes.common.cherrypicked_plates.check_matching_sample_numbers",
-            return_value=False,
-        ):
-            barcode = "des_plate_1"
-            response = client.get(
-                f"{base_url}?barcode={barcode}&robot=BKRB0001&user_id=test",
-                content_type="application/json",
-            )
+        barcode = "des_plate_1"
+        response = client.get(
+            f"{base_url}?barcode={barcode}&robot=BKRB0001&user_id=test",
+            content_type="application/json",
+        )
 
-            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert response.json == {"errors": [f"{ERROR_SAMPLE_DATA_MISMATCH} {barcode}"]}
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert response.json == {"errors": [f"{ERROR_SAMPLE_DATA_MISMATCH} {barcode}"]}
 
 
 @pytest.mark.parametrize("base_url", CREATE_PLATE_BASE_URLS)
@@ -197,8 +161,6 @@ def test_post_cherrypicked_plates_endpoint_missing_dart_data(app, client, base_u
 def test_post_cherrypicked_plates_endpoint_missing_source_plate_uuids(
     app, client, dart_samples, samples, centres, mocked_responses, base_url
 ):
-    mock_baracoda(mocked_responses, app, unique_barcodes(2))
-
     barcode = "des_plate_1"
 
     with patch(

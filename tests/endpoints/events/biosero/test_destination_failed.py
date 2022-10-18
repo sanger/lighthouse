@@ -32,14 +32,6 @@ def test_post_destination_completed_missing_barcode(app, client, lighthouse_ui_a
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["NewCOG"]}},
-        }
-    ],
-)
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
@@ -59,8 +51,6 @@ def test_post_event_partially_completed(
     mlwh_samples_in_cherrytrack,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
 ):
     with app.app_context():
         with patch(
