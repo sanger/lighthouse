@@ -1,14 +1,10 @@
 import logging
-from datetime import datetime
-from functools import reduce
-from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
 import requests
 from eve import Eve
 from flask import current_app as app
-from sqlalchemy.sql.expression import and_, bindparam
 
 from lighthouse.classes.beckman import Beckman
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
@@ -48,17 +44,9 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
-    MLWH_LH_SAMPLE_COG_UK_ID,
-    MLWH_LH_SAMPLE_UPDATED_AT,
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
-from lighthouse.exceptions import (
-    DataError,
-    MissingCentreError,
-    MissingSourceError,
-    MultipleCentresError,
-    UnmatchedSampleError,
-)
+from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
 from lighthouse.helpers.dart import find_dart_source_samples_rows
 from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
@@ -68,7 +56,6 @@ from lighthouse.helpers.events import (
     get_message_timestamp,
 )
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
-from lighthouse.helpers.mysql import create_mysql_connection_engine, get_table
 from lighthouse.helpers.reports import unpad_coordinate
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
@@ -98,61 +85,6 @@ def centre_prefixes_for_samples(samples: List[Dict[str, str]]) -> List[str]:
     return list(classify_samples_by_centre(samples).keys())
 
 
-def add_cog_barcodes_from_different_centres(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    # Divide samples in centres and call add_cog_barcodes for each group
-    classified_samples = classify_samples_by_centre(samples)
-
-    # Accumulate and return only the updated samples from each centre's samples list.
-    return reduce(lambda acc, next: list(acc + add_cog_barcodes(next)), classified_samples.values(), [])
-
-
-def add_cog_barcodes(samples):
-    # Filter samples to only those that do not already have a COG barcode
-    filtered_samples = [
-        sample for sample in samples if FIELD_COG_BARCODE not in sample or len(sample[FIELD_COG_BARCODE]) == 0
-    ]
-
-    num_samples = len(filtered_samples)
-    if num_samples == 0:
-        return []
-
-    centre_name = __confirm_centre(filtered_samples)
-    centre_prefix = get_centre_prefix(centre_name)
-
-    logger.info(f"Getting COG-UK barcodes for {num_samples} samples")
-
-    baracoda_url = f"{app.config['BARACODA_URL']}/barcodes_group/{centre_prefix}/new?count={num_samples}"
-
-    retries = app.config["BARACODA_RETRY_ATTEMPTS"]
-    success_operation = False
-    except_obj = None
-
-    while retries > 0:
-        try:
-            logger.debug(f"Attempting POST to {baracoda_url}")
-            response = requests.post(baracoda_url)
-            if response.status_code == HTTPStatus.CREATED:
-                success_operation = True
-                retries = 0
-                barcodes = response.json()["barcodes_group"]["barcodes"]
-                for (sample, barcode) in zip(filtered_samples, barcodes):
-                    sample[FIELD_COG_BARCODE] = barcode
-            else:
-                retries = retries - 1
-                logger.error("Unable to create COG barcodes")
-                logger.error(response.json())
-                except_obj = Exception("Unable to create COG barcodes")
-        except requests.ConnectionError:
-            retries = retries - 1
-            logger.error("Unable to access baracoda")
-            except_obj = requests.ConnectionError("Unable to access baracoda")
-
-    if not success_operation and except_obj is not None:
-        raise except_obj
-
-    return filtered_samples
-
-
 def get_centre_prefix(centre_name):
     logger.debug(f"Getting the prefix for '{centre_name}'")
     try:
@@ -171,12 +103,12 @@ def get_centre_prefix(centre_name):
         logger.debug(f"Prefix for '{centre_name}' is '{prefix}'")
 
         return prefix
-    except Exception as e:
-        logger.exception(e)
-        return None
     except AssertionError as e:
         logger.exception(e)
         raise DataError("Multiple centres with the same name")
+    except Exception as e:
+        logger.exception(e)
+        return None
 
 
 def find_samples(query: Dict[str, Any] = None) -> Optional[List[SampleDoc]]:
@@ -329,74 +261,6 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
         return response
     except requests.ConnectionError:
         raise requests.ConnectionError("Unable to access Sequencescape")
-
-
-def update_mlwh_with_cog_uk_ids(samples: List[Dict[str, str]]) -> None:
-    """Update the MLWH lighthouse_sample table with the COG UK barcode for each sample.
-
-    Arguments:
-        samples {List[Dict[str, str]]} -- list of samples to be updated.
-    """
-    logger.info("Attempting to update the lighthouse_sample table in the MLWH with the COG UK barcodes")
-
-    if not samples:
-        logger.warn("No samples")
-        return None
-
-    # assign db_connection to avoid UnboundLocalError in 'finally' block, in case of exception
-    db_connection = None
-    try:
-        data = []
-        for sample in samples:
-            # using 'b_' prefix for the keys because bindparam() doesn't allow you to use the real column names
-            data.append(
-                {
-                    "b_root_sample_id": sample[FIELD_ROOT_SAMPLE_ID],
-                    "b_rna_id": sample[FIELD_RNA_ID],
-                    "b_result": sample[FIELD_RESULT],
-                    "b_cog_uk_id": sample[FIELD_COG_BARCODE],
-                }
-            )
-
-        sql_engine = create_mysql_connection_engine(app.config["WAREHOUSES_RW_CONN_STRING"], app.config["MLWH_DB"])
-        table = get_table(sql_engine, app.config["MLWH_LIGHTHOUSE_SAMPLE_TABLE"])
-
-        stmt = (
-            table.update()
-            .where(
-                and_(
-                    table.c.root_sample_id == bindparam("b_root_sample_id"),
-                    table.c.rna_id == bindparam("b_rna_id"),
-                    table.c.result == bindparam("b_result"),
-                )
-            )
-            .values({MLWH_LH_SAMPLE_COG_UK_ID: bindparam("b_cog_uk_id"), MLWH_LH_SAMPLE_UPDATED_AT: datetime.now()})
-        )
-        db_connection = sql_engine.connect()
-
-        results = db_connection.execute(stmt, data)
-
-        rows_matched = results.rowcount
-        logger.info(f"{rows_matched} rows updated in MLWH")
-
-        if rows_matched != len(samples):
-            msg = (
-                f"Updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table with COG UK ids was only partially "
-                f"successful. Only {rows_matched} of the {len(samples)} samples had matches in the MLWH "
-                f"{app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} table."
-            )
-            logger.error(msg)
-
-            raise UnmatchedSampleError(msg)
-    except Exception as e:
-        logger.error(
-            f"({type(e).__name__}: {str(e)}) Error while updating MLWH {app.config['MLWH_LIGHTHOUSE_SAMPLE_TABLE']} "
-            "table with COG UK ids."
-        )
-        raise
-    finally:
-        if db_connection is not None:
-            db_connection.close()
 
 
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

@@ -1,7 +1,5 @@
-import json
 import urllib.parse
 from datetime import datetime
-from functools import partial
 from http import HTTPStatus
 from typing import List
 from unittest.mock import patch
@@ -10,8 +8,6 @@ from uuid import uuid4
 import pytest
 import responses
 from flask import current_app
-from requests import ConnectionError
-from sqlalchemy.exc import OperationalError
 
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
@@ -29,10 +25,6 @@ from lighthouse.constants.fields import (
     FIELD_LH_SAMPLE_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_PLATE_BARCODE,
-    FIELD_RESULT,
-    FIELD_RNA_ID,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_SOURCE,
     FIELD_SS_BARCODE,
     FIELD_SS_CONTROL,
     FIELD_SS_CONTROL_TYPE,
@@ -43,15 +35,9 @@ from lighthouse.constants.fields import (
     FIELD_SS_SAMPLE_DESCRIPTION,
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
-    MLWH_LH_SAMPLE_COG_UK_ID,
-    MLWH_LH_SAMPLE_ROOT_SAMPLE_ID,
-    MLWH_LH_SAMPLE_UPDATED_AT,
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
-from lighthouse.exceptions import UnmatchedSampleError
 from lighthouse.helpers.plates import (
-    add_cog_barcodes,
-    add_cog_barcodes_from_different_centres,
     add_controls_to_samples,
     centre_prefixes_for_samples,
     check_matching_sample_numbers,
@@ -78,7 +64,6 @@ from lighthouse.helpers.plates import (
     rows_with_controls,
     rows_without_controls,
     source_plate_field_generators,
-    update_mlwh_with_cog_uk_ids,
 )
 
 # ---------- test helpers ----------
@@ -107,12 +92,6 @@ def any_failure_type(app):
     return list(app.config["ROBOT_FAILURE_TYPES"].keys())[0]
 
 
-def mock_baracoda_response(mocked_responses, base_url, group, barcodes):
-    url = f"{base_url}/barcodes_group/{group}/new?count={len(barcodes)}"
-    body = json.dumps({"barcodes_group": {"barcodes": barcodes}})
-    mocked_responses.add(responses.POST, url, body=body, status=HTTPStatus.CREATED)
-
-
 # ---------- tests ----------
 
 
@@ -128,218 +107,6 @@ def test_centre_prefixes_for_samples(samples):
     actual = centre_prefixes_for_samples(samples)
 
     assert actual == ["centre_1", "centre_2"]
-
-
-def test_add_cog_barcodes_from_different_centres(app, centres, samples, mocked_responses):
-    samples, _ = samples
-
-    # remove the cog_barcode key and value from the samples fixture before testing
-    for sample in samples:
-        if FIELD_COG_BARCODE in sample:
-            del sample[FIELD_COG_BARCODE]
-
-    # update this tuple when adding more samples to the fixture data
-    cog_barcodes = ("123", "789", "456", "987", "abc", "def", "hij", "klm", "nop", "qrs", "tuv")
-
-    assert len(cog_barcodes) == len(samples)
-
-    with app.app_context():
-        mock_baracoda_response(mocked_responses, current_app.config["BARACODA_URL"], "TC1", cog_barcodes[:10])
-        mock_baracoda_response(mocked_responses, current_app.config["BARACODA_URL"], "TC2", cog_barcodes[-1:])
-
-        updated_samples = add_cog_barcodes_from_different_centres(samples)
-
-    assert updated_samples == samples
-
-    for idx, sample in enumerate(samples):
-        assert FIELD_COG_BARCODE in sample.keys()
-        assert sample[FIELD_COG_BARCODE] == cog_barcodes[idx]
-
-
-def test_add_cog_barcodes_from_different_centres_only_some_samples_to_add_to(app, centres, samples, mocked_responses):
-    samples, _ = samples
-
-    # keep last 5 samples from the full set -- this includes one from another centre
-    samples = samples[-5:]
-    samples_with_codes = samples[::2]
-    samples_to_update = samples[1::2]
-
-    expected_barcodes = ["Existing1", "New1", "Existing2", "New2", "Existing3"]
-    existing_barcodes = expected_barcodes[::2]
-    barcodes_to_add = expected_barcodes[1::2]
-
-    # update COG UK IDs so we only have two to add in the same centre
-    for i, s in enumerate(samples_with_codes):
-        s[FIELD_COG_BARCODE] = existing_barcodes[i]
-
-    del samples_to_update[0][FIELD_COG_BARCODE]
-    samples_to_update[1][FIELD_COG_BARCODE] = ""
-
-    with app.app_context():
-        mock_baracoda_response(mocked_responses, current_app.config["BARACODA_URL"], "TC1", barcodes_to_add)
-
-        updated_samples = add_cog_barcodes_from_different_centres(samples)
-
-    assert updated_samples == samples_to_update
-
-    for idx, sample in enumerate(samples):
-        assert FIELD_COG_BARCODE in sample.keys()
-        assert sample[FIELD_COG_BARCODE] == expected_barcodes[idx]
-
-
-def test_add_cog_barcodes(app, centres, samples, mocked_responses):
-    samples, _ = samples
-
-    # we're testing samples from a single centre
-    samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
-
-    # remove the cog_barcode key and value from the samples fixture before testing
-    for sample in samples:
-        if FIELD_COG_BARCODE in sample:
-            del sample[FIELD_COG_BARCODE]
-
-    # update this tuple when adding more samples to the fixture data
-    cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
-
-    with app.app_context():
-        mock_baracoda_response(mocked_responses, current_app.config["BARACODA_URL"], "TC1", cog_barcodes)
-
-        updated_samples = add_cog_barcodes(samples)
-
-    assert updated_samples == samples
-
-    for idx, sample in enumerate(samples):
-        assert FIELD_COG_BARCODE in sample.keys()
-        assert sample[FIELD_COG_BARCODE] == cog_barcodes[idx]
-
-
-def test_add_cog_barcodes_only_some_samples_to_add_to(app, centres, samples, mocked_responses):
-    samples, _ = samples
-
-    # keep last 5 samples from the full set -- this includes one from another centre
-    samples = samples[-5:]
-    samples_with_codes = samples[::2]
-    samples_to_update = samples[1::2]
-
-    expected_barcodes = ["Existing1", "New1", "Existing2", "New2", "Existing3"]
-    existing_barcodes = expected_barcodes[::2]
-    barcodes_to_add = expected_barcodes[1::2]
-
-    # update COG UK IDs so we only have two to add in the same centre
-    for i, s in enumerate(samples_with_codes):
-        s[FIELD_COG_BARCODE] = existing_barcodes[i]
-
-    del samples_to_update[0][FIELD_COG_BARCODE]
-    samples_to_update[1][FIELD_COG_BARCODE] = ""
-
-    with app.app_context():
-        mock_baracoda_response(mocked_responses, current_app.config["BARACODA_URL"], "TC1", barcodes_to_add)
-
-        updated_samples = add_cog_barcodes(samples)
-
-    assert updated_samples == samples_to_update
-
-    for idx, sample in enumerate(samples):
-        assert FIELD_COG_BARCODE in sample.keys()
-        assert sample[FIELD_COG_BARCODE] == expected_barcodes[idx]
-
-
-def test_add_cog_barcodes_will_retry_if_fail(app, centres, samples, mocked_responses):
-    samples, _ = samples
-
-    # we're testing samples from a single centre
-    samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
-
-    # remove the cog_barcode key and value from the samples fixture before testing
-    for sample in samples:
-        if FIELD_COG_BARCODE in sample:
-            del sample[FIELD_COG_BARCODE]
-
-    with app.app_context():
-        baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
-        mocked_responses.add(
-            responses.POST,
-            baracoda_url,
-            json={"errors": ["Some error from baracoda"]},
-            status=HTTPStatus.INTERNAL_SERVER_ERROR,
-        )
-
-        with pytest.raises(Exception):
-            add_cog_barcodes(samples)
-
-    assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
-
-
-def test_add_cog_barcodes_will_retry_if_exception(app, centres, samples, mocked_responses):
-    samples, _ = samples
-
-    # we're testing samples from a single centre
-    samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
-
-    # remove the cog_barcode key and value from the samples fixture before testing
-    for sample in samples:
-        if FIELD_COG_BARCODE in sample:
-            del sample[FIELD_COG_BARCODE]
-
-    with app.app_context():
-        baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
-        mocked_responses.add(
-            responses.POST,
-            baracoda_url,
-            body=ConnectionError("Some error"),
-            status=HTTPStatus.INTERNAL_SERVER_ERROR,
-        )
-
-        with pytest.raises(ConnectionError):
-            add_cog_barcodes(samples)
-
-    assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
-
-
-def test_add_cog_barcodes_will_not_raise_error_if_success_after_retry(app, centres, samples, mocked_responses):
-    samples, _ = samples
-
-    # we're testing samples from a single centre
-    samples = [sample for sample in samples if sample.get(FIELD_SOURCE) == "centre_1"]
-
-    # remove the cog_barcode key and value from the samples fixture before testing
-    for sample in samples:
-        if FIELD_COG_BARCODE in sample:
-            del sample[FIELD_COG_BARCODE]
-
-    # update this tuple when adding more samples to the fixture data
-    cog_barcodes = ("123", "456", "789", "987", "101", "131", "161", "192", "222", "abc")
-
-    assert len(cog_barcodes) == len(samples)
-
-    def request_callback(request, data):
-        data["calls"] = data["calls"] + 1
-
-        if data["calls"] == app.config["BARACODA_RETRY_ATTEMPTS"]:
-            return (
-                HTTPStatus.CREATED,
-                {},
-                json.dumps({"barcodes_group": {"barcodes": cog_barcodes}}),
-            )
-        return (
-            HTTPStatus.INTERNAL_SERVER_ERROR,
-            {},
-            json.dumps({"errors": ["Some error from baracoda"]}),
-        )
-
-    with app.app_context():
-        baracoda_url = f"{current_app.config['BARACODA_URL']}/" f"barcodes_group/TC1/new?count={len(samples)}"
-        mocked_responses.add_callback(
-            responses.POST,
-            baracoda_url,
-            callback=partial(request_callback, data={"calls": 0}),
-            content_type="application/json",
-        )
-
-        # This should not raise any error
-        add_cog_barcodes(samples)
-
-    assert len(mocked_responses.calls) == app.config["BARACODA_RETRY_ATTEMPTS"]
 
 
 def test_centre_prefix(app, centres, mocked_responses):
@@ -401,113 +168,24 @@ def test_create_post_body(app, samples):
         assert create_post_body(barcode, filtered_positive_samples) == correct_body
 
 
-def test_update_mlwh_with_cog_uk_ids(
-    app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids, mlwh_sql_engine
-):
+def test_create_post_body_raises_without_cog_uk_id(app, samples):
     with app.app_context():
-        # check that the samples already exist in the MLWH db but do not have cog uk ids
-        before = retrieve_samples_cursor(app.config, mlwh_sql_engine)
-        timestamps_before_update = list()
-        for row in before:
-            assert row[MLWH_LH_SAMPLE_COG_UK_ID] is None
-            timestamps_before_update.append(row[MLWH_LH_SAMPLE_UPDATED_AT])
+        samples, _ = samples
+        barcode = "12345"
 
-        assert before.rowcount == 5
+        filtered_positive_samples = list(
+            filter(
+                lambda sample: sample.get(FIELD_FILTERED_POSITIVE, False)
+                and sample[FIELD_PLATE_BARCODE] == "plate_123",
+                samples,
+            )
+        )
 
-        # run the function we're testing
-        update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
-
-        # check that the same samples in the MLWH now have the correct cog uk ids
-        after = retrieve_samples_cursor(app.config, mlwh_sql_engine)
-        after_cog_uk_ids = set()
-        after_update_timestamps = list()
-        for row in after:
-            after_cog_uk_ids.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
-            after_update_timestamps.append(row[MLWH_LH_SAMPLE_UPDATED_AT])
-
-        assert after.rowcount == before.rowcount
-        assert after_cog_uk_ids == set(cog_uk_ids)
-        for before, after in zip(timestamps_before_update, after_update_timestamps):
-            # If before is set, check that the after timestamp is updated
-            if before is not None:
-                assert after > before
-            # If before was not set, check after is not None and has a timestamp value
-            else:
-                assert (after is not None) and isinstance(after, datetime)
-
-
-def test_update_mlwh_with_cog_uk_ids_connection_fails(app, mlwh_lh_samples_multiple, samples_for_mlwh_update):
-    with app.app_context():
-        # mock this out to cause an exception
-        app.config["WAREHOUSES_RW_CONN_STRING"] = "notarealconnectionstring"
-
-        with pytest.raises(OperationalError):
-            update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
-
-
-def test_update_mlwh_with_cog_uk_ids_field_missing(app, mlwh_lh_samples_multiple):
-    with app.app_context():
-        samples = [
-            {
-                FIELD_ROOT_SAMPLE_ID: "root_1",
-                FIELD_RNA_ID: "rna_1",
-                FIELD_RESULT: "positive"
-                # no cog uk id
-            }
-        ]
+        # Remove a COG UK ID
+        del filtered_positive_samples[0][FIELD_COG_BARCODE]
 
         with pytest.raises(KeyError):
-            update_mlwh_with_cog_uk_ids(samples)
-
-
-def test_update_mlwh_with_cog_uk_ids_unmatched_sample(
-    app, mlwh_lh_samples_multiple, samples_for_mlwh_update, cog_uk_ids, mlwh_sql_engine
-):
-    #  Should - update the ones it can, but then log a detailed error, and throw an exception
-    with app.app_context():
-        # add sample that doesn't match one in the MLWH
-        samples_for_mlwh_update.append(
-            {
-                FIELD_ROOT_SAMPLE_ID: "root_253",
-                FIELD_RNA_ID: "rna_253",
-                FIELD_RESULT: "positive",
-                FIELD_COG_BARCODE: "cog_253",
-            }
-        )
-
-        # check that the expected number of samples are in the MLWH db but do not have cog uk ids
-        before = retrieve_samples_cursor(app.config, mlwh_sql_engine)
-        before_count = 0
-        for row in before:
-            before_count += 1
-            assert row[MLWH_LH_SAMPLE_COG_UK_ID] is None
-
-        assert before_count == 5
-
-        # check the function raises an exception due to the unmatched sample
-        with pytest.raises(UnmatchedSampleError):
-            update_mlwh_with_cog_uk_ids(samples_for_mlwh_update)
-
-        # check that the matched samples in the MLWH now have the correct cog uk ids
-        after = retrieve_samples_cursor(app.config, mlwh_sql_engine)
-        after_count = 0
-        after_cog_uk_ids = set()
-        for row in after:
-            after_count += 1
-            after_cog_uk_ids.add(row[MLWH_LH_SAMPLE_COG_UK_ID])
-
-        assert after_count == before_count
-        assert after_cog_uk_ids == set(cog_uk_ids)
-
-
-def retrieve_samples_cursor(config, mlwh_sql_engine):
-    with mlwh_sql_engine.connect() as connection:
-        results = connection.execute(
-            f"SELECT {MLWH_LH_SAMPLE_ROOT_SAMPLE_ID}, {MLWH_LH_SAMPLE_COG_UK_ID}, {MLWH_LH_SAMPLE_UPDATED_AT} "
-            "FROM lighthouse_sample"
-        )
-
-    return results
+            create_post_body(barcode, filtered_positive_samples)
 
 
 class DartRow:

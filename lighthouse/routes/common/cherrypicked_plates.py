@@ -12,13 +12,11 @@ from lighthouse.constants.error_messages import (
     ERROR_SAMPLES_MISSING_UUIDS,
     ERROR_UNEXPECTED_CHERRYPICKING_CREATE,
     ERROR_UNEXPECTED_CHERRYPICKING_FAILURE,
-    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.general import ARG_BARCODE, ARG_FAILURE_TYPE, ARG_ROBOT_SERIAL, ARG_USER_ID
 from lighthouse.helpers.events import get_routing_key
 from lighthouse.helpers.plates import (
-    add_cog_barcodes_from_different_centres,
     add_controls_to_samples,
     centre_prefixes_for_samples,
     check_matching_sample_numbers,
@@ -31,7 +29,6 @@ from lighthouse.helpers.plates import (
     map_to_ss_columns,
     query_for_cherrypicked_samples,
     send_to_ss_heron_plates,
-    update_mlwh_with_cog_uk_ids,
 )
 from lighthouse.helpers.requests import get_required_params
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
@@ -83,15 +80,6 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
 
             return internal_server_error(msg)
 
-        # add COG barcodes to samples
-        # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
-        try:
-            updated_samples = add_cog_barcodes_from_different_centres(mongo_samples)
-        except Exception as e:
-            logger.exception(e)
-
-            return bad_request(f"Failed to add COG barcodes to plate: {barcode}")
-
         samples = join_rows_with_samples(dart_samples, mongo_samples)
 
         all_samples = add_controls_to_samples(dart_samples, samples)
@@ -115,13 +103,6 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
                     "number_of_fit_to_pick": len(samples),
                 }
             }
-
-            # TODO DPL-426: When all messages are coming via RabbitMQ these lines become irrelevant and could be removed
-            try:
-                update_mlwh_with_cog_uk_ids(updated_samples)
-            except Exception as e:
-                logger.exception(e)
-                return internal_server_error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
         else:
             response_json = response.json()
 

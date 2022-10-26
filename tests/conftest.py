@@ -13,6 +13,7 @@ from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
     FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
     FIELD_CHERRYTRACK_USER_ID,
+    FIELD_COG_BARCODE,
     FIELD_SAMPLE_ID,
 )
 from lighthouse.db.dart import load_sql_server_script
@@ -528,21 +529,6 @@ def cherrytrack_mock_run_info(
 
 
 @pytest.fixture
-def baracoda_mock_barcodes_group(app, mocked_responses, baracoda_mock_responses, baracoda_mock_status):
-    for centre_prefix in baracoda_mock_responses.keys():
-        if baracoda_mock_responses[centre_prefix] is not None:
-            num_samples = len(baracoda_mock_responses[centre_prefix]["barcodes_group"]["barcodes"])
-            baracoda_url = f"{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
-            mocked_responses.add(
-                responses.POST,
-                baracoda_url,
-                json=baracoda_mock_responses[centre_prefix],
-                status=baracoda_mock_status,
-            )
-    yield
-
-
-@pytest.fixture
 def cherrytrack_mock_source_plates_status():
     return HTTPStatus.OK
 
@@ -555,11 +541,6 @@ def cherrytrack_mock_run_info_status():
 @pytest.fixture
 def cherrytrack_mock_destination_plate_status():
     return HTTPStatus.OK
-
-
-@pytest.fixture
-def baracoda_mock_status():
-    return HTTPStatus.CREATED
 
 
 @pytest.fixture
@@ -628,9 +609,18 @@ def cherrytrack_source_plates_response(run_id, source_barcode, destination_barco
 
 
 @pytest.fixture
-def samples_from_cherrytrack_into_mongo(app, source_barcode):
+def drop_cog_uk_ids():
+    return False
+
+
+@pytest.fixture
+def samples_from_cherrytrack_into_mongo(app, source_barcode, drop_cog_uk_ids):
     try:
         samples = rows_for_samples_in_cherrytrack(source_barcode)
+
+        if drop_cog_uk_ids:
+            for sample in samples:
+                del sample[FIELD_COG_BARCODE]
 
         with app.app_context():
             samples_collection = app.data.driver.db.samples
