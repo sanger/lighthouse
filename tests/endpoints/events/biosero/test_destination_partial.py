@@ -57,18 +57,10 @@ def test_post_destination_partial_missing_run_id(app, client, biosero_auth_heade
         }
 
 
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
-        }
-    ],
-)
 @pytest.mark.parametrize("run_id", [3])
 @pytest.mark.parametrize("source_barcode", ["plate_123"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-def test_post_event_partially_completed(
+def test_post_event_partial(
     app,
     client,
     biosero_auth_headers,
@@ -84,8 +76,6 @@ def test_post_event_partially_completed(
     mlwh_samples_in_cherrytrack,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
 ):
     with app.app_context():
         with patch(

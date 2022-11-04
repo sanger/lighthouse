@@ -5,11 +5,6 @@ from unittest.mock import patch
 import pytest
 import responses
 
-from lighthouse.constants.error_messages import (
-    ERROR_ADD_COG_BARCODES,
-    ERROR_PLATES_CREATE,
-    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
-)
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 
 ENDPOINT_PREFIXES = ["", "/v1"]
@@ -22,20 +17,19 @@ GET_PLATES_ENDPOINTS = [prefix + GET_PLATES_ENDPOINT for prefix in ENDPOINT_PREF
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_endpoint_successful(
+def test_post_plates_endpoint_successful_all_cog_barcodes_already_in_samples(
     app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
-    with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
+    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
-        body = {"barcode": "plate_123"}
-        mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
+    body = {"barcode": "plate_123"}
+    mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
 
-        response = client.post(endpoint, json=body)
-        assert response.status_code == HTTPStatus.CREATED
-        assert response.json == {
-            "data": {"plate_barcode": "plate_123", "centre": "TC1", "count_fit_to_pick_samples": 4}
-        }
+    response = client.post(endpoint, json=body)
+    assert response.status_code == HTTPStatus.CREATED
+    assert response.json == {
+        "data": {"plate_barcode": "plate_123", "centre": "centre_1", "count_fit_to_pick_samples": 4}
+    }
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
@@ -55,46 +49,16 @@ def test_post_plates_endpoint_no_fit_to_pick_samples(app, client, endpoint):
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_endpoint_add_cog_barcodes_failed(
-    app, client, samples, priority_samples, centres, mocked_responses, endpoint
-):
-    baracoda_url = f"{app.config['BARACODA_URL']}/barcodes_group/TC1/new?count=4"
+def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses, endpoint):
+    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
-    mocked_responses.add(responses.POST, baracoda_url, status=HTTPStatus.BAD_REQUEST)
+    body = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
+    mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.UNPROCESSABLE_ENTITY)
 
     response = client.post(endpoint, json={"barcode": "plate_123"})
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": [f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} plate_123"]}
-
-
-@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses, endpoint):
-    with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
-
-        body = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
-        mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.UNPROCESSABLE_ENTITY)
-
-        response = client.post(endpoint, json={"barcode": "plate_123"})
-
-        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-        assert response.json == {"errors": ["The barcode 'plate_123' is not a recognised format."]}
-
-
-@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_mlwh_update_failure(app, client, samples, mocked_responses, endpoint):
-    with patch("lighthouse.routes.common.plates.add_cog_barcodes", return_value="TC1"):
-        with patch("lighthouse.routes.common.plates.update_mlwh_with_cog_uk_ids", side_effect=Exception()):
-            ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
-
-            body = {"barcode": "plate_123"}
-            mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
-
-            response = client.post(endpoint, json={"barcode": "plate_123"})
-
-            assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-            assert response.json == {"errors": [ERROR_UPDATE_MLWH_WITH_COG_UK_IDS]}
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.json == {"errors": ["The barcode 'plate_123' is not a recognised format."]}
 
 
 @pytest.mark.parametrize("endpoint", GET_PLATES_ENDPOINTS)

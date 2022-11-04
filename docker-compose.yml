@@ -7,7 +7,17 @@ services:
     environment:
       - LOCALHOST=host.docker.internal
       - FLASK_APP=lighthouse
-      - FLASK_ENV=development
+      - FLASK_DEBUG=true
       - EVE_SETTINGS=development.py
+
     volumes:
       - ".:/code"
+
+    networks:
+      - default
+      - heron_databases_external
+
+
+networks:
+  heron_databases_external:
+    external: true

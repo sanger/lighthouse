@@ -40,20 +40,19 @@ def create_app() -> Eve:
 
 
 def setup_routes(app):
-    # Register the v1 endpoints for the Eve API.  Note that Eve automatically registers endpoints at the root.
     from lighthouse.routes import eve_routes
-
-    app.register_blueprint(eve_routes.bp, url_prefix="/v1")
-
-    # When registering blueprints, do so both in the root and in /v1.
-    # Future versions will just be appended to the bottom of these registrations.
+    from lighthouse.routes.v1 import beckman_routes as v1_beckman_routes
     from lighthouse.routes.v1 import routes as v1_routes
 
+    # When registering blueprints, do so both in the root and in versioned endpoints such as /v1.
+    # Register latest version routes at the root of the API -- note that Eve automatically registered at the root.
     app.register_blueprint(v1_routes.bp, name="root_routes")
+    app.register_blueprint(v1_beckman_routes.bp, name="root_beckman_routes")
+
+    # Register /v1 routes
+    app.register_blueprint(eve_routes.bp, url_prefix="/v1")
     app.register_blueprint(v1_routes.bp, url_prefix="/v1")
+    app.register_blueprint(v1_beckman_routes.bp, url_prefix="/v1")
 
-    if app.config.get("BECKMAN_ENABLE", False):
-        from lighthouse.routes.v1 import beckman_routes as v1_beckman_routes
-
-        app.register_blueprint(v1_beckman_routes.bp, name="root_beckman_routes")
-        app.register_blueprint(v1_beckman_routes.bp, url_prefix="/v1")
+    # Register further version of routes
+    # For example: app.register_blueprint(v2_routes.bp, url_prefix="/v2")

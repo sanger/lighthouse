@@ -33,9 +33,9 @@ REPORTS_DIR = "tests/data/reports"
 ###
 # mongo config
 ###
-MONGO_HOST = f"{LOCALHOST}"
-MONGO_DBNAME = "lighthouseTestDB"
 MONGO_QUERY_BLACKLIST = ["$where"]  # not sure why this was required...
+MONGO_DB = "lighthouseTestDB"
+MONGO_URI = f"mongodb://{LOCALHOST}:27017/{MONGO_DB}?replicaSet=heron_rs"
 
 ###
 # Labwhere config
@@ -80,10 +80,9 @@ RMQ_ROUTING_KEY = "test.event.#"
 RMQ_LIMS_ID = "LH_TEST"
 
 ###
-# Backman config
+# Robot config
 ###
-BECKMAN_ENABLE = True
-BECKMAN_FAILURE_TYPES = {key: BECKMAN_FAILURE_TYPES[key] for key in ("robot_crashed", "sample_contamination", "other")}
+ROBOT_FAILURE_TYPES = {key: ROBOT_FAILURE_TYPES[key] for key in ("robot_crashed", "sample_contamination", "other")}
 
 ###
 # SS plate creation config (UUID for the plate purpose and study of the plate created)

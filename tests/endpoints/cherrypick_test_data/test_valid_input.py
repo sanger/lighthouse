@@ -15,17 +15,17 @@ CRAWLER_URL = f"{CRAWLER_BASE_URL}/v1/cherrypick-test-data"
 ENDPOINT_PATH = "/cherrypick-test-data"
 
 
-def valid_json_object(add_to_dart: bool = True, plate_specs: List[List[int]] = None) -> dict:
+def valid_json_object(plate_specs: List[List[int]] = None) -> dict:
     if plate_specs is None:
         plate_specs = [[1, 96]]
 
-    return {"add_to_dart": add_to_dart, "plate_specs": plate_specs}
+    return {"plate_specs": plate_specs}
 
 
-@pytest.mark.parametrize("add_to_dart, plate_specs", [[True, [[1, 0], [2, 96]]], [False, [[100, 48], [100, 96]]]])
-def test_create_run_successful(client, add_to_dart, plate_specs):
+@pytest.mark.parametrize("plate_specs", [[[1, 0], [2, 96]], [[100, 48], [100, 96]]])
+def test_create_run_successful(client, plate_specs):
     with patch("requests.post"):
-        post_response = client.post(ENDPOINT_PATH, json=valid_json_object(add_to_dart, plate_specs))
+        post_response = client.post(ENDPOINT_PATH, json=valid_json_object(plate_specs))
 
     assert post_response.status_code == HTTPStatus.CREATED
 
@@ -34,7 +34,6 @@ def test_create_run_successful(client, add_to_dart, plate_specs):
 
     assert get_response.status_code == HTTPStatus.OK
     assert get_response.json["status"] == CPTD_STATUS_PENDING
-    assert get_response.json["add_to_dart"] == add_to_dart
     assert get_response.json["plate_specs"] == plate_specs
 
 

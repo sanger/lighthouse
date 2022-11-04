@@ -612,29 +612,18 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
-        }
-    ],
-)
-def test_samples_with_cog_uk_id_from_destination_add_to_warehouse(
+def test_samples_with_cog_uk_ids_from_destination_add_to_warehouse(
     app,
     run_id,
-    centres,
     destination_barcode,
+    centres,
     samples_from_cherrytrack_into_mongo,
     mlwh_samples_in_cherrytrack,
     mocked_responses,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
 ):
     with app.app_context():
-        samples, _ = samples_from_cherrytrack_into_mongo
         instance = SamplesWithCogUkId(
             SamplesFromDestination(WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})))
         )
@@ -659,29 +648,18 @@ def test_samples_with_cog_uk_id_from_destination_add_to_warehouse(
 @pytest.mark.parametrize("run_id", [5])
 @pytest.mark.parametrize("source_barcode", ["DS000050001"])
 @pytest.mark.parametrize("destination_barcode", ["HT-1234"])
-@pytest.mark.parametrize(
-    "baracoda_mock_responses",
-    [
-        {
-            "TC1": {"barcodes_group": {"id": 1, "barcodes": ["COGUK1", "COGUK2"]}},
-        }
-    ],
-)
 def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
     app,
     run_id,
-    centres,
     destination_barcode,
+    centres,
     samples_from_cherrytrack_into_mongo,
     mlwh_samples_in_cherrytrack,
     mocked_responses,
     cherrytrack_mock_destination_plate,
     cherrytrack_destination_plate_response,
-    baracoda_mock_barcodes_group,
-    baracoda_mock_responses,
 ):
     with app.app_context():
-        samples, _ = samples_from_cherrytrack_into_mongo
         instance = SamplesWithCogUkId(
             SamplesFromDestination(WellsFromDestination(PlateBarcode({FIELD_EVENT_BARCODE: destination_barcode})))
         )
@@ -693,7 +671,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
                     "name": "DS000050001_A01",
                     "phenotype": "positive",
                     "sample_description": "aRootSampleId1",
-                    "supplier_name": "COGUK1",
+                    "supplier_name": "zyx",
                     "uuid": "aLighthouseUUID1",
                 }
             },
@@ -702,7 +680,7 @@ def test_samples_with_cog_uk_ids_from_destination_add_to_sequencescape(
                     "name": "DS000050001_A03",
                     "phenotype": "positive",
                     "sample_description": "aRootSampleId3",
-                    "supplier_name": "COGUK2",
+                    "supplier_name": "tsr",
                     "uuid": "aLighthouseUUID3",
                 }
             },

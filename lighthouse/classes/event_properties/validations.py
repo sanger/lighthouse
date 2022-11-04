@@ -1,5 +1,5 @@
-from lighthouse.types import EventPropertyProtocol
 from lighthouse.helpers.general import is_integer
+from lighthouse.types import EventPropertyProtocol
 
 
 class SimpleEventPropertyMixin(EventPropertyProtocol):

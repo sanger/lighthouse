@@ -13,6 +13,7 @@ from lighthouse.constants.fields import (
     FIELD_CHERRYTRACK_AUTOMATION_SYSTEM_NAME,
     FIELD_CHERRYTRACK_LIQUID_HANDLER_SERIAL_NUMBER,
     FIELD_CHERRYTRACK_USER_ID,
+    FIELD_COG_BARCODE,
     FIELD_SAMPLE_ID,
 )
 from lighthouse.db.dart import load_sql_server_script
@@ -36,6 +37,7 @@ from tests.fixtures.data.mlwh import (
 )
 from tests.fixtures.data.plate_events import PLATE_EVENTS
 from tests.fixtures.data.plates_lookup import PLATES_LOOKUP_WITH_SAMPLES, PLATES_LOOKUP_WITHOUT_SAMPLES
+from tests.fixtures.data.positive_samples_in_source_plate import POSITIVE_SAMPLES
 from tests.fixtures.data.priority_samples import PRIORITY_SAMPLES
 from tests.fixtures.data.samples import SAMPLES, rows_for_samples_in_cherrytrack
 from tests.fixtures.data.source_plates import SOURCE_PLATES
@@ -82,14 +84,16 @@ def centres(app):
         centres_collection.delete_many({})
 
 
-@pytest.fixture
-def samples(app):
+@pytest.fixture(params=[SAMPLES])
+def samples(app, request):
+    samples_to_insert = request.param
+
     with app.app_context():
         samples_collection = app.data.driver.db.samples
-        inserted_samples = samples_collection.insert_many(SAMPLES)
+        inserted_samples = samples_collection.insert_many(samples_to_insert)
 
     #  yield a copy of so that the test change it however it wants
-    yield copy.deepcopy(SAMPLES), inserted_samples
+    yield copy.deepcopy(samples_to_insert), inserted_samples
 
     # clear up after the fixture is used
     with app.app_context():
@@ -141,6 +145,21 @@ def source_plates(app):
     # clear up after the fixture is used
     with app.app_context():
         source_plates_collection.delete_many({})
+
+
+@pytest.fixture
+def positive_samples_in_source_plate(app):
+    with app.app_context():
+        yield POSITIVE_SAMPLES
+
+
+@pytest.fixture(scope="function")
+def endpoint_url(app, request):
+    url = f"/v1/plate-events/create?event_type={request.param}"
+    if request.param != "lh_beckman_cp_source_plate_unrecognised":
+        url = url + "&barcode=GLS-GP-016240"
+
+    return url
 
 
 @pytest.fixture
@@ -510,21 +529,6 @@ def cherrytrack_mock_run_info(
 
 
 @pytest.fixture
-def baracoda_mock_barcodes_group(app, mocked_responses, baracoda_mock_responses, baracoda_mock_status):
-    for centre_prefix in baracoda_mock_responses.keys():
-        if baracoda_mock_responses[centre_prefix] is not None:
-            num_samples = len(baracoda_mock_responses[centre_prefix]["barcodes_group"]["barcodes"])
-            baracoda_url = f"{app.config['BARACODA_URL']}" f"/barcodes_group/{centre_prefix}/new?count={num_samples}"
-            mocked_responses.add(
-                responses.POST,
-                baracoda_url,
-                json=baracoda_mock_responses[centre_prefix],
-                status=baracoda_mock_status,
-            )
-    yield
-
-
-@pytest.fixture
 def cherrytrack_mock_source_plates_status():
     return HTTPStatus.OK
 
@@ -537,11 +541,6 @@ def cherrytrack_mock_run_info_status():
 @pytest.fixture
 def cherrytrack_mock_destination_plate_status():
     return HTTPStatus.OK
-
-
-@pytest.fixture
-def baracoda_mock_status():
-    return HTTPStatus.CREATED
 
 
 @pytest.fixture
@@ -610,9 +609,18 @@ def cherrytrack_source_plates_response(run_id, source_barcode, destination_barco
 
 
 @pytest.fixture
-def samples_from_cherrytrack_into_mongo(app, source_barcode):
+def drop_cog_uk_ids():
+    return False
+
+
+@pytest.fixture
+def samples_from_cherrytrack_into_mongo(app, source_barcode, drop_cog_uk_ids):
     try:
         samples = rows_for_samples_in_cherrytrack(source_barcode)
+
+        if drop_cog_uk_ids:
+            for sample in samples:
+                del sample[FIELD_COG_BARCODE]
 
         with app.app_context():
             samples_collection = app.data.driver.db.samples

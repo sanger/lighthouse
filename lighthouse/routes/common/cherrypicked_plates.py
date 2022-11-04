@@ -12,14 +12,13 @@ from lighthouse.constants.error_messages import (
     ERROR_SAMPLES_MISSING_UUIDS,
     ERROR_UNEXPECTED_CHERRYPICKING_CREATE,
     ERROR_UNEXPECTED_CHERRYPICKING_FAILURE,
-    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
 )
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.general import ARG_BARCODE, ARG_FAILURE_TYPE, ARG_ROBOT_SERIAL, ARG_USER_ID
 from lighthouse.helpers.events import get_routing_key
 from lighthouse.helpers.plates import (
-    add_cog_barcodes_from_different_centres,
     add_controls_to_samples,
+    centre_prefixes_for_samples,
     check_matching_sample_numbers,
     construct_cherrypicking_plate_failed_message,
     create_cherrypicked_post_body,
@@ -30,7 +29,6 @@ from lighthouse.helpers.plates import (
     map_to_ss_columns,
     query_for_cherrypicked_samples,
     send_to_ss_heron_plates,
-    update_mlwh_with_cog_uk_ids,
 )
 from lighthouse.helpers.requests import get_required_params
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
@@ -82,14 +80,6 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
 
             return internal_server_error(msg)
 
-        # add COG barcodes to samples
-        try:
-            centre_prefix = add_cog_barcodes_from_different_centres(mongo_samples)
-        except Exception as e:
-            logger.exception(e)
-
-            return bad_request(f"Failed to add COG barcodes to plate: {barcode}")
-
         samples = join_rows_with_samples(dart_samples, mongo_samples)
 
         all_samples = add_controls_to_samples(dart_samples, samples)
@@ -109,17 +99,10 @@ def create_plate_from_barcode() -> FlaskResponse:  # noqa: C901
             response_json = {
                 "data": {
                     "plate_barcode": barcode,
-                    "centre": centre_prefix,
+                    "centre": centre_prefixes_for_samples(mongo_samples),
                     "number_of_fit_to_pick": len(samples),
                 }
             }
-
-            try:
-                update_mlwh_with_cog_uk_ids(mongo_samples)
-            except Exception as e:
-                logger.exception(e)
-
-                return internal_server_error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
         else:
             response_json = response.json()
 
@@ -153,7 +136,7 @@ def fail_plate_from_barcode() -> FlaskResponse:
 
         return bad_request(str(e))
     try:
-        if failure_type not in app.config["BECKMAN_FAILURE_TYPES"]:
+        if failure_type not in app.config["ROBOT_FAILURE_TYPES"]:
             logger.error(f"{ERROR_CHERRYPICKED_FAILURE_RECORD} unknown failure type")
 
             return bad_request(f"'{failure_type}' is not a known cherrypicked plate failure type")

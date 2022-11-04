@@ -85,9 +85,11 @@ Various environment variables are set in the docker-compose file.
 ### Running
 
 1. Start the Lighthouse service specified in the `docker-compose.yml` from the
-   root of the repository:
+   root of the repository (this builds the docker image if it does not exist, then starts it up i.e. take care to delete old images or add --build):
 
         docker-compose up
+        or
+        docker-compose up --build
 
    This will keep running continuously in your terminal window, so to execute further commands you'll need
    to open a new terminal window or tab.
@@ -143,7 +145,7 @@ there:
     FLASK_APP=lighthouse
     FLASK_RUN_HOST=0.0.0.0
     FLASK_RUN_PORT=8000
-    FLASK_ENV=development
+    FLASK_DEBUG=true
     EVE_SETTINGS=development.py
 
 #### Setup Steps

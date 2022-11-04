@@ -22,12 +22,6 @@ DOMAIN["cherrypick_test_data"]["internal_resource"] = False
 SCHEDULER_RUN = False
 
 ###
-# mongo config (consumed by Eve)
-###
-MONGO_HOST = f"{LOCALHOST}"
-MONGO_DBNAME = "lighthouseDevelopmentDB"
-
-###
 # Labwhere config
 ###
 LABWHERE_URL = "https://localhost:3000"
@@ -46,8 +40,3 @@ MLWH_DB = "unified_warehouse_test"
 
 WAREHOUSES_RW_CONN_STRING = f"root:root@{LOCALHOST}"
 MLWH_LIGHTHOUSE_SAMPLE_TABLE = "lighthouse_sample"
-
-###
-# Beckman config
-###
-BECKMAN_ENABLE = True

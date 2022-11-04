@@ -3,27 +3,21 @@ from http import HTTPStatus
 
 from flask import request
 
-from lighthouse.constants.error_messages import (
-    ERROR_ADD_COG_BARCODES,
-    ERROR_PLATES_CREATE,
-    ERROR_UNEXPECTED_PLATES_CREATE,
-    ERROR_UPDATE_MLWH_WITH_COG_UK_IDS,
-)
+from lighthouse.constants.error_messages import ERROR_UNEXPECTED_PLATES_CREATE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
-from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
-from lighthouse.helpers.plates import (
-    add_cog_barcodes,
-    create_post_body,
-    format_plate,
-    send_to_ss_heron_plates,
-    update_mlwh_with_cog_uk_ids,
-)
-from lighthouse.helpers.responses import bad_request, internal_server_error, ok
 from lighthouse.helpers.cherrytrack import (
     get_samples_from_source_plate_barcode_from_cherrytrack,
     get_wells_from_destination_barcode_from_cherrytrack,
 )
+from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
+from lighthouse.helpers.plates import (
+    centre_prefixes_for_samples,
+    create_post_body,
+    format_plate,
+    send_to_ss_heron_plates,
+)
+from lighthouse.helpers.responses import bad_request, internal_server_error, ok
 from lighthouse.types import FlaskResponse
 from lighthouse.utils import pretty
 
@@ -54,16 +48,6 @@ def create_plate_from_barcode() -> FlaskResponse:
         if not fit_to_pick_samples:
             return bad_request(f"No fit to pick samples for this barcode: {barcode}")
 
-        # add COG barcodes to samples
-        try:
-            centre_prefix = add_cog_barcodes(fit_to_pick_samples)
-        except Exception as e:
-            msg = f"{ERROR_PLATES_CREATE} {ERROR_ADD_COG_BARCODES} {barcode}"
-            logger.error(msg)
-            logger.exception(e)
-
-            return bad_request(msg)
-
         body = create_post_body(barcode, fit_to_pick_samples)
 
         response = send_to_ss_heron_plates(body)
@@ -72,18 +56,10 @@ def create_plate_from_barcode() -> FlaskResponse:
             response_json = {
                 "data": {
                     "plate_barcode": fit_to_pick_samples[0][FIELD_PLATE_BARCODE],
-                    "centre": centre_prefix,
+                    "centre": centre_prefixes_for_samples(fit_to_pick_samples)[0],
                     "count_fit_to_pick_samples": count_fit_to_pick_samples,
                 }
             }
-
-            try:
-                update_mlwh_with_cog_uk_ids(fit_to_pick_samples)
-            except Exception as e:
-                logger.error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
-                logger.exception(e)
-
-                return internal_server_error(ERROR_UPDATE_MLWH_WITH_COG_UK_IDS)
         else:
             response_json = response.json()
 

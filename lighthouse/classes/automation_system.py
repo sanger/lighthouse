@@ -1,6 +1,5 @@
 import logging
 import logging.config
-from abc import ABC
 from enum import Enum, auto
 from typing import List, Set
 
@@ -9,7 +8,7 @@ from lighthouse.classes.events import PlateEvent
 logger = logging.getLogger(__name__)
 
 
-class AutomationSystem(ABC):
+class AutomationSystem:
     class AutomationSystemEnum(Enum):
         BECKMAN = auto()
         BIOSERO = auto()

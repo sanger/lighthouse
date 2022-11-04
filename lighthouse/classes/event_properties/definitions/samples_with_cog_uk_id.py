@@ -16,7 +16,6 @@ from lighthouse.constants.fields import (
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
 )
-from lighthouse.helpers.plates import add_cog_barcodes_from_different_centres, update_mlwh_with_cog_uk_ids
 
 from .samples_from_destination import SamplesFromDestination
 
@@ -39,9 +38,6 @@ class SamplesWithCogUkId(EventPropertyAbstract):
     @cached_property
     def value(self):
         with self.retrieval_scope():
-            samples = list(self._samples_from_destination.value.values())
-            add_cog_barcodes_from_different_centres(samples)
-            update_mlwh_with_cog_uk_ids(samples)
             return self._samples_from_destination.value
 
     def add_to_warehouse_message(self, message: WarehouseMessage):
