@@ -1,7 +1,7 @@
 import json
 import re
 from http import HTTPStatus
-from typing import List
+from typing import List, Optional
 from unittest.mock import patch
 
 import pytest
@@ -15,7 +15,7 @@ CRAWLER_URL = f"{CRAWLER_BASE_URL}/v1/cherrypick-test-data"
 ENDPOINT_PATH = "/cherrypick-test-data"
 
 
-def valid_json_object(plate_specs: List[List[int]] = None) -> dict:
+def valid_json_object(plate_specs: Optional[List[List[int]]] = None) -> dict:
     if plate_specs is None:
         plate_specs = [[1, 96]]
 
