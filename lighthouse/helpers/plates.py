@@ -111,7 +111,7 @@ def get_centre_prefix(centre_name):
         return None
 
 
-def find_samples(query: Dict[str, Any] = None) -> Optional[List[SampleDoc]]:
+def find_samples(query: Optional[Dict[str, Any]] = None) -> Optional[List[SampleDoc]]:
     """Query the samples collection with the given query.
 
     WARN - on refactoring this be careful not to lose the distributed functionality where None or empty DART rows
@@ -361,7 +361,7 @@ def get_source_plates_for_samples(samples):
     return find_source_plates(query_for_source_plate_uuids(barcodes))
 
 
-def find_source_plates(query: Dict[str, Any] = None) -> Optional[List[Dict[str, Any]]]:
+def find_source_plates(query: Optional[Dict[str, Any]] = None) -> Optional[List[Dict[str, Any]]]:
     if query is None:
         return None
 

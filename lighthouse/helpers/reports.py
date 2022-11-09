@@ -5,7 +5,7 @@ import pathlib
 import re
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
 
 
-def get_reports_details(filename: str = None) -> List[Dict[str, str]]:
+def get_reports_details(filename: Optional[str] = None) -> List[Dict[str, str]]:
     """Get the details of reports, including:
     - size
     - created timestamp
