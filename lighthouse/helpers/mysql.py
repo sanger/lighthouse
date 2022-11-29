@@ -1,10 +1,12 @@
+from typing import Optional
+
 import sqlalchemy
 from sqlalchemy import MetaData
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.sql.schema import Table
 
 
-def create_mysql_connection_engine(connection_string: str, database: str = None) -> Engine:
+def create_mysql_connection_engine(connection_string: str, database: Optional[str] = None) -> Engine:
     """Create a connection engine to the MySQL server using SQLAlchemy.
 
     Args:
