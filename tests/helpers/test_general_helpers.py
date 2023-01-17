@@ -11,9 +11,9 @@ def test_get_fit_to_pick_samples_count_valid_barcode(app, samples, priority_samp
             count_filtered_positive,
         ) = get_fit_to_pick_samples_and_counts("plate_123")
         if fit_to_pick_samples:
-            assert len(fit_to_pick_samples) == 4
-            assert count_fit_to_pick_samples == 4
-            assert count_must_sequence == 1
+            assert len(fit_to_pick_samples) == 5
+            assert count_fit_to_pick_samples == 5
+            assert count_must_sequence == 2
             # one not two as only one preferentially_sequence sample is also a filtered positive and should be picked
             assert count_preferentially_sequence == 1
             assert count_filtered_positive == 3
