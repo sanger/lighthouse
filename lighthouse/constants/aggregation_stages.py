@@ -74,38 +74,34 @@ STAGES_FIT_TO_PICK_SAMPLES: Final[List[Dict[str, Any]]] = [
         "$match": {
             "$or": [
                 {FIELD_FILTERED_POSITIVE: True},
-                {
-                    FIELD_PROCESSED: True,
-                    FIELD_MUST_SEQUENCE: True,
-                },
+                {FIELD_MUST_SEQUENCE: True},
+            ],
+        }
+    },
+    # add facets to make extracting counts efficient
+    {
+        "$facet": {
+            FACET_FIT_TO_PICK_SAMPLES: [
+                {"$match": {}},
+            ],
+            FACET_COUNT_FIT_TO_PICK_SAMPLES: [
+                {"$count": "count"},
+            ],
+            FACET_COUNT_FILTERED_POSITIVE: [
+                {"$match": {FIELD_FILTERED_POSITIVE: True}},
+                {"$count": "count"},
+            ],
+            FACET_COUNT_MUST_SEQUENCE: [
+                {"$match": {FIELD_MUST_SEQUENCE: True}},
+                {"$count": "count"},
+            ],
+            FACET_COUNT_PREFERENTIALLY_SEQUENCE: [
+                {"$match": {FIELD_PREFERENTIALLY_SEQUENCE: True}},
+                {"$count": "count"},
             ],
         }
     },
 ]
-
-# add facets to make extracting counts efficient
-FACETS_FIT_TO_PICK = {
-    "$facet": {
-        FACET_FIT_TO_PICK_SAMPLES: [
-            {"$match": {}},
-        ],
-        FACET_COUNT_FIT_TO_PICK_SAMPLES: [
-            {"$count": "count"},
-        ],
-        FACET_COUNT_FILTERED_POSITIVE: [
-            {"$match": {FIELD_FILTERED_POSITIVE: True}},
-            {"$count": "count"},
-        ],
-        FACET_COUNT_MUST_SEQUENCE: [
-            {"$match": {FIELD_MUST_SEQUENCE: True}},
-            {"$count": "count"},
-        ],
-        FACET_COUNT_PREFERENTIALLY_SEQUENCE: [
-            {"$match": {FIELD_PREFERENTIALLY_SEQUENCE: True}},
-            {"$count": "count"},
-        ],
-    }
-}
 
 FACETS_REPORT = {
     "$facet": {
