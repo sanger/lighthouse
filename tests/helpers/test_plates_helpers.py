@@ -98,7 +98,7 @@ def any_failure_type(app):
 def test_classify_samples_by_centre(app, samples, mocked_responses):
     samples, _ = samples
     assert list(classify_samples_by_centre(samples).keys()) == ["centre_1", "centre_2"]
-    assert len(classify_samples_by_centre(samples)["centre_1"]) == 10
+    assert len(classify_samples_by_centre(samples)["centre_1"]) == 11
     assert len(classify_samples_by_centre(samples)["centre_2"]) == 1
 
 
@@ -440,6 +440,7 @@ def test_check_matching_sample_numbers_returns_true_match(samples):
         DartRow.with_id_fields("DN1111", "A09", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow.with_id_fields("DN1111", "A10", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow.with_id_fields("DN1111", "A11", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
+        DartRow.with_id_fields("DN1111", "A12", "DN2222", "C04", None, "sample_1", "plate1:A02", "ABC"),
         DartRow.with_id_fields("DN3333", "A04", "DN2222", "C01", "positive", None, None, None),
         DartRow.with_id_fields("DN3333", "A04", "DN2222", "C01", "negative", None, None, None),
     ]

@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from eve import Eve
 from flask import current_app as app
 
-from lighthouse.constants.aggregation_stages import FACETS_FIT_TO_PICK, STAGES_FIT_TO_PICK_SAMPLES
+from lighthouse.constants.aggregation_stages import STAGES_FIT_TO_PICK_SAMPLES
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.constants.general import (
     FACET_COUNT_FILTERED_POSITIVE,
@@ -28,9 +28,8 @@ def get_fit_to_pick_samples_and_counts(
     # We are only interested in the samples for a particular plate
     pipeline: List[Dict[str, Any]] = [{"$match": {FIELD_PLATE_BARCODE: plate_barcode}}]
 
-    #  Prepare the stages we need
+    # Extend with the stages we need
     pipeline.extend(STAGES_FIT_TO_PICK_SAMPLES)
-    pipeline.append(FACETS_FIT_TO_PICK)
 
     pretty(logger, pipeline)
 
