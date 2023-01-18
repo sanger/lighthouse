@@ -1,9 +1,8 @@
 import logging
-from typing import cast, Optional, List
+from typing import List, Optional, cast
 
 from eve import Eve
 from flask import current_app as app
-from lighthouse.types import SampleDoc
 from pymongo.collection import Collection
 
 from lighthouse.constants.fields import (
@@ -13,6 +12,7 @@ from lighthouse.constants.fields import (
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
 )
+from lighthouse.types import SampleDoc
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class MongoServiceMixin:
         remaining_uuids = list(set(uuids) - set(obtained_uuids))
 
         if len(remaining_uuids) > 0:
-            raise Exception(
+            raise ValueError(
                 (
                     "Some samples cannot be obtained because they are not "
                     f"present in Mongo. Please review: {remaining_uuids}"
