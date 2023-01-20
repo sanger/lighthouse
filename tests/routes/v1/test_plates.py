@@ -28,7 +28,7 @@ def test_post_plates_endpoint_successful_all_cog_barcodes_already_in_samples(
     response = client.post(endpoint, json=body)
     assert response.status_code == HTTPStatus.CREATED
     assert response.json == {
-        "data": {"plate_barcode": "plate_123", "centre": "centre_1", "count_fit_to_pick_samples": 4}
+        "data": {"plate_barcode": "plate_123", "centre": "centre_1", "count_fit_to_pick_samples": 5}
     }
 
 

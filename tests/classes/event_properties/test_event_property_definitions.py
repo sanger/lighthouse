@@ -439,7 +439,7 @@ def test_wells_from_destination_value_fails_with_duplicated_wells(
         assert instance.is_valid() is True
         assert instance.errors == []
 
-        with pytest.raises(Exception):
+        with pytest.raises(RetrievalError):
             instance.value
 
         assert instance.is_valid() is False
@@ -498,7 +498,7 @@ def test_all_samples_from_destination_value_fails_with_unknown_samples(
         assert instance.is_valid() is True
         assert instance.errors == []
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             instance.value
 
         assert instance.is_valid() is False
@@ -543,7 +543,7 @@ def test_all_samples_from_destination_value_fails_with_duplicated_samples(
         assert instance.is_valid() is True
         assert instance.errors == []
 
-        with pytest.raises(Exception):
+        with pytest.raises(RetrievalError):
             instance.value
 
         assert instance.is_valid() is False
@@ -600,7 +600,7 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
         assert instance.is_valid() is True
         assert instance.errors == []
 
-        with pytest.raises(Exception):
+        with pytest.raises(RetrievalError):
             instance.value
 
         assert instance.is_valid() is False

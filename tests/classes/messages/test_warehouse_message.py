@@ -48,7 +48,7 @@ def test_construct_event_message(app):
     with app.app_context():
         message = WarehouseMessage("mytype", "myuuid", "at some point")
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             message.construct_event_message("myuuid", "some date", [{"data": "data2"}], {"test": "test2"})
 
         message.set_user_id("my user")
@@ -91,7 +91,7 @@ def test_add_metadata(app):
 def test_render(app):
     with app.app_context():
         message = WarehouseMessage("mytype", "myuuid", "at some point")
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             message.render()
 
         message.set_user_id("my user")

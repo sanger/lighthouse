@@ -8,6 +8,7 @@ from lighthouse.constants.fields import (
     FIELD_LAB_ID,
     FIELD_LH_SAMPLE_UUID,
     FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_MUST_SEQUENCE,
     FIELD_PLATE_BARCODE,
     FIELD_RESULT,
     FIELD_RNA_ID,
@@ -184,6 +185,22 @@ SAMPLES = [
         FIELD_DATE_TESTED: DATE_TESTED_NOW,
         FIELD_FILTERED_POSITIVE: True,
         FIELD_LAB_ID: "lab_4",
+    },
+    {
+        # a Negative result
+        # should be picked because marked as must_sequence = True
+        FIELD_COORDINATE: "F01",
+        FIELD_SOURCE: "centre_1",
+        FIELD_RESULT: "Negative",
+        FIELD_PLATE_BARCODE: "plate_123",
+        FIELD_ROOT_SAMPLE_ID: "sample_842",
+        FIELD_RNA_ID: "rna_pl",
+        FIELD_COG_BARCODE: "jih",
+        FIELD_LH_SAMPLE_UUID: "69855245-a66b-4172-ab46-a1d344b5ca8b",
+        FIELD_DATE_TESTED: DATE_TESTED_NOW,
+        FIELD_FILTERED_POSITIVE: False,
+        FIELD_MUST_SEQUENCE: True,
+        FIELD_LAB_ID: "lab_1",
     },
 ]
 
