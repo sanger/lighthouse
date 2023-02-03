@@ -52,7 +52,6 @@ def test_post_event_source_no_pickable_samples(
             side_effect=[int_to_uuid(1)],
         ):
             with patch("lighthouse.classes.messages.warehouse_messages.uuid4", side_effect=[int_to_uuid(2)]):
-
                 with patch(
                     "lighthouse.classes.events.PlateEvent.message_timestamp",
                     "mytime",

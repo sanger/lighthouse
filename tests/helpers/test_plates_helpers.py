@@ -201,7 +201,6 @@ class DartRow:
         lab_id,
         lh_sample_uuid,
     ):
-
         setattr(self, FIELD_DART_DESTINATION_BARCODE, destination_barcode)
         setattr(self, FIELD_DART_DESTINATION_COORDINATE, destination_coordinate)
         setattr(self, FIELD_DART_SOURCE_BARCODE, source_barcode)

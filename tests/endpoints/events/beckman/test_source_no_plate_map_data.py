@@ -18,7 +18,6 @@ def test_event_no_plate_map_data_missing_barcode(
     client,
     clear_events,
 ):
-
     with app.app_context():
         response = client.get(
             "/v1/plate-events/create?barcode=&event_type="

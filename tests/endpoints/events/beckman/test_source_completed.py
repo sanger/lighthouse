@@ -20,7 +20,6 @@ def test_event_source_completed_missing_barcode(
     client,
     clear_events,
 ):
-
     with app.app_context():
         response = client.get(
             "/v1/plate-events/create?barcode=&event_type=lh_beckman_cp_source_completed&robot=BKRB0001&user_id=RC34"

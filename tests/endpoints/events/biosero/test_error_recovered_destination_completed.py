@@ -114,7 +114,6 @@ def test_post_event_recovered_destination_completed(
                         "lighthouse.classes.messages.sequencescape_messages.SequencescapeMessage._send_to_ss",
                         return_value=mock_response_send_ss,
                     ) as send_to_ss:
-
                         response = client.post(
                             "/events",
                             data={
