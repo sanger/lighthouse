@@ -309,7 +309,6 @@ def create_cherrypicked_post_body(
 
     wells_content = {}
     for sample in samples:
-
         content = {}
 
         if FIELD_SS_CONTROL in sample:

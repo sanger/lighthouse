@@ -20,7 +20,6 @@ def test_user_id_valid(app):
 @pytest.mark.parametrize("run_id", [5])
 def test_user_id_value_successful(app, run_id, mocked_responses, cherrytrack_mock_run_info):
     with app.app_context():
-
         expected_response = {
             "data": {
                 "id": run_id,

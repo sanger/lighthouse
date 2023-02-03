@@ -88,7 +88,6 @@ def get_required_params(request: Request, required_params: Tuple[str, ...]) -> T
 
 
 def create_plate_event() -> FlaskResponse:
-
     """/v1/plate-events/create beckman endpoint to publish a plate event message to the RabbitMQ broker.
 
     Returns:
