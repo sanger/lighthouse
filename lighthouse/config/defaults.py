@@ -83,7 +83,7 @@ DOMAIN: dict = {
 # Improve pagination performance. When optimization is active no count operation, which can be slow on large
 #   collections, is performed on the database. This does have a few consequences. Firstly, no document count is returned.
 #   Secondly, HATEOAS is less accurate: no last page link is available, and next page link is always included, even on
-#   last page. On big collections, switching this feature on can greatly improve performance.#  no count operation, which
+#   last page. On big collections, switching this feature on can greatly improve performance: no count operation, which
 #   can be slow on large collections, is performed on the database.
 OPTIMIZE_PAGINATION_FOR_SPEED = False
 # Enable the Operations Log: https://docs.python-eve.org/en/stable/features.html#oplog
