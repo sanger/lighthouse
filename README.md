@@ -13,29 +13,29 @@ mongodb by the [crawler](https://github.com/sanger/crawler).
 
 - [A note on Docker](#a-note-on-docker)
 - [Option A - using Docker](#option-a---using-docker)
-  * [Requirements for Development](#requirements-for-development)
-  * [Getting Started](#getting-started)
-    + [Configuring the Environment](#configuring-the-environment)
-    + [Setup Steps](#setup-steps)
-  * [Running](#running)
-  * [Testing](#testing)
+  - [Requirements for Development](#requirements-for-development)
+  - [Getting Started](#getting-started)
+    - [Configuring the Environment](#configuring-the-environment)
+    - [Setup Steps](#setup-steps)
+  - [Running](#running)
+  - [Testing](#testing)
 - [Option B - without Docker](#option-b---without-docker)
-  * [Requirements for Development](#requirements-for-development-1)
-  * [Getting Started](#getting-started-1)
-    + [Configuring the Environment](#configuring-the-environment-1)
-    + [Setup Steps](#setup-steps-1)
-  * [Running](#running-1)
-  * [Testing](#testing-1)
-    + [Testing Requirements](#testing-requirements)
-    + [Running Tests](#running-tests)
+  - [Requirements for Development](#requirements-for-development-1)
+  - [Getting Started](#getting-started-1)
+    - [Configuring the Environment](#configuring-the-environment-1)
+    - [Setup Steps](#setup-steps-1)
+  - [Running](#running-1)
+  - [Testing](#testing-1)
+    - [Testing Requirements](#testing-requirements)
+    - [Running Tests](#running-tests)
 - [Deployment](#deployment)
 - [Routes](#routes)
 - [Scheduled Jobs](#scheduled-jobs)
 - [Miscellaneous](#miscellaneous)
-  * [Type Checking](#type-checking)
-  * [Troubleshooting](#troubleshooting)
-    + [pyodbc Errors](#pyodbc-errors)
-  * [Updating the Table of Contents](#updating-the-table-of-contents)
+  - [Type Checking](#type-checking)
+  - [Troubleshooting](#troubleshooting)
+    - [pyodbc Errors](#pyodbc-errors)
+  - [Updating the Table of Contents](#updating-the-table-of-contents)
 
 <!-- tocstop -->
 
@@ -76,7 +76,7 @@ Various environment variables are set in the docker-compose file.
    both and the second one to be started will show exceptions about ports
    already being allocated:
 
-        ./dependencies/up.sh
+       ./dependencies/up.sh
 
    When you want to shut the databases back down, you can do so with:
 
@@ -85,11 +85,13 @@ Various environment variables are set in the docker-compose file.
 ### Running
 
 1. Start the Lighthouse service specified in the `docker-compose.yml` from the
-   root of the repository (this builds the docker image if it does not exist, then starts it up i.e. take care to delete old images or add --build):
+   root of the repository (this builds the docker image if it does not exist, then starts it up):
 
-        docker-compose up
-        or
-        docker-compose up --build
+       docker-compose up
+
+   or, to force a rebuild of the image:
+
+       docker-compose up --build
 
    This will keep running continuously in your terminal window, so to execute further commands you'll need
    to open a new terminal window or tab.
@@ -101,7 +103,7 @@ Various environment variables are set in the docker-compose file.
 
 1. Start a bash session in the container with:
 
-        docker exec -ti lighthouse_lighthouse_1 bash
+       docker exec -ti lighthouse_lighthouse_1 bash
 
    Warning! The names that Docker generates for containers might not be consistent over time. If this doesn't work for you,
    check the name of the container using `docker ps`.
@@ -112,8 +114,8 @@ Various environment variables are set in the docker-compose file.
 
 1. Now that you are inside the running container, initialize the MySQL and SQLServer development databases:
 
-        python ./setup_sqlserver_test_db.py
-        python ./setup_test_db.py
+       python ./setup_sqlserver_test_db.py
+       python ./setup_test_db.py
 
 You should be able to access the app with a browser going to your local port 8000 (go to http://localhost:8000)
 
@@ -121,7 +123,7 @@ You should be able to access the app with a browser going to your local port 800
 
 Once you have got the lighthouse container running and started a bash session within it, you can run tests (flags are for verbose and exit early):
 
-        python -m pytest -vx
+    python -m pytest -vx
 
 ## Option B - without Docker
 
@@ -153,18 +155,20 @@ there:
 - Use pyenv or something similar to install the version of python
   defined in the `Pipfile`:
 
-        brew install pyenv
-        pyenv install <python_version>
+      brew install pyenv
+      pyenv install <python_version>
+
 - Use pipenv to install the required python packages for the application and development:
 
-        pipenv install --dev
+      pipenv install --dev
+
 - Sqlserver dependencies (assumes MacOS and homebrew)
   [Official instructions](https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/install-microsoft-odbc-driver-sql-server-macos?view=sql-server-ver15)
   You may experience difficulties if you have brew installed in your home directory. If this is the case, the Docker container approach may work better.
 
-        brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
-        brew update
-        HOMEBREW_NO_ENV_FILTERING=1 ACCEPT_EULA=Y brew install msodbcsql17 mssql-tools unixodbc
+      brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+      brew update
+      HOMEBREW_NO_ENV_FILTERING=1 ACCEPT_EULA=Y brew install msodbcsql17 mssql-tools unixodbc
 
 - [Installing MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
 
@@ -172,11 +176,11 @@ there:
 
 1. Enter the python virtual environment using:
 
-        pipenv shell
+       pipenv shell
 
 1. Run the app using:
 
-        flask run
+       flask run
 
 ### Testing
 
@@ -215,23 +219,23 @@ You can also grep to limit by the release version you are looking for e.g. grep 
 
 The service has the following routes:
 
-        Endpoint                             Methods          Rule
-    -----------------------------------  ---------------  ---------------------------------------------
-    health_check                         GET              /health
-    home                                 GET              /
-    imports|item_lookup                  GET              /imports/<regex("[a-f0-9]{24}"):_id>
-    imports|resource                     GET              /imports
-    plates.create_plate_from_barcode     POST             /plates/new
-    plates.find_plate_from_barcode       GET              /plates
-    priority_samples|item_lookup         GET, PATCH, PUT  /priority_samples/<regex("[a-f0-9]{24}"):_id>
-    priority_samples|item_post_override  POST             /priority_samples/<regex("[a-f0-9]{24}"):_id>
-    priority_samples|resource            GET, POST        /priority_samples
-    reports.create_report_endpoint       POST             /reports/new
-    reports.delete_reports_endpoint      POST             /delete_reports
-    reports.get_reports                  GET              /reports
-    schema|item_lookup                   GET              /schema/<regex("[a-f0-9]{24}"):_id>
-    schema|resource                      GET              /schema
-    static                               GET              /static/<path:filename>
+|     Endpoint                         |     Methods     |     Rule                                        |
+| ------------------------------------ | --------------- | ----------------------------------------------- |
+| health_check                         | GET             | `/health`                                       |
+| home                                 | GET             | `/`                                             |
+| imports\|item_lookup                 | GET             | `/imports/<regex("[a-f0-9]{24}"):_id>`          |
+| imports\|resource                    | GET             | `/imports`                                      |
+| plates.create_plate_from_barcode     | POST            | `/plates/new`                                   |
+| plates.find_plate_from_barcode       | GET             | `/plates`                                       |
+| priority_samples\|item_lookup        | GET, PATCH, PUT | `/priority_samples/<regex("[a-f0-9]{24}"):_id>` |
+| priority_samples\|item_post_override | POST            | `/priority_samples/<regex("[a-f0-9]{24}"):_id>` |
+| priority_samples\|resource           | GET, POST       | `/priority_samples`                             |
+| reports.create_report_endpoint       | POST            | `/reports/new`                                  |
+| reports.delete_reports_endpoint      | POST            | `/delete_reports`                               |
+| reports.get_reports                  | GET             | `/reports`                                      |
+| schema\|item_lookup                  | GET             | `/schema/<regex("[a-f0-9]{24}"):_id>`           |
+| schema\|resource                     | GET             | `/schema`                                       |
+| static                               | GET             | `/static/<path:filename>`                       |
 
 ## Scheduled Jobs
 
@@ -255,9 +259,7 @@ If you experience:
 
     ImportError: dlopen(/Users/.../.local/share/virtualenvs/lighthouse-e4xstWfp/lib/python3.8/site-packages/pyodbc.cpython-38-darwin.so, 2): Library not loaded: /usr/local/opt/unixodbc/lib/libodbc.2.dylib
 
-or similar when importing pyodbc, you may need to recompile pyodbc linked against your homebrew version of unixodbc.
-
-https://github.com/mkleehammer/pyodbc/issues/681
+or similar when importing pyodbc, you may need to [recompile pyodbc linked against your homebrew version of unixodbc](https://github.com/mkleehammer/pyodbc/issues/681).
 
 If you still experience issues loading the MSSQL drivers themselves, you might need to use the docker container approach.
 
@@ -266,4 +268,4 @@ If you still experience issues loading the MSSQL drivers themselves, you might n
 To update the table of contents after adding things to this README you can use the
 [markdown-toc](https://github.com/jonschlinkert/markdown-toc) node module. To run:
 
-    npx markdown-toc -i README.md
+    npx markdown-toc -i --bullets="-" -- README.md
