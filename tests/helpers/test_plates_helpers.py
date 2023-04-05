@@ -122,7 +122,11 @@ def test_centre_prefix(app, centres, mocked_responses):
         assert get_centre_prefix("CeNtRe_3") == "TC3"
 
 
-def test_create_post_body(app, samples):
+@pytest.mark.parametrize(
+    "given_plate_type,configured_plate_type",
+    [(None, SS_UUID_TYPE_DEFAULT), ("heron", "heron"), ("another_plate_type", "another_plate_type")],
+)
+def test_create_post_body(app, samples, given_plate_type, configured_plate_type):
     with app.app_context():
         samples, _ = samples
         barcode = "12345"
@@ -140,8 +144,8 @@ def test_create_post_body(app, samples):
                 "type": "plates",
                 "attributes": {
                     "barcode": "12345",
-                    "purpose_uuid": current_app.config["SS_UUIDS"][SS_UUID_TYPE_DEFAULT][SS_UUID_PLATE_PURPOSE],
-                    "study_uuid": current_app.config["SS_UUIDS"][SS_UUID_TYPE_DEFAULT][SS_UUID_STUDY],
+                    "purpose_uuid": current_app.config["SS_UUIDS"][configured_plate_type][SS_UUID_PLATE_PURPOSE],
+                    "study_uuid": current_app.config["SS_UUIDS"][configured_plate_type][SS_UUID_STUDY],
                     "wells": {
                         "A01": {
                             "content": {
@@ -172,7 +176,7 @@ def test_create_post_body(app, samples):
             }
         }
 
-        assert create_post_body(barcode, None, filtered_positive_samples) == correct_body
+        assert create_post_body(barcode, given_plate_type, filtered_positive_samples) == correct_body
 
 
 def test_create_post_body_raises_without_cog_uk_id(app, samples):

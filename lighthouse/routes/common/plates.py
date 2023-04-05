@@ -44,7 +44,7 @@ def create_plate_from_barcode() -> FlaskResponse:
         return bad_request("POST request needs 'barcode' in body")
 
     accepted_plate_types = app.config["SS_UUIDS"]
-    if plate_type is not None and plate_type not in app.config["SS_UUIDS"]:
+    if plate_type is not None and plate_type not in accepted_plate_types:
         return bad_request(f"POST request 'type' must be from the list: {', '.join(accepted_plate_types)}")
 
     try:
