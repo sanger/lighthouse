@@ -7,6 +7,12 @@ from eve import Eve
 from flask import current_app as app
 
 from lighthouse.classes.beckman import Beckman
+from lighthouse.constants.config import (
+    SS_UUID_PLATE_PURPOSE,
+    SS_UUID_STUDY,
+    SS_UUID_TYPE_CHERRYPICKED,
+    SS_UUID_TYPE_DEFAULT,
+)
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -198,13 +204,11 @@ def row_to_dict(row):
     return obj
 
 
-def create_post_body(barcode: str, purpose_name: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    if purpose_name is None:
-        purpose_name = app.config["SS_UUID_PLATE_PURPOSE_DEFAULT"]
+def create_post_body(barcode: str, plate_type: Optional[str], samples: List[Dict[str, str]]) -> Dict[str, Any]:
+    if plate_type is None:
+        plate_type = SS_UUID_TYPE_DEFAULT
 
-    logger.debug(
-        f"Creating POST body to send to Sequencescape for barcode '{barcode}' with plate purpose '{purpose_name}'"
-    )
+    logger.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}' with type '{plate_type}'")
 
     wells_content = {}
     phenotype = None
@@ -232,8 +236,8 @@ def create_post_body(barcode: str, purpose_name: str, samples: List[Dict[str, st
 
     body = {
         "barcode": barcode,
-        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSES"][purpose_name],
-        "study_uuid": app.config["SS_UUID_STUDY"],
+        "purpose_uuid": app.config["SS_UUIDS"][plate_type][SS_UUID_PLATE_PURPOSE],
+        "study_uuid": app.config["SS_UUIDS"][plate_type][SS_UUID_STUDY],
         "wells": wells_content,
     }
 
@@ -349,8 +353,8 @@ def create_cherrypicked_post_body(
 
     body = {
         "barcode": barcode,
-        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
-        "study_uuid": app.config["SS_UUID_STUDY_CHERRYPICKED"],
+        "purpose_uuid": app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_PLATE_PURPOSE],
+        "study_uuid": app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_STUDY],
         "wells": wells_content,
         "events": events,
     }

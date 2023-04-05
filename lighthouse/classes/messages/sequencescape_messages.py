@@ -4,6 +4,7 @@ from typing import Dict
 import requests
 from flask import current_app as app
 
+from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY, SS_UUID_TYPE_CHERRYPICKED
 from lighthouse.messages.message import Message
 
 logger = logging.getLogger(__name__)
@@ -23,8 +24,8 @@ class SequencescapeMessage(Message):
     def render(self) -> Message:
         message_content = self.construct_sequencescape_message(
             barcode=self._barcode,
-            purpose_uuid=app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
-            study_uuid=app.config["SS_UUID_STUDY_CHERRYPICKED"],
+            purpose_uuid=app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_PLATE_PURPOSE],
+            study_uuid=app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_STUDY],
             wells=self._contents,
             events=[],
         )

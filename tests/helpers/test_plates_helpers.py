@@ -9,6 +9,7 @@ import pytest
 import responses
 from flask import current_app
 
+from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY, SS_UUID_TYPE_CHERRYPICKED
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -128,6 +129,7 @@ def test_create_post_body(app, samples):
                 samples,
             )
         )
+
         correct_body = {
             "data": {
                 "type": "plates",
@@ -165,7 +167,7 @@ def test_create_post_body(app, samples):
             }
         }
 
-        assert create_post_body(barcode, filtered_positive_samples) == correct_body
+        assert create_post_body(barcode, None, filtered_positive_samples) == correct_body
 
 
 def test_create_post_body_raises_without_cog_uk_id(app, samples):
@@ -185,7 +187,7 @@ def test_create_post_body_raises_without_cog_uk_id(app, samples):
         del filtered_positive_samples[0][FIELD_COG_BARCODE]
 
         with pytest.raises(KeyError):
-            create_post_body(barcode, filtered_positive_samples)
+            create_post_body(barcode, None, filtered_positive_samples)
 
 
 class DartRow:
@@ -525,8 +527,8 @@ def test_create_cherrypicked_post_body(app):
                 "type": "plates",
                 "attributes": {
                     "barcode": "123",
-                    "purpose_uuid": current_app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
-                    "study_uuid": current_app.config["SS_UUID_STUDY_CHERRYPICKED"],
+                    "purpose_uuid": current_app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_PLATE_PURPOSE],
+                    "study_uuid": current_app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_STUDY],
                     "wells": {
                         "B01": {
                             "content": {

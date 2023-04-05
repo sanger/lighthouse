@@ -87,5 +87,4 @@ ROBOT_FAILURE_TYPES = {key: ROBOT_FAILURE_TYPES[key] for key in ("robot_crashed"
 ###
 # SS plate creation config (UUID for the plate purpose and study of the plate created)
 ###
-SS_UUID_PLATE_PURPOSE_CHERRYPICKED = "ss_uuid_plate_purpose"
-SS_UUID_STUDY_CHERRYPICKED = "ss_uuid_study"
+SS_UUIDS[SS_UUID_TYPE_CHERRYPICKED] = {SS_UUID_PLATE_PURPOSE: "ss_uuid_plate_purpose", SS_UUID_STUDY: "ss_uuid_study"}
