@@ -37,6 +37,7 @@ def create_plate_from_barcode() -> FlaskResponse:
     barcode = None
     if (request_json := request.get_json()) is not None:
         barcode = request_json.get("barcode")
+        purpose_name = request_json.get("plate_purpose")
 
     if request_json is None or barcode is None:
         return bad_request("POST request needs 'barcode' in body")
@@ -48,7 +49,7 @@ def create_plate_from_barcode() -> FlaskResponse:
         if not fit_to_pick_samples:
             return bad_request(f"No fit to pick samples for this barcode: {barcode}")
 
-        body = create_post_body(barcode, fit_to_pick_samples)
+        body = create_post_body(barcode, purpose_name, fit_to_pick_samples)
 
         response = send_to_ss_heron_plates(body)
 

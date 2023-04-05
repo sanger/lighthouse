@@ -198,8 +198,13 @@ def row_to_dict(row):
     return obj
 
 
-def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    logger.debug(f"Creating POST body to send to Sequencescape for barcode: {barcode}")
+def create_post_body(barcode: str, purpose_name: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
+    if purpose_name is None:
+        purpose_name = app.config["SS_UUID_PLATE_PURPOSE_DEFAULT"]
+
+    logger.debug(
+        f"Creating POST body to send to Sequencescape for barcode '{barcode}' with plate purpose '{purpose_name}'"
+    )
 
     wells_content = {}
     phenotype = None
@@ -227,7 +232,7 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
 
     body = {
         "barcode": barcode,
-        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE"],
+        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSES"][purpose_name],
         "study_uuid": app.config["SS_UUID_STUDY"],
         "wells": wells_content,
     }
