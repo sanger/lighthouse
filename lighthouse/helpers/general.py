@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 def get_fit_to_pick_samples_and_counts(
     plate_barcode: str,
 ) -> Tuple[Union[SampleDocs, None], Union[int, None], Union[int, None], Union[int, None], Union[int, None]]:
-
     samples_collection = cast(Eve, app).data.driver.db.samples
 
     # We are only interested in the samples for a particular plate

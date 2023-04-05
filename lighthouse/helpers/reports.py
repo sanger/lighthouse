@@ -15,7 +15,7 @@ import pandas as pd
 # it is outside the app context
 import sqlalchemy
 from flask import current_app as app
-from pandas import DataFrame
+from pandas import DataFrame, concat
 from pymongo.collection import Collection
 
 from lighthouse.constants.fields import (
@@ -158,7 +158,7 @@ def get_cherrypicked_samples(root_sample_ids, plate_barcodes, chunk_size=50000):
             # different batches, and then it would retrieve the same rows for that root sample id
             # twice do reset_index after dropping duplicates to make sure the rows are numbered in
             # a way that makes sense
-            concat_frame = concat_frame.append(cherrypicked_frame).drop_duplicates().reset_index(drop=True)
+            concat_frame = concat((concat_frame, cherrypicked_frame)).drop_duplicates().reset_index(drop=True)
 
         return concat_frame
     except Exception as e:
@@ -265,7 +265,6 @@ def add_cherrypicked_column(existing_dataframe):
 
 
 def get_distinct_plate_barcodes(samples_collection: Collection) -> List[str]:
-
     logger.debug("Getting list of distinct plate barcodes")
 
     # We have some records (documents in mongo language) where the plate_barcode is empty so ignore those

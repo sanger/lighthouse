@@ -63,7 +63,7 @@ def create_report() -> str:
     merged.to_excel(writer, sheet_name="ALL FIT TO PICK SAMPLES", columns=columns, index=False)
 
     # Close the Pandas Excel writer and output the Excel file
-    writer.save()
+    writer.close()
 
     logger.info(f"Report creation complete in {round(time.time() - start, 2)}s")
 
