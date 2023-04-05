@@ -9,12 +9,7 @@ import pytest
 import responses
 from flask import current_app
 
-from lighthouse.constants.config import (
-    SS_UUID_PLATE_PURPOSE,
-    SS_UUID_STUDY,
-    SS_UUID_TYPE_CHERRYPICKED,
-    SS_UUID_TYPE_DEFAULT,
-)
+from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY, SS_UUID_TYPE_DEFAULT
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -536,8 +531,8 @@ def test_create_cherrypicked_post_body(app):
                 "type": "plates",
                 "attributes": {
                     "barcode": "123",
-                    "purpose_uuid": current_app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_PLATE_PURPOSE],
-                    "study_uuid": current_app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_STUDY],
+                    "purpose_uuid": current_app.config["SS_UUIDS_CHERRYPICKED"][SS_UUID_PLATE_PURPOSE],
+                    "study_uuid": current_app.config["SS_UUIDS_CHERRYPICKED"][SS_UUID_STUDY],
                     "wells": {
                         "B01": {
                             "content": {

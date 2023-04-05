@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 import responses
 
-from lighthouse.constants.config import SS_UUID_TYPE_CHERRYPICKED, SS_UUID_TYPE_DEFAULT
+from lighthouse.constants.config import SS_UUID_TYPE_DEFAULT
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 
 ENDPOINT_PREFIXES = ["", "/v1"]
@@ -34,7 +34,7 @@ def test_post_plates_endpoint_successful_with_no_plate_type_and_all_cog_barcodes
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-@pytest.mark.parametrize("plate_type", [SS_UUID_TYPE_DEFAULT, SS_UUID_TYPE_CHERRYPICKED, "another_plate_type"])
+@pytest.mark.parametrize("plate_type", [SS_UUID_TYPE_DEFAULT, "another_plate_type"])
 def test_post_plates_endpoint_successful_with_configured_plate_type_and_all_cog_barcodes_already_in_samples(
     app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples, endpoint, plate_type
 ):
@@ -63,9 +63,7 @@ def test_post_plates_endpoint_plate_type_not_configured(app, client, endpoint):
     response = client.post(endpoint, json={"barcode": "plate_123", "type": "bogus"})
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {
-        "errors": ["POST request 'type' must be from the list: heron, cherrypicked, another_plate_type"]
-    }
+    assert response.json == {"errors": ["POST request 'type' must be from the list: heron, another_plate_type"]}
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)

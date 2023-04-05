@@ -89,6 +89,6 @@ ROBOT_FAILURE_TYPES = {key: ROBOT_FAILURE_TYPES[key] for key in ("robot_crashed"
 ###
 SS_UUIDS = {
     SS_UUID_TYPE_DEFAULT: {SS_UUID_PLATE_PURPOSE: "heron_purpose", SS_UUID_STUDY: "heron_study"},
-    SS_UUID_TYPE_CHERRYPICKED: {SS_UUID_PLATE_PURPOSE: "cherrypicked_purpose", SS_UUID_STUDY: "cherrypicked_study"},
     "another_plate_type": {SS_UUID_PLATE_PURPOSE: "another_purpose", SS_UUID_STUDY: "another_study"},
 }
+SS_UUIDS_CHERRYPICKED = {SS_UUID_PLATE_PURPOSE: "cherrypicked_purpose", SS_UUID_STUDY: "cherrypicked_study"}

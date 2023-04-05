@@ -7,12 +7,7 @@ from eve import Eve
 from flask import current_app as app
 
 from lighthouse.classes.beckman import Beckman
-from lighthouse.constants.config import (
-    SS_UUID_PLATE_PURPOSE,
-    SS_UUID_STUDY,
-    SS_UUID_TYPE_CHERRYPICKED,
-    SS_UUID_TYPE_DEFAULT,
-)
+from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY, SS_UUID_TYPE_DEFAULT
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -353,8 +348,8 @@ def create_cherrypicked_post_body(
 
     body = {
         "barcode": barcode,
-        "purpose_uuid": app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_PLATE_PURPOSE],
-        "study_uuid": app.config["SS_UUIDS"][SS_UUID_TYPE_CHERRYPICKED][SS_UUID_STUDY],
+        "purpose_uuid": app.config["SS_UUIDS_CHERRYPICKED"][SS_UUID_PLATE_PURPOSE],
+        "study_uuid": app.config["SS_UUIDS_CHERRYPICKED"][SS_UUID_STUDY],
         "wells": wells_content,
         "events": events,
     }
