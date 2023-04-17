@@ -1,11 +1,19 @@
 import logging
 from http import HTTPStatus
-
 from flask import request
 
 from lighthouse.constants.error_messages import ERROR_UNEXPECTED_PLATES_CREATE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
-from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
+from lighthouse.constants.general import (
+    ARG_EXCLUDE,
+    ARG_TYPE,
+    ARG_TYPE_DESTINATION,
+    ARG_TYPE_SOURCE,
+    ARG_BARCODE,
+    ARG_USER,
+    ARG_ROBOT_SERIAL,
+    BIOSCAN_PLATE_PURPOSE,
+)
 from lighthouse.helpers.cherrytrack import (
     get_samples_from_source_plate_barcode_from_cherrytrack,
     get_wells_from_destination_barcode_from_cherrytrack,
@@ -16,12 +24,94 @@ from lighthouse.helpers.plates import (
     create_post_body,
     format_plate,
     send_to_ss_heron_plates,
+    get_from_ss_plates_samples_info,
+    covert_json_response_into_dict,
+    # send_event_to_warehouse,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
 from lighthouse.types import FlaskResponse
 from lighthouse.utils import pretty
 
 logger = logging.getLogger(__name__)
+
+
+def get_control_locations() -> FlaskResponse:
+    """
+    - get POST request body
+    - validate presence of user, robot, barcode
+    - send GET to ss, to return all samples for the barcode (SS api class)
+    - if barcode doesnt exist, fail
+    - check plate purpose, fail if incorrect
+    - loop through samples, getting type=control
+    - get the +ve and -ve control locations
+    - fail if missing control locations
+    - build return body, and return 200
+    - build events message body
+    - create event in WH with locations, barcode, user and robot
+
+    Returns:
+        FlaskResponse: json body containing the plate barcode, and +ve/-ve control locations
+    """
+
+    # Covnert SS response JSON into dict
+    # Convert in to obj to match json structrue
+    # add instance methods to obj
+
+    logger.info(f"Attemping to fetching control locations for barcode")
+
+    # - validate presence of user, robot, barcode
+    barcode = None
+    user = None
+    robot = None
+
+    if (request_json := request.get_json()) is not None:
+        barcode = request_json.get(ARG_BARCODE)
+        user = request_json.get(ARG_USER)
+        robot = request_json.get(ARG_ROBOT_SERIAL)
+
+    if barcode is None or user is None or robot is None:
+        return bad_request(f"POST request needs '{ARG_BARCODE}', '{ARG_USER}' and '{ARG_ROBOT_SERIAL}' in body")
+
+    # - send GET to ss, to return all samples for the barcode (SS api class)
+    response = get_from_ss_plates_samples_info(barcode)
+
+    # - if barcode doesnt exist, fail
+    if len(response.json()["data"]) == 0:
+        return bad_request(f"There is no plate data for barcode '{barcode}'")
+
+    # - check plate purpose, fail if incorrect
+    plate_purpose = None
+    if (included := response.json()["included"]) is not None:
+        purposes = [elem for elem in included if elem["type"] == "purposes"]
+
+        # - if there is more than one purpose, fail
+        if len(purposes) != 1:
+            return bad_request(f"There should only be one purpose for barcode '{barcode}'")
+
+        purpose_name = purposes[0]["attributes"]["name"]
+
+        if purpose_name != BIOSCAN_PLATE_PURPOSE:
+            return bad_request(f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'")
+
+        # dont need to pass in barcode
+        response_dict = covert_json_response_into_dict(barcode, included)
+
+    # TODO:
+    # - build events message body
+    # - create event in WH with locations, barcode, user and robot
+
+    # {
+    #     "barcode": barcode,
+    #     "positive_control": positive_control_position[0],
+    #     "negative_control": negative_control_position[0],
+    # }
+
+    # event_response = send_event_to_warehouse(response_dict['barcode'], response_dict['positive_control'], response_dict['negative_control'], user, robot)
+
+    # Return 200
+    # return ok(response_dict) # use this
+    return response_dict, HTTPStatus.OK
+    # return response.json(), response.status_code
 
 
 def create_plate_from_barcode() -> FlaskResponse:

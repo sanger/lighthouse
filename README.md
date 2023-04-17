@@ -103,7 +103,7 @@ Various environment variables are set in the docker-compose file.
 
 1. Start a bash session in the container with:
 
-       docker exec -ti lighthouse_lighthouse_1 bash
+       docker exec -ti lighthouse-lighthouse-1 bash
 
    Warning! The names that Docker generates for containers might not be consistent over time. If this doesn't work for you,
    check the name of the container using `docker ps`.

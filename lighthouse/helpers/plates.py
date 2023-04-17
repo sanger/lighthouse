@@ -263,6 +263,98 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
         raise requests.ConnectionError("Unable to access Sequencescape")
 
 
+# Create class within this file, if poss to wrap these helper methods
+# where included is an attribute on init
+# create instance of class
+# call main method to output bioscan expected data
+# private method to generate data
+# validate generated data
+# if validation fails, return { data: None, errors: ...}
+# if valid, private method to convert to bioscan expected data
+# generate event message
+# return { data: ..., errors: None}
+# the calling code, check obj value and return HTTP response
+
+
+# build bioscan return response in common
+
+def get_sample_control_type(sample_id: list, included: list) -> Optional[str]:
+    sample = next(elem for elem in included if elem["type"] == "samples" and elem["id"] == sample_id)
+
+    return sample["attributes"]["control_type"] if sample["attributes"]["control"] is True else None
+
+
+def get_control_types_for_aliquots(aliquot_ids: list, included: list) -> List[str]:
+    aliquots = [elem for elem in included if elem["type"] == "aliquots" and elem["id"] in aliquot_ids]
+
+    sample_ids = [aliquot["relationships"]["sample"]["data"]["id"] for aliquot in aliquots]
+    control_types = [get_sample_control_type(id, included) for id in sample_ids]
+    return [ct for ct in control_types if ct is not None]
+
+
+def control_types_for_wells(included: list) -> dict:
+    def get_control_type_for_well(well):
+        aliquot_ids = [aliquot["id"] for aliquot in well["relationships"]["aliquots"]["data"]]
+        control_types = get_control_types_for_aliquots(aliquot_ids, included)
+
+        return control_types[0] if len(control_types) == 1 else None
+
+    wells = [elem for elem in included if elem["type"] == "wells"]
+
+    control_types = { well["attributes"]["position"]["name"]: get_control_type_for_well(well) for well in wells }
+
+    return {k: v for (k, v) in control_types.items() if v is not None}
+
+def covert_json_response_into_dict(barcode: str, included: list) -> dict:
+    # instancate class
+
+    parsed_data = control_types_for_wells(included)
+    # {'A1': 'pcr positive', 'B1': 'pcr negative'}
+
+    # validate sample exists
+    # samples = [elem for elem in included if elem['type'] == "samples"]
+    # if len(samples) == 0:
+    #     return bad_request(f"There are no samples for barcode '{barcode}'")
+
+
+    # - get the +ve and -ve control locations
+    positive_control_position = [k for (k, v) in parsed_data.items() if v == 'pcr positive']
+    negative_control_position = [k for (k, v) in parsed_data.items() if v == 'pcr negative']
+
+    # - fail if missing control locations
+    if len(positive_control_position) != 1 or len(negative_control_position) != 1:
+        return bad_request(f"Missing positive or negative control for barcode '{barcode}'")
+
+    # - build return body
+    response_dict = {
+        "barcode": barcode,
+        "positive_control": positive_control_position[0],
+        "negative_control": negative_control_position[0],
+    }
+
+    return response_dict
+
+
+def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
+    ss_url: str = f"{app.config['SS_URL']}/api/v2/labware"
+
+    try:
+        params = {"filter[barcode]": plate_barcode, "include": "purpose,receptacles.aliquots.sample"}
+        response = requests.get(f"{ss_url}", params=params)
+
+        logger.debug(f"Response status code: {response.status_code}")
+
+        assert "data" in response.json(), f"Expected 'data' in response: {response.json()}"
+
+        return response
+    except requests.ConnectionError:
+        raise requests.ConnectionError("Unable to access Sequencescape")
+
+
+# def send_event_to_warehouse(barcode, positive_location, negative_location, user, robot):
+# lighthouse/classes/messages/warehouse_messages.py ?
+
+
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
