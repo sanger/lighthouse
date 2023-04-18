@@ -45,7 +45,7 @@ from lighthouse.constants.fields import (
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
 )
-from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
+from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE, BIOSCAN_PLATE_PURPOSE
 from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
 from lighthouse.helpers.dart import find_dart_source_samples_rows
 from lighthouse.helpers.events import (
@@ -262,77 +262,86 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
     except requests.ConnectionError:
         raise requests.ConnectionError("Unable to access Sequencescape")
 
-
 # Create class within this file, if poss to wrap these helper methods
 # where included is an attribute on init
 # create instance of class
 # call main method to output bioscan expected data
 # private method to generate data
-# validate generated data
-# if validation fails, return { data: None, errors: ...}
-# if valid, private method to convert to bioscan expected data
-# generate event message
-# return { data: ..., errors: None}
-# the calling code, check obj value and return HTTP response
+class ControlLocations():
+    def __init__(self, included: list) -> None:
+        self.included = included
+
+    def _get_sample_control_type(self, sample_id: list) -> Optional[str]:
+        sample = next(elem for elem in self.included if elem["type"] == "samples" and elem["id"] == sample_id)
+
+        return sample["attributes"]["control_type"] if sample["attributes"]["control"] is True else None
+
+    def _get_control_types_for_aliquots(self, aliquot_ids: list) -> List[str]:
+        aliquots = [elem for elem in self.included if elem["type"] == "aliquots" and elem["id"] in aliquot_ids]
+
+        sample_ids = [aliquot["relationships"]["sample"]["data"]["id"] for aliquot in aliquots]
+        control_types = [self._get_sample_control_type(id) for id in sample_ids]
+        return [ct for ct in control_types if ct is not None]
 
 
-# build bioscan return response in common
+    def get_control_locations(self) -> dict:
+        def get_control_type_for_well(well):
+            aliquot_ids = [aliquot["id"] for aliquot in well["relationships"]["aliquots"]["data"]]
+            control_types = self._get_control_types_for_aliquots(aliquot_ids)
 
-def get_sample_control_type(sample_id: list, included: list) -> Optional[str]:
-    sample = next(elem for elem in included if elem["type"] == "samples" and elem["id"] == sample_id)
+            return control_types[0] if len(control_types) == 1 else None
 
-    return sample["attributes"]["control_type"] if sample["attributes"]["control"] is True else None
+        wells = [elem for elem in self.included if elem["type"] == "wells"]
+
+        control_types = { well["attributes"]["position"]["name"]: get_control_type_for_well(well) for well in wells }
+
+        return { k: v for (k, v) in control_types.items() if v is not None }
+
+    def build_response(self, barcode, control_info) -> dict:
+        # - get the +ve and -ve control locations
+        positive_control_position = [k for (k, v) in control_info.items() if v == 'pcr positive']
+        negative_control_position = [k for (k, v) in control_info.items() if v == 'pcr negative']
+
+        # - fail if missing control locations
+        if len(positive_control_position) != 1 or len(negative_control_position) != 1:
+            return {"data": None, error: f"Missing positive or negative control for barcode '{barcode}'"}
+
+        return {
+            "barcode": barcode,
+            "positive_control": positive_control_position[0],
+            "negative_control": negative_control_position[0],
+        }
+
+def covert_json_response_into_dict(barcode: str, json) -> dict:
+    # - if barcode doesnt exist, fail
+    if len(json["data"]) == 0:
+        return { "data": None, "error": f"There is no plate data for barcode '{barcode}'"}
+
+    # - check plate purpose, fail if incorrect
+    plate_purpose = None
+    if (included := json["included"]) is not None:
+        purposes = [elem for elem in included if elem["type"] == "purposes"]
+
+        # - if there is more than one purpose, fail
+        if len(purposes) != 1:
+            return { "data": None, "error": f"There should only be one purpose for barcode '{barcode}'"}
+
+        purpose_name = purposes[0]["attributes"]["name"]
+
+        if purpose_name != BIOSCAN_PLATE_PURPOSE:
+            return {"data": None, "error": f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'"}
+
+        # validate sample exists
+        samples = [elem for elem in included if elem['type'] == "samples"]
+        if len(samples) == 0:
+            return {"data": None, "error": f"There are no samples for barcode '{barcode}'"}
 
 
-def get_control_types_for_aliquots(aliquot_ids: list, included: list) -> List[str]:
-    aliquots = [elem for elem in included if elem["type"] == "aliquots" and elem["id"] in aliquot_ids]
+    control_locations = ControlLocations(included)
+    control_info = control_locations.get_control_locations() # {'A1': 'pcr positive', 'B1': 'pcr negative'}
 
-    sample_ids = [aliquot["relationships"]["sample"]["data"]["id"] for aliquot in aliquots]
-    control_types = [get_sample_control_type(id, included) for id in sample_ids]
-    return [ct for ct in control_types if ct is not None]
-
-
-def control_types_for_wells(included: list) -> dict:
-    def get_control_type_for_well(well):
-        aliquot_ids = [aliquot["id"] for aliquot in well["relationships"]["aliquots"]["data"]]
-        control_types = get_control_types_for_aliquots(aliquot_ids, included)
-
-        return control_types[0] if len(control_types) == 1 else None
-
-    wells = [elem for elem in included if elem["type"] == "wells"]
-
-    control_types = { well["attributes"]["position"]["name"]: get_control_type_for_well(well) for well in wells }
-
-    return {k: v for (k, v) in control_types.items() if v is not None}
-
-def covert_json_response_into_dict(barcode: str, included: list) -> dict:
-    # instancate class
-
-    parsed_data = control_types_for_wells(included)
-    # {'A1': 'pcr positive', 'B1': 'pcr negative'}
-
-    # validate sample exists
-    # samples = [elem for elem in included if elem['type'] == "samples"]
-    # if len(samples) == 0:
-    #     return bad_request(f"There are no samples for barcode '{barcode}'")
-
-
-    # - get the +ve and -ve control locations
-    positive_control_position = [k for (k, v) in parsed_data.items() if v == 'pcr positive']
-    negative_control_position = [k for (k, v) in parsed_data.items() if v == 'pcr negative']
-
-    # - fail if missing control locations
-    if len(positive_control_position) != 1 or len(negative_control_position) != 1:
-        return bad_request(f"Missing positive or negative control for barcode '{barcode}'")
-
-    # - build return body
-    response_dict = {
-        "barcode": barcode,
-        "positive_control": positive_control_position[0],
-        "negative_control": negative_control_position[0],
-    }
-
-    return response_dict
+    locations = control_locations.build_response(barcode, control_info)
+    return { "data": locations, "error": None }
 
 
 def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
