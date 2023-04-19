@@ -9,62 +9,39 @@ import pytest
 import responses
 from flask import current_app
 
-from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
-from lighthouse.constants.fields import (
-    FIELD_BARCODE,
-    FIELD_COG_BARCODE,
-    FIELD_DART_CONTROL,
-    FIELD_DART_DESTINATION_BARCODE,
-    FIELD_DART_DESTINATION_COORDINATE,
-    FIELD_DART_LAB_ID,
-    FIELD_DART_RNA_ID,
-    FIELD_DART_ROOT_SAMPLE_ID,
-    FIELD_DART_SOURCE_BARCODE,
-    FIELD_DART_SOURCE_COORDINATE,
-    FIELD_FILTERED_POSITIVE,
-    FIELD_LH_SAMPLE_UUID,
-    FIELD_LH_SOURCE_PLATE_UUID,
-    FIELD_PLATE_BARCODE,
-    FIELD_SS_BARCODE,
-    FIELD_SS_CONTROL,
-    FIELD_SS_CONTROL_TYPE,
-    FIELD_SS_COORDINATE,
-    FIELD_SS_LAB_ID,
-    FIELD_SS_NAME,
-    FIELD_SS_PHENOTYPE,
-    FIELD_SS_SAMPLE_DESCRIPTION,
-    FIELD_SS_SUPPLIER_NAME,
-    FIELD_SS_UUID,
-)
+from lighthouse.constants.events import (PE_BECKMAN_DESTINATION_CREATED,
+                                         PE_BECKMAN_DESTINATION_FAILED)
+from lighthouse.constants.fields import (FIELD_BARCODE, FIELD_COG_BARCODE,
+                                         FIELD_DART_CONTROL,
+                                         FIELD_DART_DESTINATION_BARCODE,
+                                         FIELD_DART_DESTINATION_COORDINATE,
+                                         FIELD_DART_LAB_ID, FIELD_DART_RNA_ID,
+                                         FIELD_DART_ROOT_SAMPLE_ID,
+                                         FIELD_DART_SOURCE_BARCODE,
+                                         FIELD_DART_SOURCE_COORDINATE,
+                                         FIELD_FILTERED_POSITIVE,
+                                         FIELD_LH_SAMPLE_UUID,
+                                         FIELD_LH_SOURCE_PLATE_UUID,
+                                         FIELD_PLATE_BARCODE, FIELD_SS_BARCODE,
+                                         FIELD_SS_CONTROL,
+                                         FIELD_SS_CONTROL_TYPE,
+                                         FIELD_SS_COORDINATE, FIELD_SS_LAB_ID,
+                                         FIELD_SS_NAME, FIELD_SS_PHENOTYPE,
+                                         FIELD_SS_SAMPLE_DESCRIPTION,
+                                         FIELD_SS_SUPPLIER_NAME, FIELD_SS_UUID)
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.helpers.plates import (
-    add_controls_to_samples,
-    centre_prefixes_for_samples,
-    check_matching_sample_numbers,
-    classify_samples_by_centre,
+    add_controls_to_samples, centre_prefixes_for_samples,
+    check_matching_sample_numbers, classify_samples_by_centre,
     construct_cherrypicking_plate_failed_message,
-    create_cherrypicked_post_body,
-    create_post_body,
-    destination_plate_field_generators,
-    equal_row_and_sample,
-    find_sample_matching_row,
-    find_samples,
-    find_source_plates,
-    format_plate,
-    get_centre_prefix,
-    get_source_plates_for_samples,
-    get_unique_plate_barcodes,
-    join_rows_with_samples,
-    map_to_ss_columns,
-    plate_exists_in_ss,
-    query_for_cherrypicked_samples,
-    query_for_source_plate_uuids,
-    row_is_normal_sample,
-    row_to_dict,
-    rows_with_controls,
-    rows_without_controls,
-    source_plate_field_generators,
-)
+    create_cherrypicked_post_body, create_post_body,
+    destination_plate_field_generators, equal_row_and_sample,
+    find_sample_matching_row, find_samples, find_source_plates, format_plate,
+    get_centre_prefix, get_source_plates_for_samples,
+    get_unique_plate_barcodes, join_rows_with_samples, map_to_ss_columns,
+    plate_exists_in_ss, query_for_cherrypicked_samples,
+    query_for_source_plate_uuids, row_is_normal_sample, row_to_dict,
+    rows_with_controls, rows_without_controls, source_plate_field_generators)
 
 # ---------- test helpers ----------
 
@@ -94,6 +71,10 @@ def any_failure_type(app):
 
 # ---------- tests ----------
 
+# TODO (DPL-572)
+# test: get_from_ss_plates_samples_info
+# test: covert_json_response_into_dict
+# test: get_control_locations
 
 def test_classify_samples_by_centre(app, samples, mocked_responses):
     samples, _ = samples

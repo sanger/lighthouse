@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
+from typing import (Any, Callable, Dict, Iterable, List, Optional, Tuple,
+                    Union, cast)
 from uuid import uuid4
 
 import requests
@@ -7,55 +8,34 @@ from eve import Eve
 from flask import current_app as app
 
 from lighthouse.classes.beckman import Beckman
-from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
+from lighthouse.constants.events import (PE_BECKMAN_DESTINATION_CREATED,
+                                         PE_BECKMAN_DESTINATION_FAILED)
 from lighthouse.constants.fields import (
-    FIELD_BARCODE,
-    FIELD_COG_BARCODE,
-    FIELD_COORDINATE,
-    FIELD_DART_CONTROL,
-    FIELD_DART_DESTINATION_BARCODE,
-    FIELD_DART_DESTINATION_COORDINATE,
-    FIELD_DART_LAB_ID,
-    FIELD_DART_LH_SAMPLE_UUID,
-    FIELD_DART_RNA_ID,
-    FIELD_DART_ROOT_SAMPLE_ID,
-    FIELD_DART_SOURCE_BARCODE,
-    FIELD_DART_SOURCE_COORDINATE,
-    FIELD_LAB_ID,
-    FIELD_LH_SAMPLE_UUID,
-    FIELD_LH_SOURCE_PLATE_UUID,
-    FIELD_PLATE_BARCODE,
-    FIELD_PLATE_LOOKUP_LAB_ID,
-    FIELD_PLATE_LOOKUP_RNA_ID,
-    FIELD_PLATE_LOOKUP_SAMPLE_ID,
+    FIELD_BARCODE, FIELD_COG_BARCODE, FIELD_COORDINATE, FIELD_DART_CONTROL,
+    FIELD_DART_DESTINATION_BARCODE, FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_LAB_ID, FIELD_DART_LH_SAMPLE_UUID, FIELD_DART_RNA_ID,
+    FIELD_DART_ROOT_SAMPLE_ID, FIELD_DART_SOURCE_BARCODE,
+    FIELD_DART_SOURCE_COORDINATE, FIELD_LAB_ID, FIELD_LH_SAMPLE_UUID,
+    FIELD_LH_SOURCE_PLATE_UUID, FIELD_PLATE_BARCODE, FIELD_PLATE_LOOKUP_LAB_ID,
+    FIELD_PLATE_LOOKUP_RNA_ID, FIELD_PLATE_LOOKUP_SAMPLE_ID,
     FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED,
-    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED,
-    FIELD_RESULT,
-    FIELD_RNA_ID,
-    FIELD_ROOT_SAMPLE_ID,
-    FIELD_SOURCE,
-    FIELD_SS_BARCODE,
-    FIELD_SS_CONTROL,
-    FIELD_SS_CONTROL_TYPE,
-    FIELD_SS_COORDINATE,
-    FIELD_SS_LAB_ID,
-    FIELD_SS_NAME,
-    FIELD_SS_PHENOTYPE,
-    FIELD_SS_SAMPLE_DESCRIPTION,
-    FIELD_SS_SUPPLIER_NAME,
-    FIELD_SS_UUID,
-)
-from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE, BIOSCAN_PLATE_PURPOSE
-from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED, FIELD_RESULT, FIELD_RNA_ID,
+    FIELD_ROOT_SAMPLE_ID, FIELD_SOURCE, FIELD_SS_BARCODE, FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE, FIELD_SS_COORDINATE, FIELD_SS_LAB_ID, FIELD_SS_NAME,
+    FIELD_SS_PHENOTYPE, FIELD_SS_SAMPLE_DESCRIPTION, FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_UUID)
+from lighthouse.constants.general import (ARG_TYPE_DESTINATION,
+                                          ARG_TYPE_SOURCE,
+                                          BIOSCAN_PLATE_PURPOSE)
+from lighthouse.exceptions import (DataError, MissingCentreError,
+                                   MissingSourceError, MultipleCentresError)
 from lighthouse.helpers.dart import find_dart_source_samples_rows
 from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
-    construct_mongo_sample_message_subject,
-    construct_robot_message_subject,
-    construct_source_plate_message_subject,
-    get_message_timestamp,
-)
-from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
+    construct_mongo_sample_message_subject, construct_robot_message_subject,
+    construct_source_plate_message_subject, get_message_timestamp)
+from lighthouse.helpers.general import (get_fit_to_pick_samples_and_counts,
+                                        has_plate_map_data)
 from lighthouse.helpers.reports import unpad_coordinate
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
@@ -263,12 +243,7 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
         raise requests.ConnectionError("Unable to access Sequencescape")
 
 
-# Create class within this file, if poss to wrap these helper methods
-# where included is an attribute on init
-# create instance of class
-# call main method to output bioscan expected data
-# private method to generate data
-# TODO refactor to another file?
+# TODO (DPL-572) move this class to another file?
 class ControlLocations:
     def __init__(self, included: list) -> None:
         self.included = included
@@ -323,7 +298,7 @@ def covert_json_response_into_dict(barcode: str, json) -> dict:
         purposes = [elem for elem in included if elem["type"] == "purposes"]
 
         # Validate only one plate pupose exists
-        # TODO: is this needed? could there ever be more than one purpose
+        # TODO (DPL-572): check if is this needed? Could there ever be more than one purpose?
         if len(purposes) != 1:
             return {"data": None, "error": f"There should only be one purpose for barcode '{barcode}'"}
 
@@ -381,17 +356,10 @@ def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
 
 def send_event_to_warehouse(locations, barcode, user, robot):
     print("send_event_to_warehouse")
-    # TODO:
-    # generate event message
+    # TODO (DPL-572): Generate event message
     # - build events message body
     # - create event in WH with locations, barcode, user and robot
-
-    # each data is subject
-    # beckman/biosero conf event type
-    # event
-
-    # lighthouse/classes/messages/warehouse_messages.py ?
-
+    # - reuse lighthouse/classes/messages/warehouse_messages.py ?
 
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
