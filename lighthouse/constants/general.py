@@ -30,6 +30,5 @@ FACET_COUNT_MUST_SEQUENCE = "count_must_sequence"
 FACET_COUNT_PREFERENTIALLY_SEQUENCE = "count_preferentially_sequence"
 FACET_DISTINCT_PLATE_BARCODE = "distinct_plate_barcode"
 
-# Expect plate purpose for Bioscan
-# TODO: replace with correct purpose
+# Expected plate purpose for Beckman /pickings
 BIOSCAN_PLATE_PURPOSE = "LBSN-96 Lysate"

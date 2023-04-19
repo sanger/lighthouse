@@ -1,17 +1,18 @@
 import logging
 from http import HTTPStatus
+
 from flask import request
 
 from lighthouse.constants.error_messages import ERROR_UNEXPECTED_PLATES_CREATE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.constants.general import (
+    ARG_BARCODE,
     ARG_EXCLUDE,
+    ARG_ROBOT_SERIAL,
     ARG_TYPE,
     ARG_TYPE_DESTINATION,
     ARG_TYPE_SOURCE,
-    ARG_BARCODE,
     ARG_USER,
-    ARG_ROBOT_SERIAL,
 )
 from lighthouse.helpers.cherrytrack import (
     get_samples_from_source_plate_barcode_from_cherrytrack,
@@ -20,12 +21,12 @@ from lighthouse.helpers.cherrytrack import (
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.plates import (
     centre_prefixes_for_samples,
+    covert_json_response_into_dict,
     create_post_body,
     format_plate,
-    send_to_ss_heron_plates,
     get_from_ss_plates_samples_info,
-    covert_json_response_into_dict,
-    # send_event_to_warehouse,
+    send_event_to_warehouse,
+    send_to_ss_heron_plates,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
 from lighthouse.types import FlaskResponse
@@ -36,29 +37,19 @@ logger = logging.getLogger(__name__)
 
 def get_control_locations() -> FlaskResponse:
     """
-    - get POST request body
-    - validate presence of user, robot, barcode
-    - send GET to ss, to return all samples for the barcode (SS api class)
-    - if barcode doesnt exist, fail
-    - check plate purpose, fail if incorrect
-    - loop through samples, getting type=control
-    - get the +ve and -ve control locations
-    - fail if missing control locations
-    - build return body, and return 200
-    - build events message body
-    - create event in WH with locations, barcode, user and robot
+    Get the POST body and validate the presence of fields
+    Then call Sequencescape, to get sample information for the plate
+    Get the control locations for the plate, from sample infomation
+    Send message to Events WH
+    Return response to Beckman robot
 
     Returns:
         FlaskResponse: json body containing the plate barcode, and +ve/-ve control locations
     """
 
-    # Covnert SS response JSON into dict
-    # Convert in to obj to match json structrue
-    # add instance methods to obj
-
     logger.info(f"Attemping to fetching control locations for barcode")
 
-    # - validate presence of user, robot, barcode
+    # Validate presence of user, robot, barcode
     barcode = None
     user = None
     robot = None
@@ -68,31 +59,25 @@ def get_control_locations() -> FlaskResponse:
         user = request_json.get(ARG_USER)
         robot = request_json.get(ARG_ROBOT_SERIAL)
 
+    # Return 400 if POST body fails validation
     if barcode is None or user is None or robot is None:
         return bad_request(f"POST request needs '{ARG_BARCODE}', '{ARG_USER}' and '{ARG_ROBOT_SERIAL}' in body")
 
-    # - send GET to ss, to return all samples for the barcode (SS api class)
-    response = get_from_ss_plates_samples_info(barcode)
+    # Send GET to Sequencescape, to return all samples for the barcode
+    # TODO: possibly move to SS api class
+    ss_response = get_from_ss_plates_samples_info(barcode)
 
-    # dont need to pass in barcode
-    response_dict = covert_json_response_into_dict(barcode, response.json())
+    # TODO: Maybe don't need to pass in barcode?
+    # TODO: change method name
+    response_dict = covert_json_response_into_dict(barcode, ss_response.json())
 
-    # check obj value and return HTTP response
+    # Check if any errors exist
     if response_dict["error"] is not None:
         return bad_request(response_dict["error"])
 
-    # TODO:
-    # generate event message
-    # - build events message body
-    # - create event in WH with locations, barcode, user and robot
-
-    # {
-    #     "barcode": barcode,
-    #     "positive_control": positive_control_position[0],
-    #     "negative_control": negative_control_position[0],
-    # }
-
-    # event_response = send_event_to_warehouse(response_dict['barcode'], response_dict['positive_control'], response_dict['negative_control'], user, robot)
+    # TODO
+    # Send message to Event WH
+    send_event_to_warehouse(response_dict, barcode, user, robot)
 
     return response_dict["data"], HTTPStatus.OK
 

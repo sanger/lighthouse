@@ -44,11 +44,6 @@ def delete_reports_endpoint() -> FlaskResponse:
     return delete_reports()
 
 
-# Put in this file as this is used as the root routes,
-# so there is no prefix
-# which is what was agreed with Beckman
-# Otherwise, could move to v1_beckman_routes
-# which has /v1 url_prefix
 @bp.post("/pickings")
 def get_control_locations_endpoint() -> FlaskResponse:
     return get_control_locations()
