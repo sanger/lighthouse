@@ -1,6 +1,5 @@
 import logging
-from typing import (Any, Callable, Dict, Iterable, List, Optional, Tuple,
-                    Union, cast)
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
 import requests
@@ -8,34 +7,55 @@ from eve import Eve
 from flask import current_app as app
 
 from lighthouse.classes.beckman import Beckman
-from lighthouse.constants.events import (PE_BECKMAN_DESTINATION_CREATED,
-                                         PE_BECKMAN_DESTINATION_FAILED)
+from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
-    FIELD_BARCODE, FIELD_COG_BARCODE, FIELD_COORDINATE, FIELD_DART_CONTROL,
-    FIELD_DART_DESTINATION_BARCODE, FIELD_DART_DESTINATION_COORDINATE,
-    FIELD_DART_LAB_ID, FIELD_DART_LH_SAMPLE_UUID, FIELD_DART_RNA_ID,
-    FIELD_DART_ROOT_SAMPLE_ID, FIELD_DART_SOURCE_BARCODE,
-    FIELD_DART_SOURCE_COORDINATE, FIELD_LAB_ID, FIELD_LH_SAMPLE_UUID,
-    FIELD_LH_SOURCE_PLATE_UUID, FIELD_PLATE_BARCODE, FIELD_PLATE_LOOKUP_LAB_ID,
-    FIELD_PLATE_LOOKUP_RNA_ID, FIELD_PLATE_LOOKUP_SAMPLE_ID,
+    FIELD_BARCODE,
+    FIELD_COG_BARCODE,
+    FIELD_COORDINATE,
+    FIELD_DART_CONTROL,
+    FIELD_DART_DESTINATION_BARCODE,
+    FIELD_DART_DESTINATION_COORDINATE,
+    FIELD_DART_LAB_ID,
+    FIELD_DART_LH_SAMPLE_UUID,
+    FIELD_DART_RNA_ID,
+    FIELD_DART_ROOT_SAMPLE_ID,
+    FIELD_DART_SOURCE_BARCODE,
+    FIELD_DART_SOURCE_COORDINATE,
+    FIELD_LAB_ID,
+    FIELD_LH_SAMPLE_UUID,
+    FIELD_LH_SOURCE_PLATE_UUID,
+    FIELD_PLATE_BARCODE,
+    FIELD_PLATE_LOOKUP_LAB_ID,
+    FIELD_PLATE_LOOKUP_RNA_ID,
+    FIELD_PLATE_LOOKUP_SAMPLE_ID,
     FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_PADDED,
-    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED, FIELD_RESULT, FIELD_RNA_ID,
-    FIELD_ROOT_SAMPLE_ID, FIELD_SOURCE, FIELD_SS_BARCODE, FIELD_SS_CONTROL,
-    FIELD_SS_CONTROL_TYPE, FIELD_SS_COORDINATE, FIELD_SS_LAB_ID, FIELD_SS_NAME,
-    FIELD_SS_PHENOTYPE, FIELD_SS_SAMPLE_DESCRIPTION, FIELD_SS_SUPPLIER_NAME,
-    FIELD_SS_UUID)
-from lighthouse.constants.general import (ARG_TYPE_DESTINATION,
-                                          ARG_TYPE_SOURCE,
-                                          BIOSCAN_PLATE_PURPOSE)
-from lighthouse.exceptions import (DataError, MissingCentreError,
-                                   MissingSourceError, MultipleCentresError)
+    FIELD_PLATE_LOOKUP_SOURCE_COORDINATE_UNPADDED,
+    FIELD_RESULT,
+    FIELD_RNA_ID,
+    FIELD_ROOT_SAMPLE_ID,
+    FIELD_SOURCE,
+    FIELD_SS_BARCODE,
+    FIELD_SS_CONTROL,
+    FIELD_SS_CONTROL_TYPE,
+    FIELD_SS_COORDINATE,
+    FIELD_SS_LAB_ID,
+    FIELD_SS_NAME,
+    FIELD_SS_PHENOTYPE,
+    FIELD_SS_SAMPLE_DESCRIPTION,
+    FIELD_SS_SUPPLIER_NAME,
+    FIELD_SS_UUID,
+)
+from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE, BIOSCAN_PLATE_PURPOSE
+from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
 from lighthouse.helpers.dart import find_dart_source_samples_rows
 from lighthouse.helpers.events import (
     construct_destination_plate_message_subject,
-    construct_mongo_sample_message_subject, construct_robot_message_subject,
-    construct_source_plate_message_subject, get_message_timestamp)
-from lighthouse.helpers.general import (get_fit_to_pick_samples_and_counts,
-                                        has_plate_map_data)
+    construct_mongo_sample_message_subject,
+    construct_robot_message_subject,
+    construct_source_plate_message_subject,
+    get_message_timestamp,
+)
+from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, has_plate_map_data
 from lighthouse.helpers.reports import unpad_coordinate
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
@@ -360,6 +380,7 @@ def send_event_to_warehouse(locations, barcode, user, robot):
     # - build events message body
     # - create event in WH with locations, barcode, user and robot
     # - reuse lighthouse/classes/messages/warehouse_messages.py ?
+
 
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []

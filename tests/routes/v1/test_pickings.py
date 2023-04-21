@@ -10,6 +10,7 @@ GET_PICKINGS_ENDPOINT = "/pickings"
 
 GET_PICKINGS_ENDPOINTS = [prefix + GET_PICKINGS_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 
+
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
 def test_get_pickings_endpoint_success(app, client, mocked_responses, endpoint):
     barcode = "ABCD-1234"
