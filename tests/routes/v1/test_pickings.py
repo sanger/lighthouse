@@ -18,7 +18,6 @@ def test_get_pickings_endpoint_success(app, client, mocked_responses, endpoint, 
         f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}&include=purpose,receptacles.aliquots.sample"
     )
 
-    # TODO (DPL-572) refactor: create this body object elsewhere
     body = pickings_plate
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
