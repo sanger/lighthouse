@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from unittest.mock import patch
+# from unittest.mock import patch
 
 import pytest
 import responses
