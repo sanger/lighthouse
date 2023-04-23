@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import responses
+import json
 
 from lighthouse import create_app
 from lighthouse.constants.events import PE_BECKMAN_SOURCE_ALL_NEGATIVES, PE_BECKMAN_SOURCE_COMPLETED
@@ -662,3 +663,10 @@ def mlwh_samples_in_cherrytrack(app, source_barcode, mlwh_sql_engine):
         yield
     finally:
         delete_data()
+
+
+@pytest.fixture
+def pickings_plate():
+    filename = "tests/data/pickings/plate.json"
+    with open(filename) as fp:
+        yield json.loads(fp.read())
