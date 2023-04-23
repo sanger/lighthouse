@@ -1,4 +1,3 @@
-import urllib.parse
 from http import HTTPStatus
 from unittest.mock import patch
 

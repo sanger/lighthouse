@@ -47,7 +47,7 @@ def get_control_locations() -> FlaskResponse:
         FlaskResponse: json body containing the plate barcode, and +ve/-ve control locations
     """
 
-    logger.info(f"Attemping to fetching control locations for barcode")
+    logger.info("Attemping to fetching control locations for barcode")
 
     # Validate presence of user, robot, barcode
     barcode = None
