@@ -139,8 +139,8 @@ def test_create_post_body(app, samples, given_plate_type, configured_plate_type)
                 "type": "plates",
                 "attributes": {
                     "barcode": "12345",
-                    "purpose_uuid": current_app.config["SS_UUIDS"][configured_plate_type][SS_UUID_PLATE_PURPOSE],
-                    "study_uuid": current_app.config["SS_UUIDS"][configured_plate_type][SS_UUID_STUDY],
+                    "purpose_uuid": current_app.config["SS_PLATE_CONFIG"][configured_plate_type][SS_UUID_PLATE_PURPOSE],
+                    "study_uuid": current_app.config["SS_PLATE_CONFIG"][configured_plate_type][SS_UUID_STUDY],
                     "wells": {
                         "A01": {
                             "content": {
