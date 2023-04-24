@@ -93,9 +93,9 @@ SS_PLATE_CONFIG = {
         SS_UUID_STUDY: "heron_study",
         SS_FILTER_FIT_TO_PICK: True,
     },
-    "another_plate_type": {
-        SS_UUID_PLATE_PURPOSE: "another_purpose",
-        SS_UUID_STUDY: "another_study",
+    "unfiltered": {
+        SS_UUID_PLATE_PURPOSE: "unfiltered_purpose",
+        SS_UUID_STUDY: "unfiltered_study",
         SS_FILTER_FIT_TO_PICK: False,
     },
 }
