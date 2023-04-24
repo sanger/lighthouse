@@ -9,7 +9,7 @@ import pytest
 import responses
 from flask import current_app
 
-from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY, SS_UUID_TYPE_DEFAULT
+from lighthouse.constants.config import SS_PLATE_TYPE_DEFAULT, SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -119,7 +119,7 @@ def test_centre_prefix(app, centres, mocked_responses):
 
 @pytest.mark.parametrize(
     "given_plate_type,configured_plate_type",
-    [(None, SS_UUID_TYPE_DEFAULT), ("heron", "heron"), ("another_plate_type", "another_plate_type")],
+    [(None, SS_PLATE_TYPE_DEFAULT), ("heron", "heron"), ("another_plate_type", "another_plate_type")],
 )
 def test_create_post_body(app, samples, given_plate_type, configured_plate_type):
     with app.app_context():

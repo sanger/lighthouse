@@ -7,7 +7,7 @@ from eve import Eve
 from flask import current_app as app
 
 from lighthouse.classes.beckman import Beckman
-from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY, SS_UUID_TYPE_DEFAULT
+from lighthouse.constants.config import SS_PLATE_TYPE_DEFAULT, SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -201,7 +201,7 @@ def row_to_dict(row):
 
 def create_post_body(barcode: str, plate_type: Optional[str], samples: List[Dict[str, str]]) -> Dict[str, Any]:
     if plate_type is None:
-        plate_type = SS_UUID_TYPE_DEFAULT
+        plate_type = SS_PLATE_TYPE_DEFAULT
 
     logger.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}' with type '{plate_type}'")
 
