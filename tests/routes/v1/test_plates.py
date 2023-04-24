@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 import responses
 
+from lighthouse.constants.config import SS_UUID_TYPE_DEFAULT
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 
 ENDPOINT_PREFIXES = ["", "/v1"]
@@ -17,7 +18,7 @@ GET_PLATES_ENDPOINTS = [prefix + GET_PLATES_ENDPOINT for prefix in ENDPOINT_PREF
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_endpoint_successful_all_cog_barcodes_already_in_samples(
+def test_post_plates_endpoint_successful_with_no_plate_type_and_all_cog_barcodes_already_in_samples(
     app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
     ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
@@ -33,11 +34,36 @@ def test_post_plates_endpoint_successful_all_cog_barcodes_already_in_samples(
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+@pytest.mark.parametrize("plate_type", [SS_UUID_TYPE_DEFAULT, "another_plate_type"])
+def test_post_plates_endpoint_successful_with_configured_plate_type_and_all_cog_barcodes_already_in_samples(
+    app, client, samples, priority_samples, mocked_responses, mlwh_lh_samples, endpoint, plate_type
+):
+    ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
+
+    body = {"barcode": "plate_123", "type": plate_type}
+    mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.CREATED)
+
+    response = client.post(endpoint, json=body)
+    assert response.status_code == HTTPStatus.CREATED
+    assert response.json == {
+        "data": {"plate_barcode": "plate_123", "centre": "centre_1", "count_fit_to_pick_samples": 5}
+    }
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_no_barcode_in_request(app, client, samples, endpoint):
     response = client.post(endpoint, json={})
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {"errors": ["POST request needs 'barcode' in body"]}
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+def test_post_plates_endpoint_plate_type_not_configured(app, client, endpoint):
+    response = client.post(endpoint, json={"barcode": "plate_123", "type": "bogus"})
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": ["POST request 'type' must be from the list: heron, another_plate_type"]}
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)

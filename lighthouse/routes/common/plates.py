@@ -1,6 +1,7 @@
 import logging
 from http import HTTPStatus
 
+from flask import current_app as app
 from flask import request
 
 from lighthouse.constants.error_messages import ERROR_UNEXPECTED_PLATES_CREATE
@@ -37,9 +38,14 @@ def create_plate_from_barcode() -> FlaskResponse:
     barcode = None
     if (request_json := request.get_json()) is not None:
         barcode = request_json.get("barcode")
+        plate_type = request_json.get("type")
 
     if request_json is None or barcode is None:
         return bad_request("POST request needs 'barcode' in body")
+
+    accepted_plate_types = app.config["SS_UUIDS"]
+    if plate_type is not None and plate_type not in accepted_plate_types:
+        return bad_request(f"POST request 'type' must be from the list: {', '.join(accepted_plate_types)}")
 
     try:
         # get samples for barcode
@@ -48,7 +54,7 @@ def create_plate_from_barcode() -> FlaskResponse:
         if not fit_to_pick_samples:
             return bad_request(f"No fit to pick samples for this barcode: {barcode}")
 
-        body = create_post_body(barcode, fit_to_pick_samples)
+        body = create_post_body(barcode, plate_type, fit_to_pick_samples)
 
         response = send_to_ss_heron_plates(body)
 
