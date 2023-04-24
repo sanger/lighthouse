@@ -12,7 +12,7 @@ from lighthouse.constants.fields import (
     FIELD_LH_SOURCE_PLATE_UUID,
     FIELD_RESULT,
 )
-from lighthouse.types import SampleDoc, SourcePlateDoc
+from lighthouse.types import SampleDocs, SourcePlateDoc
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def get_source_plate_uuid(barcode: str) -> Optional[str]:
         return None
 
 
-def get_positive_samples_in_source_plate(source_plate_uuid: str) -> Optional[List[SampleDoc]]:
+def get_positive_samples_in_source_plate(source_plate_uuid: str) -> Optional[SampleDocs]:
     """Attempt to get a source plate's Result=Positive samples.
 
     Arguments:
@@ -58,6 +58,27 @@ def get_positive_samples_in_source_plate(source_plate_uuid: str) -> Optional[Lis
             FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid,
             FIELD_RESULT: {"$regex": "^positive", "$options": "i"},
         }
+
+        return list(samples_collection.find(query))
+    except Exception as e:
+        logger.error(f"An error occurred attempting to fetch samples on source plate '{source_plate_uuid}'")
+        logger.exception(e)
+
+        return None
+
+
+def get_all_samples_for_source_plate(source_plate_uuid: str) -> Optional[SampleDocs]:
+    """Attempt to get all samples for a source plate.
+
+    Arguments:
+        source_plate_uuid {str} -- The source plate UUID for which to get positive samples.
+
+    Returns:
+        {List[SampleDoc]} -- A list of all samples on the source plate; otherwise None if they cannot be determined.
+    """
+    try:
+        samples_collection: Collection = cast(Eve, app).data.driver.db.samples
+        query = {FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid}
 
         return list(samples_collection.find(query))
     except Exception as e:

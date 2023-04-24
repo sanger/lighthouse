@@ -12,7 +12,8 @@ from lighthouse.helpers.cherrytrack import (
     get_samples_from_source_plate_barcode_from_cherrytrack,
     get_wells_from_destination_barcode_from_cherrytrack,
 )
-from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts, get_samples_for_barcode
+from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
+from lighthouse.helpers.mongo import get_all_samples_for_source_plate, get_source_plate_uuid
 from lighthouse.helpers.plates import (
     centre_prefixes_for_samples,
     create_post_body,
@@ -94,7 +95,8 @@ def _create_fit_to_pick_plate_from_barcode(barcode: str, plate_config: dict) -> 
 def _create_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskResponse:
     try:
         # get samples for barcode
-        samples = get_samples_for_barcode(barcode)
+        plate_uuid = get_source_plate_uuid(barcode)
+        samples = get_all_samples_for_source_plate(plate_uuid)
 
         if not samples:
             return bad_request(f"No samples for this barcode: {barcode}")
