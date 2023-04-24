@@ -96,10 +96,12 @@ def _create_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskRespons
     try:
         # get samples for barcode
         plate_uuid = get_source_plate_uuid(barcode)
-        samples = get_all_samples_for_source_plate(plate_uuid)
+        if plate_uuid is None:
+            return bad_request(f"No plate exists for barcode: {barcode}")
 
+        samples = get_all_samples_for_source_plate(plate_uuid)
         if not samples:
-            return bad_request(f"No samples for this barcode: {barcode}")
+            return bad_request(f"No samples found on plate with barcode: {barcode}")
 
         body = create_post_body(barcode, plate_config, samples)
 
