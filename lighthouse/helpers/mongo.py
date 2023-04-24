@@ -49,7 +49,7 @@ def get_positive_samples_in_source_plate(source_plate_uuid: str) -> Optional[Sam
         source_plate_uuid {str} -- The source plate UUID for which to get positive samples.
 
     Returns:
-        {List[SampleDoc]} -- A list of all positive samples on the source plate; otherwise None if they cannot be
+        {SampleDocs} -- A list of all positive samples on the source plate; otherwise None if they cannot be
         determined.
     """
     try:
@@ -74,7 +74,7 @@ def get_all_samples_for_source_plate(source_plate_uuid: str) -> Optional[SampleD
         source_plate_uuid {str} -- The source plate UUID for which to get positive samples.
 
     Returns:
-        {List[SampleDoc]} -- A list of all samples on the source plate; otherwise None if they cannot be determined.
+        {SampleDocs} -- A list of all samples on the source plate; otherwise None if they cannot be determined.
     """
     try:
         samples_collection: Collection = cast(Eve, app).data.driver.db.samples
