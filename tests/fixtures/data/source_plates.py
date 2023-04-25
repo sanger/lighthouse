@@ -21,4 +21,9 @@ SOURCE_PLATES = [
         FIELD_BARCODE: "plate_abc",
         FIELD_LAB_ID: "lab_3",
     },
+    {
+        FIELD_LH_SOURCE_PLATE_UUID: "157545d8-83c6-4ff9-a6e6-ee77fc3b6bae",
+        FIELD_BARCODE: "plate_empty",
+        FIELD_LAB_ID: "lab_1",
+    },
 ]

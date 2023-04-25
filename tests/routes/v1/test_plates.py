@@ -16,6 +16,9 @@ CHERRYTRACK_PLATES_ENDPOINT = ["/plates/cherrytrack"]
 NEW_PLATE_ENDPOINTS = [prefix + NEW_PLATE_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 GET_PLATES_ENDPOINTS = [prefix + GET_PLATES_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 
+FILTERED_PLATE_TYPES = [None, SS_PLATE_TYPE_DEFAULT]
+UNFILTERED_PLATE_TYPES = ["unfiltered"]
+
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_successful_with_no_plate_type_and_all_cog_barcodes_already_in_samples(
@@ -68,7 +71,7 @@ def test_post_plates_endpoint_successful_with_unfiltered_plate_type_and_all_cog_
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_endpoint_no_barcode_in_request(app, client, samples, endpoint):
+def test_post_plates_endpoint_no_barcode_in_request(app, client, endpoint):
     response = client.post(endpoint, json={})
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -84,21 +87,63 @@ def test_post_plates_endpoint_plate_type_not_configured(app, client, endpoint):
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_endpoint_no_fit_to_pick_samples(app, client, endpoint):
-    response = client.post(endpoint, json={"barcode": "qwerty"})
+@pytest.mark.parametrize("plate_type", FILTERED_PLATE_TYPES)
+def test_post_plates_endpoint_filtered_plate_type_no_fit_to_pick_samples(
+    app, client, samples, source_plates, endpoint, plate_type
+):
+    json = {"barcode": "qwerty"}
+    if plate_type is not None:
+        json["type"] = plate_type
+
+    response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {"errors": ["No fit to pick samples for this barcode: qwerty"]}
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
-def test_post_plates_endpoint_ss_failure(app, client, samples, mocked_responses, endpoint):
+@pytest.mark.parametrize("plate_type", UNFILTERED_PLATE_TYPES)
+def test_post_plates_endpoint_unfiltered_plate_type_barcode_does_not_exist(
+    app, client, samples, source_plates, endpoint, plate_type
+):
+    json = {"barcode": "qwerty"}
+    if plate_type is not None:
+        json["type"] = plate_type
+
+    response = client.post(endpoint, json=json)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": ["No plate exists for barcode: qwerty"]}
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+@pytest.mark.parametrize("plate_type", UNFILTERED_PLATE_TYPES)
+def test_post_plates_endpoint_unfiltered_plate_type_no_samples(
+    app, client, samples, source_plates, endpoint, plate_type
+):
+    json = {"barcode": "plate_empty"}
+    if plate_type is not None:
+        json["type"] = plate_type
+
+    response = client.post(endpoint, json=json)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": ["No samples found on plate with barcode: plate_empty"]}
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+@pytest.mark.parametrize("plate_type", FILTERED_PLATE_TYPES + UNFILTERED_PLATE_TYPES)
+def test_post_plates_endpoint_ss_failure(app, client, samples, source_plates, mocked_responses, endpoint, plate_type):
     ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
     body = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
     mocked_responses.add(responses.POST, ss_url, json=body, status=HTTPStatus.UNPROCESSABLE_ENTITY)
 
-    response = client.post(endpoint, json={"barcode": "plate_123"})
+    json = {"barcode": "plate_123"}
+    if plate_type is not None:
+        json["type"] = plate_type
+
+    response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert response.json == {"errors": ["The barcode 'plate_123' is not a recognised format."]}
