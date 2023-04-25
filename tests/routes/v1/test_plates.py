@@ -1,5 +1,6 @@
 import urllib.parse
 from http import HTTPStatus
+from typing import List, Optional
 from unittest.mock import patch
 
 import pytest
@@ -16,8 +17,8 @@ CHERRYTRACK_PLATES_ENDPOINT = ["/plates/cherrytrack"]
 NEW_PLATE_ENDPOINTS = [prefix + NEW_PLATE_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 GET_PLATES_ENDPOINTS = [prefix + GET_PLATES_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 
-FILTERED_PLATE_TYPES = [None, SS_PLATE_TYPE_DEFAULT]
-UNFILTERED_PLATE_TYPES = ["unfiltered"]
+FILTERED_PLATE_TYPES: List[Optional[str]] = [None, SS_PLATE_TYPE_DEFAULT]
+UNFILTERED_PLATE_TYPES: List[Optional[str]] = ["unfiltered"]
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
