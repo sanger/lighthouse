@@ -53,6 +53,9 @@ def get_positive_samples_in_source_plate(source_plate_uuid: str) -> Optional[Sam
         determined.
     """
     try:
+        if source_plate_uuid is None:
+            raise ValueError("source_plate_uuid cannot be None.")
+
         samples_collection: Collection = cast(Eve, app).data.driver.db.samples
         query = {
             FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid,
@@ -77,6 +80,9 @@ def get_all_samples_for_source_plate(source_plate_uuid: str) -> Optional[SampleD
         {SampleDocs} -- A list of all samples on the source plate; otherwise None if they cannot be determined.
     """
     try:
+        if source_plate_uuid is None:
+            raise ValueError("source_plate_uuid cannot be None.")
+
         samples_collection: Collection = cast(Eve, app).data.driver.db.samples
         query = {FIELD_LH_SOURCE_PLATE_UUID: source_plate_uuid}
 
