@@ -49,8 +49,8 @@ def create_plate_from_barcode() -> FlaskResponse:
         plate_type = SS_PLATE_TYPE_DEFAULT
 
     plate_configs = app.config["SS_PLATE_CONFIG"]
-    if plate_type not in plate_configs:
-        return bad_request(f"POST request 'type' must be from the list: {', '.join(plate_configs)}")
+    if plate_type not in plate_configs.keys():
+        return bad_request(f"POST request 'type' must be from the list: {', '.join(plate_configs.keys())}")
 
     try:
         plate_config = plate_configs[plate_type]
