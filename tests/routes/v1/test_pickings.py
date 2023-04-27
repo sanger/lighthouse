@@ -28,9 +28,21 @@ def test_get_pickings_endpoint_success(app, client, mocked_responses, endpoint, 
     assert response.json == {"barcode": barcode, "positive_control": "A1", "negative_control": "B1"}
 
 
+@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
+@pytest.mark.parametrize("missing_post_data", ["user", "robot", "barcode"])
+def test_get_pickings_endpoint_missing_post_data(app, client, endpoint, missing_post_data):
+    barcode = "ABCD-1234"
+    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+    json.pop(missing_post_data)
+
+    response = client.post(endpoint, json=json)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": ["POST request needs 'barcode', 'user' and 'robot' in body"]}
+
+
 # TODO (DPL-572):
 # Test failures:
-# missing post data (either: user, robot or barcode)
 # stub SS response so that SS is unaccessible
 # stub SS response so that no data is returned
 # stub SS response so that purpose is incorrect
