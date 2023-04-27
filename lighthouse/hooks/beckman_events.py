@@ -66,7 +66,7 @@ def get_required_params(request: Request, required_params: Tuple[str, ...]) -> T
 
     def extract_and_test(param: str) -> Optional[str]:
         # extract the parameter from the request
-        param_from_req: str = request.args.get(param, type=str)
+        param_from_req = request.args.get(param, type=str)
 
         # check that the value is not None or an empty string
         if param_from_req is not None and param_from_req:
