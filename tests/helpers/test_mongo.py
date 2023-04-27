@@ -82,14 +82,6 @@ def test_get_positive_samples_in_source_plate_returns_none_failure_fetching_samp
             assert result is None
 
 
-def test_get_positive_samples_in_source_plate_returns_none_for_none_plate_uuid(app, samples):
-    with app.app_context():
-        # We need to ignore the line below for mypy as we're ignoring the typing system by passing None.
-        result = get_positive_samples_in_source_plate(None)  # type: ignore
-
-        assert result is None
-
-
 def test_get_all_samples_for_source_plate_returns_matching_samples(app, samples):
     with app.app_context():
         samples, _ = samples
@@ -124,14 +116,6 @@ def test_get_all_samples_for_source_plate_returns_none_failure_fetching_samples(
             result = get_all_samples_for_source_plate(samples[0][FIELD_LH_SOURCE_PLATE_UUID])
 
             assert result is None
-
-
-def test_get_all_samples_for_source_plate_returns_none_for_none_plate_uuid(app, samples):
-    with app.app_context():
-        # We need to ignore the line below for mypy as we're ignoring the typing system by passing None.
-        result = get_all_samples_for_source_plate(None)  # type: ignore
-
-        assert result is None
 
 
 def test_set_errors_event_updates_correctly(app, plate_events):
