@@ -87,8 +87,16 @@ ROBOT_FAILURE_TYPES = {key: ROBOT_FAILURE_TYPES[key] for key in ("robot_crashed"
 ###
 # SS plate creation config (UUID for the plate purpose and study of the plate created)
 ###
-SS_UUIDS = {
-    SS_UUID_TYPE_DEFAULT: {SS_UUID_PLATE_PURPOSE: "heron_purpose", SS_UUID_STUDY: "heron_study"},
-    "another_plate_type": {SS_UUID_PLATE_PURPOSE: "another_purpose", SS_UUID_STUDY: "another_study"},
+SS_PLATE_CONFIG = {
+    SS_PLATE_TYPE_DEFAULT: {
+        SS_UUID_PLATE_PURPOSE: "heron_purpose",
+        SS_UUID_STUDY: "heron_study",
+        SS_FILTER_FIT_TO_PICK: True,
+    },
+    "unfiltered": {
+        SS_UUID_PLATE_PURPOSE: "unfiltered_purpose",
+        SS_UUID_STUDY: "unfiltered_study",
+        SS_FILTER_FIT_TO_PICK: False,
+    },
 }
 SS_UUIDS_CHERRYPICKED = {SS_UUID_PLATE_PURPOSE: "cherrypicked_purpose", SS_UUID_STUDY: "cherrypicked_study"}

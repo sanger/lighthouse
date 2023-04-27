@@ -9,7 +9,7 @@ import pytest
 import responses
 from flask import current_app
 
-from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY, SS_UUID_TYPE_DEFAULT
+from lighthouse.constants.config import SS_FILTER_FIT_TO_PICK, SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -117,11 +117,7 @@ def test_centre_prefix(app, centres, mocked_responses):
         assert get_centre_prefix("CeNtRe_3") == "TC3"
 
 
-@pytest.mark.parametrize(
-    "given_plate_type,configured_plate_type",
-    [(None, SS_UUID_TYPE_DEFAULT), ("heron", "heron"), ("another_plate_type", "another_plate_type")],
-)
-def test_create_post_body(app, samples, given_plate_type, configured_plate_type):
+def test_create_post_body(app, samples):
     with app.app_context():
         samples, _ = samples
         barcode = "12345"
@@ -134,13 +130,19 @@ def test_create_post_body(app, samples, given_plate_type, configured_plate_type)
             )
         )
 
+        plate_config = {
+            SS_UUID_PLATE_PURPOSE: "plate_purpose_uuid",
+            SS_UUID_STUDY: "study_uuid",
+            SS_FILTER_FIT_TO_PICK: True,
+        }
+
         correct_body = {
             "data": {
                 "type": "plates",
                 "attributes": {
                     "barcode": "12345",
-                    "purpose_uuid": current_app.config["SS_UUIDS"][configured_plate_type][SS_UUID_PLATE_PURPOSE],
-                    "study_uuid": current_app.config["SS_UUIDS"][configured_plate_type][SS_UUID_STUDY],
+                    "purpose_uuid": plate_config[SS_UUID_PLATE_PURPOSE],
+                    "study_uuid": plate_config[SS_UUID_STUDY],
                     "wells": {
                         "A01": {
                             "content": {
@@ -171,7 +173,7 @@ def test_create_post_body(app, samples, given_plate_type, configured_plate_type)
             }
         }
 
-        assert create_post_body(barcode, given_plate_type, filtered_positive_samples) == correct_body
+        assert create_post_body(barcode, plate_config, filtered_positive_samples) == correct_body
 
 
 def test_create_post_body_raises_without_cog_uk_id(app, samples):
@@ -187,11 +189,17 @@ def test_create_post_body_raises_without_cog_uk_id(app, samples):
             )
         )
 
+        plate_config = {
+            SS_UUID_PLATE_PURPOSE: "plate_purpose_uuid",
+            SS_UUID_STUDY: "study_uuid",
+            SS_FILTER_FIT_TO_PICK: True,
+        }
+
         # Remove a COG UK ID
         del filtered_positive_samples[0][FIELD_COG_BARCODE]
 
         with pytest.raises(KeyError):
-            create_post_body(barcode, None, filtered_positive_samples)
+            create_post_body(barcode, plate_config, filtered_positive_samples)
 
 
 class DartRow:

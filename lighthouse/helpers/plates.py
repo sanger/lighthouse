@@ -7,7 +7,7 @@ from eve import Eve
 from flask import current_app as app
 
 from lighthouse.classes.beckman import Beckman
-from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY, SS_UUID_TYPE_DEFAULT
+from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -199,11 +199,8 @@ def row_to_dict(row):
     return obj
 
 
-def create_post_body(barcode: str, plate_type: Optional[str], samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    if plate_type is None:
-        plate_type = SS_UUID_TYPE_DEFAULT
-
-    logger.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}' with type '{plate_type}'")
+def create_post_body(barcode: str, plate_config: dict, samples: List[Dict[str, str]]) -> Dict[str, Any]:
+    logger.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}'")
 
     wells_content = {}
     phenotype = None
@@ -231,8 +228,8 @@ def create_post_body(barcode: str, plate_type: Optional[str], samples: List[Dict
 
     body = {
         "barcode": barcode,
-        "purpose_uuid": app.config["SS_UUIDS"][plate_type][SS_UUID_PLATE_PURPOSE],
-        "study_uuid": app.config["SS_UUIDS"][plate_type][SS_UUID_STUDY],
+        "purpose_uuid": plate_config[SS_UUID_PLATE_PURPOSE],
+        "study_uuid": plate_config[SS_UUID_STUDY],
         "wells": wells_content,
     }
 
