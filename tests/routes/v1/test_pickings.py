@@ -84,7 +84,7 @@ def test_get_pickings_endpoint_ss_incorrect_purpose(
     )
 
     body = pickings_incorrect_purpose
-    purpose_name = "INCORRECT_PURPOSE"
+    purpose_name = "INCORRECT PURPOSE"
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
@@ -92,7 +92,7 @@ def test_get_pickings_endpoint_ss_incorrect_purpose(
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"data": None, "error": f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'"}
+    assert response.json == {"errors": [f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'"]}
 
 
 # TODO (DPL-572):
