@@ -670,3 +670,10 @@ def pickings_plate():
     filename = "tests/data/pickings/plate.json"
     with open(filename) as fp:
         yield json.loads(fp.read())
+
+
+@pytest.fixture
+def pickings_incorrect_purpose():
+    filename = "tests/data/pickings/incorrect_purpose.json"
+    with open(filename) as fp:
+        yield json.loads(fp.read())

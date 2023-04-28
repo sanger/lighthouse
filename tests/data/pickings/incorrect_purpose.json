@@ -1,0 +1,42 @@
+{
+    "data": [
+      {
+        "id": "17",
+        "type": "plates",
+        "links": {
+          "self": "http://127.0.0.1:3000/api/v2/plates/17"
+        },
+        "attributes": {
+          "uuid": "89fc5d50-d9fd-11ed-9d29-acde48001122",
+          "name": "Plate SQPD-9014",
+          "labware_barcode": {
+            "ean13_barcode": null,
+            "machine_barcode": "SQPD-9014",
+            "human_barcode": "SQPD-9014"
+          },
+          "state": "pending",
+          "created_at": "2023-04-13T14:17:28+01:00",
+          "updated_at": "2023-04-13T14:17:28+01:00",
+          "number_of_rows": 8,
+          "number_of_columns": 12,
+          "size": 96
+        },
+        "relationships": {}
+      }
+    ],
+    "included": [
+      {
+        "id": "57",
+        "type": "purposes",
+        "links": {
+          "self": "http://127.0.0.1:3000/api/v2/purposes/57"
+        },
+        "attributes": {
+          "uuid": "a0bb754c-d487-11ed-9025-acde48001122",
+          "name": "INCORRECT PLATE",
+          "size": 96,
+          "lifespan": null
+        }
+      }
+    ]
+}

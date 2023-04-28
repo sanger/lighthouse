@@ -74,9 +74,29 @@ def test_get_pickings_endpoint_ss_no_data_in_response(app, client, endpoint, moc
     assert response.json == {"errors": [f"Expected 'data' in response: {response_body}"]}
 
 
+@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
+def test_get_pickings_endpoint_ss_incorrect_purpose(
+    app, client, endpoint, mocked_responses, pickings_incorrect_purpose
+):
+    barcode = "ABCD-1234"
+    ss_url = (
+        f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}&include=purpose,receptacles.aliquots.sample"
+    )
+
+    body = pickings_incorrect_purpose
+    purpose_name = "INCORRECT_PURPOSE"
+
+    mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
+
+    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+    response = client.post(endpoint, json=json)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"data": None, "error": f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'"}
+
+
 # TODO (DPL-572):
 # Test failures:
-# stub SS response so that purpose is incorrect
 # stub SS reponse so that data has no samples
 # stub SS reponse so that data has missing +ve control
 # stub SS reponse so that data has missing -ve control
