@@ -25,7 +25,6 @@ from lighthouse.helpers.plates import (
     create_post_body,
     format_plate,
     get_from_ss_plates_samples_info,
-    send_event_to_warehouse,
     send_to_ss_heron_plates,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
