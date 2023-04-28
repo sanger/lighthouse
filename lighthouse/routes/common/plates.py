@@ -65,7 +65,10 @@ def get_control_locations() -> FlaskResponse:
 
     # Send GET to Sequencescape, to return all samples for the barcode
     # TODO (DPL-572): This could be moved to another file, possibly an Sequencescape API wrapper file?
-    ss_response = get_from_ss_plates_samples_info(barcode)
+    try:
+        ss_response = get_from_ss_plates_samples_info(barcode)
+    except Exception as exc:
+        return internal_server_error(str(exc))
 
     # TODO (DPL-572): Maybe don't need to pass in barcode? Barcode is needed for error messages
     # but maybe that could be handled elsewhere
@@ -76,8 +79,8 @@ def get_control_locations() -> FlaskResponse:
     if response_dict["error"] is not None:
         return bad_request(response_dict["error"])
 
-    # TODO (DPL-572): Send message to Event WH
-    send_event_to_warehouse(response_dict, barcode, user, robot)
+    # TODO (DPL-572): Send message to Event WH, We are not sending in MVP.
+    # send_event_to_warehouse(response_dict, barcode, user, robot)
 
     return response_dict["data"], HTTPStatus.OK
 

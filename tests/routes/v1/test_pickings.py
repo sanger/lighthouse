@@ -30,7 +30,7 @@ def test_get_pickings_endpoint_success(app, client, mocked_responses, endpoint, 
 
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
 @pytest.mark.parametrize("missing_post_data", ["user", "robot", "barcode"])
-def test_get_pickings_endpoint_missing_post_data(app, client, endpoint, missing_post_data):
+def test_get_pickings_endpoint_missing_post_data(client, endpoint, missing_post_data):
     barcode = "ABCD-1234"
     json = {"user": "user1", "robot": "robot1", "barcode": barcode}
     json.pop(missing_post_data)
@@ -41,9 +41,21 @@ def test_get_pickings_endpoint_missing_post_data(app, client, endpoint, missing_
     assert response.json == {"errors": ["POST request needs 'barcode', 'user' and 'robot' in body"]}
 
 
+@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
+def test_get_pickings_endpoint_ss_unaccessible(app, client, endpoint, monkeypatch):
+    ss_url = "http://ss.invalid"  # Simulate Sequencescape down. See RFC 2606
+
+    barcode = "ABCD-1234"
+    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+
+    monkeypatch.setitem(app.config, "SS_URL", ss_url)
+
+    response = client.post(endpoint, json=json)
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.json == {"errors": ["Unable to access Sequencescape"]}
+
 # TODO (DPL-572):
 # Test failures:
-# stub SS response so that SS is unaccessible
 # stub SS response so that no data is returned
 # stub SS response so that purpose is incorrect
 # stub SS reponse so that data has no samples
