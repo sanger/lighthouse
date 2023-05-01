@@ -167,8 +167,3 @@ def test_get_pickings_endpoint_ss_extra_control(app, client, endpoint, mocked_re
     assert response.json == {
         "errors": [f"There should be only one positive and one negative control for barcode '{barcode}'"]
     }
-
-
-# TODO (DPL-572):
-# Test failures:
-# stub SS reponse so that data has more than one +ve or -ve control
