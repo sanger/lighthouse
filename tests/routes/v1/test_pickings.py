@@ -118,11 +118,11 @@ def test_get_pickings_endpoint_ss_incorrect_purpose(app, client, endpoint, mocke
 
 
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
-def test_get_pickings_endpoint_ss_no_samples(app, client, endpoint, mocked_responses):
+def test_get_pickings_endpoint_ss_missing_samples(app, client, endpoint, mocked_responses):
     barcode = "ABCD-1234"
     ss_url = ss_request_url(app, barcode)
 
-    body = ss_response_json("no_samples")
+    body = ss_response_json("missing_samples")
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
@@ -139,7 +139,7 @@ def test_get_pickings_endpoint_ss_missing_control(app, client, endpoint, mocked_
     barcode = "ABCD-1234"
     ss_url = ss_request_url(app, barcode)
 
-    body = ss_response_json("no_" + missing_control_type + "_control")
+    body = ss_response_json("missing_" + missing_control_type + "_control")
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
