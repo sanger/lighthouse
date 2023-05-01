@@ -167,3 +167,19 @@ def test_get_pickings_endpoint_ss_extra_control(app, client, endpoint, mocked_re
     assert response.json == {
         "errors": [f"There should be only one positive and one negative control for barcode '{barcode}'"]
     }
+
+
+@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
+def test_get_pickings_endpoint_no_plate(app, client, endpoint, mocked_responses):
+    barcode = "ABCD-1234"
+    ss_url = ss_request_url(app, barcode)
+
+    body = ss_response_json("no_plate")
+
+    mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
+
+    json = endpoint_request_json(barcode)
+    response = client.post(endpoint, json=json)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": [f"There is no plate data for barcode '{barcode}'"]}
