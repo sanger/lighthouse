@@ -134,7 +134,7 @@ def test_get_pickings_endpoint_ss_no_samples(app, client, endpoint, mocked_respo
 
 
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
-@pytest.mark.parametrize("missing_control_type", ["positive"])
+@pytest.mark.parametrize("missing_control_type", ["positive", "negative"])
 def test_get_pickings_endpoint_ss_missing_control(app, client, endpoint, mocked_responses, missing_control_type):
     barcode = "ABCD-1234"
     ss_url = ss_request_url(app, barcode)
@@ -152,5 +152,4 @@ def test_get_pickings_endpoint_ss_missing_control(app, client, endpoint, mocked_
 
 # TODO (DPL-572):
 # Test failures:
-# stub SS reponse so that data has missing -ve control
 # stub SS reponse so that data has more than one +ve or -ve control
