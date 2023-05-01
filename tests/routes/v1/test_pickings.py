@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 # from unittest.mock import patch
 
+import json
+import os
 import pytest
 import responses
 
@@ -11,8 +13,8 @@ GET_PICKINGS_ENDPOINT = "/pickings"
 GET_PICKINGS_ENDPOINTS = [prefix + GET_PICKINGS_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 
 
-def get_ssl_url(app, barcode):
-    """Returns SS URL for the specified barcode from app config."""
+def ss_request_url(app, barcode):
+    """Returns SS URL for the specified barcode using app config."""
     ss_url = (
         f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}"
         f"&include=purpose,receptacles.aliquots.sample"
@@ -20,22 +22,35 @@ def get_ssl_url(app, barcode):
     return ss_url
 
 
-def get_request_json(barcode):
+def endpoint_request_json(barcode):
     """Returns enpoint request json for the specified barcode."""
     json = {"user": "user1", "robot": "robot1", "barcode": barcode}
     return json
 
 
-@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
-def test_get_pickings_endpoint_success(app, client, mocked_responses, endpoint, pickings_plate):
-    barcode = "ABCD-1234"
-    ss_url = get_ssl_url(app, barcode)
+def ss_response_json(name):
+    """Returns SS response json for the specified name."""
+    root = "tests/data/pickings"
+    path = os.path.join(root, name + ".json")
+    with open(path) as fp:
+        return json.loads(fp.read())
 
-    body = pickings_plate
+
+@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
+def test_get_pickings_endpoint_success(
+    app,
+    client,
+    mocked_responses,
+    endpoint,
+):
+    barcode = "ABCD-1234"
+    ss_url = ss_request_url(app, barcode)
+
+    body = ss_response_json("plate")
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
-    json = get_request_json(barcode)
+    json = endpoint_request_json(barcode)
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.OK
@@ -46,7 +61,7 @@ def test_get_pickings_endpoint_success(app, client, mocked_responses, endpoint, 
 @pytest.mark.parametrize("missing_post_data", ["user", "robot", "barcode"])
 def test_get_pickings_endpoint_missing_post_data(client, endpoint, missing_post_data):
     barcode = "ABCD-1234"
-    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+    json = endpoint_request_json(barcode)
     json.pop(missing_post_data)
 
     response = client.post(endpoint, json=json)
@@ -62,7 +77,7 @@ def test_get_pickings_endpoint_ss_unaccessible(app, client, endpoint, monkeypatc
 
     monkeypatch.setitem(app.config, "SS_URL", ss_url)
 
-    json = get_request_json(barcode)
+    json = endpoint_request_json(barcode)
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -73,12 +88,12 @@ def test_get_pickings_endpoint_ss_unaccessible(app, client, endpoint, monkeypatc
 @pytest.mark.parametrize("response_body", ["", "<html>"])
 def test_get_pickings_endpoint_ss_no_data_in_response(app, client, endpoint, mocked_responses, response_body):
     barcode = "ABCD-1234"
-    ss_url = get_ssl_url(app, barcode)
+    ss_url = ss_request_url(app, barcode)
     body = response_body
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
-    json = get_request_json(barcode)
+    json = endpoint_request_json(barcode)
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -86,22 +101,20 @@ def test_get_pickings_endpoint_ss_no_data_in_response(app, client, endpoint, moc
 
 
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
-def test_get_pickings_endpoint_ss_incorrect_purpose(
-    app, client, endpoint, mocked_responses, pickings_incorrect_purpose
-):
+def test_get_pickings_endpoint_ss_incorrect_purpose(app, client, endpoint, mocked_responses):
     barcode = "ABCD-1234"
-    ss_url = get_ssl_url(app, barcode)
+    ss_url = ss_request_url(app, barcode)
 
-    body = pickings_incorrect_purpose
-    purpose_name = "INCORRECT PURPOSE"
+    body = ss_response_json("incorrect_purpose")
+    purpose = "INCORRECT PURPOSE"
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
-    json = get_request_json(barcode)
+    json = endpoint_request_json(barcode)
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"errors": [f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'"]}
+    assert response.json == {"errors": [f"Incorrect purpose '{purpose}' for barcode '{barcode}'"]}
 
 
 # TODO (DPL-572):
