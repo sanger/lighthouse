@@ -117,9 +117,24 @@ def test_get_pickings_endpoint_ss_incorrect_purpose(app, client, endpoint, mocke
     assert response.json == {"errors": [f"Incorrect purpose '{purpose}' for barcode '{barcode}'"]}
 
 
+@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
+def test_get_pickings_endpoint_ss_no_samples(app, client, endpoint, mocked_responses):
+    barcode = "ABCD-1234"
+    ss_url = ss_request_url(app, barcode)
+
+    body = ss_response_json("no_samples")
+
+    mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
+
+    json = endpoint_request_json(barcode)
+    response = client.post(endpoint, json=json)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": [f"There are no samples for barcode '{barcode}'"]}
+
+
 # TODO (DPL-572):
 # Test failures:
-# stub SS reponse so that data has no samples
 # stub SS reponse so that data has missing +ve control
 # stub SS reponse so that data has missing -ve control
 # stub SS reponse so that data has more than one +ve or -ve control
