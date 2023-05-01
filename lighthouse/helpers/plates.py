@@ -381,14 +381,6 @@ def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
         raise requests.ConnectionError("Unable to access Sequencescape")
 
 
-def send_event_to_warehouse(locations, barcode, user, robot):
-    print("send_event_to_warehouse")
-    # TODO (DPL-572): Generate event message
-    # - build events message body
-    # - create event in WH with locations, barcode, user and robot
-    # - reuse lighthouse/classes/messages/warehouse_messages.py ?
-
-
 def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     mapped_samples = []
 
