@@ -343,6 +343,13 @@ def covert_json_response_into_dict(barcode: str, json) -> dict:
     positive_control_position = [k for (k, v) in control_info.items() if v == "pcr positive"]
     negative_control_position = [k for (k, v) in control_info.items() if v == "pcr negative"]
 
+    # Validate only one positive and one negative controls exist
+    if len(positive_control_position) > 1 or len(negative_control_position) > 1:
+        return {
+            "data": None,
+            "error": f"There should be only one positive and one negative control for barcode '{barcode}'",
+        }
+
     # Validate both controls exist
     if len(positive_control_position) != 1 or len(negative_control_position) != 1:
         return {"data": None, "error": f"Missing positive or negative control for barcode '{barcode}'"}

@@ -150,6 +150,25 @@ def test_get_pickings_endpoint_ss_missing_control(app, client, endpoint, mocked_
     assert response.json == {"errors": [f"Missing positive or negative control for barcode '{barcode}'"]}
 
 
+@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
+@pytest.mark.parametrize("extra_control_type", ["positive"])
+def test_get_pickings_endpoint_ss_extra_control(app, client, endpoint, mocked_responses, extra_control_type):
+    barcode = "ABCD-1234"
+    ss_url = ss_request_url(app, barcode)
+
+    body = ss_response_json("extra_" + extra_control_type + "_control")
+
+    mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
+
+    json = endpoint_request_json(barcode)
+    response = client.post(endpoint, json=json)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {
+        "errors": [f"There should be only one positive and one negative control for barcode '{barcode}'"]
+    }
+
+
 # TODO (DPL-572):
 # Test failures:
 # stub SS reponse so that data has more than one +ve or -ve control
