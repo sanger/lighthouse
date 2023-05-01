@@ -11,18 +11,31 @@ GET_PICKINGS_ENDPOINT = "/pickings"
 GET_PICKINGS_ENDPOINTS = [prefix + GET_PICKINGS_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 
 
+def get_ssl_url(app, barcode):
+    """Returns SS URL for the specified barcode from app config."""
+    ss_url = (
+        f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}"
+        f"&include=purpose,receptacles.aliquots.sample"
+    )
+    return ss_url
+
+
+def get_request_json(barcode):
+    """Returns enpoint request json for the specified barcode."""
+    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+    return json
+
+
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
 def test_get_pickings_endpoint_success(app, client, mocked_responses, endpoint, pickings_plate):
     barcode = "ABCD-1234"
-    ss_url = (
-        f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}&include=purpose,receptacles.aliquots.sample"
-    )
+    ss_url = get_ssl_url(app, barcode)
 
     body = pickings_plate
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
-    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+    json = get_request_json(barcode)
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.OK
@@ -49,7 +62,7 @@ def test_get_pickings_endpoint_ss_unaccessible(app, client, endpoint, monkeypatc
 
     monkeypatch.setitem(app.config, "SS_URL", ss_url)
 
-    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+    json = get_request_json(barcode)
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -60,14 +73,12 @@ def test_get_pickings_endpoint_ss_unaccessible(app, client, endpoint, monkeypatc
 @pytest.mark.parametrize("response_body", ["", "<html>"])
 def test_get_pickings_endpoint_ss_no_data_in_response(app, client, endpoint, mocked_responses, response_body):
     barcode = "ABCD-1234"
-    ss_url = (
-        f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}&include=purpose,receptacles.aliquots.sample"
-    )
+    ss_url = get_ssl_url(app, barcode)
     body = response_body
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
-    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+    json = get_request_json(barcode)
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -79,16 +90,14 @@ def test_get_pickings_endpoint_ss_incorrect_purpose(
     app, client, endpoint, mocked_responses, pickings_incorrect_purpose
 ):
     barcode = "ABCD-1234"
-    ss_url = (
-        f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}&include=purpose,receptacles.aliquots.sample"
-    )
+    ss_url = get_ssl_url(app, barcode)
 
     body = pickings_incorrect_purpose
     purpose_name = "INCORRECT PURPOSE"
 
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
-    json = {"user": "user1", "robot": "robot1", "barcode": barcode}
+    json = get_request_json(barcode)
     response = client.post(endpoint, json=json)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
