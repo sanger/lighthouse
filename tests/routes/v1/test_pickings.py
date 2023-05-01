@@ -151,7 +151,7 @@ def test_get_pickings_endpoint_ss_missing_control(app, client, endpoint, mocked_
 
 
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
-@pytest.mark.parametrize("extra_control_type", ["positive"])
+@pytest.mark.parametrize("extra_control_type", ["positive", "negative"])
 def test_get_pickings_endpoint_ss_extra_control(app, client, endpoint, mocked_responses, extra_control_type):
     barcode = "ABCD-1234"
     ss_url = ss_request_url(app, barcode)
