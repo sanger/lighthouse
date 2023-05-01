@@ -6,6 +6,7 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+import requests
 import responses
 from flask import current_app
 
@@ -64,6 +65,7 @@ from lighthouse.helpers.plates import (
     rows_with_controls,
     rows_without_controls,
     source_plate_field_generators,
+    get_from_ss_plates_samples_info,
 )
 
 # ---------- test helpers ----------
@@ -95,9 +97,19 @@ def any_failure_type(app):
 # ---------- tests ----------
 
 # TODO (DPL-572)
-# test: get_from_ss_plates_samples_info
 # test: covert_json_response_into_dict
 # test: get_control_locations
+
+
+def test_get_from_ss_plates_samples_info(app, monkeypatch):
+    with app.app_context():
+        barcode = "ABCD-1234"
+        ss_url = "http://ss.invalid"  # SS down
+
+        monkeypatch.setitem(app.config, "SS_URL", ss_url)
+
+        with pytest.raises(requests.ConnectionError):
+            get_from_ss_plates_samples_info(barcode)
 
 
 def test_classify_samples_by_centre(app, samples, mocked_responses):
