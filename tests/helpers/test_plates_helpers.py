@@ -99,7 +99,6 @@ def any_failure_type(app):
 
 # TODO (DPL-572)
 # test: covert_json_response_into_dict
-# test: get_control_locations
 
 
 def test_get_from_ss_plates_samples_info_connection_error(app, monkeypatch):
