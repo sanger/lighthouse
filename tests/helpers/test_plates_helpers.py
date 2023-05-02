@@ -66,6 +66,7 @@ from lighthouse.helpers.plates import (
     rows_without_controls,
     source_plate_field_generators,
     get_from_ss_plates_samples_info,
+    ControlLocations,
 )
 
 # ---------- test helpers ----------
@@ -101,7 +102,7 @@ def any_failure_type(app):
 # test: get_control_locations
 
 
-def test_get_from_ss_plates_samples_info_error(app, monkeypatch):
+def test_get_from_ss_plates_samples_info_connection_error(app, monkeypatch):
     with app.app_context():
         barcode = "ABCD-1234"
         ss_url = "http://ss.invalid"  # SS down
@@ -112,7 +113,7 @@ def test_get_from_ss_plates_samples_info_error(app, monkeypatch):
             get_from_ss_plates_samples_info(barcode)
 
 
-def test_get_from_ss_plates_samples_info(app, mocked_responses):
+def test_get_from_ss_plates_samples_info_success(app, mocked_responses):
     with app.app_context():
         barcode = "SQPD-0000"
         ss_url = ss_url = (
@@ -125,6 +126,32 @@ def test_get_from_ss_plates_samples_info(app, mocked_responses):
 
         response = get_from_ss_plates_samples_info(barcode)
         assert response.json() == json
+
+
+def test_get_control_locations():
+    included = [
+        {"id": "57", "type": "purposes", "attributes": {"name": "LBSN-96 Lysate"}},
+        {
+            "id": "2692",
+            "type": "wells",
+            "attributes": {"position": {"name": "A1"}},
+            "relationships": {"aliquots": {"data": [{"type": "aliquots", "id": "123"}]}},
+        },
+        {
+            "id": "2693",
+            "type": "wells",
+            "attributes": {"position": {"name": "B1"}},
+            "relationships": {"aliquots": {"data": [{"type": "aliquots", "id": "124"}]}},
+        },
+        {"id": "123", "type": "aliquots", "relationships": {"sample": {"data": {"type": "samples", "id": "109"}}}},
+        {"id": "124", "type": "aliquots", "relationships": {"sample": {"data": {"type": "samples", "id": "110"}}}},
+        {"id": "109", "type": "samples", "attributes": {"control": True, "control_type": "pcr positive"}},
+        {"id": "110", "type": "samples", "attributes": {"control": True, "control_type": "pcr negative"}},
+    ]
+    control_locations = ControlLocations(included)
+    locations = control_locations.get_control_locations()
+
+    assert locations == {"A1": "pcr positive", "B1": "pcr negative"}
 
 
 def test_classify_samples_by_centre(app, samples, mocked_responses):

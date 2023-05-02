@@ -37,12 +37,7 @@ def ss_response_json(name):
 
 
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
-def test_get_pickings_endpoint_success(
-    app,
-    client,
-    mocked_responses,
-    endpoint,
-):
+def test_get_pickings_endpoint_success(app, client, mocked_responses, endpoint):
     barcode = "ABCD-1234"
     ss_url = ss_request_url(app, barcode)
 
