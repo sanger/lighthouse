@@ -101,7 +101,7 @@ def any_failure_type(app):
 # test: get_control_locations
 
 
-def test_get_from_ss_plates_samples_info(app, monkeypatch):
+def test_get_from_ss_plates_samples_info_error(app, monkeypatch):
     with app.app_context():
         barcode = "ABCD-1234"
         ss_url = "http://ss.invalid"  # SS down
