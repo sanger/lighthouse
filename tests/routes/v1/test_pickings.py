@@ -33,7 +33,7 @@ def ss_response_json(name):
     root = "tests/data/pickings"
     path = os.path.join(root, name + ".json")
     with open(path) as fp:
-        return json.loads(fp.read())
+        return json.load(fp)
 
 
 @pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
