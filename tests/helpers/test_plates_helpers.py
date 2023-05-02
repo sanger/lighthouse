@@ -112,6 +112,21 @@ def test_get_from_ss_plates_samples_info_error(app, monkeypatch):
             get_from_ss_plates_samples_info(barcode)
 
 
+def test_get_from_ss_plates_samples_info(app, mocked_responses):
+    with app.app_context():
+        barcode = "SQPD-0000"
+        ss_url = ss_url = (
+            f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}"
+            f"&include=purpose,receptacles.aliquots.sample"
+        )
+        json = {"data": ["plate data"], "included": ["plate includes"]}
+
+        mocked_responses.add(responses.GET, ss_url, json=json, status=HTTPStatus.OK)
+
+        response = get_from_ss_plates_samples_info(barcode)
+        assert response.json() == json
+
+
 def test_classify_samples_by_centre(app, samples, mocked_responses):
     samples, _ = samples
     assert list(classify_samples_by_centre(samples).keys()) == ["centre_1", "centre_2"]
