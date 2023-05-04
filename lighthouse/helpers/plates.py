@@ -330,7 +330,7 @@ class ControlLocations:
         return {k: v for (k, v) in control_types.items() if v is not None}
 
 
-def covert_json_response_into_dict(barcode: str, json) -> dict:
+def convert_json_response_into_dict(barcode: str, json) -> dict:
     # Validate plate data exists
     if len(json[JS_DATA]) == 0:
         return {JS_DATA: None, JS_ERROR: f"There is no plate data for barcode '{barcode}'"}

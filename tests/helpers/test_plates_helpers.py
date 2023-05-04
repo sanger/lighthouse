@@ -67,7 +67,7 @@ from lighthouse.helpers.plates import (
     source_plate_field_generators,
     get_from_ss_plates_samples_info,
     ControlLocations,
-    covert_json_response_into_dict,
+    convert_json_response_into_dict,
 )
 
 # ---------- test helpers ----------
@@ -155,9 +155,9 @@ def test_get_control_locations():
     assert locations == {"A1": "pcr positive", "B1": "pcr negative"}
 
 
-def test_covert_json_response_into_dict():
+def test_convert_json_response_into_dict():
     barcode = "ABCD-1234"
-    data = covert_json_response_into_dict(barcode, PLATE_JSON)
+    data = convert_json_response_into_dict(barcode, PLATE_JSON)
 
     assert data == {"data": {"barcode": barcode, "positive_control": "A1", "negative_control": "B1"}, "error": None}
 

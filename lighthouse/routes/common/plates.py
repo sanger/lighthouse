@@ -21,7 +21,7 @@ from lighthouse.helpers.cherrytrack import (
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.plates import (
     centre_prefixes_for_samples,
-    covert_json_response_into_dict,
+    convert_json_response_into_dict,
     create_post_body,
     format_plate,
     get_from_ss_plates_samples_info,
@@ -72,7 +72,7 @@ def get_control_locations() -> FlaskResponse:
     # TODO (DPL-572): Maybe don't need to pass in barcode? Barcode is needed for error messages
     # but maybe that could be handled elsewhere
     # TODO (DPL-572): Possibly change method name
-    response_dict = covert_json_response_into_dict(barcode, ss_response.json())
+    response_dict = convert_json_response_into_dict(barcode, ss_response.json())
 
     # Check if any errors exist
     if response_dict["error"] is not None:
