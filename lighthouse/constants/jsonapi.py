@@ -1,0 +1,27 @@
+"""Strings used for handling JSON documents."""
+
+# Document Structure
+JS_ATTRIBUTES = "attributes"
+JS_DATA = "data"
+JS_INCLUDED = "included"
+JS_TYPE = "type"
+JS_ID = "id"
+JS_ATTRIBUTES = "attributes"
+JS_RELATIONSHIPS = "relationships"
+
+# Types, fields, and values
+JS_SAMPLES = "samples"
+JS_CONTROL = "control"
+JS_CONTROL_TYPE = "control_type"
+JS_ALIQUOTS = "aliquots"
+JS_SAMPLE = "sample"
+JS_WELLS = "wells"
+JS_POSITION = "position"
+JS_NAME = "name"
+JS_ERROR = "error"
+JS_PURPOSES = "purposes"
+JS_PCR_POSITIVE = "pcr positive"
+JS_PCR_NEGATIVE = "pcr negative"
+JS_BARCODE = "barcode"
+JS_POSITIVE_CONTROL = "positive_control"
+JS_NEGATIVE_CONTROL = "negative_control"
