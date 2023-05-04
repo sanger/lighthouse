@@ -46,6 +46,29 @@ from lighthouse.constants.fields import (
     FIELD_SS_UUID,
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE, BIOSCAN_PLATE_PURPOSE
+from lighthouse.constants.jsonapi import (
+    JS_ATTRIBUTES,
+    JS_CONTROL,
+    JS_CONTROL_TYPE,
+    JS_DATA,
+    JS_ID,
+    JS_INCLUDED,
+    JS_RELATIONSHIPS,
+    JS_TYPE,
+    JS_SAMPLES,
+    JS_ALIQUOTS,
+    JS_SAMPLE,
+    JS_WELLS,
+    JS_POSITION,
+    JS_NAME,
+    JS_ERROR,
+    JS_PURPOSES,
+    JS_PCR_POSITIVE,
+    JS_PCR_NEGATIVE,
+    JS_BARCODE,
+    JS_POSITIVE_CONTROL,
+    JS_NEGATIVE_CONTROL,
+)
 from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
 from lighthouse.helpers.dart import find_dart_source_samples_rows
 from lighthouse.helpers.events import (
@@ -270,17 +293,17 @@ class ControlLocations:
 
     def _get_sample_control_type(self, sample_id: list) -> Optional[str]:
         # Get the first sample
-        sample = next(elem for elem in self.included if elem["type"] == "samples" and elem["id"] == sample_id)
+        sample = next(elem for elem in self.included if elem[JS_TYPE] == JS_SAMPLES and elem[JS_ID] == sample_id)
 
         # Return the control type of the sample, if sample is a control
-        return sample["attributes"]["control_type"] if sample["attributes"]["control"] is True else None
+        return sample[JS_ATTRIBUTES][JS_CONTROL_TYPE] if sample[JS_ATTRIBUTES][JS_CONTROL] is True else None
 
     def _get_control_types_for_aliquots(self, aliquot_ids: list) -> List[str]:
         # Get aliquots from included data
-        aliquots = [elem for elem in self.included if elem["type"] == "aliquots" and elem["id"] in aliquot_ids]
+        aliquots = [elem for elem in self.included if elem[JS_TYPE] == JS_ALIQUOTS and elem[JS_ID] in aliquot_ids]
 
         # Get the sample ids for the aliquot
-        sample_ids = [aliquot["relationships"]["sample"]["data"]["id"] for aliquot in aliquots]
+        sample_ids = [aliquot[JS_RELATIONSHIPS][JS_SAMPLE][JS_DATA][JS_ID] for aliquot in aliquots]
         control_types = [self._get_sample_control_type(id) for id in sample_ids]
 
         # Filter out any None control types
@@ -289,19 +312,19 @@ class ControlLocations:
     def get_control_locations(self) -> dict:
         def get_control_type_for_well(well):
             # Get the aliquots ids for the well
-            aliquot_ids = [aliquot["id"] for aliquot in well["relationships"]["aliquots"]["data"]]
+            aliquot_ids = [aliquot[JS_ID] for aliquot in well[JS_RELATIONSHIPS][JS_ALIQUOTS][JS_DATA]]
             control_types = self._get_control_types_for_aliquots(aliquot_ids)
 
             # We expect there to only be one control per well
             return control_types[0] if len(control_types) == 1 else None
 
         # Get wells from included data
-        wells = [elem for elem in self.included if elem["type"] == "wells"]
+        wells = [elem for elem in self.included if elem[JS_TYPE] == JS_WELLS]
 
         # For each well, get the control type for the well
         # Create dict with key: well position, and value: control type
         # control_types = { "A1": "pcr pos", "B1": None, .....}
-        control_types = {well["attributes"]["position"]["name"]: get_control_type_for_well(well) for well in wells}
+        control_types = {well[JS_ATTRIBUTES][JS_POSITION][JS_NAME]: get_control_type_for_well(well) for well in wells}
 
         # Filter out any wells which are not controls
         return {k: v for (k, v) in control_types.items() if v is not None}
@@ -309,28 +332,28 @@ class ControlLocations:
 
 def covert_json_response_into_dict(barcode: str, json) -> dict:
     # Validate plate data exists
-    if len(json["data"]) == 0:
-        return {"data": None, "error": f"There is no plate data for barcode '{barcode}'"}
+    if len(json[JS_DATA]) == 0:
+        return {JS_DATA: None, JS_ERROR: f"There is no plate data for barcode '{barcode}'"}
 
     # Validate plate purpose is as expected
     # plate_purpose = None
-    if (included := json["included"]) is not None:
-        purposes = [elem for elem in included if elem["type"] == "purposes"]
+    if (included := json[JS_INCLUDED]) is not None:
+        purposes = [elem for elem in included if elem[JS_TYPE] == JS_PURPOSES]
 
         # Validate only one plate pupose exists
         # TODO (DPL-572): check if is this needed? Could there ever be more than one purpose?
         if len(purposes) != 1:
-            return {"data": None, "error": f"There should only be one purpose for barcode '{barcode}'"}
+            return {JS_DATA: None, JS_ERROR: f"There should only be one purpose for barcode '{barcode}'"}
 
-        purpose_name = purposes[0]["attributes"]["name"]
+        purpose_name = purposes[0][JS_ATTRIBUTES][JS_NAME]
 
         if purpose_name != BIOSCAN_PLATE_PURPOSE:
-            return {"data": None, "error": f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'"}
+            return {JS_DATA: None, JS_ERROR: f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'"}
 
         # Validate samples exists for plate
-        samples = [elem for elem in included if elem["type"] == "samples"]
+        samples = [elem for elem in included if elem[JS_TYPE] == JS_SAMPLES]
         if len(samples) == 0:
-            return {"data": None, "error": f"There are no samples for barcode '{barcode}'"}
+            return {JS_DATA: None, JS_ERROR: f"There are no samples for barcode '{barcode}'"}
 
     # Instantiate wrapper class
     control_locations = ControlLocations(included)
@@ -340,29 +363,29 @@ def covert_json_response_into_dict(barcode: str, json) -> dict:
     # { well_position: control_type } e.g.  {'A1': 'pcr positive', 'B1': 'pcr negative'}
 
     # Get the well position, for the +ve and -ve control types
-    positive_control_position = [k for (k, v) in control_info.items() if v == "pcr positive"]
-    negative_control_position = [k for (k, v) in control_info.items() if v == "pcr negative"]
+    positive_control_position = [k for (k, v) in control_info.items() if v == JS_PCR_POSITIVE]
+    negative_control_position = [k for (k, v) in control_info.items() if v == JS_PCR_NEGATIVE]
 
     # Validate only one positive and one negative controls exist
     if len(positive_control_position) > 1 or len(negative_control_position) > 1:
         return {
-            "data": None,
-            "error": f"There should be only one positive and one negative control for barcode '{barcode}'",
+            JS_DATA: None,
+            JS_ERROR: f"There should be only one positive and one negative control for barcode '{barcode}'",
         }
 
     # Validate both controls exist
     if len(positive_control_position) != 1 or len(negative_control_position) != 1:
-        return {"data": None, "error": f"Missing positive or negative control for barcode '{barcode}'"}
+        return {JS_DATA: None, JS_ERROR: f"Missing positive or negative control for barcode '{barcode}'"}
 
     # Convert data into expected format for Beckman
     # This response was defined by the Beckman SAT
     locations = {
-        "barcode": barcode,
-        "positive_control": positive_control_position[0],
-        "negative_control": negative_control_position[0],
+        JS_BARCODE: barcode,
+        JS_POSITIVE_CONTROL: positive_control_position[0],
+        JS_NEGATIVE_CONTROL: negative_control_position[0],
     }
 
-    return {"data": locations, "error": None}
+    return {JS_DATA: locations, JS_ERROR: None}
 
 
 def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
@@ -374,7 +397,7 @@ def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
 
         logger.debug(f"Response status code: {response.status_code}")
 
-        assert "data" in response.json(), f"Expected 'data' in response: {response.json()}"
+        assert JS_DATA in response.json(), f"Expected '{JS_DATA}' in response: {response.json()}"
 
         return response
     except requests.ConnectionError:
