@@ -339,11 +339,6 @@ def covert_json_response_into_dict(barcode: str, json) -> dict:
     if (included := json[JS_INCLUDED]) is not None:
         purposes = [elem for elem in included if elem[JS_TYPE] == JS_PURPOSES]
 
-        # Validate only one plate pupose exists
-        # TODO (DPL-572): check if is this needed? Could there ever be more than one purpose?
-        if len(purposes) != 1:
-            return {JS_DATA: None, JS_ERROR: f"There should only be one purpose for barcode '{barcode}'"}
-
         purpose_name = purposes[0][JS_ATTRIBUTES][JS_NAME]
 
         if purpose_name != BIOSCAN_PLATE_PURPOSE:
