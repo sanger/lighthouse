@@ -34,8 +34,8 @@ def get_table(sql_engine: Engine, table_name: str) -> Table:
     Returns:
         Table: a SQLAlchemy Table object.
     """
-    metadata = MetaData(sql_engine)
+    metadata = MetaData()
 
-    metadata.reflect()
+    metadata.reflect(sql_engine)
 
     return metadata.tables[table_name]

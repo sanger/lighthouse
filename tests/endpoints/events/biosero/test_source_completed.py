@@ -63,7 +63,6 @@ def test_post_event_partially_completed(
                     "mytime",
                 ):
                     with patch("lighthouse.classes.services.labwhere.set_locations_in_labwhere") as mocked_labwhere:
-
                         response = client.post(
                             "/events",
                             data={

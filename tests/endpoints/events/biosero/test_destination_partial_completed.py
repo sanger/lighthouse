@@ -104,7 +104,6 @@ def test_post_event_destination_partially_completed(
                         "lighthouse.classes.messages.sequencescape_messages.SequencescapeMessage._send_to_ss",
                         return_value=mock_response_send_ss,
                     ) as send_to_ss:
-
                         response = client.post(
                             "/events",
                             data={
@@ -154,8 +153,8 @@ def test_post_event_destination_partially_completed(
 
                         ss_message = (
                             '{"data": {"type": "plates", "attributes": {"barcode": "HT-1234", '
-                            '"purpose_uuid": "ss_uuid_plate_purpose", '
-                            '"study_uuid": "ss_uuid_study", "wells": '
+                            '"purpose_uuid": "cherrypicked_purpose", '
+                            '"study_uuid": "cherrypicked_study", "wells": '
                             '{"H08": {"content": {"name": "plate_123_A01", "sample_description": "aRootSampleId1", '
                             '"supplier_name": "zyx", "phenotype": "positive", "uuid": "aLighthouseUUID1"}}, '
                             '"H12": {"content": {"name": "plate_123_A03", "sample_description": "aRootSampleId3", '

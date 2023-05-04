@@ -59,7 +59,6 @@ def test_unpad_coordinate_B01010():
 
 
 def test_delete_reports(app):
-
     copies_of_reports_folder = "tests/data/reports_copies"
 
     filenames = [
@@ -627,7 +626,6 @@ def test_add_cherrypicked_column_no_rows(app):
                 "lighthouse.helpers.reports.get_cherrypicked_samples",
                 return_value=mock_get_cherrypicked_samples,
             ):
-
                 new_dataframe = add_cherrypicked_column(existing_dataframe)
 
     assert new_dataframe.columns.to_list() == expected_columns
@@ -638,7 +636,6 @@ def test_add_cherrypicked_column_no_rows(app):
 
 
 def test_get_distinct_plate_barcodes(app, samples):
-
     with app.app_context():
         samples = app.data.driver.db.samples
 

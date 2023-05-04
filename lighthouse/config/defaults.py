@@ -4,6 +4,7 @@ import os
 from lighthouse.authorization import EventsAPITokenAuth, PriorityAPITokenAuth
 from lighthouse.config.logging import *
 from lighthouse.config.schemas import CHERRYPICK_TEST_DATA_SCHEMA, EVENTS_SCHEMA, PRIORITY_SAMPLES_SCHEMA
+from lighthouse.constants.config import *
 
 ###
 # General config
@@ -83,7 +84,7 @@ DOMAIN: dict = {
 # Improve pagination performance. When optimization is active no count operation, which can be slow on large
 #   collections, is performed on the database. This does have a few consequences. Firstly, no document count is returned.
 #   Secondly, HATEOAS is less accurate: no last page link is available, and next page link is always included, even on
-#   last page. On big collections, switching this feature on can greatly improve performance.#  no count operation, which
+#   last page. On big collections, switching this feature on can greatly improve performance: no count operation, which
 #   can be slow on large collections, is performed on the database.
 OPTIMIZE_PAGINATION_FOR_SPEED = False
 # Enable the Operations Log: https://docs.python-eve.org/en/stable/features.html#oplog
@@ -121,10 +122,8 @@ LABWHERE_DESTROYED_BARCODE = os.environ.get("LABWHERE_DESTROYED_BARCODE", "lw-he
 ###
 SS_API_KEY = "develop"
 SS_URL = f"http://{LOCALHOST}:3000"
-SS_UUID_PLATE_PURPOSE = ""
-SS_UUID_PLATE_PURPOSE_CHERRYPICKED = ""
-SS_UUID_STUDY = ""
-SS_UUID_STUDY_CHERRYPICKED = ""
+SS_PLATE_CONFIG = {SS_PLATE_TYPE_DEFAULT: {SS_UUID_PLATE_PURPOSE: "", SS_UUID_STUDY: "", SS_FILTER_FIT_TO_PICK: True}}
+SS_UUIDS_CHERRYPICKED = {SS_UUID_PLATE_PURPOSE: "", SS_UUID_STUDY: ""}
 SS_PLATE_CREATION_ENDPOINT = f"{ SS_URL }/api/v2/heron/plates"
 
 ###

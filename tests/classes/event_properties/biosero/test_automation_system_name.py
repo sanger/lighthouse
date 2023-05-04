@@ -20,7 +20,6 @@ def test_robot_serial_number_valid(app):
 @pytest.mark.parametrize("run_id", [5])
 def test_robot_serial_number_value_successful(app, run_id, mocked_responses, cherrytrack_mock_run_info):
     with app.app_context():
-
         expected_response = {
             "data": {
                 "id": run_id,

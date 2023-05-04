@@ -92,7 +92,6 @@ def test_delete_reports_endpoint(client, endpoint):
 @pytest.mark.parametrize("endpoint", DELETE_REPORTS_ENDPOINTS)
 def test_delete_reports_endpoint_fails(client, endpoint):
     with patch("lighthouse.routes.common.reports.delete_reports", return_value=None):
-
         response = client.post(endpoint, json="{}")
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
