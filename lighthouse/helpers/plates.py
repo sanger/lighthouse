@@ -336,7 +336,6 @@ def covert_json_response_into_dict(barcode: str, json) -> dict:
         return {JS_DATA: None, JS_ERROR: f"There is no plate data for barcode '{barcode}'"}
 
     # Validate plate purpose is as expected
-    # plate_purpose = None
     if (included := json[JS_INCLUDED]) is not None:
         purposes = [elem for elem in included if elem[JS_TYPE] == JS_PURPOSES]
 
