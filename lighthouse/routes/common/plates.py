@@ -39,7 +39,6 @@ def get_control_locations() -> FlaskResponse:
     Get the POST body and validate the presence of fields
     Then call Sequencescape, to get sample information for the plate
     Get the control locations for the plate, from sample infomation
-    Send message to Events WH
     Return response to Beckman robot
 
     Returns:
