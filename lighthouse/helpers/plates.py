@@ -86,13 +86,6 @@ from lighthouse.types import SampleDoc, SampleDocs
 logger = logging.getLogger(__name__)
 
 
-# TODO - Refactor:
-# * move db calls (MLWH and Mongo) to separate files
-# * consolidate small methods into larger ones if the small methods are not re-used elsewhere
-# * make private methods obviously so, and don't explicitly test them
-# On refactoring be careful to heed the WARNs in the code: not losing distributed functionality
-
-
 def classify_samples_by_centre(samples: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
     classified_samples = {}  # type: ignore
     for sample in samples:
