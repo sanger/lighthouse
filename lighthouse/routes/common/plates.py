@@ -62,7 +62,6 @@ def get_control_locations() -> FlaskResponse:
         return bad_request(f"POST request needs '{ARG_BARCODE}', '{ARG_USER}' and '{ARG_ROBOT_SERIAL}' in body")
 
     # Send GET to Sequencescape, to return all samples for the barcode
-    # TODO (DPL-572): This could be moved to another file, possibly an Sequencescape API wrapper file?
     try:
         ss_response = get_from_ss_plates_samples_info(barcode)
     except Exception as exc:
