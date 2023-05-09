@@ -286,7 +286,6 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
         raise requests.ConnectionError("Unable to access Sequencescape")
 
 
-# TODO (DPL-572) move this class to another file?
 class ControlLocations:
     def __init__(self, included: list) -> None:
         self.included = included
