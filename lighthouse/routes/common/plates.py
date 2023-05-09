@@ -68,7 +68,6 @@ def get_control_locations() -> FlaskResponse:
     except Exception as exc:
         return internal_server_error(str(exc))
 
-    # TODO (DPL-572): Maybe don't need to pass in barcode? Barcode is needed for error messages
     # but maybe that could be handled elsewhere
     # TODO (DPL-572): Possibly change method name
     response_dict = convert_json_response_into_dict(barcode, ss_response.json())
