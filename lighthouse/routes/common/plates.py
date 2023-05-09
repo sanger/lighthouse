@@ -68,7 +68,6 @@ def get_control_locations() -> FlaskResponse:
         return internal_server_error(str(exc))
 
     # but maybe that could be handled elsewhere
-    # TODO (DPL-572): Possibly change method name
     response_dict = convert_json_response_into_dict(barcode, ss_response.json())
 
     # Check if any errors exist
