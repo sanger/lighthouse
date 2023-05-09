@@ -11,31 +11,33 @@ mongodb by the [crawler](https://github.com/sanger/crawler).
 
 <!-- toc -->
 
-- [A note on Docker](#a-note-on-docker)
-- [Option A - using Docker](#option-a---using-docker)
-  - [Requirements for Development](#requirements-for-development)
-  - [Getting Started](#getting-started)
-    - [Configuring the Environment](#configuring-the-environment)
-    - [Setup Steps](#setup-steps)
-  - [Running](#running)
-  - [Testing](#testing)
-- [Option B - without Docker](#option-b---without-docker)
-  - [Requirements for Development](#requirements-for-development-1)
-  - [Getting Started](#getting-started-1)
-    - [Configuring the Environment](#configuring-the-environment-1)
-    - [Setup Steps](#setup-steps-1)
-  - [Running](#running-1)
-  - [Testing](#testing-1)
-    - [Testing Requirements](#testing-requirements)
-    - [Running Tests](#running-tests)
-- [Deployment](#deployment)
-- [Routes](#routes)
-- [Scheduled Jobs](#scheduled-jobs)
-- [Miscellaneous](#miscellaneous)
-  - [Type Checking](#type-checking)
-  - [Troubleshooting](#troubleshooting)
-    - [pyodbc Errors](#pyodbc-errors)
-  - [Updating the Table of Contents](#updating-the-table-of-contents)
+- [Lighthouse service](#lighthouse-service)
+  - [Table of Contents](#table-of-contents)
+  - [A note on Docker](#a-note-on-docker)
+  - [Option A - using Docker](#option-a---using-docker)
+    - [Requirements for Development](#requirements-for-development)
+    - [Getting Started](#getting-started)
+      - [Configuring the Environment](#configuring-the-environment)
+      - [Setup Steps](#setup-steps)
+    - [Running](#running)
+    - [Testing](#testing)
+  - [Option B - without Docker](#option-b---without-docker)
+    - [Requirements for Development](#requirements-for-development-1)
+    - [Getting Started](#getting-started-1)
+      - [Configuring the Environment](#configuring-the-environment-1)
+      - [Setup Steps](#setup-steps-1)
+    - [Running](#running-1)
+    - [Testing](#testing-1)
+      - [Testing Requirements](#testing-requirements)
+      - [Running Tests](#running-tests)
+  - [Deployment](#deployment)
+  - [Routes](#routes)
+  - [Scheduled Jobs](#scheduled-jobs)
+  - [Miscellaneous](#miscellaneous)
+    - [Type Checking](#type-checking)
+    - [Troubleshooting](#troubleshooting)
+      - [pyodbc Errors](#pyodbc-errors)
+    - [Updating the Table of Contents](#updating-the-table-of-contents)
 
 <!-- tocstop -->
 
@@ -106,13 +108,13 @@ Various environment variables are set in the docker-compose file.
        docker exec -ti lighthouse-lighthouse-1 bash
 
    Warning! The names that Docker generates for containers might not be consistent over time. If this doesn't work for you,
-   check the name of the container using `docker ps`.
+   check the name of the container using `docker ps`. The container name above is based on docker-compose version 2.
 
    After this command you will be inside a bash session inside the container of lighthouse, and will have mounted all
    source code of the project from your hosting machine. The container will map your port 8000 with the port 8000 of
    Docker (configured in docker-compose.yml).
 
-1. Now that you are inside the running container, initialize the MySQL and SQLServer development databases:
+2. Now that you are inside the running container, initialize the MySQL and SQLServer development databases:
 
        python ./setup_sqlserver_test_db.py
        python ./setup_test_db.py
