@@ -74,9 +74,6 @@ def get_control_locations() -> FlaskResponse:
     if response_dict["error"] is not None:
         return bad_request(response_dict["error"])
 
-    # TODO (DPL-572): Send message to Event WH, We are not sending in MVP.
-    # send_event_to_warehouse(response_dict, barcode, user, robot)
-
     return response_dict["data"], HTTPStatus.OK
 
 
