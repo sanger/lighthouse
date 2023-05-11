@@ -1,8 +1,10 @@
 import logging
 from http import HTTPStatus
 
+from flask import current_app as app
 from flask import request
 
+from lighthouse.constants.config import SS_FILTER_FIT_TO_PICK, SS_PLATE_TYPE_DEFAULT
 from lighthouse.constants.error_messages import ERROR_UNEXPECTED_PLATES_CREATE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.constants.general import (
@@ -19,6 +21,7 @@ from lighthouse.helpers.cherrytrack import (
     get_wells_from_destination_barcode_from_cherrytrack,
 )
 from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
+from lighthouse.helpers.mongo import get_all_samples_for_source_plate, get_source_plate_uuid
 from lighthouse.helpers.plates import (
     centre_prefixes_for_samples,
     convert_json_response_into_dict,
@@ -90,40 +93,80 @@ def create_plate_from_barcode() -> FlaskResponse:
     barcode = None
     if (request_json := request.get_json()) is not None:
         barcode = request_json.get("barcode")
+        plate_type = request_json.get("type")
 
     if request_json is None or barcode is None:
         return bad_request("POST request needs 'barcode' in body")
 
+    if plate_type is None:
+        plate_type = SS_PLATE_TYPE_DEFAULT
+
+    plate_configs = app.config["SS_PLATE_CONFIG"]
+    if plate_type not in plate_configs.keys():
+        return bad_request(f"POST request 'type' must be from the list: {', '.join(plate_configs.keys())}")
+
     try:
-        # get samples for barcode
-        (fit_to_pick_samples, count_fit_to_pick_samples, _, _, _) = get_fit_to_pick_samples_and_counts(barcode)
-
-        if not fit_to_pick_samples:
-            return bad_request(f"No fit to pick samples for this barcode: {barcode}")
-
-        body = create_post_body(barcode, fit_to_pick_samples)
-
-        response = send_to_ss_heron_plates(body)
-
-        if response.status_code == HTTPStatus.CREATED:
-            response_json = {
-                "data": {
-                    "plate_barcode": fit_to_pick_samples[0][FIELD_PLATE_BARCODE],
-                    "centre": centre_prefixes_for_samples(fit_to_pick_samples)[0],
-                    "count_fit_to_pick_samples": count_fit_to_pick_samples,
-                }
-            }
+        plate_config = plate_configs[plate_type]
+        if plate_config[SS_FILTER_FIT_TO_PICK]:
+            return _create_fit_to_pick_plate_from_barcode(barcode, plate_config)
         else:
-            response_json = response.json()
-
-        # return the JSON and status code directly from Sequencescape (act as a proxy)
-        return response_json, response.status_code
+            return _create_plate_from_barcode(barcode, plate_config)
     except Exception as e:
         msg = f"{ERROR_UNEXPECTED_PLATES_CREATE} ({type(e).__name__})"
         logger.error(msg)
         logger.exception(e)
 
         return internal_server_error(msg)
+
+
+def _create_fit_to_pick_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskResponse:
+    # get samples for barcode
+    (fit_to_pick_samples, count_fit_to_pick_samples, _, _, _) = get_fit_to_pick_samples_and_counts(barcode)
+
+    if not fit_to_pick_samples:
+        return bad_request(f"No fit to pick samples for this barcode: {barcode}")
+
+    body = create_post_body(barcode, plate_config, fit_to_pick_samples)
+
+    response = send_to_ss_heron_plates(body)
+
+    if response.status_code == HTTPStatus.CREATED:
+        return {
+            "data": {
+                "plate_barcode": fit_to_pick_samples[0][FIELD_PLATE_BARCODE],
+                "centre": centre_prefixes_for_samples(fit_to_pick_samples)[0],
+                "count_fit_to_pick_samples": count_fit_to_pick_samples,
+            }
+        }, response.status_code
+    else:
+        # return the JSON and status code directly from Sequencescape (act as a proxy)
+        return response.json(), response.status_code
+
+
+def _create_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskResponse:
+    plate_uuid = get_source_plate_uuid(barcode)
+    if plate_uuid is None:
+        return bad_request(f"No plate exists for barcode: {barcode}")
+
+    samples = get_all_samples_for_source_plate(plate_uuid)
+    if not samples:
+        return bad_request(f"No samples found on plate with barcode: {barcode}")
+
+    body = create_post_body(barcode, plate_config, samples)
+
+    response = send_to_ss_heron_plates(body)
+
+    if response.status_code == HTTPStatus.CREATED:
+        return {
+            "data": {
+                "plate_barcode": samples[0][FIELD_PLATE_BARCODE],
+                "centre": centre_prefixes_for_samples(samples)[0],
+                "count_samples": len(samples),
+            }
+        }, response.status_code
+    else:
+        # return the JSON and status code directly from Sequencescape (act as a proxy)
+        return response.json(), response.status_code
 
 
 def find_plate_from_barcode() -> FlaskResponse:

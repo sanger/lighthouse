@@ -7,6 +7,7 @@ from eve import Eve
 from flask import current_app as app
 
 from lighthouse.classes.beckman import Beckman
+from lighthouse.constants.config import SS_UUID_PLATE_PURPOSE, SS_UUID_STUDY
 from lighthouse.constants.events import PE_BECKMAN_DESTINATION_CREATED, PE_BECKMAN_DESTINATION_FAILED
 from lighthouse.constants.fields import (
     FIELD_BARCODE,
@@ -214,8 +215,8 @@ def row_to_dict(row):
     return obj
 
 
-def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    logger.debug(f"Creating POST body to send to Sequencescape for barcode: {barcode}")
+def create_post_body(barcode: str, plate_config: dict, samples: List[Dict[str, str]]) -> Dict[str, Any]:
+    logger.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}'")
 
     wells_content = {}
     phenotype = None
@@ -243,8 +244,8 @@ def create_post_body(barcode: str, samples: List[Dict[str, str]]) -> Dict[str, A
 
     body = {
         "barcode": barcode,
-        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE"],
-        "study_uuid": app.config["SS_UUID_STUDY"],
+        "purpose_uuid": plate_config[SS_UUID_PLATE_PURPOSE],
+        "study_uuid": plate_config[SS_UUID_STUDY],
         "wells": wells_content,
     }
 
@@ -471,8 +472,8 @@ def create_cherrypicked_post_body(
 
     body = {
         "barcode": barcode,
-        "purpose_uuid": app.config["SS_UUID_PLATE_PURPOSE_CHERRYPICKED"],
-        "study_uuid": app.config["SS_UUID_STUDY_CHERRYPICKED"],
+        "purpose_uuid": app.config["SS_UUIDS_CHERRYPICKED"][SS_UUID_PLATE_PURPOSE],
+        "study_uuid": app.config["SS_UUIDS_CHERRYPICKED"][SS_UUID_STUDY],
         "wells": wells_content,
         "events": events,
     }
