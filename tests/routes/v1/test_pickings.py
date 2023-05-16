@@ -178,3 +178,21 @@ def test_get_pickings_endpoint_no_plate(app, client, endpoint, mocked_responses)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {"errors": [f"There is no plate data for barcode '{barcode}'"]}
+
+
+@pytest.mark.parametrize("endpoint", GET_PICKINGS_ENDPOINTS)
+def test_get_pickings_endpoint_other_control(app, client, endpoint, mocked_responses):
+    barcode = "ABCD-1234"
+    ss_url = ss_request_url(app, barcode)
+
+    body = ss_response_json("other_control")
+
+    mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
+
+    json = endpoint_request_json(barcode)
+    response = client.post(endpoint, json=json)
+
+    assert response.status_code == HTTPStatus.OK
+
+    # The lysate negative control at A1 must be ignored.
+    assert response.json == {"barcode": barcode, "positive_control": "B1", "negative_control": "C1"}
