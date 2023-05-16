@@ -1,5 +1,8 @@
 # Use slim for a smaller image size and install only the required packages
-FROM --platform=linux/amd64 python:3.8-slim-buster
+FROM python:3.8-slim-buster
+
+# Use the following on M1; for odbc connection to mssql.
+# FROM --platform=linux/amd64 python:3.8-slim-buster
 
 # > Setting PYTHONUNBUFFERED to a non empty value ensures that the python output is sent straight to
 # > terminal (e.g. your container log) without being first buffered and that you can see the output
