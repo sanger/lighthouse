@@ -203,6 +203,45 @@ def row_to_dict(row):
     return obj
 
 
+def request_with_retries(request_func, response_func, max_retries):
+    attempt = 1
+
+    while attempt <= max_retries:
+        LOGGER.debug(f"Starting attempt {attempt} of {max_retries}...")
+
+        try:
+            response = request_func()
+
+            if response.status_code == 200:
+                return response_func(response)
+
+            LOGGER.debug(
+                f"Attempt failed due to an invalid status code {response.status_code}. Pausing 1 second before trying again."
+            )
+            attempt += 1
+            sleep(1)
+        except requests.ConnectionError:
+            LOGGER.debug("Attempt failed due to a connection error. Pausing 1 second before trying again.")
+            attempt += 1
+            sleep(1)
+
+    raise requests.ConnectionError("Unable to access Sequencescape.")
+
+
+def check_if_plate_exists(uuid):
+    ss_url = f"{app.config['SS_URL']}/api/v2/plates"
+    params = {"filter[uuid]": uuid}
+    headers = _ss_headers()
+
+    LOGGER.debug(f"Searching Sequencescape for plate with UUID: '{uuid}'.")
+
+    return request_with_retries(
+        request_func=lambda: requests.get(ss_url, params=params, headers=headers),
+        response_func=lambda response: len(response.json()["data"]) == 0,
+        max_retries=3,
+    )
+
+
 def filter_for_new_samples(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
     def is_sample_new(sample: Dict[str, str]) -> bool:
         sample_uuid = sample[FIELD_LH_SAMPLE_UUID]
@@ -210,30 +249,13 @@ def filter_for_new_samples(samples: List[Dict[str, str]]) -> List[Dict[str, str]
         params = {"filter[uuid]": sample_uuid}
         headers = _ss_headers()
 
-        attempt = 1
-        max_attempts = 3
+        LOGGER.debug(f"Searching Sequencescape for sample with UUID: '{sample_uuid}'.")
 
-        while attempt <= max_attempts:
-            LOGGER.debug(f"Searching Sequencescape for sample with UUID: '{sample_uuid}'.")
-            LOGGER.debug(f"Starting attempt {attempt} of {max_attempts}...")
-
-            try:
-                response = requests.get(ss_url, params=params, headers=headers)
-
-                if response.status_code == 200:
-                    return len(response.json()["data"]) == 0
-
-                LOGGER.debug(
-                    f"Attempt failed due to an invalid status code {response.status_code}. Pausing 1 second before trying again."
-                )
-                attempt += 1
-                sleep(1)
-            except requests.ConnectionError:
-                LOGGER.debug("Attempt failed due to a connection error. Pausing 1 second before trying again.")
-                attempt += 1
-                sleep(1)
-
-        raise requests.ConnectionError("Unable to access Sequencescape.")
+        return request_with_retries(
+            request_func=lambda: requests.get(ss_url, params=params, headers=headers),
+            response_func=lambda response: len(response.json()["data"]) == 0,
+            max_retries=3,
+        )
 
     LOGGER.debug(f"Filtering for new samples in Sequencescape from a total of {len(samples)}.")
     filtered_samples = [sample for sample in samples if is_sample_new(sample)]
