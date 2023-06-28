@@ -1,6 +1,6 @@
 import logging
 from time import sleep
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union, cast
 from uuid import uuid4
 
 import requests
@@ -62,6 +62,7 @@ from lighthouse.helpers.reports import unpad_coordinate
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
 
+T = TypeVar("T")
 LOGGER = logging.getLogger(__name__)
 
 # TODO - Refactor:
@@ -203,7 +204,7 @@ def row_to_dict(row):
     return obj
 
 
-def request_with_retries(request_func, response_func, max_retries):
+def request_with_retries(request_func: Callable, response_func: Callable[[Any], T], max_retries=3) -> T:
     attempt = 1
 
     while attempt <= max_retries:
@@ -216,7 +217,8 @@ def request_with_retries(request_func, response_func, max_retries):
                 return response_func(response)
 
             LOGGER.debug(
-                f"Attempt failed due to an invalid status code {response.status_code}. Pausing 1 second before trying again."
+                f"Attempt failed due to an invalid status code {response.status_code}. "
+                "Pausing 1 second before trying again."
             )
             attempt += 1
             sleep(1)
@@ -228,7 +230,7 @@ def request_with_retries(request_func, response_func, max_retries):
     raise requests.ConnectionError("Unable to access Sequencescape.")
 
 
-def check_if_plate_exists(uuid):
+def check_if_plate_exists(uuid: str) -> bool:
     ss_url = f"{app.config['SS_URL']}/api/v2/plates"
     params = {"filter[uuid]": uuid}
     headers = _ss_headers()
@@ -238,7 +240,6 @@ def check_if_plate_exists(uuid):
     return request_with_retries(
         request_func=lambda: requests.get(ss_url, params=params, headers=headers),
         response_func=lambda response: len(response.json()["data"]) == 0,
-        max_retries=3,
     )
 
 
@@ -254,7 +255,6 @@ def filter_for_new_samples(samples: List[Dict[str, str]]) -> List[Dict[str, str]
         return request_with_retries(
             request_func=lambda: requests.get(ss_url, params=params, headers=headers),
             response_func=lambda response: len(response.json()["data"]) == 0,
-            max_retries=3,
         )
 
     LOGGER.debug(f"Filtering for new samples in Sequencescape from a total of {len(samples)}.")

@@ -109,7 +109,7 @@ def _create_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskRespons
 
     samples = get_all_samples_for_source_plate(plate_uuid)
 
-    if plate_config[SS_ONLY_SUBMIT_NEW_SAMPLES]:
+    if samples and plate_config[SS_ONLY_SUBMIT_NEW_SAMPLES]:
         samples = filter_for_new_samples(samples)
 
     if not samples:
