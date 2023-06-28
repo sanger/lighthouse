@@ -62,7 +62,7 @@ from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
 
 LOGGER = logging.getLogger(__name__)
-
+SS_HEADERS = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
 
 # TODO - Refactor:
 # * move db calls (MLWH and Mongo) to separate files
@@ -252,10 +252,8 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
 
     LOGGER.info(f"Sending request to: {ss_url}")
 
-    headers = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
-
     try:
-        response = requests.post(ss_url, json=body, headers=headers)
+        response = requests.post(ss_url, json=body, headers=SS_HEADERS)
 
         LOGGER.debug(f"Response status code: {response.status_code}")
 
