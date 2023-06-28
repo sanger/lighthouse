@@ -1,4 +1,5 @@
 import logging
+from time import sleep
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
@@ -62,13 +63,16 @@ from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
 
 LOGGER = logging.getLogger(__name__)
-SS_HEADERS = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
 
 # TODO - Refactor:
 # * move db calls (MLWH and Mongo) to separate files
 # * consolidate small methods into larger ones if the small methods are not re-used elsewhere
 # * make private methods obviously so, and don't explicitly test them
 # On refactoring be careful to heed the WARNs in the code: not losing distributed functionality
+
+
+def _ss_headers():
+    return {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
 
 
 def classify_samples_by_centre(samples: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
@@ -199,6 +203,45 @@ def row_to_dict(row):
     return obj
 
 
+def filter_for_new_samples(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    def is_sample_new(sample: Dict[str, str]) -> bool:
+        sample_uuid = sample[FIELD_LH_SAMPLE_UUID]
+        ss_url = f"{app.config['SS_URL']}/api/v2/samples"
+        params = {"filter[uuid]": sample_uuid}
+        headers = _ss_headers()
+
+        attempt = 1
+        max_attempts = 3
+
+        while attempt <= max_attempts:
+            LOGGER.debug(f"Searching Sequencescape for sample with UUID: '{sample_uuid}'.")
+            LOGGER.debug(f"Starting attempt {attempt} of {max_attempts}...")
+
+            try:
+                response = requests.get(ss_url, params=params, headers=headers)
+
+                if response.status_code == 200:
+                    return len(response.json["data"]) == 0
+
+                LOGGER.debug(
+                    f"Attempt failed due to an invalid status code {response.status_code}. Pausing 1 second before trying again."
+                )
+                attempt += 1
+                sleep(1)
+            except requests.ConnectionError:
+                LOGGER.debug("Attempt failed due to a connection error. Pausing 1 second before trying again.")
+                attempt += 1
+                sleep(1)
+
+        raise requests.ConnectionError("Unable to access Sequencescape.")
+
+    LOGGER.debug(f"Filtering for new samples in Sequencescape from a total of {len(samples)}.")
+    filtered_samples = list(filter(is_sample_new, samples))
+    LOGGER.debug(f"{len(filtered_samples)} samples were not found in Sequencescape and therefore new.")
+
+    return filtered_samples
+
+
 def create_post_body(barcode: str, plate_config: dict, samples: List[Dict[str, str]]) -> Dict[str, Any]:
     LOGGER.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}'")
 
@@ -249,11 +292,12 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
         requests.Response: the response from Sequencescape.
     """
     ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
+    headers = _ss_headers()
 
     LOGGER.info(f"Sending request to: {ss_url}")
 
     try:
-        response = requests.post(ss_url, json=body, headers=SS_HEADERS)
+        response = requests.post(ss_url, json=body, headers=headers)
 
         LOGGER.debug(f"Response status code: {response.status_code}")
 
