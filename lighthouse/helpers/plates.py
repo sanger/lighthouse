@@ -61,7 +61,7 @@ from lighthouse.helpers.reports import unpad_coordinate
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 # TODO - Refactor:
@@ -87,7 +87,7 @@ def centre_prefixes_for_samples(samples: List[Dict[str, str]]) -> List[str]:
 
 
 def get_centre_prefix(centre_name):
-    logger.debug(f"Getting the prefix for '{centre_name}'")
+    LOGGER.debug(f"Getting the prefix for '{centre_name}'")
     try:
         #  get the centre collection
         centres = cast(Eve, app).data.driver.db.centres
@@ -101,14 +101,14 @@ def get_centre_prefix(centre_name):
 
         prefix = centre["prefix"]
 
-        logger.debug(f"Prefix for '{centre_name}' is '{prefix}'")
+        LOGGER.debug(f"Prefix for '{centre_name}' is '{prefix}'")
 
         return prefix
     except AssertionError as e:
-        logger.exception(e)
+        LOGGER.exception(e)
         raise DataError("Multiple centres with the same name")
     except Exception as e:
-        logger.exception(e)
+        LOGGER.exception(e)
         return None
 
 
@@ -131,7 +131,7 @@ def find_samples(query: Optional[Dict[str, Any]] = None) -> Optional[List[Sample
 
     samples = list(samples_collection.find(query))
 
-    logger.info(f"{len(samples)} samples found from samples collection")
+    LOGGER.info(f"{len(samples)} samples found from samples collection")
 
     return samples
 
@@ -200,7 +200,7 @@ def row_to_dict(row):
 
 
 def create_post_body(barcode: str, plate_config: dict, samples: List[Dict[str, str]]) -> Dict[str, Any]:
-    logger.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}'")
+    LOGGER.debug(f"Creating POST body to send to Sequencescape for barcode '{barcode}'")
 
     wells_content = {}
     phenotype = None
@@ -250,14 +250,14 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
     """
     ss_url = f"{app.config['SS_URL']}/api/v2/heron/plates"
 
-    logger.info(f"Sending request to: {ss_url}")
+    LOGGER.info(f"Sending request to: {ss_url}")
 
     headers = {"X-Sequencescape-Client-Id": app.config["SS_API_KEY"]}
 
     try:
         response = requests.post(ss_url, json=body, headers=headers)
 
-        logger.debug(f"Response status code: {response.status_code}")
+        LOGGER.debug(f"Response status code: {response.status_code}")
 
         return response
     except requests.ConnectionError:
@@ -290,7 +290,7 @@ def map_to_ss_columns(samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             mapped_sample[FIELD_SS_COORDINATE] = dart_row[FIELD_DART_DESTINATION_COORDINATE]
             mapped_sample[FIELD_SS_BARCODE] = dart_row[FIELD_DART_DESTINATION_BARCODE]
         except KeyError as e:
-            logger.error(
+            LOGGER.error(
                 f"({type(e).__name__}: {str(e)}) Error while mapping database columns to Sequencescape columns for "
                 f"sample with {FIELD_ROOT_SAMPLE_ID}: {mongo_row[FIELD_ROOT_SAMPLE_ID]}"
             )
@@ -306,7 +306,7 @@ def create_cherrypicked_post_body(
     robot_serial_number,
     source_plates,
 ):
-    logger.debug(f"Creating POST body to send to Sequencescape for cherrypicked plate with barcode '{barcode}'")
+    LOGGER.debug(f"Creating POST body to send to Sequencescape for cherrypicked plate with barcode '{barcode}'")
 
     wells_content = {}
     for sample in samples:
@@ -369,7 +369,7 @@ def find_source_plates(query: Optional[Dict[str, Any]] = None) -> Optional[List[
 
     source_plate_documents = list(source_plates.find(query))
 
-    logger.info(f"Found {len(source_plate_documents)} source plates")
+    LOGGER.info(f"Found {len(source_plate_documents)} source plates")
 
     return source_plate_documents
 
@@ -402,7 +402,7 @@ def construct_cherrypicking_plate_failed_message(
         except Exception as e:
             # a failed DART connection is valid:
             # it may be caused by the failure the user is trying to record
-            logger.info(f"Failed to connect to DART: {e}")
+            LOGGER.info(f"Failed to connect to DART: {e}")
 
         if dart_samples is None:
             # still send message, but inform caller that DART connection could not be made
@@ -411,7 +411,7 @@ def construct_cherrypicking_plate_failed_message(
                 "As this may be due to the failure you are reporting, a destination plate failure "
                 "has still been recorded, but without sample and source plate information"
             )
-            logger.info(msg)
+            LOGGER.info(msg)
             errors.append(msg)
         elif len(dart_samples) == 0:
             # still send message, but inform caller that no samples were in the destination plate
@@ -420,7 +420,7 @@ def construct_cherrypicking_plate_failed_message(
                 "due to the failure you are reporting, a destination plate failure has still been "
                 "recorded, but without sample and source plate information"
             )
-            logger.info(msg)
+            LOGGER.info(msg)
             errors.append(msg)
         else:
             mongo_samples = find_samples(query_for_cherrypicked_samples(dart_samples))
@@ -456,8 +456,8 @@ def construct_cherrypicking_plate_failed_message(
         }
         return errors, Message(message_content)
     except Exception as e:
-        logger.error("Failed to construct a cherrypicking plate failed message")
-        logger.exception(e)
+        LOGGER.error("Failed to construct a cherrypicking plate failed message")
+        LOGGER.exception(e)
         return [
             "An unexpected error occurred attempting to construct the cherrypicking plate " f"failed event message: {e}"
         ], None
@@ -534,7 +534,7 @@ def __confirm_centre(samples: List[Dict[str, str]]) -> str:
     Returns:
         str -- the name of the centre for these samples
     """
-    logger.debug("confirm_centre()")
+    LOGGER.debug("confirm_centre()")
 
     try:
         # check that the 'source' field has a valid name
@@ -629,7 +629,7 @@ def plate_exists_in_ss(barcode: str) -> bool:
     Returns:
         bool: True if the plate exists, False otherwise.
     """
-    logger.debug("plate_exists_in_ss()")
+    LOGGER.debug("plate_exists_in_ss()")
     try:
         ss_url: str = app.config["SS_URL"]
         params = {
@@ -637,7 +637,7 @@ def plate_exists_in_ss(barcode: str) -> bool:
         }
         response = requests.get(f"{ss_url}/api/v2/labware", params=params)
 
-        logger.debug(f"Response status code: {response.status_code}")
+        LOGGER.debug(f"Response status code: {response.status_code}")
 
         assert "data" in response.json(), f"Expected 'data' in response: {response.json()}"
 
@@ -663,7 +663,7 @@ def format_plate(
     Returns:
         Dict[str, Union[str, bool, Optional[int]]]: sample information for the plate barcode
     """
-    logger.info(f"Getting information for plate with barcode: {barcode}")
+    LOGGER.info(f"Getting information for plate with barcode: {barcode}")
 
     # To solve default mutable arguments issue:
     # <https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/>
