@@ -221,7 +221,7 @@ def filter_for_new_samples(samples: List[Dict[str, str]]) -> List[Dict[str, str]
                 response = requests.get(ss_url, params=params, headers=headers)
 
                 if response.status_code == 200:
-                    return len(response.json["data"]) == 0
+                    return len(response.json()["data"]) == 0
 
                 LOGGER.debug(
                     f"Attempt failed due to an invalid status code {response.status_code}. Pausing 1 second before trying again."
@@ -236,7 +236,7 @@ def filter_for_new_samples(samples: List[Dict[str, str]]) -> List[Dict[str, str]
         raise requests.ConnectionError("Unable to access Sequencescape.")
 
     LOGGER.debug(f"Filtering for new samples in Sequencescape from a total of {len(samples)}.")
-    filtered_samples = list(filter(is_sample_new, samples))
+    filtered_samples = [sample for sample in samples if is_sample_new(sample)]
     LOGGER.debug(f"{len(filtered_samples)} samples were not found in Sequencescape and therefore new.")
 
     return filtered_samples

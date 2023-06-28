@@ -120,7 +120,7 @@ LABWHERE_DESTROYED_BARCODE = os.environ.get("LABWHERE_DESTROYED_BARCODE", "lw-he
 ###
 # Sequencescape config
 ###
-SS_API_KEY = "develop"
+SS_API_KEY = "development"
 SS_URL = f"http://{LOCALHOST}:3000"
 SS_PLATE_CONFIG = {
     SS_PLATE_TYPE_DEFAULT: {

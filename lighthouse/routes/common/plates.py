@@ -113,23 +113,19 @@ def _create_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskRespons
 
     body = create_post_body(barcode, plate_config, samples)
 
-    logger.debug(f"SS body --> {body}")
+    response = send_to_ss_heron_plates(body)
 
-    return
-
-    # response = send_to_ss_heron_plates(body)
-    #
-    # if response.status_code == HTTPStatus.CREATED:
-    #     return {
-    #         "data": {
-    #             "plate_barcode": samples[0][FIELD_PLATE_BARCODE],
-    #             "centre": centre_prefixes_for_samples(samples)[0],
-    #             "count_samples": len(samples),
-    #         }
-    #     }, response.status_code
-    # else:
-    #     # return the JSON and status code directly from Sequencescape (act as a proxy)
-    #     return response.json(), response.status_code
+    if response.status_code == HTTPStatus.CREATED:
+        return {
+            "data": {
+                "plate_barcode": samples[0][FIELD_PLATE_BARCODE],
+                "centre": centre_prefixes_for_samples(samples)[0],
+                "count_samples": len(samples),
+            }
+        }, response.status_code
+    else:
+        # return the JSON and status code directly from Sequencescape (act as a proxy)
+        return response.json(), response.status_code
 
 
 def find_plate_from_barcode() -> FlaskResponse:
