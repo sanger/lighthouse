@@ -1,10 +1,10 @@
-import urllib.parse
 from http import HTTPStatus
 from typing import List, Optional
 from unittest.mock import patch
 
 import pytest
 import responses
+from responses.matchers import query_param_matcher
 
 from lighthouse.constants.config import SS_PLATE_TYPE_DEFAULT
 from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
@@ -31,9 +31,12 @@ CONNECTION_ERROR_JSON = {
     "errors": ["An unexpected error occurred attempting to create a plate in Sequencescape: (ConnectionError)"]
 }
 
+QUERY_PARAM_BARCODE = "barcode"
+QUERY_PARAM_BARCODES = "barcodes"
+
 
 def create_plate_body(barcode, plate_type=None):
-    body = {"barcode": barcode}
+    body = {QUERY_PARAM_BARCODE: barcode}
 
     if plate_type is not None:
         body["type"] = plate_type
@@ -218,7 +221,7 @@ def test_post_plates_endpoint_no_barcode_in_request(app, client, endpoint):
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_plate_type_not_configured(app, client, endpoint):
-    response = client.post(endpoint, json={"barcode": "plate_123", "type": "bogus"})
+    response = client.post(endpoint, json={QUERY_PARAM_BARCODE: "plate_123", "type": "bogus"})
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {
@@ -365,10 +368,8 @@ def test_post_plates_endpoint_all_new_samples_only_type_with_ss_failure(
 def test_get_plates_endpoint_successful(
     app, client, samples, priority_samples, mocked_responses, plates_lookup_without_samples, endpoint
 ):
-    response = client.get(
-        f"{endpoint}?barcodes=plate_123,456&{ ARG_EXCLUDE }=pickable_samples",
-        content_type="application/json",
-    )
+    params = {QUERY_PARAM_BARCODES: "plate_123,456", ARG_EXCLUDE: "pickable_samples"}
+    response = client.get(endpoint, query_string=params, content_type="application/json")
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == {
@@ -385,7 +386,8 @@ def test_get_plates_endpoint_successful(
         ]
     }
 
-    response = client.get(f"{endpoint}?barcodes=456&{ ARG_EXCLUDE }=pickable_samples&{ARG_TYPE}={ARG_TYPE_SOURCE}")
+    params = {QUERY_PARAM_BARCODES: "456", ARG_EXCLUDE: "pickable_samples", ARG_TYPE: ARG_TYPE_SOURCE}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == {
@@ -411,7 +413,7 @@ def test_get_plates_endpoint_no_barcode_in_request(client, endpoint):
 
 @pytest.mark.parametrize("endpoint", GET_PLATES_ENDPOINTS)
 def test_get_plates_endpoint_barcode_empty(client, endpoint):
-    response = client.get(f"{endpoint}?barcodes=")
+    response = client.get(endpoint, query_string={QUERY_PARAM_BARCODES: ""})
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
@@ -420,7 +422,7 @@ def test_get_plates_endpoint_barcode_empty(client, endpoint):
 def test_get_plates_endpoint_method_calls(app, client, samples, priority_samples, endpoint):
     barcode = "plate_123"
     with patch("lighthouse.helpers.plates.has_plate_map_data", return_value=True) as mock_has_plate_map_data:
-        response = client.get(f"{endpoint}?barcodes={barcode}", content_type="application/json")
+        response = client.get(endpoint, query_string={QUERY_PARAM_BARCODES: barcode}, content_type="application/json")
         assert response.status_code == HTTPStatus.OK
         mock_has_plate_map_data.assert_called_once_with(barcode)
 
@@ -428,7 +430,7 @@ def test_get_plates_endpoint_method_calls(app, client, samples, priority_samples
 @pytest.mark.parametrize("endpoint", GET_PLATES_ENDPOINTS)
 def test_get_plates_endpoint_fail(app, client, samples, mocked_responses, endpoint):
     with patch("lighthouse.helpers.plates.get_fit_to_pick_samples_and_counts", side_effect=Exception()):
-        response = client.get(f"{endpoint}?barcodes=123,456", content_type="application/json")
+        response = client.get(endpoint, query_string={QUERY_PARAM_BARCODES: "123,456"}, content_type="application/json")
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert response.json == {"errors": ["Failed to lookup plates: Exception"]}
@@ -438,9 +440,8 @@ def test_get_plates_endpoint_fail(app, client, samples, mocked_responses, endpoi
 def test_get_plates_endpoint_exclude_props(
     app, client, samples, priority_samples, mocked_responses, plates_lookup_with_samples, endpoint
 ):
-    response = client.get(
-        f"{endpoint}?barcodes=plate_123,456&{ ARG_EXCLUDE }=plate_barcode",
-    )
+    params = {QUERY_PARAM_BARCODES: "plate_123,456", ARG_EXCLUDE: "plate_barcode"}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -469,23 +470,27 @@ def test_get_plates_with_type(app, client, mocked_responses, endpoint):
     ss_url = f"{app.config['SS_URL']}/api/v2/labware"
     first_plate_barcode = "plate_123"
     second_plate_barcode = "plate_456"
-    # TODO: Use params with a matcher correctly -- match=[matchers.query_param_matcher(params)],
+
+    first_plate_params = {"filter[barcode]": first_plate_barcode}
     mocked_responses.add(
         responses.GET,
-        f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={first_plate_barcode}",
+        ss_url,
         json={"data": ["barcode exists!"]},
         status=HTTPStatus.OK,
-    )
-    mocked_responses.add(
-        responses.GET,
-        f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={second_plate_barcode}",
-        json={"data": []},
-        status=HTTPStatus.OK,
+        match=[query_param_matcher(first_plate_params)],
     )
 
-    response = client.get(
-        f"{endpoint}?barcodes={first_plate_barcode},{second_plate_barcode}&{ ARG_TYPE }={ARG_TYPE_DESTINATION}",
+    second_plate_params = {"filter[barcode]": second_plate_barcode}
+    mocked_responses.add(
+        responses.GET,
+        ss_url,
+        json={"data": []},
+        status=HTTPStatus.OK,
+        match=[query_param_matcher(second_plate_params)],
     )
+
+    params = {QUERY_PARAM_BARCODES: f"{first_plate_barcode},{second_plate_barcode}", ARG_TYPE: ARG_TYPE_DESTINATION}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -505,11 +510,8 @@ def test_get_plates_with_type(app, client, mocked_responses, endpoint):
 
 @pytest.mark.parametrize("endpoint", GET_PLATES_ENDPOINTS)
 def test_get_plates_with_invalid_type(app, client, endpoint):
-    first_plate_barcode = "plate_123"
-    second_plate_barcode = "plate_456"
-    response = client.get(
-        f"{endpoint}?barcodes={first_plate_barcode},{second_plate_barcode}&{ ARG_TYPE }=invalid_type",
-    )
+    params = {QUERY_PARAM_BARCODES: "plate_123,plate_456", ARG_TYPE: "invalid_type"}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
@@ -520,7 +522,7 @@ def test_get_cherrytrack_plates_source_endpoint_successful(app, client, mocked_r
     cherrytrack_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{plate_barcode}"
     body = {
         "data": {
-            "barcode": "cherrytrack_plate_123",
+            QUERY_PARAM_BARCODE: "cherrytrack_plate_123",
             "samples": [
                 {
                     "automation_system_run_id": "",
@@ -541,9 +543,8 @@ def test_get_cherrytrack_plates_source_endpoint_successful(app, client, mocked_r
     }
     mocked_responses.add(responses.GET, cherrytrack_url, json=body, status=HTTPStatus.OK)
 
-    response = client.get(
-        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=source",
-    )
+    params = {QUERY_PARAM_BARCODE: plate_barcode, ARG_TYPE: "source"}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == {"plate": body}
@@ -555,7 +556,7 @@ def test_get_cherrytrack_plates_destination_endpoint_successful(app, client, moc
     cherrytrack_url = f"{app.config['CHERRYTRACK_URL']}/destination-plates/{plate_barcode}"
     body = {
         "data": {
-            "barcode": "cherrytrack_plate_123",
+            QUERY_PARAM_BARCODE: "cherrytrack_plate_123",
             "samples": [
                 {
                     "automation_system_run_id": 1,
@@ -576,9 +577,8 @@ def test_get_cherrytrack_plates_destination_endpoint_successful(app, client, moc
     }
     mocked_responses.add(responses.GET, cherrytrack_url, json=body, status=HTTPStatus.OK)
 
-    response = client.get(
-        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=destination",
-    )
+    params = {QUERY_PARAM_BARCODE: plate_barcode, ARG_TYPE: "destination"}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == {"plate": body}
@@ -586,11 +586,8 @@ def test_get_cherrytrack_plates_destination_endpoint_successful(app, client, moc
 
 @pytest.mark.parametrize("endpoint", CHERRYTRACK_PLATES_ENDPOINT)
 def test_get_cherrytrack_plates_endpoint_empty_barcode(app, client, endpoint):
-    plate_barcode = ""
-
-    response = client.get(
-        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=destination",
-    )
+    params = {QUERY_PARAM_BARCODE: "", ARG_TYPE: "destination"}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {"errors": ["Include a barcode in the request"]}
@@ -598,11 +595,8 @@ def test_get_cherrytrack_plates_endpoint_empty_barcode(app, client, endpoint):
 
 @pytest.mark.parametrize("endpoint", CHERRYTRACK_PLATES_ENDPOINT)
 def test_get_cherrytrack_plates_endpoint_empty_type(app, client, endpoint):
-    plate_barcode = "cherrytrack_plate_123"
-
-    response = client.get(
-        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=",
-    )
+    params = {QUERY_PARAM_BARCODE: "cherrytrack_plate_123", ARG_TYPE: ""}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {"errors": ["Plate type needs to be either 'source' or 'destination'"]}
@@ -615,9 +609,8 @@ def test_get_cherrytrack_plates_endpoint_failure(app, client, mocked_responses, 
     body = {"errors": ["Failed to get source plate info: Failed to find samples for source plate barcode DS0000100"]}
     mocked_responses.add(responses.GET, cherrytrack_url, json=body, status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    response = client.get(
-        f"{endpoint}?barcode={plate_barcode}&{ ARG_TYPE }=destination",
-    )
+    params = {QUERY_PARAM_BARCODE: plate_barcode, ARG_TYPE: "destination"}
+    response = client.get(endpoint, query_string=params)
 
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     assert response.json == {
