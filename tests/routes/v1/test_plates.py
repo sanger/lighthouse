@@ -223,7 +223,10 @@ def test_post_plates_endpoint_plate_type_not_configured(app, client, endpoint):
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json == {
         "errors": [
-            "POST request 'type' must be from the list: heron, fit_to_pick_new_samples_only, all_samples, all_new_samples_only"
+            (
+                "POST request 'type' must be from the list: "
+                "heron, fit_to_pick_new_samples_only, all_samples, all_new_samples_only"
+            )
         ]
     }
 
