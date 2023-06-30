@@ -17,14 +17,19 @@ CHERRYTRACK_PLATES_ENDPOINT = ["/plates/cherrytrack"]
 NEW_PLATE_ENDPOINTS = [prefix + NEW_PLATE_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 GET_PLATES_ENDPOINTS = [prefix + GET_PLATES_ENDPOINT for prefix in ENDPOINT_PREFIXES]
 
-FIT_TO_PICK_PLATE_TYPES: List[Optional[str]] = [None, SS_PLATE_TYPE_DEFAULT]
-INVALID_CONFIG_PLATE_TYPES: List[Optional[str]] = ["fit_to_pick_new_samples_only"]
+FIT_TO_PICK_PLATE_TYPES: List[Optional[str]] = [None, SS_PLATE_TYPE_DEFAULT, "fit_to_pick_new_samples_only"]
 ALL_SAMPLES_PLATE_TYPES: List[Optional[str]] = ["all_samples", "all_new_samples_only"]
 
 VALID_PLATE_BARCODE = "plate_123"
 INVALID_PLATE_BARCODE = "qwerty"
 EMPTY_PLATE_BARCODE = "plate_empty"
+
+LOOKUP_PLATE_ERROR_JSON = {"errors": ["Plate lookup failed."]}
+LOOKUP_SAMPLES_ERROR_JSON = {"errors": ["Samples lookup failed."]}
 CREATE_PLATE_ERROR_JSON = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
+CONNECTION_ERROR_JSON = {
+    "errors": ["An unexpected error occurred attempting to create a plate in Sequencescape: (ConnectionError)"]
+}
 
 
 def create_plate_body(barcode, plate_type=None):
@@ -36,7 +41,7 @@ def create_plate_body(barcode, plate_type=None):
     return body
 
 
-def mock_plates_lookup(app, mocked_responses, plates_found=True):
+def mock_plates_lookup(app, mocked_responses, plates_found=False):
     ss_url = f"{app.config['SS_URL']}/api/v2/plates"
 
     if plates_found:
@@ -47,15 +52,24 @@ def mock_plates_lookup(app, mocked_responses, plates_found=True):
     mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
 
 
-def mock_samples_lookup(app, mocked_responses, samples_found=True):
+def mock_plates_lookup_failure(app, mocked_responses):
+    ss_url = f"{app.config['SS_URL']}/api/v2/plates"
+    mocked_responses.add(responses.GET, ss_url, json=LOOKUP_PLATE_ERROR_JSON, status=HTTPStatus.UNPROCESSABLE_ENTITY)
+
+
+def mock_samples_lookup(app, mocked_responses, found_samples_count=0, mock_missing_samples=True):
     ss_url = f"{app.config['SS_URL']}/api/v2/samples"
 
-    if samples_found:
-        body = {"data": [{"some sample": "data"}]}
-    else:
-        body = {"data": []}
+    for _ in range(found_samples_count):
+        mocked_responses.add(responses.GET, ss_url, json={"data": [{"some sample": "data"}]}, status=HTTPStatus.OK)
 
-    mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
+    if mock_missing_samples:
+        mocked_responses.add(responses.GET, ss_url, json={"data": []}, status=HTTPStatus.OK)
+
+
+def mock_samples_lookup_failure(app, mocked_responses):
+    ss_url = f"{app.config['SS_URL']}/api/v2/samples"
+    mocked_responses.add(responses.GET, ss_url, json=LOOKUP_SAMPLES_ERROR_JSON, status=HTTPStatus.UNPROCESSABLE_ENTITY)
 
 
 def mock_plate_create(app, mocked_responses, success_body=None):
@@ -69,6 +83,12 @@ def mock_plate_create(app, mocked_responses, success_body=None):
         status = HTTPStatus.UNPROCESSABLE_ENTITY
 
     mocked_responses.add(responses.POST, ss_url, json=body, status=status)
+
+
+@pytest.fixture
+def logger():
+    with patch("lighthouse.routes.common.plates.LOGGER") as mock:
+        yield mock
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
@@ -103,6 +123,28 @@ def test_post_plates_endpoint_successful_with_default_fit_to_pick_plate_type_and
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+def test_post_plates_endpoint_logs_warning_and_successful_with_fit_to_pick_new_samples_only_plate_type(
+    app, client, samples, source_plates, priority_samples, mocked_responses, mlwh_lh_samples, logger, endpoint
+):
+    body = create_plate_body(VALID_PLATE_BARCODE, "fit_to_pick_new_samples_only")
+    mock_plate_create(app, mocked_responses, body)
+
+    response = client.post(endpoint, json=body)
+
+    logger.warning.assert_called_once()
+    assert "does not support this configuration" in logger.warning.call_args.args[0]
+    assert VALID_PLATE_BARCODE in logger.warning.call_args.args[0]
+
+    # The plate will be created as usual which is detailed in the warning
+    assert response.status_code == HTTPStatus.CREATED
+
+    # There should be 5 fit to pick samples even though more exist for the plate.
+    assert response.json == {
+        "data": {"plate_barcode": VALID_PLATE_BARCODE, "centre": "centre_1", "count_fit_to_pick_samples": 5}
+    }
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_successful_with_all_samples_plate_type_and_all_cog_barcodes_already_in_samples(
     app, client, samples, source_plates, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
@@ -111,6 +153,7 @@ def test_post_plates_endpoint_successful_with_all_samples_plate_type_and_all_cog
     mock_plate_create(app, mocked_responses, body)
 
     response = client.post(endpoint, json=body)
+
     assert response.status_code == HTTPStatus.CREATED
 
     # There are 8 samples on the plate. No filters are made on the samples before they are returned.
@@ -123,14 +166,46 @@ def test_post_plates_endpoint_successful_with_all_new_samples_only_plate_type_an
 ):
     body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")
     mock_plates_lookup(app, mocked_responses)
-    mock_samples_lookup(app, mocked_responses, samples_found=False)
+    mock_samples_lookup(app, mocked_responses)
     mock_plate_create(app, mocked_responses, body)
 
     response = client.post(endpoint, json=body)
+
     assert response.status_code == HTTPStatus.CREATED
 
     # There are 8 samples on the plate. No filters are made on the samples before they are returned.
     assert response.json == {"data": {"plate_barcode": VALID_PLATE_BARCODE, "centre": "centre_1", "count_samples": 8}}
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+def test_post_plates_endpoint_successful_with_all_new_samples_only_plate_type_some_samples_already_in_ss(
+    app, client, samples, source_plates, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
+):
+    body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")
+    mock_plates_lookup(app, mocked_responses)
+    mock_samples_lookup(app, mocked_responses, found_samples_count=5)
+    mock_plate_create(app, mocked_responses, body)
+
+    response = client.post(endpoint, json=body)
+
+    assert response.status_code == HTTPStatus.CREATED
+
+    # There are 8 samples on the plate. 5 samples already exist in Sequencescape.
+    assert response.json == {"data": {"plate_barcode": VALID_PLATE_BARCODE, "centre": "centre_1", "count_samples": 3}}
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+def test_post_plates_endpoint_successful_with_all_new_samples_only_plate_type_all_samples_already_in_ss(
+    app, client, samples, source_plates, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
+):
+    body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")
+    mock_plates_lookup(app, mocked_responses)
+    mock_samples_lookup(app, mocked_responses, found_samples_count=8, mock_missing_samples=False)
+
+    response = client.post(endpoint, json=body)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": [f"No samples found on plate with barcode: {VALID_PLATE_BARCODE}"]}
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
@@ -151,6 +226,20 @@ def test_post_plates_endpoint_plate_type_not_configured(app, client, endpoint):
             "POST request 'type' must be from the list: heron, fit_to_pick_new_samples_only, all_samples, all_new_samples_only"
         ]
     }
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+@pytest.mark.parametrize("plate_type", ALL_SAMPLES_PLATE_TYPES)
+def test_post_plates_endpoint_exception_for_all_samples_plate_type_when_plate_already_in_ss(
+    app, client, source_plates, mocked_responses, endpoint, plate_type
+):
+    body = create_plate_body(VALID_PLATE_BARCODE, plate_type)
+    mock_plates_lookup(app, mocked_responses, plates_found=True)
+
+    response = client.post(endpoint, json=body)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"errors": [f"The barcode '{VALID_PLATE_BARCODE}' is already in use."]}
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
@@ -195,7 +284,7 @@ def test_post_plates_endpoint_all_samples_plate_type_no_samples(
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 @pytest.mark.parametrize("plate_type", FIT_TO_PICK_PLATE_TYPES)
-def test_post_plates_endpoint_fit_to_pick_type_with_ss_failure(
+def test_post_plates_endpoint_fit_to_pick_type_with_ss_create_failure(
     app, client, samples, source_plates, mocked_responses, endpoint, plate_type
 ):
     mock_plate_create(app, mocked_responses)
@@ -206,6 +295,21 @@ def test_post_plates_endpoint_fit_to_pick_type_with_ss_failure(
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert response.json == CREATE_PLATE_ERROR_JSON
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+@pytest.mark.parametrize("plate_type", ALL_SAMPLES_PLATE_TYPES)
+def test_post_plates_endpoint_all_samples_type_with_ss_plate_lookup_failure(
+    app, client, source_plates, mocked_responses, endpoint, plate_type
+):
+    mock_plates_lookup_failure(app, mocked_responses)
+
+    body = create_plate_body(VALID_PLATE_BARCODE, plate_type)
+
+    response = client.post(endpoint, json=body)
+
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.json == CONNECTION_ERROR_JSON
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
@@ -224,11 +328,26 @@ def test_post_plates_endpoint_all_samples_type_with_ss_failure(
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
+def test_post_plates_endpoint_all_new_samples_only_type_with_ss_samples_lookup_failure(
+    app, client, samples, source_plates, mocked_responses, endpoint
+):
+    mock_plates_lookup(app, mocked_responses)
+    mock_samples_lookup_failure(app, mocked_responses)
+
+    body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")
+
+    response = client.post(endpoint, json=body)
+
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.json == CONNECTION_ERROR_JSON
+
+
+@pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_all_new_samples_only_type_with_ss_failure(
     app, client, samples, source_plates, mocked_responses, endpoint
 ):
     mock_plates_lookup(app, mocked_responses)
-    mock_samples_lookup(app, mocked_responses, samples_found=False)
+    mock_samples_lookup(app, mocked_responses)
     mock_plate_create(app, mocked_responses)
 
     body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")

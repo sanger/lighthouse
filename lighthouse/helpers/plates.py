@@ -230,7 +230,7 @@ def request_with_retries(request_func: Callable, response_func: Callable[[Any], 
     raise requests.ConnectionError("Unable to access Sequencescape.")
 
 
-def check_if_plate_exists(uuid: str) -> bool:
+def check_if_plate_exists_in_ss(uuid: str) -> bool:
     ss_url = f"{app.config['SS_URL']}/api/v2/plates"
     params = {"filter[uuid]": uuid}
     headers = _ss_headers()
@@ -239,7 +239,7 @@ def check_if_plate_exists(uuid: str) -> bool:
 
     return request_with_retries(
         request_func=lambda: requests.get(ss_url, params=params, headers=headers),
-        response_func=lambda response: len(response.json()["data"]) == 0,
+        response_func=lambda response: len(response.json()["data"]) > 0,
     )
 
 
