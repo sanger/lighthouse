@@ -44,15 +44,14 @@ def create_plate_body(barcode, plate_type=None):
     return body
 
 
-def mock_plates_lookup(app, mocked_responses, plates_found=False):
+def mock_plates_lookup(app, mocked_responses, plates_found_count=0):
     ss_url = f"{app.config['SS_URL']}/api/v2/plates"
 
-    if plates_found:
-        body = {"data": [{"some plate": "data"}]}
-    else:
-        body = {"data": []}
+    for _ in range(plates_found_count):
+        mocked_responses.add(responses.GET, ss_url, json={"data": [{"some plate": "data"}]}, status=HTTPStatus.OK)
 
-    mocked_responses.add(responses.GET, ss_url, json=body, status=HTTPStatus.OK)
+    if plates_found_count == 0:
+        mocked_responses.add(responses.GET, ss_url, json={"data": []}, status=HTTPStatus.OK)
 
 
 def mock_plates_lookup_failure(app, mocked_responses):
@@ -240,7 +239,7 @@ def test_post_plates_endpoint_exception_for_all_samples_plate_type_when_plate_al
     app, client, source_plates, mocked_responses, endpoint, plate_type
 ):
     body = create_plate_body(VALID_PLATE_BARCODE, plate_type)
-    mock_plates_lookup(app, mocked_responses, plates_found=True)
+    mock_plates_lookup(app, mocked_responses, plates_found_count=1)
 
     response = client.post(endpoint, json=body)
 
@@ -522,7 +521,7 @@ def test_get_cherrytrack_plates_source_endpoint_successful(app, client, mocked_r
     cherrytrack_url = f"{app.config['CHERRYTRACK_URL']}/source-plates/{plate_barcode}"
     body = {
         "data": {
-            QUERY_PARAM_BARCODE: "cherrytrack_plate_123",
+            "barcode": "cherrytrack_plate_123",
             "samples": [
                 {
                     "automation_system_run_id": "",
@@ -556,7 +555,7 @@ def test_get_cherrytrack_plates_destination_endpoint_successful(app, client, moc
     cherrytrack_url = f"{app.config['CHERRYTRACK_URL']}/destination-plates/{plate_barcode}"
     body = {
         "data": {
-            QUERY_PARAM_BARCODE: "cherrytrack_plate_123",
+            "barcode": "cherrytrack_plate_123",
             "samples": [
                 {
                     "automation_system_run_id": 1,
