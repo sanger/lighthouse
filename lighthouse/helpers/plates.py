@@ -49,27 +49,27 @@ from lighthouse.constants.fields import (
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE, BIOSCAN_PLATE_PURPOSE
 from lighthouse.constants.jsonapi import (
+    JS_ALIQUOTS,
     JS_ATTRIBUTES,
+    JS_BARCODE,
     JS_CONTROL,
     JS_CONTROL_TYPE,
     JS_DATA,
+    JS_ERROR,
     JS_ID,
     JS_INCLUDED,
-    JS_RELATIONSHIPS,
-    JS_TYPE,
-    JS_SAMPLES,
-    JS_ALIQUOTS,
-    JS_SAMPLE,
-    JS_WELLS,
-    JS_POSITION,
     JS_NAME,
-    JS_ERROR,
-    JS_PURPOSES,
-    JS_PCR_POSITIVE,
-    JS_PCR_NEGATIVE,
-    JS_BARCODE,
-    JS_POSITIVE_CONTROL,
     JS_NEGATIVE_CONTROL,
+    JS_PCR_NEGATIVE,
+    JS_PCR_POSITIVE,
+    JS_POSITION,
+    JS_POSITIVE_CONTROL,
+    JS_PURPOSES,
+    JS_RELATIONSHIPS,
+    JS_SAMPLE,
+    JS_SAMPLES,
+    JS_TYPE,
+    JS_WELLS,
 )
 from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
 from lighthouse.helpers.dart import find_dart_source_samples_rows
@@ -453,7 +453,7 @@ def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
         params = {"filter[barcode]": plate_barcode, "include": "purpose,receptacles.aliquots.sample"}
         response = requests.get(f"{ss_url}", params=params)
 
-        logger.debug(f"Response status code: {response.status_code}")
+        LOGGER.debug(f"Response status code: {response.status_code}")
 
         assert JS_DATA in response.json(), f"Expected '{JS_DATA}' in response: {response.json()}"
 
