@@ -1,0 +1,7 @@
+{
+    "data": [],
+    "links": {
+        "first": "http://127.0.0.1:3000/api/v2/labware?filter%5Bbarcode%5D=SQPD-9004&include=purpose%2Creceptacles.aliquots.sample&page%5Bnumber%5D=1&page%5Bsize%5D=100",
+        "last": "http://127.0.0.1:3000/api/v2/labware?filter%5Bbarcode%5D=SQPD-9004&include=purpose%2Creceptacles.aliquots.sample&page%5Bnumber%5D=1&page%5Bsize%5D=100"
+    }
+}
