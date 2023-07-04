@@ -85,12 +85,6 @@ from lighthouse.helpers.reports import unpad_coordinate
 from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
 
-# TODO - Refactor:
-# * move db calls (MLWH and Mongo) to separate files
-# * consolidate small methods into larger ones if the small methods are not re-used elsewhere
-# * make private methods obviously so, and don't explicitly test them
-# On refactoring be careful to heed the WARNs in the code: not losing distributed functionality
-
 T = TypeVar("T")
 LOGGER = logging.getLogger(__name__)
 
