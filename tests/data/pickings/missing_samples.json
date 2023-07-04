@@ -1,0 +1,147 @@
+{
+    "data": [
+        {
+            "id": "2",
+            "type": "plates",
+            "links": {
+                "self": "http://127.0.0.1:3000/api/v2/plates/2"
+            },
+            "attributes": {
+                "uuid": "7326993e-e6e5-11ed-8701-1ae941b82137",
+                "name": "Plate SQPD-9002",
+                "labware_barcode": {
+                    "ean13_barcode": null,
+                    "machine_barcode": "SQPD-9002",
+                    "human_barcode": "SQPD-9002"
+                },
+                "state": "pending",
+                "created_at": "2023-04-30T00:27:47+01:00",
+                "updated_at": "2023-04-30T00:27:47+01:00",
+                "number_of_rows": 8,
+                "number_of_columns": 12,
+                "size": 96
+            },
+            "relationships": {
+                "purpose": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/purpose",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/purpose"
+                    },
+                    "data": {
+                        "type": "purposes",
+                        "id": "58"
+                    }
+                },
+                "custom_metadatum_collection": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/custom_metadatum_collection",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/custom_metadatum_collection"
+                    }
+                },
+                "samples": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/samples",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/samples"
+                    }
+                },
+                "studies": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/studies",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/studies"
+                    }
+                },
+                "projects": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/projects",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/projects"
+                    }
+                },
+                "comments": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/comments",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/comments"
+                    }
+                },
+                "receptacles": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/receptacles",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/receptacles"
+                    }
+                },
+                "ancestors": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/ancestors",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/ancestors"
+                    }
+                },
+                "descendants": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/descendants",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/descendants"
+                    }
+                },
+                "parents": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/parents",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/parents"
+                    }
+                },
+                "children": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/children",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/children"
+                    }
+                },
+                "child_plates": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/child_plates",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/child_plates"
+                    }
+                },
+                "child_tubes": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/child_tubes",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/child_tubes"
+                    }
+                },
+                "direct_submissions": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/direct_submissions",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/direct_submissions"
+                    }
+                },
+                "state_changes": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/state_changes",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/state_changes"
+                    }
+                },
+                "wells": {
+                    "links": {
+                        "self": "http://127.0.0.1:3000/api/v2/plates/2/relationships/wells",
+                        "related": "http://127.0.0.1:3000/api/v2/plates/2/wells"
+                    }
+                }
+            }
+        }
+    ],
+    "included": [
+        {
+            "id": "58",
+            "type": "purposes",
+            "links": {
+                "self": "http://127.0.0.1:3000/api/v2/purposes/58"
+            },
+            "attributes": {
+                "uuid": "1542ff62-e6e3-11ed-970d-1ae941b82137",
+                "name": "LBSN-96 Lysate",
+                "size": 96,
+                "lifespan": null
+            }
+        }
+    ],
+    "links": {
+        "first": "http://127.0.0.1:3000/api/v2/labware?filter%5Bbarcode%5D=SQPD-9002&include=purpose&page%5Bnumber%5D=1&page%5Bsize%5D=100",
+        "last": "http://127.0.0.1:3000/api/v2/labware?filter%5Bbarcode%5D=SQPD-9002&include=purpose&page%5Bnumber%5D=1&page%5Bsize%5D=100"
+    }
+}

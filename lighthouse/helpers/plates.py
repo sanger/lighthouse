@@ -46,7 +46,30 @@ from lighthouse.constants.fields import (
     FIELD_SS_SUPPLIER_NAME,
     FIELD_SS_UUID,
 )
-from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
+from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE, BIOSCAN_PLATE_PURPOSE
+from lighthouse.constants.jsonapi import (
+    JS_ATTRIBUTES,
+    JS_CONTROL,
+    JS_CONTROL_TYPE,
+    JS_DATA,
+    JS_ID,
+    JS_INCLUDED,
+    JS_RELATIONSHIPS,
+    JS_TYPE,
+    JS_SAMPLES,
+    JS_ALIQUOTS,
+    JS_SAMPLE,
+    JS_WELLS,
+    JS_POSITION,
+    JS_NAME,
+    JS_ERROR,
+    JS_PURPOSES,
+    JS_PCR_POSITIVE,
+    JS_PCR_NEGATIVE,
+    JS_BARCODE,
+    JS_POSITIVE_CONTROL,
+    JS_NEGATIVE_CONTROL,
+)
 from lighthouse.exceptions import DataError, MissingCentreError, MissingSourceError, MultipleCentresError
 from lighthouse.helpers.dart import find_dart_source_samples_rows
 from lighthouse.helpers.events import (
@@ -62,13 +85,6 @@ from lighthouse.messages.message import Message
 from lighthouse.types import SampleDoc, SampleDocs
 
 logger = logging.getLogger(__name__)
-
-
-# TODO - Refactor:
-# * move db calls (MLWH and Mongo) to separate files
-# * consolidate small methods into larger ones if the small methods are not re-used elsewhere
-# * make private methods obviously so, and don't explicitly test them
-# On refactoring be careful to heed the WARNs in the code: not losing distributed functionality
 
 
 def classify_samples_by_centre(samples: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
@@ -258,6 +274,117 @@ def send_to_ss_heron_plates(body: Dict[str, Any]) -> requests.Response:
         response = requests.post(ss_url, json=body, headers=headers)
 
         logger.debug(f"Response status code: {response.status_code}")
+
+        return response
+    except requests.ConnectionError:
+        raise requests.ConnectionError("Unable to access Sequencescape")
+
+
+class ControlLocations:
+    def __init__(self, included: list) -> None:
+        self.included = included
+
+    def _get_sample_control_type(self, sample_id: list) -> Optional[str]:
+        # Get the first sample
+        sample = next(elem for elem in self.included if elem[JS_TYPE] == JS_SAMPLES and elem[JS_ID] == sample_id)
+
+        # Return the control type of the sample, if sample is a control
+        return sample[JS_ATTRIBUTES][JS_CONTROL_TYPE] if sample[JS_ATTRIBUTES][JS_CONTROL] is True else None
+
+    def _get_control_types_for_aliquots(self, aliquot_ids: list) -> List[str]:
+        # Get aliquots from included data
+        aliquots = [elem for elem in self.included if elem[JS_TYPE] == JS_ALIQUOTS and elem[JS_ID] in aliquot_ids]
+
+        # Get the sample ids for the aliquot
+        sample_ids = [aliquot[JS_RELATIONSHIPS][JS_SAMPLE][JS_DATA][JS_ID] for aliquot in aliquots]
+        control_types = [self._get_sample_control_type(id) for id in sample_ids]
+
+        # Filter out any None control types
+        return [ct for ct in control_types if ct is not None]
+
+    def get_control_locations(self) -> dict:
+        def get_control_type_for_well(well):
+            # Get the aliquots ids for the well
+            aliquot_ids = [aliquot[JS_ID] for aliquot in well[JS_RELATIONSHIPS][JS_ALIQUOTS][JS_DATA]]
+            control_types = self._get_control_types_for_aliquots(aliquot_ids)
+
+            # We expect there to only be one control per well
+            return control_types[0] if len(control_types) == 1 else None
+
+        # Get wells from included data
+        wells = [elem for elem in self.included if elem[JS_TYPE] == JS_WELLS]
+
+        # For each well, get the control type for the well
+        # Create dict with key: well position, and value: control type
+        # control_types = { "A1": "pcr pos", "B1": None, .....}
+        control_types = {well[JS_ATTRIBUTES][JS_POSITION][JS_NAME]: get_control_type_for_well(well) for well in wells}
+
+        # Filter out any wells which are not controls
+        return {k: v for (k, v) in control_types.items() if v is not None}
+
+
+def convert_json_response_into_dict(barcode: str, json) -> dict:
+    # Validate plate data exists
+    if len(json[JS_DATA]) == 0:
+        return {JS_DATA: None, JS_ERROR: f"There is no plate data for barcode '{barcode}'"}
+
+    # Validate plate purpose is as expected
+    if (included := json[JS_INCLUDED]) is not None:
+        purposes = [elem for elem in included if elem[JS_TYPE] == JS_PURPOSES]
+
+        purpose_name = purposes[0][JS_ATTRIBUTES][JS_NAME]
+
+        if purpose_name != BIOSCAN_PLATE_PURPOSE:
+            return {JS_DATA: None, JS_ERROR: f"Incorrect purpose '{purpose_name}' for barcode '{barcode}'"}
+
+        # Validate samples exists for plate
+        samples = [elem for elem in included if elem[JS_TYPE] == JS_SAMPLES]
+        if len(samples) == 0:
+            return {JS_DATA: None, JS_ERROR: f"There are no samples for barcode '{barcode}'"}
+
+    # Instantiate wrapper class
+    control_locations = ControlLocations(included)
+
+    # Perform data processing, to retrieve well controls
+    control_info = control_locations.get_control_locations()
+    # { well_position: control_type } e.g.  {'A1': 'pcr positive', 'B1': 'pcr negative'}
+
+    # Get the well position, for the +ve and -ve control types
+    positive_control_position = [k for (k, v) in control_info.items() if v == JS_PCR_POSITIVE]
+    negative_control_position = [k for (k, v) in control_info.items() if v == JS_PCR_NEGATIVE]
+
+    # Validate only one positive and one negative controls exist
+    if len(positive_control_position) > 1 or len(negative_control_position) > 1:
+        return {
+            JS_DATA: None,
+            JS_ERROR: f"There should be only one positive and one negative control for barcode '{barcode}'",
+        }
+
+    # Validate both controls exist
+    if len(positive_control_position) != 1 or len(negative_control_position) != 1:
+        return {JS_DATA: None, JS_ERROR: f"Missing positive or negative control for barcode '{barcode}'"}
+
+    # Convert data into expected format for Beckman
+    # This response was defined by the Beckman SAT
+    locations = {
+        JS_BARCODE: barcode,
+        JS_POSITIVE_CONTROL: positive_control_position[0],
+        JS_NEGATIVE_CONTROL: negative_control_position[0],
+    }
+
+    return {JS_DATA: locations, JS_ERROR: None}
+
+
+def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
+    ss_url: str = f"{app.config['SS_URL']}/api/v2/labware"
+
+    try:
+        params = {"filter[barcode]": plate_barcode, "include": "purpose,receptacles.aliquots.sample"}
+        response = requests.get(f"{ss_url}", params=params)
+
+        logger.debug(f"Response status code: {response.status_code}")
+
+        assert JS_DATA in response.json(), f"Expected '{JS_DATA}' in response: {response.json()}"
 
         return response
     except requests.ConnectionError:

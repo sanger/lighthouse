@@ -6,6 +6,7 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+import requests
 import responses
 from flask import current_app
 
@@ -65,6 +66,9 @@ from lighthouse.helpers.plates import (
     rows_with_controls,
     rows_without_controls,
     source_plate_field_generators,
+    get_from_ss_plates_samples_info,
+    ControlLocations,
+    convert_json_response_into_dict,
 )
 
 # ---------- test helpers ----------
@@ -89,11 +93,74 @@ def mock_event_helpers():
                             )
 
 
+PLATE_DATA = [{"id": "17", "type": "plates"}]
+PLATE_INCLUDED = [
+    {"id": "57", "type": "purposes", "attributes": {"name": "LBSN-96 Lysate"}},
+    {
+        "id": "2692",
+        "type": "wells",
+        "attributes": {"position": {"name": "A1"}},
+        "relationships": {"aliquots": {"data": [{"type": "aliquots", "id": "123"}]}},
+    },
+    {
+        "id": "2693",
+        "type": "wells",
+        "attributes": {"position": {"name": "B1"}},
+        "relationships": {"aliquots": {"data": [{"type": "aliquots", "id": "124"}]}},
+    },
+    {"id": "123", "type": "aliquots", "relationships": {"sample": {"data": {"type": "samples", "id": "109"}}}},
+    {"id": "124", "type": "aliquots", "relationships": {"sample": {"data": {"type": "samples", "id": "110"}}}},
+    {"id": "109", "type": "samples", "attributes": {"control": True, "control_type": "pcr positive"}},
+    {"id": "110", "type": "samples", "attributes": {"control": True, "control_type": "pcr negative"}},
+]
+PLATE_JSON = {"data": PLATE_DATA, "included": PLATE_INCLUDED}
+
+
 def any_failure_type(app):
     return list(app.config["ROBOT_FAILURE_TYPES"].keys())[0]
 
 
 # ---------- tests ----------
+
+
+def test_get_from_ss_plates_samples_info_connection_error(app, monkeypatch):
+    with app.app_context():
+        barcode = "ABCD-1234"
+        ss_url = "http://ss.invalid"  # SS down
+
+        monkeypatch.setitem(app.config, "SS_URL", ss_url)
+
+        with pytest.raises(requests.ConnectionError):
+            get_from_ss_plates_samples_info(barcode)
+
+
+def test_get_from_ss_plates_samples_info_success(app, mocked_responses):
+    with app.app_context():
+        barcode = "ABCD-1234"
+        ss_url = ss_url = (
+            f"{app.config['SS_URL']}/api/v2/labware?filter[barcode]={barcode}"
+            f"&include=purpose,receptacles.aliquots.sample"
+        )
+        json = {"data": ["plate data"], "included": ["plate includes"]}
+
+        mocked_responses.add(responses.GET, ss_url, json=json, status=HTTPStatus.OK)
+
+        response = get_from_ss_plates_samples_info(barcode)
+        assert response.json() == json
+
+
+def test_get_control_locations():
+    control_locations = ControlLocations(PLATE_INCLUDED)
+    locations = control_locations.get_control_locations()
+
+    assert locations == {"A1": "pcr positive", "B1": "pcr negative"}
+
+
+def test_convert_json_response_into_dict():
+    barcode = "ABCD-1234"
+    data = convert_json_response_into_dict(barcode, PLATE_JSON)
+
+    assert data == {"data": {"barcode": barcode, "positive_control": "A1", "negative_control": "B1"}, "error": None}
 
 
 def test_classify_samples_by_centre(app, samples, mocked_responses):

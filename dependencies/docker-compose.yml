@@ -4,6 +4,8 @@ services:
   # To run it as a standalone container:
   #   docker run --name mysql-5.7 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -d -p 3306:3306 mysql:5.7
   mysql-5.7:
+    # Use the following on M1; for Docker Rosetta support on macOS Ventura.
+    # platform: linux/amd64
     image: mysql:5.7
     ports:
       - "3306:3306"
@@ -31,6 +33,8 @@ services:
   # To run it as a standalone container:
   #   docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=MyS3cr3tPassw0rd' -p 1433:1433 -d --name mssql mcr.microsoft.com/mssql/server:2017-latest
   mssql-2017:
+    # Use the following on M1; for Docker Rosetta support on macOS Ventura.
+    # platform: linux/amd64
     image: mcr.microsoft.com/mssql/server:2017-latest
     ports:
       - "1433:1433"
@@ -44,6 +48,8 @@ services:
   # To run it as a standalone container:
   #   docker run -p "3010:22" -v ${PWD}/test:/home/foo -d atmoz/sftp foo:pass:1001
   sftp_server:
+    # Use the following on M1; for Docker Rosetta support on macOS Ventura.
+    # platform: linux/amd64
     image: atmoz/sftp
     volumes:
       - ../test:/home/foo

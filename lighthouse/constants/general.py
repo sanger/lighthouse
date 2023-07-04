@@ -7,6 +7,7 @@ ARG_TYPE = "_type"
 ARG_TYPE_DESTINATION = "destination"
 ARG_TYPE_SOURCE = "source"
 ARG_USER_ID = "user_id"
+ARG_USER = "user"
 
 # Columns that should appear in the fit to pick samples report and the order in which they will appear
 REPORT_COLUMNS = [
@@ -28,3 +29,6 @@ FACET_COUNT_FILTERED_POSITIVE = "count_filtered_positive"
 FACET_COUNT_MUST_SEQUENCE = "count_must_sequence"
 FACET_COUNT_PREFERENTIALLY_SEQUENCE = "count_preferentially_sequence"
 FACET_DISTINCT_PLATE_BARCODE = "distinct_plate_barcode"
+
+# Expected plate purpose for Beckman /pickings
+BIOSCAN_PLATE_PURPOSE = "LBSN-96 Lysate"
