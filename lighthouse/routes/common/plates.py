@@ -7,7 +7,15 @@ from flask import request
 from lighthouse.constants.config import SS_FILTER_FIT_TO_PICK, SS_ONLY_SUBMIT_NEW_SAMPLES, SS_PLATE_TYPE_DEFAULT
 from lighthouse.constants.error_messages import ERROR_UNEXPECTED_PLATES_CREATE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
-from lighthouse.constants.general import ARG_EXCLUDE, ARG_TYPE, ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
+from lighthouse.constants.general import (
+    ARG_BARCODE,
+    ARG_EXCLUDE,
+    ARG_ROBOT_SERIAL,
+    ARG_TYPE,
+    ARG_TYPE_DESTINATION,
+    ARG_TYPE_SOURCE,
+    ARG_USER,
+)
 from lighthouse.helpers.cherrytrack import (
     get_samples_from_source_plate_barcode_from_cherrytrack,
     get_wells_from_destination_barcode_from_cherrytrack,
@@ -17,9 +25,11 @@ from lighthouse.helpers.mongo import get_all_samples_for_source_plate, get_sourc
 from lighthouse.helpers.plates import (
     centre_prefixes_for_samples,
     check_if_plate_exists_in_ss,
+    convert_json_response_into_dict,
     create_post_body,
     filter_for_new_samples,
     format_plate,
+    get_from_ss_plates_samples_info,
     send_to_ss_heron_plates,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
@@ -27,6 +37,49 @@ from lighthouse.types import FlaskResponse
 from lighthouse.utils import pretty
 
 LOGGER = logging.getLogger(__name__)
+
+
+def get_control_locations() -> FlaskResponse:
+    """
+    Get the POST body and validate the presence of fields
+    Then call Sequencescape, to get sample information for the plate
+    Get the control locations for the plate, from sample infomation
+    Return response to Beckman robot
+
+    Returns:
+        FlaskResponse: json body containing the plate barcode, and +ve/-ve control locations
+    """
+
+    logger.info("Attemping to fetching control locations for barcode")
+
+    # Validate presence of user, robot, barcode
+    barcode = None
+    user = None
+    robot = None
+
+    if (request_json := request.get_json()) is not None:
+        barcode = request_json.get(ARG_BARCODE)
+        user = request_json.get(ARG_USER)
+        robot = request_json.get(ARG_ROBOT_SERIAL)
+
+    # Return 400 if POST body fails validation
+    if barcode is None or user is None or robot is None:
+        return bad_request(f"POST request needs '{ARG_BARCODE}', '{ARG_USER}' and '{ARG_ROBOT_SERIAL}' in body")
+
+    # Send GET to Sequencescape, to return all samples for the barcode
+    try:
+        ss_response = get_from_ss_plates_samples_info(barcode)
+    except Exception as exc:
+        return internal_server_error(str(exc))
+
+    # but maybe that could be handled elsewhere
+    response_dict = convert_json_response_into_dict(barcode, ss_response.json())
+
+    # Check if any errors exist
+    if response_dict["error"] is not None:
+        return bad_request(response_dict["error"])
+
+    return response_dict["data"], HTTPStatus.OK
 
 
 def create_plate_from_barcode() -> FlaskResponse:

@@ -5,6 +5,7 @@ from lighthouse.routes.common.plates import (
     create_plate_from_barcode,
     find_plate_from_barcode,
     find_cherrytrack_plate_from_barcode,
+    get_control_locations,
 )
 from lighthouse.routes.common.reports import create_report, delete_reports, get_reports
 from lighthouse.types import FlaskResponse
@@ -41,3 +42,8 @@ def create_report_endpoint() -> FlaskResponse:
 @bp.post("/delete_reports")
 def delete_reports_endpoint() -> FlaskResponse:
     return delete_reports()
+
+
+@bp.post("/pickings")
+def get_control_locations_endpoint() -> FlaskResponse:
+    return get_control_locations()
