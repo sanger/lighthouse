@@ -92,11 +92,25 @@ SS_PLATE_CONFIG = {
         SS_UUID_PLATE_PURPOSE: "heron_purpose",
         SS_UUID_STUDY: "heron_study",
         SS_FILTER_FIT_TO_PICK: True,
+        SS_ONLY_SUBMIT_NEW_SAMPLES: False,
     },
-    "unfiltered": {
-        SS_UUID_PLATE_PURPOSE: "unfiltered_purpose",
-        SS_UUID_STUDY: "unfiltered_study",
+    "fit_to_pick_new_samples_only": {
+        SS_UUID_PLATE_PURPOSE: "fit_to_pick_new_samples_purpose",
+        SS_UUID_STUDY: "fit_to_pick_new_samples_study",
+        SS_FILTER_FIT_TO_PICK: True,
+        SS_ONLY_SUBMIT_NEW_SAMPLES: True,
+    },
+    "all_samples": {
+        SS_UUID_PLATE_PURPOSE: "all_samples_purpose",
+        SS_UUID_STUDY: "all_samples_study",
         SS_FILTER_FIT_TO_PICK: False,
+        SS_ONLY_SUBMIT_NEW_SAMPLES: False,
+    },
+    "all_new_samples_only": {
+        SS_UUID_PLATE_PURPOSE: "all_new_samples_purpose",
+        SS_UUID_STUDY: "all_new_samples_study",
+        SS_FILTER_FIT_TO_PICK: False,
+        SS_ONLY_SUBMIT_NEW_SAMPLES: True,
     },
 }
 SS_UUIDS_CHERRYPICKED = {SS_UUID_PLATE_PURPOSE: "cherrypicked_purpose", SS_UUID_STUDY: "cherrypicked_study"}
