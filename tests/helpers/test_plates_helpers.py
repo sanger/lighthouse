@@ -40,11 +40,13 @@ from lighthouse.constants.fields import (
 )
 from lighthouse.constants.general import ARG_TYPE_DESTINATION, ARG_TYPE_SOURCE
 from lighthouse.helpers.plates import (
+    ControlLocations,
     add_controls_to_samples,
     centre_prefixes_for_samples,
     check_matching_sample_numbers,
     classify_samples_by_centre,
     construct_cherrypicking_plate_failed_message,
+    convert_json_response_into_dict,
     create_cherrypicked_post_body,
     create_post_body,
     destination_plate_field_generators,
@@ -54,11 +56,12 @@ from lighthouse.helpers.plates import (
     find_source_plates,
     format_plate,
     get_centre_prefix,
+    get_from_ss_plates_samples_info,
     get_source_plates_for_samples,
     get_unique_plate_barcodes,
     join_rows_with_samples,
     map_to_ss_columns,
-    plate_exists_in_ss,
+    plate_exists_in_ss_with_barcode,
     query_for_cherrypicked_samples,
     query_for_source_plate_uuids,
     row_is_normal_sample,
@@ -66,9 +69,6 @@ from lighthouse.helpers.plates import (
     rows_with_controls,
     rows_without_controls,
     source_plate_field_generators,
-    get_from_ss_plates_samples_info,
-    ControlLocations,
-    convert_json_response_into_dict,
 )
 
 # ---------- test helpers ----------
@@ -1079,12 +1079,12 @@ def test_destination_plate_field_generators(app):
             destination_plate_field_generators(barcode=plate_barcode).keys()
         )
         assert destination_plate_field_generators(barcode=plate_barcode)["plate_barcode"]() == plate_barcode
-        with patch("lighthouse.helpers.plates.plate_exists_in_ss", side_effect=(True, False)):
+        with patch("lighthouse.helpers.plates.plate_exists_in_ss_with_barcode", side_effect=(True, False)):
             assert destination_plate_field_generators(barcode=plate_barcode)["plate_exists"]() is True
             assert destination_plate_field_generators(barcode=plate_barcode)["plate_exists"]() is False
 
 
-def test_plate_exists_in_ss(app, mocked_responses):
+def test_plate_exists_in_ss_with_barcode(app, mocked_responses):
     with app.app_context():
         ss_url = f"{app.config['SS_URL']}/api/v2/labware"
         first_plate_barcode = "plate_123"
@@ -1103,8 +1103,8 @@ def test_plate_exists_in_ss(app, mocked_responses):
             status=HTTPStatus.OK,
         )
 
-        assert plate_exists_in_ss(barcode=first_plate_barcode) is True
-        assert plate_exists_in_ss(barcode=second_plate_barcode) is False
+        assert plate_exists_in_ss_with_barcode(barcode=first_plate_barcode) is True
+        assert plate_exists_in_ss_with_barcode(barcode=second_plate_barcode) is False
 
 
 # def test_construct_cherrypicking_plate_failed_message_success(

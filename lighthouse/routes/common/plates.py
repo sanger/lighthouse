@@ -29,7 +29,7 @@ from lighthouse.helpers.plates import (
     filter_for_new_samples,
     format_plate,
     get_from_ss_plates_samples_info,
-    plate_exists_in_ss,
+    plate_exists_in_ss_with_uuid,
     send_to_ss_heron_plates,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
@@ -157,7 +157,7 @@ def _create_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskRespons
     if plate_uuid is None:
         return bad_request(f"No plate exists for barcode: {barcode}")
 
-    if plate_exists_in_ss(plate_uuid):
+    if plate_exists_in_ss_with_uuid(plate_uuid):
         return bad_request(f"The barcode '{barcode}' is already in use.")
 
     samples = get_all_samples_for_source_plate(plate_uuid)

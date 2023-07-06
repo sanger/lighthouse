@@ -247,7 +247,7 @@ def request_with_retries(request_func: Callable, response_func: Callable[[Any], 
     raise requests.ConnectionError("Unable to access Sequencescape.")
 
 
-def plate_exists_in_ss(uuid: str) -> bool:
+def plate_exists_in_ss_with_uuid(uuid: str) -> bool:
     ss_url = f"{app.config['SS_URL']}/api/v2/plates"
     params = {"filter[uuid]": uuid}
     headers = _ss_headers()
@@ -808,11 +808,11 @@ def destination_plate_field_generators(
     """
     return {
         "plate_barcode": lambda: barcode,
-        "plate_exists": lambda: plate_exists_in_ss(barcode),
+        "plate_exists": lambda: plate_exists_in_ss_with_barcode(barcode),
     }
 
 
-def plate_exists_in_ss(barcode: str) -> bool:
+def plate_exists_in_ss_with_barcode(barcode: str) -> bool:
     """Check if a plate with given barcode exists in Sequencescape.
 
     Arguments:
@@ -821,7 +821,7 @@ def plate_exists_in_ss(barcode: str) -> bool:
     Returns:
         bool: True if the plate exists, False otherwise.
     """
-    LOGGER.debug("plate_exists_in_ss()")
+    LOGGER.debug("plate_exists_in_ss_with_barcode()")
     try:
         ss_url: str = app.config["SS_URL"]
         params = {
