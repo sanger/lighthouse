@@ -24,12 +24,12 @@ from lighthouse.helpers.general import get_fit_to_pick_samples_and_counts
 from lighthouse.helpers.mongo import get_all_samples_for_source_plate, get_source_plate_uuid
 from lighthouse.helpers.plates import (
     centre_prefixes_for_samples,
-    check_if_plate_exists_in_ss,
     convert_json_response_into_dict,
     create_post_body,
     filter_for_new_samples,
     format_plate,
     get_from_ss_plates_samples_info,
+    plate_exists_in_ss,
     send_to_ss_heron_plates,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
@@ -157,7 +157,7 @@ def _create_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskRespons
     if plate_uuid is None:
         return bad_request(f"No plate exists for barcode: {barcode}")
 
-    if check_if_plate_exists_in_ss(plate_uuid):
+    if plate_exists_in_ss(plate_uuid):
         return bad_request(f"The barcode '{barcode}' is already in use.")
 
     samples = get_all_samples_for_source_plate(plate_uuid)
