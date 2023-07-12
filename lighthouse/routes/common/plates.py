@@ -4,7 +4,7 @@ from http import HTTPStatus
 from flask import current_app as app
 from flask import request
 
-from lighthouse.constants.config import SS_FILTER_FIT_TO_PICK, SS_PLATE_TYPE_DEFAULT
+from lighthouse.constants.config import SS_FILTER_FIT_TO_PICK, SS_ONLY_SUBMIT_NEW_SAMPLES, SS_PLATE_TYPE_DEFAULT
 from lighthouse.constants.error_messages import ERROR_UNEXPECTED_PLATES_CREATE
 from lighthouse.constants.fields import FIELD_PLATE_BARCODE
 from lighthouse.constants.general import (
@@ -26,15 +26,17 @@ from lighthouse.helpers.plates import (
     centre_prefixes_for_samples,
     convert_json_response_into_dict,
     create_post_body,
+    filter_for_new_samples,
     format_plate,
     get_from_ss_plates_samples_info,
+    plate_exists_in_ss_with_barcode,
     send_to_ss_heron_plates,
 )
 from lighthouse.helpers.responses import bad_request, internal_server_error, ok
 from lighthouse.types import FlaskResponse
 from lighthouse.utils import pretty
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def get_control_locations() -> FlaskResponse:
@@ -48,7 +50,7 @@ def get_control_locations() -> FlaskResponse:
         FlaskResponse: json body containing the plate barcode, and +ve/-ve control locations
     """
 
-    logger.info("Attemping to fetching control locations for barcode")
+    LOGGER.info("Attemping to fetching control locations for barcode")
 
     # Validate presence of user, robot, barcode
     barcode = None
@@ -88,7 +90,7 @@ def create_plate_from_barcode() -> FlaskResponse:
     Returns:
         FlaskResponse: the endpoints acts as proxy and returns the response and status code received from Sequencescape.
     """
-    logger.info("Attempting to create a plate in Sequencescape")
+    LOGGER.info("Attempting to create a plate in Sequencescape")
 
     barcode = None
     if (request_json := request.get_json()) is not None:
@@ -113,13 +115,20 @@ def create_plate_from_barcode() -> FlaskResponse:
             return _create_plate_from_barcode(barcode, plate_config)
     except Exception as e:
         msg = f"{ERROR_UNEXPECTED_PLATES_CREATE} ({type(e).__name__})"
-        logger.error(msg)
-        logger.exception(e)
+        LOGGER.error(msg)
+        LOGGER.exception(e)
 
         return internal_server_error(msg)
 
 
 def _create_fit_to_pick_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskResponse:
+    if plate_config[SS_ONLY_SUBMIT_NEW_SAMPLES]:
+        LOGGER.warning(
+            "The plate config indicates that only new samples should be created, "
+            "but creating a fit to pick plate does not support this configuration.  "
+            f"All samples for plate with barcode '{barcode}' will be sent to Sequencescape."
+        )
+
     # get samples for barcode
     (fit_to_pick_samples, count_fit_to_pick_samples, _, _, _) = get_fit_to_pick_samples_and_counts(barcode)
 
@@ -148,7 +157,14 @@ def _create_plate_from_barcode(barcode: str, plate_config: dict) -> FlaskRespons
     if plate_uuid is None:
         return bad_request(f"No plate exists for barcode: {barcode}")
 
+    if plate_exists_in_ss_with_barcode(barcode):
+        return bad_request(f"The barcode '{barcode}' is already in use.")
+
     samples = get_all_samples_for_source_plate(plate_uuid)
+
+    if samples and plate_config[SS_ONLY_SUBMIT_NEW_SAMPLES]:
+        samples = filter_for_new_samples(samples)
+
     if not samples:
         return bad_request(f"No samples found on plate with barcode: {barcode}")
 
@@ -236,7 +252,7 @@ def find_plate_from_barcode() -> FlaskResponse:
     Returns:
         FlaskResponse: the response body and HTTP status code
     """
-    logger.info("Finding plate from barcode")
+    LOGGER.info("Finding plate from barcode")
     try:
         barcodes_arg = request.args.get("barcodes")
         barcodes_list = barcodes_arg.split(",") if barcodes_arg else []
@@ -252,26 +268,26 @@ def find_plate_from_barcode() -> FlaskResponse:
         exclude_props_arg = request.args.get(ARG_EXCLUDE)
         exclude_props = exclude_props_arg.split(",") if exclude_props_arg else []
 
-        logger.debug(f"{plate_type} plate(s) barcodes to look for: {barcodes_arg}")
+        LOGGER.debug(f"{plate_type} plate(s) barcodes to look for: {barcodes_arg}")
 
         plates = [
             format_plate(barcode, exclude_props=exclude_props, plate_type=plate_type) for barcode in barcodes_list
         ]
 
-        pretty(logger, plates)
+        pretty(LOGGER, plates)
 
         return ok(plates=plates)
     except AssertionError as e:
         return bad_request(str(e))
     except Exception as e:
-        logger.exception(e)
+        LOGGER.exception(e)
         # We don't use str(e) here to fetch the exception summary, because the exceptions we're most likely to see here
         #   aren't end-user-friendly
         return internal_server_error(f"Failed to lookup plates: {type(e).__name__}")
 
 
 def find_cherrytrack_plate_from_barcode() -> FlaskResponse:
-    logger.info("Finding cherry track plate from barcode")
+    LOGGER.info("Finding cherry track plate from barcode")
     try:
         barcode = request.args.get("barcode") or ""
 
@@ -279,7 +295,7 @@ def find_cherrytrack_plate_from_barcode() -> FlaskResponse:
 
         plate_type = request.args.get(ARG_TYPE) or ""
 
-        logger.debug(f"{plate_type} plate barcode to look for: {barcode}")
+        LOGGER.debug(f"{plate_type} plate barcode to look for: {barcode}")
 
         if plate_type == ARG_TYPE_SOURCE:
             response = get_samples_from_source_plate_barcode_from_cherrytrack(barcode)
@@ -297,5 +313,5 @@ def find_cherrytrack_plate_from_barcode() -> FlaskResponse:
     except AssertionError as e:
         return bad_request(str(e))
     except Exception as e:
-        logger.exception(e)
+        LOGGER.exception(e)
         return internal_server_error(f"Failed to lookup plate: {str(e)}")
