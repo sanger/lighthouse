@@ -247,19 +247,6 @@ def request_with_retries(request_func: Callable, response_func: Callable[[Any], 
     raise requests.ConnectionError("Unable to access Sequencescape.")
 
 
-def plate_exists_in_ss_with_uuid(uuid: str) -> bool:
-    ss_url = f"{app.config['SS_URL']}/api/v2/plates"
-    params = {"filter[uuid]": uuid}
-    headers = _ss_headers()
-
-    LOGGER.debug(f"Searching Sequencescape for plate with UUID: '{uuid}'.")
-
-    return request_with_retries(
-        request_func=lambda: requests.get(ss_url, params=params, headers=headers),
-        response_func=lambda response: len(response.json()["data"]) > 0,
-    )
-
-
 def filter_for_new_samples(samples: List[Dict[str, str]]) -> List[Dict[str, str]]:
     def is_sample_new(sample: Dict[str, str]) -> bool:
         sample_uuid = sample[FIELD_LH_SAMPLE_UUID]

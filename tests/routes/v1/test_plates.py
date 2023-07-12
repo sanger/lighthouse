@@ -24,12 +24,9 @@ VALID_PLATE_BARCODE = "plate_123"
 INVALID_PLATE_BARCODE = "qwerty"
 EMPTY_PLATE_BARCODE = "plate_empty"
 
-LOOKUP_PLATE_ERROR_JSON = {"errors": ["Plate lookup failed."]}
+LOOKUP_LABWARE_ERROR_JSON = {"errors": ["Labware lookup failed."]}
 LOOKUP_SAMPLES_ERROR_JSON = {"errors": ["Samples lookup failed."]}
 CREATE_PLATE_ERROR_JSON = {"errors": ["The barcode 'plate_123' is not a recognised format."]}
-CONNECTION_ERROR_JSON = {
-    "errors": ["An unexpected error occurred attempting to create a plate in Sequencescape: (ConnectionError)"]
-}
 
 QUERY_PARAM_BARCODE = "barcode"
 QUERY_PARAM_BARCODES = "barcodes"
@@ -44,19 +41,19 @@ def create_plate_body(barcode, plate_type=None):
     return body
 
 
-def mock_plates_lookup(app, mocked_responses, plates_found_count=0):
-    ss_url = f"{app.config['SS_URL']}/api/v2/plates"
+def mock_labware_lookup(app, mocked_responses, labware_found_count=0):
+    ss_url = f"{app.config['SS_URL']}/api/v2/labware"
 
-    for _ in range(plates_found_count):
-        mocked_responses.add(responses.GET, ss_url, json={"data": [{"some plate": "data"}]}, status=HTTPStatus.OK)
+    for _ in range(labware_found_count):
+        mocked_responses.add(responses.GET, ss_url, json={"data": [{"some labware": "data"}]}, status=HTTPStatus.OK)
 
-    if plates_found_count == 0:
+    if labware_found_count == 0:
         mocked_responses.add(responses.GET, ss_url, json={"data": []}, status=HTTPStatus.OK)
 
 
-def mock_plates_lookup_failure(app, mocked_responses):
-    ss_url = f"{app.config['SS_URL']}/api/v2/plates"
-    mocked_responses.add(responses.GET, ss_url, json=LOOKUP_PLATE_ERROR_JSON, status=HTTPStatus.UNPROCESSABLE_ENTITY)
+def mock_labware_lookup_failure(app, mocked_responses):
+    ss_url = f"{app.config['SS_URL']}/api/v2/labware"
+    mocked_responses.add(responses.GET, ss_url, json=LOOKUP_LABWARE_ERROR_JSON, status=HTTPStatus.UNPROCESSABLE_ENTITY)
 
 
 def mock_samples_lookup(app, mocked_responses, found_samples_count=0, mock_missing_samples=True):
@@ -151,7 +148,7 @@ def test_post_plates_endpoint_successful_with_all_samples_plate_type_and_all_cog
     app, client, samples, source_plates, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
     body = create_plate_body(VALID_PLATE_BARCODE, "all_samples")
-    mock_plates_lookup(app, mocked_responses)
+    mock_labware_lookup(app, mocked_responses)
     mock_plate_create(app, mocked_responses, body)
 
     response = client.post(endpoint, json=body)
@@ -167,7 +164,7 @@ def test_post_plates_endpoint_successful_with_all_new_samples_only_plate_type_an
     app, client, samples, source_plates, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
     body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")
-    mock_plates_lookup(app, mocked_responses)
+    mock_labware_lookup(app, mocked_responses)
     mock_samples_lookup(app, mocked_responses)
     mock_plate_create(app, mocked_responses, body)
 
@@ -184,7 +181,7 @@ def test_post_plates_endpoint_successful_with_all_new_samples_only_plate_type_so
     app, client, samples, source_plates, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
     body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")
-    mock_plates_lookup(app, mocked_responses)
+    mock_labware_lookup(app, mocked_responses)
     mock_samples_lookup(app, mocked_responses, found_samples_count=5)
     mock_plate_create(app, mocked_responses, body)
 
@@ -201,7 +198,7 @@ def test_post_plates_endpoint_successful_with_all_new_samples_only_plate_type_al
     app, client, samples, source_plates, priority_samples, mocked_responses, mlwh_lh_samples, endpoint
 ):
     body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")
-    mock_plates_lookup(app, mocked_responses)
+    mock_labware_lookup(app, mocked_responses)
     mock_samples_lookup(app, mocked_responses, found_samples_count=8, mock_missing_samples=False)
 
     response = client.post(endpoint, json=body)
@@ -239,7 +236,7 @@ def test_post_plates_endpoint_exception_for_all_samples_plate_type_when_plate_al
     app, client, source_plates, mocked_responses, endpoint, plate_type
 ):
     body = create_plate_body(VALID_PLATE_BARCODE, plate_type)
-    mock_plates_lookup(app, mocked_responses, plates_found_count=1)
+    mock_labware_lookup(app, mocked_responses, labware_found_count=1)
 
     response = client.post(endpoint, json=body)
 
@@ -279,7 +276,7 @@ def test_post_plates_endpoint_all_samples_plate_type_no_samples(
     app, mocked_responses, client, samples, source_plates, endpoint, plate_type
 ):
     body = create_plate_body(EMPTY_PLATE_BARCODE, plate_type)
-    mock_plates_lookup(app, mocked_responses)  # The check for samples comes after checking the plate exists
+    mock_labware_lookup(app, mocked_responses)  # The check for samples comes after checking the plate exists
 
     response = client.post(endpoint, json=body)
 
@@ -307,21 +304,23 @@ def test_post_plates_endpoint_fit_to_pick_type_with_ss_create_failure(
 def test_post_plates_endpoint_all_samples_type_with_ss_plate_lookup_failure(
     app, client, source_plates, mocked_responses, endpoint, plate_type
 ):
-    mock_plates_lookup_failure(app, mocked_responses)
+    mock_labware_lookup_failure(app, mocked_responses)
 
     body = create_plate_body(VALID_PLATE_BARCODE, plate_type)
 
     response = client.post(endpoint, json=body)
 
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert response.json == CONNECTION_ERROR_JSON
+    assert response.json == {
+        "errors": ["An unexpected error occurred attempting to create a plate in Sequencescape: (AssertionError)"]
+    }
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_all_samples_type_with_ss_failure(
     app, client, samples, source_plates, mocked_responses, endpoint
 ):
-    mock_plates_lookup(app, mocked_responses)
+    mock_labware_lookup(app, mocked_responses)
     mock_plate_create(app, mocked_responses)
 
     body = create_plate_body(VALID_PLATE_BARCODE, "all_samples")
@@ -336,7 +335,7 @@ def test_post_plates_endpoint_all_samples_type_with_ss_failure(
 def test_post_plates_endpoint_all_new_samples_only_type_with_ss_samples_lookup_failure(
     app, client, samples, source_plates, mocked_responses, endpoint
 ):
-    mock_plates_lookup(app, mocked_responses)
+    mock_labware_lookup(app, mocked_responses)
     mock_samples_lookup_failure(app, mocked_responses)
 
     body = create_plate_body(VALID_PLATE_BARCODE, "all_new_samples_only")
@@ -344,14 +343,16 @@ def test_post_plates_endpoint_all_new_samples_only_type_with_ss_samples_lookup_f
     response = client.post(endpoint, json=body)
 
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert response.json == CONNECTION_ERROR_JSON
+    assert response.json == {
+        "errors": ["An unexpected error occurred attempting to create a plate in Sequencescape: (ConnectionError)"]
+    }
 
 
 @pytest.mark.parametrize("endpoint", NEW_PLATE_ENDPOINTS)
 def test_post_plates_endpoint_all_new_samples_only_type_with_ss_failure(
     app, client, samples, source_plates, mocked_responses, endpoint
 ):
-    mock_plates_lookup(app, mocked_responses)
+    mock_labware_lookup(app, mocked_responses)
     mock_samples_lookup(app, mocked_responses)
     mock_plate_create(app, mocked_responses)
 
