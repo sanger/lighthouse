@@ -18,7 +18,7 @@ types-requests = "*"
 [packages]
 colorlog = "~=6.7"
 eve = "~=2.1"
-flask-apscheduler = "~=1.12"
+flask-apscheduler = "~=1.13"
 flask-cors = "~=4.0"
 gunicorn = "~=21.2"
 openpyxl = "~=3.1"
