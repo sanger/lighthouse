@@ -16,7 +16,7 @@ responses = "*"
 types-requests = "*"
 
 [packages]
-colorlog = "~=6.7"
+colorlog = "~=6.8"
 eve = "~=2.1"
 flask-apscheduler = "~=1.13"
 flask-cors = "~=4.0"
