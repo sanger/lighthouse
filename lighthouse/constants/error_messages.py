@@ -13,12 +13,12 @@ ERROR_CHERRYPICKED_FAILURE_RECORD: Final[str] = "Failed recording cherrypicking 
 ERROR_CHERRYPICKED_CREATE: Final[str] = "Failed to create a cherrypicked plate in Sequencescape:"
 
 
-ERROR_UNEXPECTED_CHERRYPICKING_CREATE: Final[
-    str
-] = f"{ERROR_UNEXPECTED} attempting to create a cherrypicked plate in Sequencescape:"
-ERROR_UNEXPECTED_CHERRYPICKING_FAILURE: Final[
-    str
-] = f"{ERROR_UNEXPECTED} attempting to record cherrypicking plate failure"
+ERROR_UNEXPECTED_CHERRYPICKING_CREATE: Final[str] = (
+    f"{ERROR_UNEXPECTED} attempting to create a cherrypicked plate in Sequencescape:"
+)
+ERROR_UNEXPECTED_CHERRYPICKING_FAILURE: Final[str] = (
+    f"{ERROR_UNEXPECTED} attempting to record cherrypicking plate failure"
+)
 
 ERROR_SAMPLE_DATA_MISMATCH: Final[str] = "Mismatch in destination and source sample data for plate: "
 ERROR_SAMPLE_DATA_MISSING: Final[str] = "Failed to find sample data in DART for plate barcode: "
