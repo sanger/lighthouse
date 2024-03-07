@@ -31,6 +31,7 @@ requests = "~=2.31"
 slackclient = "~=2.9"
 sqlalchemy = "~=2.0"
 pymongo = "~=4.6.1"
+black = "*"
 
 [requires]
 python_version = "3.8"
