@@ -373,8 +373,7 @@ def test_source_plate_uuid_value(app, source_plates):
             SourcePlateUUID(PlateBarcode({})).value
             SourcePlateUUID(PlateBarcode({"test": "another test"})).value
 
-        SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "1234"})).value
-        with raises(Exception):
+        with raises(Exception, match="Source plate with barcode '1234' not found"):
             SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "1234"})).value
 
         uuid = source_plates[0][FIELD_LH_SOURCE_PLATE_UUID]
