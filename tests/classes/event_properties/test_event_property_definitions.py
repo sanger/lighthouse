@@ -373,6 +373,7 @@ def test_source_plate_uuid_value(app, source_plates):
             SourcePlateUUID(PlateBarcode({})).value
             SourcePlateUUID(PlateBarcode({"test": "another test"})).value
 
+        SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "1234"})).value
         with raises(Exception):
             SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "1234"})).value
 
@@ -395,6 +396,7 @@ def test_source_plate_uuid_errors(app, source_plates):
 
         # After retrieval error
         source_plate_property = SourcePlateUUID(PlateBarcode({FIELD_EVENT_BARCODE: "1234"}))
+        source_plate_property.value
         with raises(Exception):
             source_plate_property.value
 

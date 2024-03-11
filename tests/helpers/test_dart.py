@@ -24,6 +24,7 @@ def test_find_dart_source_samples_rows_not_found_barcode(app, dart_samples):
 def test_exceptions_are_propagated_up(app, dart_samples):
     with app.app_context():
         with patch("lighthouse.db.dart.create_dart_connection", side_effect=Exception()):
+            found = find_dart_source_samples_rows("unknown")
             with raises(Exception):
                 found = find_dart_source_samples_rows("unknown")
                 assert found is None
