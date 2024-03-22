@@ -11,33 +11,31 @@ mongodb by the [crawler](https://github.com/sanger/crawler).
 
 <!-- toc -->
 
-- [Lighthouse service](#lighthouse-service)
-  - [Table of Contents](#table-of-contents)
-  - [A note on Docker](#a-note-on-docker)
-  - [Option A - using Docker](#option-a---using-docker)
-    - [Requirements for Development](#requirements-for-development)
-    - [Getting Started](#getting-started)
-      - [Configuring the Environment](#configuring-the-environment)
-      - [Setup Steps](#setup-steps)
-    - [Running](#running)
-    - [Testing](#testing)
-  - [Option B - without Docker](#option-b---without-docker)
-    - [Requirements for Development](#requirements-for-development-1)
-    - [Getting Started](#getting-started-1)
-      - [Configuring the Environment](#configuring-the-environment-1)
-      - [Setup Steps](#setup-steps-1)
-    - [Running](#running-1)
-    - [Testing](#testing-1)
-      - [Testing Requirements](#testing-requirements)
-      - [Running Tests](#running-tests)
-  - [Deployment](#deployment)
-  - [Routes](#routes)
-  - [Scheduled Jobs](#scheduled-jobs)
-  - [Miscellaneous](#miscellaneous)
-    - [Type Checking](#type-checking)
-    - [Troubleshooting](#troubleshooting)
-      - [pyodbc Errors](#pyodbc-errors)
-    - [Updating the Table of Contents](#updating-the-table-of-contents)
+- [A note on Docker](#a-note-on-docker)
+- [Option A - using Docker](#option-a---using-docker)
+  - [Requirements for Development](#requirements-for-development)
+  - [Getting Started](#getting-started)
+    - [Configuring the Environment](#configuring-the-environment)
+    - [Setup Steps](#setup-steps)
+  - [Running](#running)
+  - [Testing](#testing)
+- [Option B - without Docker](#option-b---without-docker)
+  - [Requirements for Development](#requirements-for-development-1)
+  - [Getting Started](#getting-started-1)
+    - [Configuring the Environment](#configuring-the-environment-1)
+    - [Setup Steps](#setup-steps-1)
+  - [Running](#running-1)
+  - [Testing](#testing-1)
+    - [Testing Requirements](#testing-requirements)
+    - [Running Tests](#running-tests)
+  - [Formatting, Type Checking and Linting](#formatting-type-checking-and-linting)
+- [Deployment](#deployment)
+- [Routes](#routes)
+- [Scheduled Jobs](#scheduled-jobs)
+- [Miscellaneous](#miscellaneous)
+  - [Troubleshooting](#troubleshooting)
+    - [pyodbc Errors](#pyodbc-errors)
+  - [Updating the Table of Contents](#updating-the-table-of-contents)
 
 <!-- tocstop -->
 
@@ -202,6 +200,24 @@ A wrapper is provided with pipenv (look in the Pipfile's `[scripts]` block for m
 
 **NB**: Make sure to be in the virtual environment (`pipenv shell`) before running the tests.
 
+### Formatting, Type Checking and Linting
+
+Black is used as a formatter, to format code before committing:
+
+    black .
+
+Mypy is used as a type checker, to execute:
+
+    mypy .
+
+Flake8 is used for linting, to execute:
+
+    flake8
+
+A little convenience script can be used to run the formatting, type checking and linting:
+
+    ./forlint.sh
+
 ## Deployment
 
 This project uses a Docker image as the unit of deployment. Update `.release-version` with
@@ -246,12 +262,6 @@ This service runs a scheduled job to create a report (in `.xlsx` format) for use
 It is disabled by default. The config for the job can be found in `config/defaults.py`.
 
 ## Miscellaneous
-
-### Type Checking
-
-Type checking is done using mypy, to run it, execute:
-
-    mypy .
 
 ### Troubleshooting
 
