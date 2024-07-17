@@ -75,6 +75,7 @@ from lighthouse.helpers.plates import (
 
 SS_AUTH_HEADER_MATCHER = responses.matchers.header_matcher({"X-Sequencescape-Client-Id": "development"})
 
+
 @pytest.fixture
 def mock_event_helpers():
     root = "lighthouse.helpers.plates"
@@ -1058,7 +1059,7 @@ def test_format_plate_destination(app, mocked_responses):
             f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={plate_barcode}",
             json={"data": ["barcode exists!"]},
             status=HTTPStatus.OK,
-            match=[SS_AUTH_HEADER_MATCHER]
+            match=[SS_AUTH_HEADER_MATCHER],
         )
         response = {
             "plate_barcode": "dest_123",
@@ -1097,14 +1098,14 @@ def test_plate_exists_in_ss_with_barcode(app, mocked_responses):
             f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={first_plate_barcode}",
             json={"data": ["barcode exists!"]},
             status=HTTPStatus.OK,
-            match=[SS_AUTH_HEADER_MATCHER]
+            match=[SS_AUTH_HEADER_MATCHER],
         )
         mocked_responses.add(
             responses.GET,
             f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={second_plate_barcode}",
             json={"data": []},
             status=HTTPStatus.OK,
-            match=[SS_AUTH_HEADER_MATCHER]
+            match=[SS_AUTH_HEADER_MATCHER],
         )
 
         assert plate_exists_in_ss_with_barcode(barcode=first_plate_barcode) is True
