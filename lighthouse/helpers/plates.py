@@ -429,10 +429,11 @@ def convert_json_response_into_dict(barcode: str, json) -> dict:
 
 def get_from_ss_plates_samples_info(plate_barcode: str) -> requests.Response:
     ss_url: str = f"{app.config['SS_URL']}/api/v2/labware"
+    headers = _ss_headers()
 
     try:
         params = {"filter[barcode]": plate_barcode, "include": "purpose,receptacles.aliquots.sample"}
-        response = requests.get(f"{ss_url}", params=params)
+        response = requests.get(f"{ss_url}", params=params, headers=headers)
 
         LOGGER.debug(f"Response status code: {response.status_code}")
 
@@ -814,7 +815,9 @@ def plate_exists_in_ss_with_barcode(barcode: str) -> bool:
         params = {
             "filter[barcode]": barcode,
         }
-        response = requests.get(f"{ss_url}/api/v2/labware", params=params)
+        headers = _ss_headers()
+
+        response = requests.get(f"{ss_url}/api/v2/labware", params=params, headers=headers)
 
         LOGGER.debug(f"Response status code: {response.status_code}")
 
