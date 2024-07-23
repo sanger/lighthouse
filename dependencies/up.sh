@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd "$(dirname "$0")"
-docker-compose up -d
+docker compose up -d
 
 # Initialise the MongoDB replica set after 5 seconds
 sleep 5

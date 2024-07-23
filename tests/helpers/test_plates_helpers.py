@@ -73,6 +73,8 @@ from lighthouse.helpers.plates import (
 
 # ---------- test helpers ----------
 
+SS_AUTH_HEADER_MATCHER = responses.matchers.header_matcher({"X-Sequencescape-Client-Id": "development"})
+
 
 @pytest.fixture
 def mock_event_helpers():
@@ -143,7 +145,7 @@ def test_get_from_ss_plates_samples_info_success(app, mocked_responses):
         )
         json = {"data": ["plate data"], "included": ["plate includes"]}
 
-        mocked_responses.add(responses.GET, ss_url, json=json, status=HTTPStatus.OK)
+        mocked_responses.add(responses.GET, ss_url, json=json, status=HTTPStatus.OK, match=[SS_AUTH_HEADER_MATCHER])
 
         response = get_from_ss_plates_samples_info(barcode)
         assert response.json() == json
@@ -163,7 +165,7 @@ def test_convert_json_response_into_dict():
     assert data == {"data": {"barcode": barcode, "positive_control": "A1", "negative_control": "B1"}, "error": None}
 
 
-def test_classify_samples_by_centre(app, samples, mocked_responses):
+def test_classify_samples_by_centre(samples):
     samples, _ = samples
     assert list(classify_samples_by_centre(samples).keys()) == ["centre_1", "centre_2"]
     assert len(classify_samples_by_centre(samples)["centre_1"]) == 11
@@ -177,7 +179,7 @@ def test_centre_prefixes_for_samples(samples):
     assert actual == ["centre_1", "centre_2"]
 
 
-def test_centre_prefix(app, centres, mocked_responses):
+def test_centre_prefix(app, centres):
     with app.app_context():
         assert get_centre_prefix("CENTRE_1") == "TC1"
         assert get_centre_prefix("centre_2") == "TC2"
@@ -1057,6 +1059,7 @@ def test_format_plate_destination(app, mocked_responses):
             f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={plate_barcode}",
             json={"data": ["barcode exists!"]},
             status=HTTPStatus.OK,
+            match=[SS_AUTH_HEADER_MATCHER],
         )
         response = {
             "plate_barcode": "dest_123",
@@ -1095,12 +1098,14 @@ def test_plate_exists_in_ss_with_barcode(app, mocked_responses):
             f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={first_plate_barcode}",
             json={"data": ["barcode exists!"]},
             status=HTTPStatus.OK,
+            match=[SS_AUTH_HEADER_MATCHER],
         )
         mocked_responses.add(
             responses.GET,
             f"{ss_url}?{urllib.parse.quote('filter[barcode]')}={second_plate_barcode}",
             json={"data": []},
             status=HTTPStatus.OK,
+            match=[SS_AUTH_HEADER_MATCHER],
         )
 
         assert plate_exists_in_ss_with_barcode(barcode=first_plate_barcode) is True
