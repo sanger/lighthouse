@@ -33,7 +33,7 @@ sqlalchemy = "~=2.0"
 pymongo = "~=4.8.0"
 
 [requires]
-python_version = "3.8"
+python_version = "3.13"
 
 [pipenv]
 allow_prereleases = true
