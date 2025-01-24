@@ -111,6 +111,10 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      - name: Install dependencies for building Python wheels (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3-dev libffi-dev libssl-dev libpq-dev unixodbc-dev
       - name: Install pipenv
         run: |
           pip install pipenv
