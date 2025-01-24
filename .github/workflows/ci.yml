@@ -126,9 +126,6 @@ jobs:
         with:
           mongodb-version: 4.2
           mongodb-replica-set: heron_rs
-      - name: Create SQL Server testing database
-        run: |
-          python setup_sqlserver_test_db.py
       - name: Setup the test MLWH and Events databases
         run: |
           curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
@@ -137,7 +134,9 @@ jobs:
           sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
           sudo apt-get install -y unixodbc-dev
           python setup_test_db.py
-
+      - name: Create SQL Server testing database
+        run: |
+          python setup_sqlserver_test_db.py
       - name: Test with pytest
         run: |
           python -m pytest -x
