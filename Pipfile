@@ -31,10 +31,9 @@ requests = "~=2.32"
 slackclient = "~=2.9"
 sqlalchemy = "~=2.0"
 pymongo = "~=4.8.0"
-greenlet = "~=2.0.2"
 
 [requires]
-python_version = "3.13"
+python_version = "3.11"
 
 [pipenv]
 allow_prereleases = true
