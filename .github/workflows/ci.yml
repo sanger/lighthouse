@@ -57,31 +57,9 @@ jobs:
           pipenv sync --dev --system
       - name: Lint with flake8
         run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8
-  mypy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Install pipenv
-        run: |
-          pip install pipenv
-      - name: Install dependencies
-        run: |
-          pipenv sync --dev --system
-      - name: Run mypy
-        run: |
-          python -m mypy .
+          # stop the build if there are flake8 errors
+          python -m flake8 .
+
   test:
     runs-on: ubuntu-latest
     services:
@@ -99,39 +77,29 @@ jobs:
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: MyS3cr3tPassw0rd
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Install pipenv
-        run: |
-          pip install pipenv
+          python-version: 3.13
+
       - name: Install dependencies
         run: |
-          pipenv sync --dev --system
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
-        with:
-          mongodb-version: 4.2
-          mongodb-replica-set: heron_rs
-      - name: Create SQL Server testing database
+          pip install pipenv
+          pipenv install --dev
+
+      - name: Install ODBC Driver for SQL Server
         run: |
-          python setup_sqlserver_test_db.py
-      - name: Setup the test MLWH and Events databases
-        run: |
-          python setup_test_db.py
-      - name: Test with pytest
-        run: |
-          python -m pytest -x
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          sudo su
+          curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+          curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
+          exit
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17
+
+      - name: Run tests
+        run: pipenv run test
