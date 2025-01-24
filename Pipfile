@@ -32,6 +32,7 @@ slackclient = "~=2.9"
 sqlalchemy = "~=2.0"
 pymongo = "~=4.8.0"
 setuptools = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.12"
