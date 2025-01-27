@@ -79,7 +79,7 @@ def test_get_event_source_no_pickable_wells(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key=f"test.event.{ Beckman.EVENT_SOURCE_ALL_NEGATIVES }",
+                        routing_key=f"test.event.{Beckman.EVENT_SOURCE_ALL_NEGATIVES}",
                         body='{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (

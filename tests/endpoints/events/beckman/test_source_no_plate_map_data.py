@@ -54,7 +54,7 @@ def test_event_no_plate_map_data(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key=f"test.event.{ Beckman.EVENT_SOURCE_NO_PLATE_MAP_DATA }",
+                        routing_key=f"test.event.{Beckman.EVENT_SOURCE_NO_PLATE_MAP_DATA}",
                         body='{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (

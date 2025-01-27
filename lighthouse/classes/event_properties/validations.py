@@ -17,7 +17,7 @@ class SimpleEventPropertyMixin(EventPropertyProtocol):
             bool - True/False indicating if this condition is met
         """
         with self.validation_scope():
-            self.process_validation(self.get_param_value(param) is not None, f"'{ param }' is missing")
+            self.process_validation(self.get_param_value(param) is not None, f"'{param}' is missing")
 
     def validate_param_not_empty(self, param: str) -> None:
         """
@@ -31,7 +31,7 @@ class SimpleEventPropertyMixin(EventPropertyProtocol):
             bool - True/False indicating if this condition is met
         """
         with self.validation_scope():
-            self.process_validation(self.get_param_value(param) != "", f"'{ param }' should not be an empty string")
+            self.process_validation(self.get_param_value(param) != "", f"'{param}' should not be an empty string")
 
     def validate_param_no_whitespaces(self, param: str) -> None:
         """
@@ -47,7 +47,7 @@ class SimpleEventPropertyMixin(EventPropertyProtocol):
         with self.validation_scope():
             text_to_check = self.get_param_value(param)
             self.process_validation(
-                text_to_check is None or (" " not in text_to_check), f"'{ param }' should not contain any whitespaces"
+                text_to_check is None or (" " not in text_to_check), f"'{param}' should not contain any whitespaces"
             )
 
     def validate_param_is_integer(self, param: str) -> None:
@@ -65,4 +65,4 @@ class SimpleEventPropertyMixin(EventPropertyProtocol):
             bool - True/False indicating if this condition is met
         """
         with self.validation_scope():
-            self.process_validation(is_integer(self.get_param_value(param)), f"'{ param }' should be an integer")
+            self.process_validation(is_integer(self.get_param_value(param)), f"'{param}' should be an integer")
