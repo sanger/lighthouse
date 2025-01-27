@@ -65,7 +65,7 @@ DART_SQL_SERVER_DATABASE = "DartTestDB"
 # NB: Create the connection string here as we define the database here. Since a f-string is evaluated immediately,
 # it cannot only live in defaults.py if we redefine any of the variables that are used to create it.
 DART_SQL_SERVER_CONNECTION_STRING = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
+    "DRIVER={ODBC Driver 18 for SQL Server};"
     f"SERVER=tcp:{DART_SQL_SERVER_HOST};"
     f"DATABASE={DART_SQL_SERVER_DATABASE};"
     f"UID={DART_SQL_SERVER_USER};"

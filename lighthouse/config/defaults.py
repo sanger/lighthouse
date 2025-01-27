@@ -184,7 +184,7 @@ DART_RESULT_VIEW = "CherrypickingInfo"
 
 # NB: Remember to copy this definition to any config which redefines any of the variables that are used to create it.
 DART_SQL_SERVER_CONNECTION_STRING = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
+    "DRIVER={ODBC Driver 18 for SQL Server};"
     f"SERVER=tcp:{DART_SQL_SERVER_HOST};"
     f"DATABASE={DART_SQL_SERVER_DATABASE};"
     f"UID={DART_SQL_SERVER_USER};"
