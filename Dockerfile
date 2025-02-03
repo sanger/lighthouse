@@ -1,5 +1,5 @@
 # Use slim for a smaller image size and install only the required packages
-FROM python:3.8-slim-buster
+FROM python:3.13-slim
 
 # Use the following on M1; for odbc connection to mssql.
 # FROM --platform=linux/amd64 python:3.8-slim-buster

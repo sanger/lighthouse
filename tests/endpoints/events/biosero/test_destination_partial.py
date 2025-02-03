@@ -31,7 +31,7 @@ def test_post_destination_completed_missing_barcode(app, client, biosero_auth_he
         assert response.json == {
             "_status": "ERR",
             "_issues": {
-                "event_type": (f"'barcode' cannot be empty with the '{ Biosero.EVENT_DESTINATION_PARTIAL }' event")
+                "event_type": (f"'barcode' cannot be empty with the '{Biosero.EVENT_DESTINATION_PARTIAL}' event")
             },
             "_error": {"code": 422, "message": "Insertion failure: 1 document(s) contain(s) error(s)"},
         }
@@ -51,7 +51,7 @@ def test_post_destination_partial_missing_run_id(app, client, biosero_auth_heade
         assert response.json == {
             "_status": "ERR",
             "_issues": {
-                "event_type": f"'{ Biosero.EVENT_DESTINATION_PARTIAL }' requires a corresponding 'run_id' parameter"
+                "event_type": f"'{Biosero.EVENT_DESTINATION_PARTIAL}' requires a corresponding 'run_id' parameter"
             },
             "_error": {"code": 422, "message": "Insertion failure: 1 document(s) contain(s) error(s)"},
         }
@@ -133,7 +133,7 @@ def test_post_event_partial(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key=f"test.event.{ Biosero.EVENT_DESTINATION_PARTIAL }",
+                        routing_key=f"test.event.{Biosero.EVENT_DESTINATION_PARTIAL}",
                         body=event_message,
                     )
 

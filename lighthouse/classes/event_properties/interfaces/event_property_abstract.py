@@ -138,14 +138,14 @@ class EventPropertyAbstract(EventPropertyInterface):
         Returns:
             ContextManager - A context specifically created to handle a retrieval process
         """
-        logger.info(f"At { self._source_code_position_for_logging() } - Start retrieval")
+        logger.info(f"At {self._source_code_position_for_logging()} - Start retrieval")
 
         try:
             if not self.is_valid():
-                raise ValidationError(f"At { self._source_code_position_for_logging() } - Exception during validation")
+                raise ValidationError(f"At {self._source_code_position_for_logging()} - Exception during validation")
             yield
         except Exception as exc:
-            logger.error(f"At { self._source_code_position_for_logging() } - Exception during retrieval")
+            logger.error(f"At {self._source_code_position_for_logging()} - Exception during retrieval")
 
             self._is_valid = False
             msg = f"Exception during retrieval: {exc}"
@@ -153,7 +153,7 @@ class EventPropertyAbstract(EventPropertyInterface):
                 self._errors.append(msg)
             raise exc
 
-        logger.info(f"At { self._source_code_position_for_logging() } - End retrieval")
+        logger.info(f"At {self._source_code_position_for_logging()} - End retrieval")
 
     def _source_code_position_for_logging(self):
         klass = type(self)
@@ -161,4 +161,4 @@ class EventPropertyAbstract(EventPropertyInterface):
         function_name = frame.f_code.co_name
         line_no = frame.f_lineno
 
-        return f"{ klass.__qualname__ }::{ function_name } - line { line_no }"
+        return f"{klass.__qualname__}::{function_name} - line {line_no}"
