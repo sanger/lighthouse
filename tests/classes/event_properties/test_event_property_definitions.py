@@ -547,7 +547,7 @@ def test_all_samples_from_destination_value_fails_with_duplicated_samples(
 
         assert instance.is_valid() is False
         assert instance.errors == [
-            ("Exception during retrieval: There is duplication in the lh sample uuids provided: ['uuid1']")
+            "Exception during retrieval: There is duplication in the lh sample uuids provided: ['uuid1']"
         ]
 
 
@@ -604,7 +604,7 @@ def test_all_controls_from_destination_value_fails_with_missing_controls(
 
         assert instance.is_valid() is False
         assert instance.errors == [
-            ("Exception during retrieval: We were expecting one positive and one negative control to be present.")
+            "Exception during retrieval: We were expecting one positive and one negative control to be present."
         ]
 
 
