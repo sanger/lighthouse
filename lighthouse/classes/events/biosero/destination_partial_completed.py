@@ -78,4 +78,4 @@ class DestinationPartialCompleted(PlateEvent):
         response = message.send_to_ss()
 
         if not response.ok:
-            raise Exception(f"There was some problem when sending message to Sequencescape: { response.text }")
+            raise Exception(f"There was some problem when sending message to Sequencescape: {response.text}")

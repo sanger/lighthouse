@@ -160,7 +160,7 @@ def test_post_event_destination_completed(
 
                         mocked_rabbit_channel.basic_publish.assert_called_with(
                             exchange="lighthouse.test.examples",
-                            routing_key=f"test.event.{ Biosero.EVENT_DESTINATION_COMPLETED }",
+                            routing_key=f"test.event.{Biosero.EVENT_DESTINATION_COMPLETED}",
                             body=event_message,
                         )
 

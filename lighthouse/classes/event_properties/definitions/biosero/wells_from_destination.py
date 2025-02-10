@@ -23,7 +23,7 @@ class WellsFromDestination(EventPropertyAbstract, CherrytrackServiceMixin):
         coordinates = [well["destination_coordinate"] for well in wells]
         duplicates = set([coor for coor in coordinates if coordinates.count(coor) > 1])
         if len(duplicates) > 0:
-            raise RetrievalError(f"Some coordinates have clashing samples/controls: { duplicates }")
+            raise RetrievalError(f"Some coordinates have clashing samples/controls: {duplicates}")
 
     @property
     def errors(self) -> List[str]:

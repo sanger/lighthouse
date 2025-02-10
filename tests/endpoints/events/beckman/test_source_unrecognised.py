@@ -38,7 +38,7 @@ def test_get_event_source_unrecognised(
 
                     mocked_rabbit_channel.basic_publish.assert_called_with(
                         exchange="lighthouse.test.examples",
-                        routing_key=f"test.event.{ Beckman.EVENT_SOURCE_UNRECOGNISED }",
+                        routing_key=f"test.event.{Beckman.EVENT_SOURCE_UNRECOGNISED}",
                         body='{"event": {"uuid": "'
                         + int_to_uuid(1)
                         + (

@@ -35,7 +35,7 @@ class SamplesFromDestination(EventPropertyAbstract, MongoServiceMixin):
     def _is_valid_no_duplicate_uuids(self, uuids):
         duplicates = set([uuid for uuid in uuids if uuids.count(uuid) > 1])
         if len(duplicates) > 0:
-            raise RetrievalError(f"There is duplication in the lh sample uuids provided: { list(duplicates) }")
+            raise RetrievalError(f"There is duplication in the lh sample uuids provided: {list(duplicates)}")
 
     def _get_sample_with_uuid(self, samples, uuid):
         for sample in samples:

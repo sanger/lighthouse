@@ -78,7 +78,7 @@ def test_post_event_partially_completed(
 
                         mocked_rabbit_channel.basic_publish.assert_called_with(
                             exchange="lighthouse.test.examples",
-                            routing_key=f"test.event.{ Biosero.EVENT_SOURCE_COMPLETED }",
+                            routing_key=f"test.event.{Biosero.EVENT_SOURCE_COMPLETED}",
                             body='{"event": {"uuid": "'
                             + int_to_uuid(1)
                             + (

@@ -30,7 +30,7 @@ jobs:
           SA_PASSWORD: MyS3cr3tPassw0rd
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: nelonoel/branch-name@v1.0.1
 
