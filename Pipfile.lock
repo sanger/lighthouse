@@ -151,6 +151,7 @@
                 "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56",
                 "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"
             ],
+            "index": "pypi",
             "markers": "python_version >= '3.6'",
             "version": "==2024.12.14"
         },
