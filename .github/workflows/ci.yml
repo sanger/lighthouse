@@ -135,20 +135,19 @@ jobs:
         run: |
           pipenv sync --dev --system
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
+        uses: supercharge/mongodb-github-action@1.12.0
         with:
-          mongodb-version: 4.2
+          mongodb-version: 8.0
           mongodb-replica-set: heron_rs
       - name: Setup the test MLWH and Events databases
+        run: |
+          python setup_test_db.py
+      - name: Create SQL Server testing database
         run: |
           curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
           sudo apt-get update
           sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
-          sudo apt-get install -y unixodbc-dev
-          python setup_test_db.py
-      - name: Create SQL Server testing database
-        run: |
           python setup_sqlserver_test_db.py
       - name: Test with pytest
         run: |

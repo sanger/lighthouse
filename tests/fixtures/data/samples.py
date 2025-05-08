@@ -17,7 +17,7 @@ from lighthouse.constants.fields import (
 )
 from tests.fixtures.data.source_plates import SOURCE_PLATES
 
-DATE_TESTED_NOW = datetime.utcnow()
+DATE_TESTED_NOW = datetime.now()
 # NOTE: Remember that the samples of 'plate_123' are joined to the priority samples
 #   There should be 7 fit to pick samples from all the plates below
 SAMPLES = [
