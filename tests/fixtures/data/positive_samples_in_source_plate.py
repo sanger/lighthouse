@@ -16,7 +16,7 @@ from lighthouse.constants.fields import (
 )
 from tests.fixtures.data.source_plates import SOURCE_PLATES
 
-DATE_TESTED_NOW = datetime.utcnow()
+DATE_TESTED_NOW = datetime.now()
 
 POSITIVE_SAMPLES = [
     {
